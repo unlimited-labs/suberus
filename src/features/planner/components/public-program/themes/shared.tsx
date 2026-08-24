@@ -14,7 +14,7 @@ import {
 	IconUsers,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { clearOfflineProgramCache } from "@/integrations/tanstack-query/offline";
 import { useTheme } from "@/shared/components/theme-provider";
 import { useSession } from "@/shared/hooks/use-session";
@@ -216,17 +216,25 @@ export function Highlight({
 	markClassName?: string;
 }) {
 	if (!query) return <>{text}</>;
-	const idx = text.toLowerCase().indexOf(query);
-	if (idx < 0) return <>{text}</>;
-	return (
-		<>
-			{text.slice(0, idx)}
-			<mark className={cn("px-0.5", markClassName)}>
+	const haystack = text.toLowerCase();
+	const parts: ReactNode[] = [];
+	let cursor = 0;
+	for (
+		let idx = haystack.indexOf(query);
+		idx >= 0;
+		idx = haystack.indexOf(query, cursor)
+	) {
+		if (idx > cursor) parts.push(text.slice(cursor, idx));
+		parts.push(
+			<mark className={cn("px-0.5", markClassName)} key={idx}>
 				{text.slice(idx, idx + query.length)}
-			</mark>
-			{text.slice(idx + query.length)}
-		</>
-	);
+			</mark>,
+		);
+		cursor = idx + query.length;
+	}
+	if (parts.length === 0) return <>{text}</>;
+	if (cursor < text.length) parts.push(text.slice(cursor));
+	return <>{parts}</>;
 }
 
 export function ProgramEmptyState() {

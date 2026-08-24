@@ -15,6 +15,36 @@ interface UseProgramScheduleArgs {
 	activeDay: number;
 }
 
+export function sessionSelfMatches(
+	s: PublicProgramSession,
+	q: string,
+): boolean {
+	if (!q) return true;
+	return (
+		s.title.toLowerCase().includes(q) ||
+		(s.track?.name.toLowerCase().includes(q) ?? false)
+	);
+}
+
+export function presentationMatches(
+	p: PublicProgramSession["presentations"][number],
+	q: string,
+): boolean {
+	if (!q) return true;
+	return (
+		p.submissionTitle.toLowerCase().includes(q) ||
+		p.authors.some(
+			(a) =>
+				a.firstName.toLowerCase().includes(q) ||
+				a.lastName.toLowerCase().includes(q),
+		)
+	);
+}
+
+function isSearchHit(item: ProgramItem): boolean {
+	return item.kind === "session" || item.data.kind === "EVENT";
+}
+
 export function useProgramSchedule({
 	program,
 	settings,
@@ -32,20 +62,10 @@ export function useProgramSchedule({
 
 	const q = search.toLowerCase().trim();
 
-	const sessionMatches = (s: PublicProgramSession): boolean => {
-		if (!q) return true;
-		if (s.title.toLowerCase().includes(q)) return true;
-		if (s.track?.name.toLowerCase().includes(q)) return true;
-		return s.presentations.some(
-			(p) =>
-				p.submissionTitle.toLowerCase().includes(q) ||
-				p.authors.some(
-					(a) =>
-						a.firstName.toLowerCase().includes(q) ||
-						a.lastName.toLowerCase().includes(q),
-				),
-		);
-	};
+	const sessionMatches = (s: PublicProgramSession): boolean =>
+		!q ||
+		sessionSelfMatches(s, q) ||
+		s.presentations.some((p) => presentationMatches(p, q));
 
 	const breakMatches = (b: PublicProgram["breaks"][number]): boolean => {
 		if (!q) return true;
@@ -78,5 +98,18 @@ export function useProgramSchedule({
 		days.length > 0 ? itemsForDay(days[activeDay]) : itemsForDay(new Date());
 	const groups = buildTimeGroups(activeItems);
 
-	return { tz, days, q, activeItems, groups };
+	const countHits = (items: ProgramItem[]) => items.filter(isSearchHit).length;
+
+	const dayMatchCounts = q ? days.map((d) => countHits(itemsForDay(d))) : [];
+	const activeMatchCount = q ? countHits(activeItems) : 0;
+
+	return {
+		tz,
+		days,
+		q,
+		activeItems,
+		groups,
+		dayMatchCounts,
+		activeMatchCount,
+	};
 }

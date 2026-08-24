@@ -504,6 +504,136 @@ test.describe.serial("Public /program", () => {
 			await expect(page.getByTestId("author-card-button")).toHaveCount(0);
 		});
 	});
+	test.describe("search", () => {
+		async function publishSearchFixture(testRunId: string) {
+			const roomId = await createRoom(testRunId, "Search Room");
+			const sessionId = await createProgramSession({
+				testRunId,
+				title: "Search Session",
+				startAt: isoDay(0, 14),
+				endAt: isoDay(0, 16),
+				roomId,
+			});
+			for (const [title, lastName] of [
+				["Alpha Talk", "Aardvark"],
+				["Beta Talk", "Bobcat"],
+			]) {
+				const submission = await createSubmission({
+					testRunId,
+					title,
+					status: SubmissionStatus.ACCEPTED,
+					authorData: { firstName: "Ann", lastName: `${testRunId}_${lastName}` },
+				});
+				await addPresentationToSession(sessionId, submission.id, {
+					durationMin: 30,
+				});
+			}
+
+			const laterSessionId = await createProgramSession({
+				testRunId,
+				title: "Later Session",
+				startAt: isoDay(1, 14),
+				endAt: isoDay(1, 15),
+				roomId,
+			});
+			const later = await createSubmission({
+				testRunId,
+				title: "Gamma Talk",
+				status: SubmissionStatus.ACCEPTED,
+			});
+			await addPresentationToSession(laterSessionId, later.id);
+			await setSchedulePublished(true);
+		}
+
+		test("keeps the session header, lists only matching talks at their real time", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await publishSearchFixture(testRun.testRunId);
+			await publicProgramPage.goto();
+
+			const row = (title: string) =>
+				page
+					.getByTestId("presentation-row")
+					.filter({ hasText: `${testRun.testRunId}_${title}` });
+			const alphaRow = row("Alpha Talk");
+			const betaRow = row("Beta Talk");
+			await expect(betaRow).toBeVisible({ timeout: 10000 });
+
+			await publicProgramPage.searchFor(
+				`${testRun.testRunId}_Bobcat`,
+				alphaRow,
+				"hidden",
+			);
+
+			await expect(
+				page.getByText(`${testRun.testRunId}_Search Session`).first(),
+			).toBeVisible();
+			await expect(betaRow).toBeVisible();
+			const filteredTime = (await betaRow.innerText()).match(
+				/\d{1,2}:\d{2}/,
+			)?.[0];
+			expect(filteredTime).toBeTruthy();
+
+			await publicProgramPage.search.fill("");
+			await expect(alphaRow).toBeVisible();
+			await expect(betaRow).toContainText(String(filteredTime));
+		});
+
+		test("flags matches on another day and jumps there", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await publishSearchFixture(testRun.testRunId);
+			await publicProgramPage.goto();
+
+			await publicProgramPage.searchFor(
+				`${testRun.testRunId}_Gamma`,
+				page.getByTestId("program-search-notice"),
+				"visible",
+			);
+
+			await expect(page.getByTestId("day-match-count-1")).toHaveText("1");
+
+			await page.getByRole("button", { name: /^Go to / }).click();
+
+			await expect(page.getByTestId("program-search-notice")).toBeHidden();
+			await expect(page.getByTestId("presentation-row")).toHaveCount(1);
+			await expect(
+				page.getByText(`${testRun.testRunId}_Gamma Talk`).first(),
+			).toBeVisible();
+		});
+
+		test("grid theme shows the same day hint and jump", async ({
+			publicProgramPage,
+			page,
+			testRun,
+		}) => {
+			await setAppSetting("PROGRAM_THEME", "academic");
+			try {
+				await publishSearchFixture(testRun.testRunId);
+				await publicProgramPage.goto();
+
+				await publicProgramPage.searchFor(
+					`${testRun.testRunId}_Gamma`,
+					page.getByTestId("program-search-notice"),
+					"visible",
+				);
+
+				await expect(page.getByTestId("day-match-count-1")).toHaveText("1");
+				await page.getByRole("button", { name: /^Go to / }).click();
+
+				await expect(page.getByTestId("program-search-notice")).toBeHidden();
+				await expect(
+					page.getByText(`${testRun.testRunId}_Gamma Talk`).first(),
+				).toBeVisible();
+			} finally {
+				await setAppSetting("PROGRAM_THEME", "default");
+			}
+		});
+	});
 	test.describe("participant list", () => {
 		test.afterEach(async () => {
 			await setAppSetting("PROGRAM_SHOW_AUTHOR_INFO", false);

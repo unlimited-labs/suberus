@@ -14,8 +14,13 @@ import { cn } from "@/shared/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useProgramInteraction } from "./program-interaction";
 import { Highlight } from "./themes/shared";
+import {
+	presentationMatches,
+	sessionSelfMatches,
+} from "./use-program-schedule";
 
-export const MARK = "rounded-[1px] bg-[var(--prog-mark)] text-foreground";
+export const MARK =
+	"rounded-[2px] bg-[var(--prog-mark)] font-semibold text-foreground ring-1 ring-primary/30";
 
 export function EventDetails({
 	item,
@@ -175,15 +180,20 @@ export function PresentationList({
 }) {
 	if (session.presentations.length === 0) return null;
 
+	const showAll = !query || sessionSelfMatches(session, query);
+	let offset = 0;
+	const slots = session.presentations.map((p, i) => {
+		const presStart = session.untimedSlots
+			? new Date(session.startAt)
+			: addMinutes(new Date(session.startAt), offset);
+		offset += p.durationMin;
+		return { presentation: p, index: i, presStart };
+	});
+
 	return (
 		<ol className={cn("border-t border-border", className)}>
-			{session.presentations.map((p, i) => {
-				const offset = session.presentations
-					.slice(0, i)
-					.reduce((a, prev) => a + prev.durationMin, 0);
-				const presStart = session.untimedSlots
-					? new Date(session.startAt)
-					: addMinutes(new Date(session.startAt), offset);
+			{slots.map(({ presentation: p, index: i, presStart }) => {
+				if (!showAll && !presentationMatches(p, query)) return null;
 				return (
 					<PresentationRow
 						index={i}

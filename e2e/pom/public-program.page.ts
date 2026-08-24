@@ -1,4 +1,4 @@
-import { type Locator, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export class PublicProgramPage {
 	readonly page: Page;
@@ -22,6 +22,16 @@ export class PublicProgramPage {
 	async goto() {
 		await this.page.goto("/program");
 		await this.search.waitFor({ state: "visible", timeout: 15000 });
+	}
+
+	/** Retries the fill: one landing before hydration is silently swallowed. */
+	async searchFor(term: string, applied: Locator, state: "visible" | "hidden") {
+		await expect(async () => {
+			await this.search.fill(term);
+			await (state === "hidden"
+				? expect(applied).toBeHidden({ timeout: 2000 })
+				: expect(applied).toBeVisible({ timeout: 2000 }));
+		}).toPass({ timeout: 15000 });
 	}
 
 	sessionByTitle(title: string): Locator {

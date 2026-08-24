@@ -1,6 +1,7 @@
 import { IconEye, IconSearch, IconX } from "@tabler/icons-react";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { GridBody } from "./layouts/grid-body";
@@ -41,6 +42,7 @@ export interface ProgramFrameProps {
 	days?: Date[];
 	activeDay?: number;
 	setActiveDay?: (index: number) => void;
+	dayMatchCounts?: number[];
 	mainClassName?: string;
 	children: ReactNode;
 }
@@ -55,6 +57,7 @@ export function ProgramFrame({
 	days = [],
 	activeDay = 0,
 	setActiveDay,
+	dayMatchCounts = [],
 	mainClassName,
 	children,
 }: ProgramFrameProps) {
@@ -76,6 +79,7 @@ export function ProgramFrame({
 
 				<ProgramStickyBar
 					activeDay={activeDay}
+					dayMatchCounts={dayMatchCounts}
 					days={days}
 					framed={framed}
 					search={search}
@@ -119,12 +123,16 @@ export function ProgramShell({
 	schedule,
 }: ProgramShellProps) {
 	const framed = chrome === "framed";
-	const { days, activeItems, q } = schedule;
+	const { days, activeItems, q, dayMatchCounts, activeMatchCount } = schedule;
+	const otherDay = q
+		? dayMatchCounts.findIndex((count, i) => count > 0 && i !== activeDay)
+		: -1;
 
 	return (
 		<ProgramFrame
 			activeDay={activeDay}
 			chrome={chrome}
+			dayMatchCounts={dayMatchCounts}
 			days={days}
 			mainClassName={layout === "grid" ? "w-full py-8 sm:py-12" : undefined}
 			search={search}
@@ -133,8 +141,18 @@ export function ProgramShell({
 			settings={settings}
 			themeId={themeId}
 		>
+			{q && activeMatchCount === 0 && (
+				<SearchNotice
+					days={days}
+					framed={framed}
+					otherDay={otherDay}
+					setActiveDay={setActiveDay}
+				/>
+			)}
 			{activeItems.length === 0 ? (
-				<EmptyState framed={framed} searching={!!q} />
+				q ? null : (
+					<EmptyState framed={framed} />
+				)
 			) : layout === "grid" ? (
 				<GridBody schedule={schedule} />
 			) : (
@@ -164,6 +182,7 @@ function ProgramStickyBar({
 	framed,
 	days,
 	activeDay,
+	dayMatchCounts,
 	setActiveDay,
 	search,
 	searchPlaceholder,
@@ -172,6 +191,7 @@ function ProgramStickyBar({
 	framed: boolean;
 	days: Date[];
 	activeDay: number;
+	dayMatchCounts: number[];
 	setActiveDay?: (i: number) => void;
 	search: string;
 	searchPlaceholder?: string;
@@ -195,12 +215,14 @@ function ProgramStickyBar({
 					(framed ? (
 						<FramedNav
 							activeDay={activeDay}
+							dayMatchCounts={dayMatchCounts}
 							days={days}
 							setActiveDay={setActiveDay}
 						/>
 					) : (
 						<MinimalNav
 							activeDay={activeDay}
+							dayMatchCounts={dayMatchCounts}
 							days={days}
 							setActiveDay={setActiveDay}
 						/>
@@ -335,10 +357,12 @@ function FramedFooter({
 function MinimalNav({
 	days,
 	activeDay,
+	dayMatchCounts,
 	setActiveDay,
 }: {
 	days: Date[];
 	activeDay: number;
+	dayMatchCounts: number[];
 	setActiveDay: (i: number) => void;
 }) {
 	return (
@@ -350,6 +374,7 @@ function MinimalNav({
 			{days.map((day, i) => {
 				const label = dayLabelParts(day);
 				const isActive = activeDay === i;
+				const matches = dayMatchCounts[i];
 				return (
 					<button
 						className={cn(
@@ -357,6 +382,11 @@ function MinimalNav({
 							isActive
 								? "border-primary bg-primary text-primary-foreground"
 								: "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+							!isActive &&
+								matches !== undefined &&
+								(matches > 0
+									? "border-primary/60 text-foreground"
+									: "opacity-40"),
 						)}
 						key={day.toISOString()}
 						onClick={() => setActiveDay(i)}
@@ -368,6 +398,14 @@ function MinimalNav({
 						<span className="text-xs tracking-wide uppercase">
 							{label.weekday.slice(0, 3)} {label.month.slice(0, 3)}
 						</span>
+						{!isActive && !!matches && (
+							<span
+								className="bg-primary/15 text-primary rounded-full px-1.5 text-xs font-semibold tabular-nums"
+								data-testid={`day-match-count-${i}`}
+							>
+								{matches}
+							</span>
+						)}
 					</button>
 				);
 			})}
@@ -378,10 +416,12 @@ function MinimalNav({
 function FramedNav({
 	days,
 	activeDay,
+	dayMatchCounts,
 	setActiveDay,
 }: {
 	days: Date[];
 	activeDay: number;
+	dayMatchCounts: number[];
 	setActiveDay: (i: number) => void;
 }) {
 	return (
@@ -393,6 +433,7 @@ function FramedNav({
 			{days.map((day, i) => {
 				const label = dayLabelParts(day);
 				const isActive = activeDay === i;
+				const matches = dayMatchCounts[i];
 				return (
 					<button
 						className={cn(
@@ -400,6 +441,9 @@ function FramedNav({
 							isActive
 								? "text-primary"
 								: "text-(--prog-faint) hover:text-foreground",
+							!isActive &&
+								matches !== undefined &&
+								(matches > 0 ? "text-foreground" : "opacity-40"),
 						)}
 						key={day.toISOString()}
 						onClick={() => setActiveDay(i)}
@@ -416,6 +460,18 @@ function FramedNav({
 								{label.month.slice(0, 3)}
 							</span>
 						</span>
+						{!isActive && !!matches && (
+							<span
+								className="text-primary flex items-baseline gap-1 font-(family-name:--prog-font-meta) text-[10px] font-semibold tabular-nums"
+								data-testid={`day-match-count-${i}`}
+							>
+								<span
+									aria-hidden
+									className="bg-primary size-1.5 rounded-full"
+								/>
+								{matches}
+							</span>
+						)}
 						{isActive && (
 							<span className="bg-primary absolute bottom-[-13px] left-0 h-[2px] w-full sm:bottom-[-10px]" />
 						)}
@@ -473,16 +529,7 @@ function SearchBox({
 	);
 }
 
-function EmptyState({
-	framed,
-	searching,
-}: {
-	framed: boolean;
-	searching: boolean;
-}) {
-	const message = searching
-		? "Nothing matches your search on this day."
-		: "Nothing scheduled for this day.";
+function EmptyState({ framed }: { framed: boolean }) {
 	return (
 		<p
 			className={cn(
@@ -490,7 +537,42 @@ function EmptyState({
 				framed ? "py-16 text-lg sm:py-24 sm:text-xl" : "py-20 text-lg",
 			)}
 		>
-			{message}
+			Nothing scheduled for this day.
 		</p>
+	);
+}
+
+function SearchNotice({
+	framed,
+	days,
+	otherDay,
+	setActiveDay,
+}: {
+	framed: boolean;
+	days: Date[];
+	otherDay: number;
+	setActiveDay?: (index: number) => void;
+}) {
+	const target = days[otherDay];
+	return (
+		<div
+			className={cn(
+				"flex flex-col items-center gap-3 text-center text-muted-foreground",
+				framed ? "py-10 text-lg sm:py-14" : "py-12 text-lg",
+			)}
+			data-testid="program-search-notice"
+			role="status"
+		>
+			<p>Nothing matches your search on this day.</p>
+			{target && setActiveDay && (
+				<Button
+					onClick={() => setActiveDay(otherDay)}
+					size="sm"
+					variant="outline"
+				>
+					Go to {dayLabelParts(target).weekday}
+				</Button>
+			)}
+		</div>
 	);
 }
