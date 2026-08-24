@@ -39,6 +39,7 @@ import { ExpenseToolbar } from "@/features/finances/components/admin/expense-too
 import { FeeProjection } from "@/features/finances/components/admin/fee-projection";
 import { MoneyCells } from "@/features/finances/components/admin/money-cells";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { formatCurrency } from "@/shared/lib/format-currency";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -189,7 +190,12 @@ export function FinancesBoard() {
 				expenses: cleanRows(value.expenses),
 				income: cleanRows(value.income),
 			};
-			await saveFinancesFn({ data: payload });
+			try {
+				await saveFinancesFn({ data: payload });
+			} catch (error) {
+				toast.error(getErrorMessage(error, "Failed to save"));
+				return;
+			}
 			await queryClient.invalidateQueries({
 				queryKey: financesQueryOptions().queryKey,
 			});

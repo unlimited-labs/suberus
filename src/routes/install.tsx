@@ -13,6 +13,7 @@ import {
 } from "@/features/install/api/install";
 import { installSchema } from "@/features/install/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { getErrorMessage } from "@/shared/lib/error-message";
 
 export const Route = createFileRoute("/install")({
 	beforeLoad: async () => {
@@ -44,7 +45,12 @@ function InstallPage() {
 		},
 		onSubmit: async ({ value }) => {
 			const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
-			await performInstallFn({ data: { ...value, timezone } });
+			try {
+				await performInstallFn({ data: { ...value, timezone } });
+			} catch (error) {
+				toast.error(getErrorMessage(error, "Setup failed"));
+				return;
+			}
 			toast.success("Setup complete! You can now sign in.");
 			navigate({ to: "/login" });
 		},

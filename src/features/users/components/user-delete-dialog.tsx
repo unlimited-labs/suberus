@@ -8,6 +8,7 @@ import {
 	deleteAdminUser,
 } from "@/features/users/api/users";
 import type { AdminUser } from "@/features/users/server/users";
+import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -48,11 +49,7 @@ export function UserDeleteDialog({
 			navigate({ to: "/admin/users" });
 		},
 		onError: (error) => {
-			if (error instanceof Response) {
-				error.text().then((msg) => toast.error(msg));
-			} else {
-				toast.error("Failed to delete user");
-			}
+			toast.error(getErrorMessage(error, "Failed to delete user"));
 		},
 	});
 
