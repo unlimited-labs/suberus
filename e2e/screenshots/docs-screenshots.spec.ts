@@ -1043,6 +1043,19 @@ test.describe("docs screenshots", () => {
 		await shot(page, "31-planner-publish-dialog.png", { full: false });
 	});
 
+	// Never confirms — the seeded program has to survive for the later shots.
+	test("61 clear plan dialog", async ({ page }) => {
+		await page.goto("/admin/program-planner");
+		await page.waitForTimeout(1500);
+		await page.getByTestId("clear-plan-button").click();
+		await expect(page.getByTestId("clear-plan-dialog")).toBeVisible();
+		await page.getByTestId("clear-plan-confirm-input").fill("UNDERSTOOD");
+		await page.waitForTimeout(300);
+		await page.getByTestId("clear-plan-dialog").screenshot({
+			path: path.join(SHOTS_DIR, "61-planner-clear-plan-dialog.png"),
+		});
+	});
+
 	test("54 co-author conflict check", async ({ page }) => {
 		await page.goto("/admin/program-planner");
 		await page.waitForTimeout(1500);

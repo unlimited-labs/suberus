@@ -107,6 +107,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **57** — `managing/users.mdx` — *Edit survey answers dialog* — `/admin/users/<id>` → Survey Responses → **Edit**
 - [x] **59** — `managing/ai-assistant.mdx` — *Connect an AI assistant dialog* (register command with credentials, callback port + Re-issue, authorized applications with revoke) — user menu → **Connect AI assistant**
 - [x] **60** — `managing/ai-assistant.mdx` — *Authorization screen* (application name, verified origin, requested access) — `/consent` during an assistant's OAuth flow
+- [x] **61** — `planner/manual-scheduling.mdx` — *Clear plan confirmation dialog* (typed UNDERSTOOD gate) — planner header → **Clear plan**
 
 ---
 
