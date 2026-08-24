@@ -30,6 +30,32 @@ export const conferenceSettingsSchema = z.object({
 
 export const conferenceSettingsPatch = conferenceSettingsSchema.partial();
 
+export const conferenceBasicSchema = conferenceSettingsSchema.pick({
+	name: true,
+	subtitle: true,
+	location: true,
+	website: true,
+	contactEmail: true,
+	currency: true,
+});
+
+export const conferenceDatesSchema = conferenceSettingsSchema.pick({
+	conferenceStartDate: true,
+	conferenceEndDate: true,
+	submissionDeadline: true,
+	submissionsLocked: true,
+	reviewDeadline: true,
+	notificationDate: true,
+	registrationDeadline: true,
+	registrationLocked: true,
+});
+
+export const conferenceFormatSchema = conferenceSettingsSchema.pick({
+	dateFormat: true,
+	timeFormat: true,
+	timezone: true,
+});
+
 export type ConferenceSettings = z.infer<typeof conferenceSettingsSchema>;
 
 const reminderDaysBefore = z

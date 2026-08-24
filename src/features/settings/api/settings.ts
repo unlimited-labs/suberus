@@ -40,7 +40,7 @@ import type {
 } from "@/features/settings/types";
 import {
 	brandingSchema,
-	conferenceSettingsSchema,
+	conferenceSettingsPatch,
 	reminderSettingsSchema,
 	setSettingSchema,
 	submissionTypeUpdateSchema,
@@ -259,7 +259,7 @@ export const getConferenceSettingsFn = createServerFn({ method: "GET" })
 
 export const updateConferenceSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(conferenceSettingsSchema)
+	.validator(conferenceSettingsPatch)
 	.handler(async ({ data, context }) => {
 		await updateConferenceSettings(data, context.user.id);
 		return { success: true };

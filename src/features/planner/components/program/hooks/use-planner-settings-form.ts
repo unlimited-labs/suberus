@@ -29,7 +29,7 @@ export function usePlannerSettingsForm(initial: ConferenceSettings) {
 		},
 		onSubmit: async ({ value }) => {
 			try {
-				await updateConferenceSettingsFn({ data: { ...initial, ...value } });
+				await updateConferenceSettingsFn({ data: value });
 				await queryClient.invalidateQueries({
 					queryKey: conferenceSettingsQueryOptions().queryKey,
 				});

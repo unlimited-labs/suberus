@@ -1,22 +1,22 @@
 import { IconCalendar } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
+import type { ConferenceSettings } from "@/features/settings/api/settings";
 import { SettingsSaveButton } from "@/features/settings/components/settings-save-button";
 import { SettingsSection } from "@/features/settings/components/settings-section";
+import { Form } from "@/shared/components/composable/form";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
-import { ConferenceTextField } from "./conference-text-field";
-import type { ConferenceFormApi } from "./use-conference-settings";
+import {
+	type ConferenceDatesFormApi,
+	useConferenceDatesForm,
+} from "./use-conference-settings";
 
 interface ImportantDatesSectionProps {
-	form: ConferenceFormApi;
-}
-
-function Hint({ children }: { children: React.ReactNode }) {
-	return <p className="text-muted-foreground text-xs">{children}</p>;
+	initialData: ConferenceSettings;
 }
 
 interface LockSwitchProps {
-	form: ConferenceFormApi;
+	form: ConferenceDatesFormApi;
 	name: "submissionsLocked" | "registrationLocked";
 	label: string;
 	hint: string;
@@ -27,7 +27,7 @@ function LockSwitch({ form, name, label, hint }: LockSwitchProps) {
 		<div className="border-border/50 flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
 			<div>
 				<Label htmlFor={name}>{label}</Label>
-				<Hint>{hint}</Hint>
+				<p className="text-muted-foreground text-xs">{hint}</p>
 			</div>
 			<form.Field name={name}>
 				{(field) => (
@@ -42,11 +42,10 @@ function LockSwitch({ form, name, label, hint }: LockSwitchProps) {
 	);
 }
 
-export function ImportantDatesSection({ form }: ImportantDatesSectionProps) {
-	const submissionAttempts = useSelector(
-		form.store,
-		(s) => s.submissionAttempts,
-	);
+export function ImportantDatesSection({
+	initialData,
+}: ImportantDatesSectionProps) {
+	const form = useConferenceDatesForm(initialData);
 	const isSubmitting = useSelector(form.store, (s) => s.isSubmitting);
 
 	return (
@@ -56,86 +55,80 @@ export function ImportantDatesSection({ form }: ImportantDatesSectionProps) {
 			icon={IconCalendar}
 			title="Important Dates"
 		>
-			<div className="grid gap-4 sm:grid-cols-2">
-				<ConferenceTextField
-					description={<Hint>First day of the conference</Hint>}
-					form={form}
-					label="Conference Start"
-					name="conferenceStartDate"
-					submissionAttempts={submissionAttempts}
-					type="date"
+			<Form onSubmit={() => void form.handleSubmit()}>
+				<div className="grid gap-4 sm:grid-cols-2">
+					<form.AppField name="conferenceStartDate">
+						{(field) => (
+							<field.InputField
+								description="First day of the conference"
+								label="Conference Start"
+								type="date"
+							/>
+						)}
+					</form.AppField>
+					<form.AppField name="conferenceEndDate">
+						{(field) => (
+							<field.InputField
+								description="Last day of the conference"
+								label="Conference End"
+								type="date"
+							/>
+						)}
+					</form.AppField>
+					<form.AppField name="submissionDeadline">
+						{(field) => (
+							<field.InputField
+								description="After this date the system automatically stops accepting new submissions. Leave empty for no limit."
+								label="Submission Deadline"
+								type="date"
+							/>
+						)}
+					</form.AppField>
+					<form.AppField name="registrationDeadline">
+						{(field) => (
+							<field.InputField
+								description="After this date public registration is blocked. Invitation-based registration still works. Leave empty for no limit."
+								label="Registration Deadline"
+								type="date"
+							/>
+						)}
+					</form.AppField>
+					<LockSwitch
+						form={form}
+						hint="Immediately block all new submissions, regardless of the deadline"
+						label="Close submissions"
+						name="submissionsLocked"
+					/>
+					<LockSwitch
+						form={form}
+						hint="Immediately block public registration, regardless of the deadline. Invited users can still register."
+						label="Close registration"
+						name="registrationLocked"
+					/>
+					<form.AppField name="reviewDeadline">
+						{(field) => (
+							<field.InputField
+								description="Deadline for reviewers to submit their reviews"
+								label="Review Deadline"
+								type="date"
+							/>
+						)}
+					</form.AppField>
+					<form.AppField name="notificationDate">
+						{(field) => (
+							<field.InputField
+								description="Date when authors are notified of the decision"
+								label="Notification Date"
+								type="date"
+							/>
+						)}
+					</form.AppField>
+				</div>
+				<SettingsSaveButton
+					isSaving={isSubmitting}
+					onSave={() => void form.handleSubmit()}
 				/>
-				<ConferenceTextField
-					description={<Hint>Last day of the conference</Hint>}
-					form={form}
-					label="Conference End"
-					name="conferenceEndDate"
-					submissionAttempts={submissionAttempts}
-					type="date"
-				/>
-				<ConferenceTextField
-					description={
-						<Hint>
-							After this date the system automatically stops accepting new
-							submissions. Leave empty for no limit.
-						</Hint>
-					}
-					form={form}
-					label="Submission Deadline"
-					name="submissionDeadline"
-					submissionAttempts={submissionAttempts}
-					type="date"
-				/>
-				<ConferenceTextField
-					description={
-						<Hint>
-							After this date public registration is blocked. Invitation-based
-							registration still works. Leave empty for no limit.
-						</Hint>
-					}
-					form={form}
-					label="Registration Deadline"
-					name="registrationDeadline"
-					submissionAttempts={submissionAttempts}
-					type="date"
-				/>
-				<LockSwitch
-					form={form}
-					hint="Immediately block all new submissions, regardless of the deadline"
-					label="Close submissions"
-					name="submissionsLocked"
-				/>
-				<LockSwitch
-					form={form}
-					hint="Immediately block public registration, regardless of the deadline. Invited users can still register."
-					label="Close registration"
-					name="registrationLocked"
-				/>
-				<ConferenceTextField
-					description={
-						<Hint>Deadline for reviewers to submit their reviews</Hint>
-					}
-					form={form}
-					label="Review Deadline"
-					name="reviewDeadline"
-					submissionAttempts={submissionAttempts}
-					type="date"
-				/>
-				<ConferenceTextField
-					description={
-						<Hint>Date when authors are notified of the decision</Hint>
-					}
-					form={form}
-					label="Notification Date"
-					name="notificationDate"
-					submissionAttempts={submissionAttempts}
-					type="date"
-				/>
-			</div>
-			<SettingsSaveButton
-				isSaving={isSubmitting}
-				onSave={() => void form.handleSubmit()}
-			/>
+			</Form>
 		</SettingsSection>
 	);
 }
