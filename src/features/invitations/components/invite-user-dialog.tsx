@@ -1,7 +1,9 @@
 import { IconLoader2 } from "@tabler/icons-react";
-import { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { createInvitationFn } from "@/features/invitations/api/admin-invitations";
+import { Form } from "@/shared/components/composable/form";
+import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
 import {
@@ -12,15 +14,21 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/ui/select";
+
+const inviteSchema = z.object({
+	email: z.email("Enter a valid email address"),
+	role: z.enum(["REVIEWER", "EDITOR", "ADMIN"]),
+});
+
+type InviteValues = z.infer<typeof inviteSchema>;
+
+const defaultValues: InviteValues = { email: "", role: "REVIEWER" };
+
+const roleOptions = [
+	{ value: "REVIEWER", label: "Reviewer" },
+	{ value: "EDITOR", label: "Editor" },
+	{ value: "ADMIN", label: "Administrator" },
+];
 
 interface InviteUserDialogProps {
 	open: boolean;
@@ -33,35 +41,29 @@ export function InviteUserDialog({
 	onOpenChange,
 	onSuccess,
 }: InviteUserDialogProps) {
-	const [email, setEmail] = useState("");
-	const [role, setRole] = useState<"EDITOR" | "REVIEWER" | "ADMIN">("REVIEWER");
-	const [isSubmitting, setIsSubmitting] = useState(false);
-
-	const handleSubmit = async (e: React.SyntheticEvent) => {
-		e.preventDefault();
-		if (!email.trim()) {
-			toast.error("Email is required");
-			return;
-		}
-
-		setIsSubmitting(true);
-		try {
-			await createInvitationFn({ data: { email: email.trim(), role } });
+	const form = useAppForm({
+		defaultValues,
+		validators: { onChange: inviteSchema, onSubmit: inviteSchema },
+		onSubmit: async ({ value, formApi }) => {
+			try {
+				await createInvitationFn({
+					data: { email: value.email.trim(), role: value.role },
+				});
+			} catch (error) {
+				const msg = getErrorMessage(error, "Failed to send invitation");
+				toast.error(
+					/already exists/i.test(msg)
+						? "User with this email already exists"
+						: msg,
+				);
+				return;
+			}
 			toast.success("Invitation sent");
-			setEmail("");
-			setRole("REVIEWER");
+			formApi.reset();
 			onOpenChange(false);
 			onSuccess();
-		} catch (error: unknown) {
-			const msg = getErrorMessage(error, "Failed to send invitation");
-			toast.error(
-				/already exists/i.test(msg)
-					? "User with this email already exists"
-					: msg,
-			);
-		}
-		setIsSubmitting(false);
-	};
+		},
+	});
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
@@ -72,64 +74,34 @@ export function InviteUserDialog({
 						Send an invitation email with a registration link.
 					</DialogDescription>
 				</DialogHeader>
-				<form className="space-y-4" noValidate onSubmit={handleSubmit}>
-					<div className="space-y-2">
-						<Label htmlFor="invite-email">Email</Label>
-						<Input
-							id="invite-email"
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="user@example.com"
-							required
-							type="email"
-							value={email}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="invite-role">Role</Label>
-						<Select
-							items={[
-								{ value: "REVIEWER", label: "Reviewer" },
-								{ value: "EDITOR", label: "Editor" },
-								{ value: "ADMIN", label: "Administrator" },
-							]}
-							onValueChange={(v) => {
-								const inviteRoles = [
-									"REVIEWER",
-									"EDITOR",
-									"ADMIN",
-								] as const satisfies readonly (
-									| "EDITOR"
-									| "REVIEWER"
-									| "ADMIN"
-								)[];
-								// SAFETY: widening a const tuple only to test membership of an arbitrary string.
-								const isValid = (inviteRoles as readonly string[]).includes(v);
-								if (isValid) {
-									// SAFETY: guarded by the includes() check above.
-									setRole(v as (typeof inviteRoles)[number]);
-								}
-							}}
-							value={role}
-						>
-							<SelectTrigger id="invite-role">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="REVIEWER">Reviewer</SelectItem>
-								<SelectItem value="EDITOR">Editor</SelectItem>
-								<SelectItem value="ADMIN">Administrator</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+				<Form className="space-y-4" onSubmit={() => void form.handleSubmit()}>
+					<form.AppField name="email">
+						{(field) => (
+							<field.InputField
+								label="Email"
+								placeholder="user@example.com"
+								type="email"
+							/>
+						)}
+					</form.AppField>
+					<form.AppField name="role">
+						{(field) => (
+							<field.SelectField label="Role" options={roleOptions} />
+						)}
+					</form.AppField>
 					<DialogFooter>
-						<Button disabled={isSubmitting} type="submit">
-							{isSubmitting && (
-								<IconLoader2 className="mr-2 size-4 animate-spin" />
+						<form.Subscribe selector={(s) => s.isSubmitting}>
+							{(isSubmitting) => (
+								<Button disabled={isSubmitting} type="submit">
+									{isSubmitting && (
+										<IconLoader2 className="mr-2 size-4 animate-spin" />
+									)}
+									Send Invitation
+								</Button>
 							)}
-							Send Invitation
-						</Button>
+						</form.Subscribe>
 					</DialogFooter>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

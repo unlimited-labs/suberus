@@ -16,12 +16,6 @@ export function initialTrackForm(track?: {
 	};
 }
 
-export function validateTrackName(name: string): string | null {
-	if (!name.trim()) return "Track name is required";
-	if (name.length > 200) return "Track name must be at most 200 characters";
-	return null;
-}
-
 export function normalizeSupervisorId(
 	supervisorId: string | undefined,
 ): string | null {
