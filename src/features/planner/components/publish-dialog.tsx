@@ -1,9 +1,11 @@
 import {
+	IconAlertTriangle,
 	IconEye,
 	IconLoader2,
 	IconWorld,
 	IconWorldOff,
 } from "@tabler/icons-react";
+import { useId, useState } from "react";
 import type { ScheduleIssue } from "@/features/planner/server/schedule";
 import { Button } from "@/shared/ui/button";
 import {
@@ -14,6 +16,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import {
 	Tooltip,
 	TooltipContent,
@@ -65,6 +69,13 @@ export function PublishDialog({
 						issues={issues}
 						issuesLoading={issuesLoading}
 						onSelectIssue={onSelectIssue}
+					/>
+
+					<PublicPublishGate
+						busy={busy}
+						disabled={busy !== null || issuesLoading}
+						hasIssues={Boolean(issues && issues.length > 0)}
+						onPublish={onPublish}
 					/>
 
 					<DialogFooter className="gap-2 sm:flex-row sm:justify-between">
@@ -123,31 +134,72 @@ export function PublishDialog({
 									</TooltipContent>
 								</Tooltip>
 							)}
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button
-										className="gap-1.5"
-										data-testid="publish-confirm"
-										disabled={busy !== null || issuesLoading}
-										onClick={() => onPublish("public")}
-										size="sm"
-									>
-										{busy === "public" ? (
-											<IconLoader2 className="animate-spin" size={14} />
-										) : (
-											<IconWorld size={14} />
-										)}
-										{issues && issues.length > 0 ? "Publish anyway" : "Publish"}
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>
-									Make the program public — visible to everyone.
-								</TooltipContent>
-							</Tooltip>
 						</div>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 		</TooltipProvider>
+	);
+}
+
+const CONFIRM_PHRASE = "UNDERSTOOD";
+
+interface PublicPublishGateProps {
+	busy: PublishMode | "unpublish" | null;
+	disabled: boolean;
+	hasIssues: boolean;
+	onPublish: (mode: PublishMode) => void;
+}
+
+function PublicPublishGate({
+	busy,
+	disabled,
+	hasIssues,
+	onPublish,
+}: PublicPublishGateProps) {
+	const inputId = useId();
+	const [phrase, setPhrase] = useState("");
+	const confirmed = phrase.trim() === CONFIRM_PHRASE;
+
+	return (
+		<div className="border-destructive/40 bg-destructive/5 space-y-3 rounded-md border p-3">
+			<div className="text-muted-foreground flex gap-2 text-sm">
+				<IconAlertTriangle
+					className="text-destructive mt-0.5 shrink-0"
+					size={16}
+				/>
+				<p>
+					Publishing makes the whole program public — visible to everyone on the
+					public program page and to search engines, including session times,
+					speakers and camera-ready files. It can only be taken back with
+					Unpublish.
+				</p>
+			</div>
+			<div className="space-y-1.5">
+				<Label htmlFor={inputId}>Type {CONFIRM_PHRASE} to confirm</Label>
+				<Input
+					autoComplete="off"
+					data-testid="publish-understood-input"
+					id={inputId}
+					onChange={(e) => setPhrase(e.target.value)}
+					placeholder={CONFIRM_PHRASE}
+					value={phrase}
+				/>
+			</div>
+			<Button
+				className="w-full gap-1.5"
+				data-testid="publish-confirm"
+				disabled={disabled || !confirmed}
+				onClick={() => onPublish("public")}
+				size="sm"
+			>
+				{busy === "public" ? (
+					<IconLoader2 className="animate-spin" size={14} />
+				) : (
+					<IconWorld size={14} />
+				)}
+				{hasIssues ? "Publish anyway" : "Publish"}
+			</Button>
+		</div>
 	);
 }

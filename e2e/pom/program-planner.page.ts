@@ -115,6 +115,9 @@ export class ProgramPlannerPage {
 	}
 
 	async confirmPublish() {
+		await this.publishDialog
+			.getByTestId("publish-understood-input")
+			.fill("UNDERSTOOD");
 		await this.publishConfirm.click();
 		await expect(this.publishDialog).toBeHidden();
 	}
