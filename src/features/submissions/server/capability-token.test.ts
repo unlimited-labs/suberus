@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
 	createCapabilityToken,
@@ -75,6 +76,25 @@ describe("capability token", () => {
 		expect(verifyCapabilityToken(upload(-1).token, "up", SECRET)).toEqual({
 			ok: false,
 			error: "expired",
+		});
+	});
+
+	it("accepts a legacy upload token with no purpose segment", () => {
+		const legacyPayload = `${submissionId}.${Date.now() + UPLOAD_LINK_TTL_MS}`;
+		const token = `${Buffer.from(legacyPayload).toString("base64url")}.${createHmac(
+			"sha256",
+			SECRET,
+		)
+			.update(legacyPayload)
+			.digest("base64url")}`;
+
+		expect(verifyCapabilityToken(token, "up", SECRET)).toEqual({
+			ok: true,
+			submissionId,
+		});
+		expect(verifyCapabilityToken(token, "dl", SECRET)).toEqual({
+			ok: false,
+			error: "purpose",
 		});
 	});
 

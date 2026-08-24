@@ -18,7 +18,7 @@ export const authorSchema = z.object({
 /**
  * replaceSubmissionAuthors deletes and recreates the whole list, so an empty
  * array wipes the authors and a presenter count other than one leaves
- * presenterId dangling. Enforced wherever a caller can set authors directly.
+ * presenterId dangling.
  */
 export const submissionAuthorsSchema = z
 	.array(authorSchema)
@@ -64,22 +64,47 @@ export const submissionCreateForUserInput = submissionCreateInput
 
 // Admins are trusted here, so no dynamic length limits: an author's own edit
 // runs through the length-aware form schema, this one deliberately does not.
-export const adminSubmissionEditInput = z.object({
+const adminSubmissionEditFields = z.object({
 	submissionId: z.uuid(),
 	type: submissionTypeFilterSchema,
-	title: z.string().min(1, "Title is required"),
+	title: z.string(),
 	content: z.string(),
-	authors: submissionAuthorsSchema,
+	authors: z.array(authorSchema),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	trackId: z.uuid().nullish(),
 });
 
+export const adminSubmissionEditInput = adminSubmissionEditFields
+	.extend({ asDraft: z.boolean().optional() })
+	.superRefine((value, ctx) => {
+		if (value.asDraft) return;
+		if (value.title.trim().length === 0) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["title"],
+				message: "Title is required",
+			});
+		}
+		const authors = submissionAuthorsSchema.safeParse(value.authors);
+		if (!authors.success) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["authors"],
+				message: authors.error.issues[0].message,
+			});
+		}
+	});
+
 // Same fields, all optional: an agent fixing one title must not have to resend
 // the author list, where an omission would silently wipe it. `type` is omitted
 // deliberately — retyping a submission stays a UI operation.
-export const submissionUpdateInput = adminSubmissionEditInput
+export const submissionUpdateInput = adminSubmissionEditFields
 	.omit({ submissionId: true, contentFormat: true, type: true })
+	.extend({
+		title: z.string().min(1, "Title is required"),
+		authors: submissionAuthorsSchema,
+	})
 	.partial()
 	.extend({ submissionId: z.uuid() });
 

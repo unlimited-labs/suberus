@@ -116,11 +116,12 @@ function AdminEditSubmissionPage() {
 
 	const isDraft = submission.status === "DRAFT";
 
-	const save = async (formData: SubmissionFormData) => {
+	const save = async (formData: SubmissionFormData, asDraft = false) => {
 		let result: Awaited<ReturnType<typeof adminEditSubmissionFn>>;
 		try {
 			result = await adminEditSubmissionFn({
 				data: {
+					asDraft,
 					submissionId: id,
 					type: formData.type,
 					title: formData.title,
@@ -211,7 +212,7 @@ function AdminEditSubmissionPage() {
 					onSaveDraft={
 						isDraft
 							? async (formData: SubmissionFormData) => {
-									if (await save(formData)) await finish("Draft saved");
+									if (await save(formData, true)) await finish("Draft saved");
 								}
 							: undefined
 					}

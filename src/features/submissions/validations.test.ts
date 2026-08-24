@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	adminSubmissionEditInput,
 	createDynamicSubmissionSchema,
 	DEFAULT_VALIDATION_LIMITS,
 	submissionUpdateInput,
@@ -134,5 +135,47 @@ describe("submissionUpdateInput", () => {
 			contentFormat: "TEXT",
 		});
 		expect(parsed).not.toHaveProperty("contentFormat");
+	});
+});
+
+describe("adminSubmissionEditInput", () => {
+	const id = "11111111-2222-4333-8444-555555555555";
+	const edit = (patch: Record<string, unknown> = {}) => ({
+		submissionId: id,
+		type: "ABSTRACT",
+		title: "A title",
+		content: "body",
+		authors: [
+			{
+				firstName: "Ada",
+				lastName: "Lovelace",
+				email: "ada@example.com",
+				affiliationId: null,
+				affiliationName: "Analytical Engine Co.",
+				isPresenter: true,
+			},
+		],
+		keywords: [],
+		contentFormat: "TEXT",
+		trackId: null,
+		...patch,
+	});
+
+	it("requires a title and a single presenter on a normal save", () => {
+		expect(adminSubmissionEditInput.safeParse(edit()).success).toBe(true);
+		expect(
+			adminSubmissionEditInput.safeParse(edit({ title: " " })).success,
+		).toBe(false);
+		expect(
+			adminSubmissionEditInput.safeParse(edit({ authors: [] })).success,
+		).toBe(false);
+	});
+
+	it("accepts an incomplete draft save", () => {
+		expect(
+			adminSubmissionEditInput.safeParse(
+				edit({ asDraft: true, title: "", authors: [] }),
+			).success,
+		).toBe(true);
 	});
 });

@@ -61,7 +61,11 @@ export function verifyCapabilityToken(
 		return { ok: false, error: "signature" };
 	}
 
-	const [tokenPurpose, submissionId, expiresAt] = payload.split(".");
+	const parts = payload.split(".");
+	// Upload tokens minted before the purpose segment carry `submissionId.expiresAt`.
+	// Drop this branch once UPLOAD_LINK_TTL_MS has passed since the deploy.
+	const [tokenPurpose, submissionId, expiresAt] =
+		parts.length === 2 ? ["up", ...parts] : parts;
 	const expiry = Number(expiresAt);
 	if (!tokenPurpose || !submissionId || !Number.isFinite(expiry)) {
 		return { ok: false, error: "malformed" };
