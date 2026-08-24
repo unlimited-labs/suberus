@@ -29,7 +29,7 @@ export function SessionEditorSheet({
 			open={sessionId !== null}
 		>
 			<SheetContent
-				className="flex flex-col gap-0 p-0 sm:max-w-md"
+				className="flex flex-col gap-0 p-0 sm:max-w-4xl"
 				data-testid="session-editor"
 				side="right"
 			>
