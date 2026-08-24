@@ -1,12 +1,9 @@
 import { test, expect } from "./fixtures"
 import { setAppSetting } from "../helpers/test-db"
 
-/**
- * Helper: click the Save button inside the Important Dates section.
- * The page has 3 Save buttons: Basic Info (#0), Important Dates (#1), Date & Time (#2).
- */
+/** Helper: save the Important Dates section. */
 async function saveDatesSection(page: import("@playwright/test").Page) {
-	await page.getByRole("button", { name: "Save" }).nth(1).click()
+	await page.getByTestId("save-important-dates").click()
 	await expect(page.getByText("Conference settings saved")).toBeVisible()
 }
 

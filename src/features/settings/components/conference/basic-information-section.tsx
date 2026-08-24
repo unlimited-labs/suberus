@@ -113,7 +113,7 @@ export function BasicInformationSection({
 				</div>
 				<SettingsSaveButton
 					isSaving={isSubmitting}
-					onSave={() => void form.handleSubmit()}
+					testId="save-basic-information"
 				/>
 			</Form>
 		</SettingsSection>

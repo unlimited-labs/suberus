@@ -265,6 +265,25 @@ export const brandingSchema = z.object({
 	logoDarkInvert: z.boolean(),
 });
 
+export const brandingPatch = brandingSchema.partial();
+
+export const brandingFooterSchema = brandingSchema.pick({ footerText: true });
+
+export const brandingColorsSchema = brandingSchema.pick({
+	primaryColor: true,
+	secondaryColor: true,
+});
+
+export const brandingOverlaySchema = brandingSchema.pick({
+	authBgOverlay: true,
+});
+
+export const brandingLogoSchema = brandingSchema.pick({
+	logoUrl: true,
+	faviconUrl: true,
+	logoDarkInvert: true,
+});
+
 export type BrandingFormValues = z.infer<typeof brandingSchema>;
 
 export const tosContentSchema = z.object({

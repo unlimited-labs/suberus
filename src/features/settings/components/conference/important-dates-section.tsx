@@ -126,7 +126,7 @@ export function ImportantDatesSection({
 				</div>
 				<SettingsSaveButton
 					isSaving={isSubmitting}
-					onSave={() => void form.handleSubmit()}
+					testId="save-important-dates"
 				/>
 			</Form>
 		</SettingsSection>

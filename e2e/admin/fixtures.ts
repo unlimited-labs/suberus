@@ -390,8 +390,12 @@ export class AdminSettingsPage {
 	}
 
 	async saveBrandingSection(sectionName: "Logo & Graphics" | "Theme Colors" | "Footer") {
-		const section = this.page.locator("section, div").filter({ hasText: sectionName })
-		await section.getByRole("button", { name: "Save" }).last().click()
+		const testIds = {
+			"Logo & Graphics": "save-logo-graphics",
+			"Theme Colors": "save-theme-colors",
+			Footer: "save-branding-footer",
+		} as const
+		await this.page.getByTestId(testIds[sectionName]).click()
 	}
 
 	getAuthBackgroundUploadButton() {

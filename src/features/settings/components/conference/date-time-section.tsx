@@ -105,10 +105,7 @@ export function DateTimeSection({ initialData }: DateTimeSectionProps) {
 						</p>
 					</div>
 				</div>
-				<SettingsSaveButton
-					isSaving={isSubmitting}
-					onSave={() => void form.handleSubmit()}
-				/>
+				<SettingsSaveButton isSaving={isSubmitting} testId="save-date-time" />
 			</Form>
 		</SettingsSection>
 	);

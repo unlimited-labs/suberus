@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
@@ -15,7 +16,10 @@ import {
 } from "@/features/settings/api/settings";
 import {
 	type BrandingFormValues,
-	brandingSchema,
+	brandingColorsSchema,
+	brandingFooterSchema,
+	brandingLogoSchema,
+	brandingOverlaySchema,
 } from "@/features/settings/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
@@ -86,14 +90,9 @@ function useImageUpload(
 	return { uploading, removing, inputRef, onUpload, onRemove };
 }
 
-export function useBrandingSettings(initialData: BrandingSettings) {
+function useBrandingSave() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
-	const [images, setImages] = useState({
-		logoUploadUrl: initialData.logoUploadUrl,
-		faviconUploadUrl: initialData.faviconUploadUrl,
-		authBackgroundUrl: initialData.authBackgroundUrl,
-	});
 
 	const refresh = async () => {
 		await queryClient.invalidateQueries({
@@ -102,58 +101,112 @@ export function useBrandingSettings(initialData: BrandingSettings) {
 		await router.invalidate();
 	};
 
-	const form = useAppForm({
-		defaultValues: {
-			logoUrl: initialData.logoUrl,
-			faviconUrl: initialData.faviconUrl,
+	const save = async (patch: Partial<BrandingFormValues>) => {
+		try {
+			await updateBrandingSettingsFn({ data: patch });
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to save branding settings"));
+			return;
+		}
+		await refresh();
+		toast.success("Branding settings saved");
+	};
+
+	return { refresh, save };
+}
+
+function useSectionForm<T extends Partial<BrandingFormValues>>(
+	defaultValues: T,
+	schema: StandardSchemaV1<T>,
+	save: (patch: T) => Promise<void>,
+) {
+	return useAppForm({
+		defaultValues,
+		validators: { onChange: schema, onSubmit: schema },
+		onSubmit: ({ value }) => save(value),
+	});
+}
+
+export function useBrandingFooterForm(initialData: BrandingSettings) {
+	const { save } = useBrandingSave();
+	return useSectionForm(
+		{ footerText: initialData.footerText },
+		brandingFooterSchema,
+		save,
+	);
+}
+
+export function useBrandingColorsForm(initialData: BrandingSettings) {
+	const { save } = useBrandingSave();
+	return useSectionForm(
+		{
 			primaryColor: initialData.primaryColor,
 			secondaryColor: initialData.secondaryColor,
-			footerText: initialData.footerText,
-			authBgOverlay: initialData.authBgOverlay,
-			logoDarkInvert: initialData.logoDarkInvert,
-		} satisfies BrandingFormValues,
-		validators: { onChange: brandingSchema, onSubmit: brandingSchema },
-		onSubmit: async ({ value }) => {
-			try {
-				await updateBrandingSettingsFn({ data: value });
-				await refresh();
-				toast.success("Branding settings saved");
-			} catch (error) {
-				toast.error(getErrorMessage(error, "Failed to save branding settings"));
-			}
 		},
-	});
+		brandingColorsSchema,
+		save,
+	);
+}
 
-	const setImage = (field: keyof typeof images) => (url: string) =>
-		setImages((prev) => ({ ...prev, [field]: url }));
-
-	const bg = useImageUpload(
+export function useAuthBackgroundSection(initialData: BrandingSettings) {
+	const { refresh, save } = useBrandingSave();
+	const [authBackgroundUrl, setAuthBackgroundUrl] = useState(
+		initialData.authBackgroundUrl,
+	);
+	const form = useSectionForm(
+		{ authBgOverlay: initialData.authBgOverlay },
+		brandingOverlaySchema,
+		save,
+	);
+	const upload = useImageUpload(
 		"Background image",
 		uploadAuthBackgroundFn,
 		deleteAuthBackgroundFn,
-		setImage("authBackgroundUrl"),
+		setAuthBackgroundUrl,
 		refresh,
+	);
+	return { form, authBackgroundUrl, upload };
+}
+
+export function useLogoGraphicsSection(initialData: BrandingSettings) {
+	const { refresh, save } = useBrandingSave();
+	const [logoUploadUrl, setLogoUploadUrl] = useState(initialData.logoUploadUrl);
+	const [faviconUploadUrl, setFaviconUploadUrl] = useState(
+		initialData.faviconUploadUrl,
+	);
+	const form = useSectionForm(
+		{
+			logoUrl: initialData.logoUrl,
+			faviconUrl: initialData.faviconUrl,
+			logoDarkInvert: initialData.logoDarkInvert,
+		},
+		brandingLogoSchema,
+		save,
 	);
 	const logo = useImageUpload(
 		"Logo",
 		uploadBrandingLogoFn,
 		deleteBrandingLogoFn,
-		setImage("logoUploadUrl"),
+		setLogoUploadUrl,
 		refresh,
 	);
 	const favicon = useImageUpload(
 		"Favicon",
 		uploadBrandingFaviconFn,
 		deleteBrandingFaviconFn,
-		setImage("faviconUploadUrl"),
+		setFaviconUploadUrl,
 		refresh,
 	);
-
-	return { form, images, bg, logo, favicon };
+	return { form, logoUploadUrl, faviconUploadUrl, logo, favicon };
 }
 
-export type BrandingFormApi = ReturnType<typeof useBrandingSettings>["form"];
-
-export type BrandingImages = ReturnType<typeof useBrandingSettings>["images"];
+export type BrandingFooterFormApi = ReturnType<typeof useBrandingFooterForm>;
+export type BrandingColorsFormApi = ReturnType<typeof useBrandingColorsForm>;
+export type AuthBackgroundFormApi = ReturnType<
+	typeof useAuthBackgroundSection
+>["form"];
+export type LogoGraphicsFormApi = ReturnType<
+	typeof useLogoGraphicsSection
+>["form"];
 
 export type ImageUpload = ReturnType<typeof useImageUpload>;

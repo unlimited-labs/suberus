@@ -1,20 +1,25 @@
 import { IconLoader2, IconPalette, IconRestore } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
+import type { BrandingSettings } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
+import { Form } from "@/shared/components/composable/form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import type { BrandingFormApi } from "./use-branding-settings";
+import {
+	type BrandingColorsFormApi,
+	useBrandingColorsForm,
+} from "./use-branding-settings";
 
 interface ThemeColorsSectionProps {
-	form: BrandingFormApi;
+	initialData: BrandingSettings;
 }
 
 interface ColorFieldProps {
-	form: BrandingFormApi;
+	form: BrandingColorsFormApi;
 	name: "primaryColor" | "secondaryColor";
 	label: string;
 	placeholder: string;
@@ -65,7 +70,8 @@ function ColorField({
 	);
 }
 
-export function ThemeColorsSection({ form }: ThemeColorsSectionProps) {
+export function ThemeColorsSection({ initialData }: ThemeColorsSectionProps) {
+	const form = useBrandingColorsForm(initialData);
 	const submissionAttempts = useSelector(
 		form.store,
 		(s) => s.submissionAttempts,
@@ -89,47 +95,50 @@ export function ThemeColorsSection({ form }: ThemeColorsSectionProps) {
 			icon={IconPalette}
 			title="Theme Colors"
 		>
-			<div className="grid gap-4 sm:grid-cols-2">
-				<ColorField
-					form={form}
-					label="Primary color"
-					name="primaryColor"
-					placeholder="#3b82f6"
-					submissionAttempts={submissionAttempts}
-				/>
-				<ColorField
-					form={form}
-					label="Secondary color"
-					name="secondaryColor"
-					placeholder="#8b5cf6"
-					submissionAttempts={submissionAttempts}
-				/>
-			</div>
-			<form.Subscribe selector={(s) => s.isSubmitting}>
-				{(isSubmitting) => (
-					<div className="mt-6 flex items-center justify-between">
-						<Button
-							disabled={isSubmitting}
-							onClick={handleReset}
-							size="sm"
-							type="button"
-							variant="ghost"
-						>
-							<IconRestore className="mr-2 size-4" />
-							Reset to defaults
-						</Button>
-						<Button
-							disabled={isSubmitting}
-							onClick={() => void form.handleSubmit()}
-						>
-							{isSubmitting && (
-								<IconLoader2 className="mr-2 size-4 animate-spin" />
-							)}
-							Save
-						</Button>
-					</div>
-				)}
-			</form.Subscribe>
+			<Form onSubmit={() => void form.handleSubmit()}>
+				<div className="grid gap-4 sm:grid-cols-2">
+					<ColorField
+						form={form}
+						label="Primary color"
+						name="primaryColor"
+						placeholder="#3b82f6"
+						submissionAttempts={submissionAttempts}
+					/>
+					<ColorField
+						form={form}
+						label="Secondary color"
+						name="secondaryColor"
+						placeholder="#8b5cf6"
+						submissionAttempts={submissionAttempts}
+					/>
+				</div>
+				<form.Subscribe selector={(s) => s.isSubmitting}>
+					{(isSubmitting) => (
+						<div className="mt-6 flex items-center justify-between">
+							<Button
+								disabled={isSubmitting}
+								onClick={handleReset}
+								size="sm"
+								type="button"
+								variant="ghost"
+							>
+								<IconRestore className="mr-2 size-4" />
+								Reset to defaults
+							</Button>
+							<Button
+								data-testid="save-theme-colors"
+								disabled={isSubmitting}
+								type="submit"
+							>
+								{isSubmitting && (
+									<IconLoader2 className="mr-2 size-4 animate-spin" />
+								)}
+								Save
+							</Button>
+						</div>
+					)}
+				</form.Subscribe>
+			</Form>
 		</SettingsSection>
 	);
 }
