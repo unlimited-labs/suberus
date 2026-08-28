@@ -1,5 +1,4 @@
 import {
-	IconAlertTriangle,
 	IconEye,
 	IconLoader2,
 	IconWorld,
@@ -16,6 +15,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
 import {
 	Tooltip,
 	TooltipContent,
@@ -24,10 +25,6 @@ import {
 } from "@/shared/ui/tooltip";
 import type { PublishMode } from "./hooks/use-publish-state";
 import { PublishIssuesPanel } from "./publish-issues-panel";
-import {
-	ConfirmPhraseField,
-	isConfirmPhrase,
-} from "./shared/confirm-phrase-field";
 
 interface PublishDialogProps {
 	open: boolean;
@@ -157,31 +154,31 @@ function PublicPublishGate({
 	hasIssues,
 	onPublish,
 }: PublicPublishGateProps) {
-	const [phrase, setPhrase] = useState("");
+	const [confirmed, setConfirmed] = useState(false);
 
 	return (
 		<div className="border-destructive/40 bg-destructive/5 space-y-3 rounded-md border p-3">
-			<div className="text-muted-foreground flex gap-2 text-sm">
-				<IconAlertTriangle
-					className="text-destructive mt-0.5 shrink-0"
-					size={16}
+			<div className="flex items-start justify-between gap-3">
+				<div className="space-y-0.5">
+					<Label htmlFor="publish-public-confirm">
+						Make the program public
+					</Label>
+					<p className="text-muted-foreground text-xs">
+						Visible to everyone and search engines. Undo with Unpublish.
+					</p>
+				</div>
+				<Switch
+					checked={confirmed}
+					className="mt-0.5"
+					data-testid="publish-understood-switch"
+					id="publish-public-confirm"
+					onCheckedChange={setConfirmed}
 				/>
-				<p>
-					Publishing makes the whole program public — visible to everyone on the
-					public program page and to search engines, including session times,
-					speakers and camera-ready files. It can only be taken back with
-					Unpublish.
-				</p>
 			</div>
-			<ConfirmPhraseField
-				onChange={setPhrase}
-				testId="publish-understood-input"
-				value={phrase}
-			/>
 			<Button
 				className="w-full gap-1.5"
 				data-testid="publish-confirm"
-				disabled={disabled || !isConfirmPhrase(phrase)}
+				disabled={disabled || !confirmed}
 				onClick={() => onPublish("public")}
 				size="sm"
 			>
