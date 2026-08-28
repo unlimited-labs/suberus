@@ -100,6 +100,7 @@
 	--prog-rule-style: solid;
 	--prog-tracking: 0.05em;
 	--prog-card-radius: 0.75rem;
+	--prog-badge-radius: 999px;
 	--prog-max-width: 64rem;
 }
 
@@ -205,6 +206,7 @@
 	--prog-rule-style: double;
 	--prog-tracking: 0.25em;
 	--prog-card-radius: 0;
+	--prog-badge-radius: 0;
 	--prog-max-width: 72rem;
 }
 
@@ -252,6 +254,7 @@
 	--prog-rule: var(--border);
 	--prog-tracking: 0.2em;
 	--prog-card-radius: 0;
+	--prog-badge-radius: 0;
 	--prog-max-width: 72rem;
 }
 

@@ -6,13 +6,24 @@ import {
 	IconPlus,
 	IconX,
 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { adminSettingQueryOptions } from "@/features/settings/api/settings";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/ui/select";
 import { InvitedTalkDialog } from "./invited-talk-dialog";
 import { useSessionEditor } from "./session-editor-context";
+
+const NO_BADGE = "none";
 
 type InvitedTalkTarget = { mode: "add" } | { mode: "edit"; id: string } | null;
 
@@ -28,6 +39,7 @@ export function PresentationsSection() {
 	const remainingMin = sessionDurationMin - usedMin;
 	const capacityFull = usedMin >= sessionDurationMin;
 	const [invitedTalk, setInvitedTalk] = useState<InvitedTalkTarget>(null);
+	const { data: badges } = useQuery(adminSettingQueryOptions("PROGRAM_BADGES"));
 
 	const handleMove = (index: number, dir: "up" | "down") => {
 		const reordered = [...presentations];
@@ -141,6 +153,37 @@ export function PresentationsSection() {
 									/>
 									<span className="text-muted-foreground text-[10px]">min</span>
 								</div>
+							)}
+							{badges && badges.length > 0 && (
+								<Select
+									items={[
+										{ value: NO_BADGE, label: "No badge" },
+										...badges.map((b) => ({ value: b.id, label: b.label })),
+									]}
+									onValueChange={(value) =>
+										mutations.setBadge(
+											p.id,
+											value === NO_BADGE || value === null ? null : value,
+										)
+									}
+									value={p.badgeId ?? NO_BADGE}
+								>
+									<SelectTrigger
+										aria-label={`Badge of ${p.submissionTitle}`}
+										className="h-7 w-28 text-xs"
+										data-testid={`presentation-badge-${p.id}`}
+									>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value={NO_BADGE}>No badge</SelectItem>
+										{badges.map((b) => (
+											<SelectItem key={b.id} value={b.id}>
+												{b.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							)}
 							<Button
 								aria-label={

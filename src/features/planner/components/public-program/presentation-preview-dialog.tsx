@@ -23,7 +23,11 @@ import {
 } from "@/shared/ui/dialog";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { ABSTRACT, ContactDetails, HEADING } from "./contact-details";
-import type { PreviewTarget } from "./program-interaction";
+import { PresentationBadge } from "./presentation-badge";
+import {
+	type PreviewTarget,
+	useProgramInteraction,
+} from "./program-interaction";
 import { resolveProgramTheme } from "./themes/registry";
 
 const META =
@@ -155,6 +159,8 @@ function TalkHeader({
 	target: PreviewTarget;
 	framed: boolean;
 }) {
+	const { resolveBadge } = useProgramInteraction();
+	const badge = resolveBadge(target.badgeId ?? null);
 	return (
 		<DialogHeader className="pr-8 text-left">
 			<div className={cn("flex flex-wrap items-center gap-x-3 gap-y-1", META)}>
@@ -176,6 +182,7 @@ function TalkHeader({
 						`–${formatClockTime(new Date(target.untimedEndISO), target.tz)}`}
 				</span>
 				{target.roomName && <span>{target.roomName}</span>}
+				{badge && <PresentationBadge badge={{ ...badge, style: "badge" }} />}
 			</div>
 			<DialogTitle
 				className={cn(

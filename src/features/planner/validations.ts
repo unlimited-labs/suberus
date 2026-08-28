@@ -166,6 +166,20 @@ export const programQrSettingsSchema = z.object({
 	includeWithoutCameraReady: z.boolean(),
 });
 
+export const programBadgeSchema = z.object({
+	id: z.uuid(),
+	label: z
+		.string()
+		.min(1, "Label is required")
+		.max(24, "Label must be at most 24 characters"),
+	color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB"),
+	style: z.enum(["badge", "ribbon"]),
+});
+
+export const programBadgesSchema = z
+	.array(programBadgeSchema)
+	.max(20, "At most 20 badges");
+
 export type SessionFormValues = z.infer<typeof sessionFormSchema>;
 export type EventFormValues = z.infer<typeof eventFormSchema>;
 
@@ -302,14 +316,21 @@ export const invitedTalkFormSchema = z
 	})
 	.refine(hasCompleteSpeakerName, speakerNameComplete);
 
+export const presentationDurationValue = z.number().int().positive().max(600);
+
 export const presentationDurationInput = z.object({
 	id: z.uuid(),
-	durationMin: z.number().int().positive().max(600),
+	durationMin: presentationDurationValue,
 });
 
 export const presentationCancelInput = z.object({
 	id: z.uuid(),
 	cancelled: z.boolean(),
+});
+
+export const presentationBadgeInput = z.object({
+	id: z.uuid(),
+	badgeId: z.uuid().nullable(),
 });
 
 export const presentationReorderInput = z.object({

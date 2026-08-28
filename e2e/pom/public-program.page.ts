@@ -5,6 +5,7 @@ export class PublicProgramPage {
 	readonly ribbon: Locator;
 	readonly search: Locator;
 	readonly presentationRows: Locator;
+	readonly presentationBadges: Locator;
 	readonly preview: Locator;
 	readonly favoriteToggle: Locator;
 	readonly favoritedStars: Locator;
@@ -14,6 +15,7 @@ export class PublicProgramPage {
 		this.ribbon = page.getByText(/◆\s*Programme\s*◆/i).first();
 		this.search = page.getByPlaceholder(/Search talks/i);
 		this.presentationRows = page.getByTestId("presentation-row");
+		this.presentationBadges = page.getByTestId("presentation-badge");
 		this.preview = page.getByTestId("presentation-preview");
 		this.favoriteToggle = page.getByTestId("favorite-toggle");
 		this.favoritedStars = page.getByTestId("favorited-star");

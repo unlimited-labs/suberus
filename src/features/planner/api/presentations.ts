@@ -10,6 +10,7 @@ import {
 	createPresentation,
 	deletePresentation,
 	reorderPresentations,
+	setPresentationBadge,
 	setPresentationCancelled,
 	updatePresentationDuration,
 } from "@/features/planner/server/presentations";
@@ -17,6 +18,7 @@ import {
 	idInput,
 	invitedTalkCreateInput,
 	invitedTalkUpdateInput,
+	presentationBadgeInput,
 	presentationCancelInput,
 	presentationCreateInput,
 	presentationDurationInput,
@@ -49,6 +51,13 @@ export const setPresentationCancelledFn = createServerFn({ method: "POST" })
 	.validator(presentationCancelInput)
 	.handler(async ({ data }) => {
 		await setPresentationCancelled(data.id, data.cancelled);
+	});
+
+export const setPresentationBadgeFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(presentationBadgeInput)
+	.handler(async ({ data }) => {
+		await setPresentationBadge(data.id, data.badgeId);
 	});
 
 export const reorderPresentationsFn = createServerFn({ method: "POST" })

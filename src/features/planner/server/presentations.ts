@@ -1,3 +1,5 @@
+import { getSetting, setSetting } from "@/features/settings/server/settings";
+import type { ProgramBadge } from "@/features/settings/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
 import { getPlannerIncludedTypes } from "./included-types";
@@ -118,6 +120,27 @@ export async function setPresentationCancelled(
 	cancelled: boolean,
 ): Promise<void> {
 	await prisma.presentationSlot.update({ where: { id }, data: { cancelled } });
+}
+
+export async function setProgramBadges(badges: ProgramBadge[]): Promise<void> {
+	await setSetting("PROGRAM_BADGES", badges);
+	await prisma.presentationSlot.updateMany({
+		where: { badgeId: { not: null, notIn: badges.map((b) => b.id) } },
+		data: { badgeId: null },
+	});
+}
+
+export async function setPresentationBadge(
+	id: string,
+	badgeId: string | null,
+): Promise<void> {
+	if (badgeId !== null) {
+		const badges = await getSetting("PROGRAM_BADGES");
+		if (!badges.some((b) => b.id === badgeId)) {
+			throw new Response("Unknown badge", { status: 400 });
+		}
+	}
+	await prisma.presentationSlot.update({ where: { id }, data: { badgeId } });
 }
 
 /** An INVITED placeholder exists only to back its slot, so it dies with it. */

@@ -36,6 +36,13 @@ export interface ProgramQrSettings {
 	includeWithoutCameraReady: boolean;
 }
 
+export interface ProgramBadge {
+	id: string;
+	label: string;
+	color: string;
+	style: "badge" | "ribbon";
+}
+
 export interface ReviewerReminderSettings {
 	enabled: boolean;
 	daysBefore: number[];
@@ -194,6 +201,7 @@ export type AppSettingsMap = {
 	PROGRAM_THEME: string;
 	PROGRAM_SHOW_AUTHOR_INFO: boolean;
 	PROGRAM_QR: ProgramQrSettings;
+	PROGRAM_BADGES: ProgramBadge[];
 
 	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };

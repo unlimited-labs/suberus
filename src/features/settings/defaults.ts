@@ -204,6 +204,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		baseUrl: "",
 		includeWithoutCameraReady: true,
 	},
+	PROGRAM_BADGES: [],
 
 	DOCUMENT_SIGNING: null,
 };

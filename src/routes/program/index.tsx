@@ -48,6 +48,7 @@ function ProgramPage() {
 
 	return (
 		<ProgramInteractionProvider
+			badges={settings.badges}
 			showAuthorInfo={settings.showAuthorInfo && settings.viewerIsParticipant}
 			themeId={theme.id}
 		>

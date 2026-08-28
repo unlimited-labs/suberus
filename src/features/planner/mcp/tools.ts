@@ -22,6 +22,8 @@ import {
 	createPresentation,
 	deletePresentation,
 	reorderPresentations,
+	setPresentationBadge,
+	setProgramBadges,
 	setPresentationCancelled,
 	updatePresentationDuration,
 } from "@/features/planner/server/presentations";
@@ -68,7 +70,9 @@ import {
 	invitedTalkUpdateInput,
 	jobIdInput,
 	presentationCreateInput,
+	presentationDurationValue,
 	presentationReorderInput,
+	programBadgesSchema,
 	programRangeInput,
 	roomCreateInput,
 	roomUpdateInput,
@@ -116,7 +120,7 @@ const getProgram = defineTool({
 	readOnly: true,
 	async handler(input) {
 		const range = await resolveProgramRange(input);
-		const [rooms, tracks, sessions, breaks, state, capacity] =
+		const [rooms, tracks, sessions, breaks, state, capacity, badges] =
 			await Promise.all([
 				getAllRooms(),
 				getAllProgramTracks(),
@@ -124,8 +128,9 @@ const getProgram = defineTool({
 				listBreaks(range),
 				getScheduleState(),
 				getCapacity(),
+				getSetting("PROGRAM_BADGES"),
 			]);
-		return { range, state, capacity, rooms, tracks, sessions, breaks };
+		return { range, state, capacity, rooms, tracks, sessions, breaks, badges };
 	},
 });
 
@@ -396,17 +401,22 @@ const presentationUpdate = defineTool({
 	name: "program_presentation_update",
 	title: "Update presentation",
 	description:
-		"Change a presentation's duration and/or mark it cancelled. A cancelled slot stays on the programme, struck through.",
+		"Change a presentation's duration, mark it cancelled and/or set its badge. A cancelled slot stays on the programme, struck through. badgeId must be an id from program_get's badges; pass null to clear it.",
 	input: idInput.extend({
-		durationMin: z.number().int().positive().max(600).optional(),
+		durationMin: presentationDurationValue.optional(),
 		cancelled: z.boolean().optional(),
+		badgeId: z.uuid().nullable().optional(),
 	}),
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SCHEDULE_WRITE,
 	destructive: true,
-	async handler({ id, durationMin, cancelled }) {
-		if (durationMin === undefined && cancelled === undefined) {
-			throw new Response("Pass durationMin, cancelled or both", {
+	async handler({ id, durationMin, cancelled, badgeId }) {
+		if (
+			durationMin === undefined &&
+			cancelled === undefined &&
+			badgeId === undefined
+		) {
+			throw new Response("Pass durationMin, cancelled or badgeId", {
 				status: 400,
 			});
 		}
@@ -416,7 +426,25 @@ const presentationUpdate = defineTool({
 		if (cancelled !== undefined) {
 			await setPresentationCancelled(id, cancelled);
 		}
+		if (badgeId !== undefined) {
+			await setPresentationBadge(id, badgeId);
+		}
 		return { id };
+	},
+});
+
+const badgesSet = defineTool({
+	name: "program_badges_set",
+	title: "Set programme badges",
+	description:
+		"Replace the badge definitions shown on the public programme. Send the full list; badges missing from it are removed and stop rendering on the talks that used them. style 'badge' is a pill next to the title, 'ribbon' a diagonal corner ribbon. Colour is #RRGGBB.",
+	input: z.object({ badges: programBadgesSchema }),
+	roles: ["ADMIN"],
+	scope: MCP_SCOPE_SCHEDULE_WRITE,
+	destructive: true,
+	async handler({ badges }) {
+		await setProgramBadges(badges);
+		return { badges };
 	},
 });
 
@@ -604,6 +632,7 @@ export const plannerMcpTools: readonly McpTool[] = [
 	presentationUpdate,
 	presentationDelete,
 	presentationReorder,
+	badgesSet,
 	invitedCreate,
 	invitedUpdate,
 	breakCreate,

@@ -100,6 +100,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 				adminSettingQueryOptions("TOS_CONTENT"),
 			),
 			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("PROGRAM_BADGES"),
+			),
+			context.queryClient.ensureQueryData(
 				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
 			),
 			context.queryClient.ensureQueryData(

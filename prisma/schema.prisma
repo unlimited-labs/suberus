@@ -779,6 +779,8 @@ model PresentationSlot {
   order        Int
   durationMin  Int
   cancelled    Boolean  @default(false)
+  /// Id of an entry in the PROGRAM_BADGES app setting; no FK, unknown ids simply do not render.
+  badgeId      String?  @db.Uuid
   createdAt    DateTime @default(now())
 
   session    ProgramSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)

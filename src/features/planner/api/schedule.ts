@@ -19,6 +19,7 @@ import {
 	unpublishSchedule,
 } from "@/features/planner/server/schedule";
 import { getSettings } from "@/features/settings/server/settings";
+import type { ProgramBadge } from "@/features/settings/types";
 
 export const scheduleStateQueryOptions = () =>
 	queryOptions({
@@ -102,6 +103,7 @@ export interface PublicConferenceInfo {
 	endDate: string;
 	timezone: string;
 	theme: string;
+	badges: ProgramBadge[];
 	showAuthorInfo: boolean;
 	viewerIsAuthenticated: boolean;
 	viewerIsParticipant: boolean;
@@ -128,6 +130,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		"CONFERENCE_TIMEZONE",
 		"PROGRAM_THEME",
 		"PROGRAM_SHOW_AUTHOR_INFO",
+		"PROGRAM_BADGES",
 	]);
 	return {
 		name: s.CONFERENCE_NAME,
@@ -136,6 +139,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		endDate: s.CONFERENCE_DATE_END,
 		timezone: s.CONFERENCE_TIMEZONE,
 		theme: s.PROGRAM_THEME,
+		badges: s.PROGRAM_BADGES,
 		showAuthorInfo: s.PROGRAM_SHOW_AUTHOR_INFO,
 		viewerIsAuthenticated: !!session?.user,
 		viewerIsParticipant: session?.user

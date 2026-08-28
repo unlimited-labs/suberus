@@ -15,6 +15,7 @@ import {
 	favoriteSlotsQueryOptions,
 	presentationDetailQueryOptions,
 } from "@/features/planner/api/favorites";
+import type { ProgramBadge } from "@/features/settings/types";
 import { favoriteMutationKey } from "@/integrations/tanstack-query/offline";
 import { useSession } from "@/shared/hooks/use-session";
 import { PresentationPreviewDialog } from "./presentation-preview-dialog";
@@ -28,12 +29,14 @@ export interface PreviewTarget {
 	startAtISO: string;
 	/** Set for untimed (poster / lightning) slots: show the block's window, not a per-talk time. */
 	untimedEndISO?: string;
+	badgeId?: string | null;
 	tz?: string;
 }
 
 interface ProgramInteractionValue {
 	canInteract: boolean;
 	showAuthorInfo: boolean;
+	resolveBadge: (badgeId: string | null) => ProgramBadge | null;
 	isFavorite: (slotId: string) => boolean;
 	toggleFavorite: (slotId: string) => void;
 	openPreview: (
@@ -59,10 +62,12 @@ export function useProgramInteraction(): ProgramInteractionValue {
 export function ProgramInteractionProvider({
 	themeId,
 	showAuthorInfo = false,
+	badges = [],
 	children,
 }: {
 	themeId: string;
 	showAuthorInfo?: boolean;
+	badges?: ProgramBadge[];
 	children: ReactNode;
 }) {
 	const { isAuthenticated } = useSession();
@@ -91,6 +96,8 @@ export function ProgramInteractionProvider({
 	const value: ProgramInteractionValue = {
 		canInteract: isAuthenticated,
 		showAuthorInfo: authorInfoEnabled,
+		resolveBadge: (badgeId) =>
+			badgeId ? (badges.find((b) => b.id === badgeId) ?? null) : null,
 		isFavorite: (slotId) => favorites.has(slotId),
 		toggleFavorite: (slotId) => mutate(slotId),
 		openPreview: (target, opts) =>

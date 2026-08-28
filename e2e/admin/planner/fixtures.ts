@@ -52,6 +52,7 @@ export async function resetPlannerProgramDefaults(): Promise<void> {
 	await setAppSetting("PROGRAM_THEME", "default");
 	await setAppSetting("PROGRAM_REMINDER_LEAD_MIN", 5);
 	await setAppSetting("PROGRAM_QR", getDefaultSetting("PROGRAM_QR"));
+	await setAppSetting("PROGRAM_BADGES", []);
 	await setConferenceDates(
 		isoDay(0, 0).toISOString(),
 		isoDay(30, 23).toISOString(),

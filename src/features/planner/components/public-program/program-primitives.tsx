@@ -12,6 +12,7 @@ import type {
 import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+import { PresentationBadge } from "./presentation-badge";
 import { useProgramInteraction } from "./program-interaction";
 import { Highlight } from "./themes/shared";
 import {
@@ -228,8 +229,10 @@ function PresentationRow({
 	query: string;
 	tz?: string;
 }) {
-	const { canInteract, isFavorite, openPreview } = useProgramInteraction();
+	const { canInteract, isFavorite, openPreview, resolveBadge } =
+		useProgramInteraction();
 	const favorite = canInteract && isFavorite(p.id);
+	const badge = resolveBadge(p.badgeId);
 	const target = {
 		slotId: p.id,
 		submissionTitle: p.submissionTitle,
@@ -237,6 +240,7 @@ function PresentationRow({
 		track: session.track,
 		roomName: session.room?.name ?? null,
 		startAtISO: presStart.toISOString(),
+		badgeId: p.badgeId,
 		untimedEndISO: session.untimedSlots
 			? new Date(session.endAt).toISOString()
 			: undefined,
@@ -251,6 +255,7 @@ function PresentationRow({
 				numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
 				"cursor-pointer transition-colors hover:bg-accent",
 				!numbered && "-mx-2 rounded-md px-2",
+				badge?.style === "ribbon" && "relative overflow-hidden pr-12",
 			)}
 			data-testid="presentation-row"
 			{...rowActivation(open)}
@@ -311,6 +316,9 @@ function PresentationRow({
 						</span>
 					)}
 				</p>
+				{badge?.style === "badge" && (
+					<PresentationBadge badge={badge} className="mt-1" />
+				)}
 				<RowAuthors
 					authors={p.authors}
 					onSelect={(orderIndex) =>
@@ -319,6 +327,7 @@ function PresentationRow({
 					query={query}
 				/>
 			</div>
+			{badge?.style === "ribbon" && <PresentationBadge badge={badge} />}
 		</li>
 	);
 }

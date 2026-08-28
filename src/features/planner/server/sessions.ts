@@ -29,6 +29,7 @@ export interface ProgramSessionDetail {
 		order: number;
 		durationMin: number;
 		cancelled: boolean;
+		badgeId: string | null;
 		submissionTitle: string;
 		invited: boolean;
 		authors: Array<{ firstName: string; lastName: string; orderIndex: number }>;
@@ -88,6 +89,7 @@ export async function listSessions(
 			order: p.order,
 			durationMin: p.durationMin,
 			cancelled: p.cancelled,
+			badgeId: p.badgeId,
 			submissionTitle: p.submission.title,
 			invited: p.submission.type === "INVITED",
 			authors: p.submission.authors,

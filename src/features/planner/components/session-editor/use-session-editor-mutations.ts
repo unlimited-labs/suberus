@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import {
 	deletePresentationFn,
 	reorderPresentationsFn,
+	setPresentationBadgeFn,
 	setPresentationCancelledFn,
 	updatePresentationDurationFn,
 } from "@/features/planner/api/presentations";
@@ -57,6 +58,11 @@ export function useSessionEditorMutations(sessionId: string) {
 			run(
 				() => setPresentationCancelledFn({ data: { id, cancelled } }),
 				"Failed to update",
+			),
+		setBadge: (id: string, badgeId: string | null) =>
+			run(
+				() => setPresentationBadgeFn({ data: { id, badgeId } }),
+				"Failed to update badge",
 			),
 		reorderPresentations: (orderedIds: string[]) =>
 			run(

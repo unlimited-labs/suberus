@@ -347,16 +347,26 @@ export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 			);
 		}
 
+		const doomed = {
+			OR: [
+				{ sessionId: { in: sessionIds } },
+				{ submissionId: { in: submissionIds } },
+			],
+		};
+		// Badges are an editorial choice about the talk, not about the slot, so they
+		// survive the re-plan that replaces the slot carrying them.
+		const badges = new Map(
+			(
+				await tx.presentationSlot.findMany({
+					where: { ...doomed, badgeId: { not: null } },
+					select: { submissionId: true, badgeId: true },
+				})
+			).map((slot) => [slot.submissionId, slot.badgeId]),
+		);
+
 		// Also by submissionId: a proposed talk moved out of a target session since
 		// the proposal would otherwise survive and break the unique submissionId.
-		const del = await tx.presentationSlot.deleteMany({
-			where: {
-				OR: [
-					{ sessionId: { in: sessionIds } },
-					{ submissionId: { in: submissionIds } },
-				],
-			},
-		});
+		const del = await tx.presentationSlot.deleteMany({ where: doomed });
 
 		let slotsCreated = 0;
 		for (const s of proposal.sessions) {
@@ -381,6 +391,7 @@ export async function applyAutoPlan(jobId: string): Promise<ApplyResult> {
 					submissionId: p.submissionId,
 					order: i,
 					durationMin: durations[i],
+					badgeId: badges.get(p.submissionId) ?? null,
 				})),
 			});
 			slotsCreated += durations.length;
