@@ -70,7 +70,7 @@ function parseParagraph(paraXml: string): DocParagraph {
 }
 
 const CONTENT_RE =
-	/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:(noBreakHyphen|tab|br)\s*\/>/g;
+	/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:(noBreakHyphen|tab|br)(?:\s[^>]*)?\/>/g;
 
 const CONTENT_CHAR = { noBreakHyphen: "-", tab: "\t", br: "\n" };
 
@@ -78,11 +78,18 @@ const NAMED_ENTITY = { lt: "<", gt: ">", quot: '"', apos: "'", amp: "&" };
 
 const ENTITY_RE = /&(?:#x([0-9a-f]+)|#(\d+)|(lt|gt|quot|apos|amp));/gi;
 
+/** Out of range or a lone surrogate: keep the reference rather than throw. */
+function codePoint(value: number, whole: string): string {
+	const valid =
+		value <= 0x10ffff && !(value >= 0xd800 && value <= 0xdfff) ? value : null;
+	return valid === null ? whole : String.fromCodePoint(valid);
+}
+
 /** Single pass, so a decoded `&#38;` cannot combine with what follows it. */
 function decodeEntities(text: string): string {
 	return text.replace(ENTITY_RE, (whole, hex, dec, name) => {
-		if (hex) return String.fromCodePoint(Number.parseInt(hex, 16));
-		if (dec) return String.fromCodePoint(Number.parseInt(dec, 10));
+		if (hex) return codePoint(Number.parseInt(hex, 16), whole);
+		if (dec) return codePoint(Number.parseInt(dec, 10), whole);
 		return lookup(NAMED_ENTITY, name.toLowerCase()) ?? whole;
 	});
 }

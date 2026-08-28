@@ -53,6 +53,16 @@ describe("parseDocx", () => {
 		expect(parseDocx(buf)[0].text).toBe("a &lt; b and &gt; c");
 	});
 
+	it("keeps an attributed break", () => {
+		const buf = docx(run(`<w:t>a</w:t><w:br w:type="page"/><w:t>b</w:t>`));
+		expect(parseDocx(buf)[0].text).toBe("a\nb");
+	});
+
+	it("keeps an out-of-range or surrogate reference verbatim", () => {
+		const buf = docx(run(`<w:t>a&#x110000;b&#xD800;c</w:t>`));
+		expect(parseDocx(buf)[0].text).toBe("a&#x110000;b&#xD800;c");
+	});
+
 	it("reads run formatting", () => {
 		const buf = docx(
 			run(
