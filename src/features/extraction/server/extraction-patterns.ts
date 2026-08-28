@@ -14,6 +14,7 @@ export const SUSPICIOUS_NAME_CHARS = /[(){}[\]<>@#$%^&*=+\\|/~`"]/;
 export const CAPITALIZED_START = /^[A-ZÀ-ŽĄ-Ż]/;
 
 export const MAX_TITLE_LENGTH = 300;
+export const MAX_TITLE_PARAGRAPHS = 3;
 export const MAX_NAME_LENGTH = 20;
 export const MAX_PERSON_NAME_LENGTH = 50;
 export const MAX_AFFILIATION_CONTINUATION_LENGTH = 150;

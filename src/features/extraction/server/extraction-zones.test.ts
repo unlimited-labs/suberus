@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DocParagraph, DocRun } from "./docx-parser";
+import { MAX_TITLE_LENGTH, MAX_TITLE_PARAGRAPHS } from "./extraction-patterns";
 import {
 	classifyZones,
 	getMaxFontSize,
@@ -44,10 +45,72 @@ describe("classifyZones", () => {
 
 	it("treats an ambiguous post-title line as affiliation, not body", () => {
 		const zones = classifyZones([
-			p("The Title"),
+			p("The Title", [{ text: "The Title", bold: true }]),
 			p("some lowercase ambiguous line"),
 		]).map((c) => c.zone);
 		expect(zones).toEqual(["TITLE", "AFFILIATIONS"]);
+	});
+
+	it("keeps a title that continues into the next paragraph", () => {
+		const big = (text: string) => p(text, [{ text, bold: true, sizeHp: 24 }]);
+		const zones = classifyZones([
+			big("Effect of prolonged natural aging on clustering"),
+			big("Al-Mg-Si alloy with excess Mg"),
+			p("Jan Kowalski, Anna Nowak", [
+				{ text: "Jan Kowalski, Anna Nowak", sizeHp: 18 },
+			]),
+		]).map((c) => c.zone);
+		expect(zones).toEqual(["TITLE", "TITLE", "AUTHORS"]);
+	});
+
+	it("does not swallow an author list set in the title font", () => {
+		const big = (text: string) => p(text, [{ text, bold: true, sizeHp: 24 }]);
+		const zones = classifyZones([
+			big("Shape memory effect driven by shallow energy wells"),
+			big("Martyna Lederer, Kinga Nalepka, Robert Chulist"),
+		]).map((c) => c.zone);
+		expect(zones).toEqual(["TITLE", "AUTHORS"]);
+	});
+
+	it("stops the title at a font change", () => {
+		const zones = classifyZones([
+			p("core-shell nanostructures", [
+				{ text: "core-shell nanostructures", sizeHp: 24 },
+			]),
+			p("more lowercase words here", [
+				{ text: "more lowercase words here", sizeHp: 18 },
+			]),
+		]).map((c) => c.zone);
+		expect(zones).toEqual(["TITLE", "AUTHORS"]);
+	});
+
+	it("never pulls an affiliation or a keywords line into the title", () => {
+		const plain = (text: string) => p(text);
+		const zones = classifyZones([
+			plain("A Study of Important Things"),
+			plain("University of Warsaw"),
+			plain("Keywords: a, b"),
+		]).map((c) => c.zone);
+		expect(zones).toEqual(["TITLE", "AFFILIATIONS", "KEYWORDS"]);
+	});
+
+	it("caps the joined title at MAX_TITLE_LENGTH", () => {
+		const long = "word ".repeat(80).trim();
+		const zones = classifyZones([p("A Title"), p(long)]).map((c) => c.zone);
+		expect(long.length).toBeGreaterThan(MAX_TITLE_LENGTH);
+		expect(zones).toEqual(["TITLE", "AFFILIATIONS"]);
+	});
+
+	it("caps the title at MAX_TITLE_PARAGRAPHS", () => {
+		const zones = classifyZones([
+			p("first fragment of a title"),
+			p("second fragment of a title"),
+			p("third fragment of a title"),
+			p("fourth fragment of a title"),
+		]).map((c) => c.zone);
+		expect(zones.filter((z) => z === "TITLE")).toHaveLength(
+			MAX_TITLE_PARAGRAPHS,
+		);
 	});
 
 	it("re-enters KEYWORDS from BODY when a keywords line appears", () => {

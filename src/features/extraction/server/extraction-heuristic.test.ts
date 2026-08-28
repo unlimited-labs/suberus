@@ -5,6 +5,7 @@ import {
 	extractAuthorSegments,
 	extractAuthors,
 	extractEmails,
+	extractFromZones,
 	parseAffiliations,
 	parseName,
 } from "./extraction-heuristic";
@@ -19,6 +20,23 @@ const p = (text: string, runs?: DocRun[]): DocParagraph => ({
 const cp = (text: string, runs?: DocRun[]): ClassifiedPara => ({
 	zone: "AFFILIATIONS",
 	para: p(text, runs),
+});
+
+const titlePara = (text: string): ClassifiedPara => ({
+	zone: "TITLE",
+	para: p(text),
+});
+
+describe("extractFromZones", () => {
+	it("joins title paragraphs and collapses runs of whitespace", () => {
+		const result = extractFromZones([
+			titlePara("Is thinner better?"),
+			titlePara("The  influence of layer	thickness"),
+		]);
+		expect(result.title).toBe(
+			"Is thinner better? The influence of layer thickness",
+		);
+	});
 });
 
 describe("parseAffiliations", () => {

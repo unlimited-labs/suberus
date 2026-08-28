@@ -12,6 +12,8 @@ import {
 	MAX_AFFILIATION_LINE_LENGTH,
 	MAX_NAME_LENGTH,
 	MAX_PERSON_NAME_LENGTH,
+	MAX_TITLE_LENGTH,
+	MAX_TITLE_PARAGRAPHS,
 	SECTION_RE,
 	SMALL_FONT_SIZE_HP,
 } from "./extraction-patterns";
@@ -34,6 +36,13 @@ interface ZoneContext {
 	para: DocParagraph;
 	fontSize: number;
 	maxSize: number;
+	title: TitleState;
+}
+
+interface TitleState {
+	anchor: DocParagraph | null;
+	length: number;
+	paragraphs: number;
 }
 
 interface ZoneStep {
@@ -44,8 +53,28 @@ interface ZoneStep {
 const isBodyStart = (text: string) =>
 	BODY_START_RE.test(text) || SECTION_RE.test(text);
 
-function stepFromTitle(): ZoneStep {
-	return { assign: "TITLE", next: "AUTHORS" };
+const isBold = (para: DocParagraph) => para.runs.some((r) => r.bold);
+
+const sameFontSignature = (a: DocParagraph, b: DocParagraph) =>
+	getParaFontSize(a) === getParaFontSize(b) && isBold(a) === isBold(b);
+
+function continuesTitle(ctx: ZoneContext): boolean {
+	const { text, para, title } = ctx;
+	if (!title.anchor) return false;
+	if (title.paragraphs >= MAX_TITLE_PARAGRAPHS) return false;
+	if (title.length + 1 + text.length > MAX_TITLE_LENGTH) return false;
+	if (!sameFontSignature(para, title.anchor)) return false;
+	if (isBodyStart(text) || KEYWORDS_RE.test(text) || EMAIL_RE.test(text)) {
+		return false;
+	}
+	return !looksLikeAuthorLine(para) && !looksLikeAffiliation(text, para);
+}
+
+function stepFromTitle(ctx: ZoneContext): ZoneStep {
+	if (!ctx.title.anchor || continuesTitle(ctx)) {
+		return { assign: "TITLE", next: "TITLE" };
+	}
+	return stepFromAuthors(ctx);
 }
 
 function stepFromAuthors({
@@ -121,6 +150,7 @@ const ZONE_STEPS = {
 export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 	const result: ClassifiedPara[] = [];
 	let zone: Zone = "TITLE";
+	const title: TitleState = { anchor: null, length: 0, paragraphs: 0 };
 
 	const maxSize = getMaxFontSize(paragraphs.slice(0, HEADER_SCAN_PARAGRAPHS));
 
@@ -133,7 +163,13 @@ export function classifyZones(paragraphs: DocParagraph[]): ClassifiedPara[] {
 			para,
 			fontSize: getParaFontSize(para),
 			maxSize,
+			title,
 		});
+		if (assign === "TITLE") {
+			title.anchor ??= para;
+			title.length += (title.paragraphs > 0 ? 1 : 0) + text.length;
+			title.paragraphs += 1;
+		}
 		result.push({ zone: assign, para });
 		zone = next;
 	}

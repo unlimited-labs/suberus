@@ -18,6 +18,7 @@ export function extractFromZones(classified: ClassifiedPara[]) {
 	const title = titleParas
 		.map((c) => c.para.text.trim())
 		.join(" ")
+		.replace(/\s+/g, " ")
 		.trim();
 	const affiliations = parseAffiliations(affParas);
 	const emails = extractEmails([...emailParas, ...affParas]);
