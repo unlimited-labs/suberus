@@ -21,7 +21,7 @@ RUN pnpm build
 
 RUN mkdir /prisma-runtime && cd /prisma-runtime \
     && npm init -y \
-    && npm install prisma dotenv --save-exact \
+    && npm install "prisma@$(node -p "require('/app/package.json').devDependencies.prisma")" dotenv --save-exact \
     && npm cache clean --force
 
 FROM node:24-alpine AS migrate
