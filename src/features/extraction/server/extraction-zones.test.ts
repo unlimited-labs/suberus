@@ -84,6 +84,22 @@ describe("classifyZones", () => {
 		expect(zones).toEqual(["TITLE", "AUTHORS"]);
 	});
 
+	it("will not continue an unformatted title into a capitalized line", () => {
+		const zones = classifyZones([
+			p("Thermal Stability of Nanocrystalline Alloys"),
+			p("Jan Kowalski and Anna Nowak"),
+		]).map((c) => c.zone);
+		expect(zones).toEqual(["TITLE", "AFFILIATIONS"]);
+	});
+
+	it("continues an unformatted title into a lowercase fragment", () => {
+		const zones = classifyZones([
+			p("Structure and corrosion resistance of CoCrFeNiNb alloys"),
+			p("produced by the rapid solidification"),
+		]).map((c) => c.zone);
+		expect(zones).toEqual(["TITLE", "TITLE"]);
+	});
+
 	it("never pulls an affiliation or a keywords line into the title", () => {
 		const plain = (text: string) => p(text);
 		const zones = classifyZones([

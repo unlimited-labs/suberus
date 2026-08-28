@@ -58,12 +58,19 @@ const isBold = (para: DocParagraph) => para.runs.some((r) => r.bold);
 const sameFontSignature = (a: DocParagraph, b: DocParagraph) =>
 	getParaFontSize(a) === getParaFontSize(b) && isBold(a) === isBold(b);
 
+/** A title styled through styles.xml leaves no inline run formatting to compare. */
+const hasFontEvidence = (para: DocParagraph) =>
+	getParaFontSize(para) > 0 || isBold(para);
+
 function continuesTitle(ctx: ZoneContext): boolean {
 	const { text, para, title } = ctx;
 	if (!title.anchor) return false;
 	if (title.paragraphs >= MAX_TITLE_PARAGRAPHS) return false;
 	if (title.length + 1 + text.length > MAX_TITLE_LENGTH) return false;
 	if (!sameFontSignature(para, title.anchor)) return false;
+	if (!hasFontEvidence(title.anchor) && CAPITALIZED_START.test(text)) {
+		return false;
+	}
 	if (isBodyStart(text) || KEYWORDS_RE.test(text) || EMAIL_RE.test(text)) {
 		return false;
 	}
