@@ -1,4 +1,5 @@
 import AdmZip from "adm-zip";
+import { lookup } from "@/shared/lib/lookup";
 
 export interface DocRun {
 	text: string;
@@ -68,10 +69,16 @@ function parseParagraph(paraXml: string): DocParagraph {
 	return { runs, text: fullText };
 }
 
+const CONTENT_RE =
+	/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:(noBreakHyphen|tab|br)\s*\/>/g;
+
+const CONTENT_CHAR = { noBreakHyphen: "-", tab: "\t", br: "\n" };
+
 function parseRun(runXml: string): DocRun | null {
 	let text = "";
-	for (const tMatch of runXml.matchAll(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g)) {
-		text += tMatch[1];
+	for (const match of runXml.matchAll(CONTENT_RE)) {
+		const [, content, element] = match;
+		text += content ?? lookup(CONTENT_CHAR, element) ?? "";
 	}
 	if (text.length === 0) return null;
 
