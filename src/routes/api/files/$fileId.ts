@@ -2,11 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authRequestMiddleware } from "@/features/auth/server/middleware";
 import type { UserRole } from "@/generated/prisma/enums";
 import { isUuid } from "@/shared/lib/uuid";
+import { contentDispositionAttachment } from "@/shared/server/file-names";
 import { checkFileAccess } from "@/shared/server/files";
-import {
-	contentDispositionAttachment,
-	getFileContent,
-} from "@/shared/server/storage";
+import { getFileContent } from "@/shared/server/storage";
 
 export const Route = createFileRoute("/api/files/$fileId")({
 	server: {

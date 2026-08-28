@@ -4,10 +4,10 @@ import {
 	isIgnoredBulkEntry,
 } from "@/features/submissions/server/camera-ready-match";
 import { prisma } from "@/shared/server/db.server";
+import { sanitizeFileName } from "@/shared/server/file-names";
 import {
 	deleteFile,
 	getFileContent,
-	sanitizeFileName,
 	uploadFile,
 } from "@/shared/server/storage";
 import {

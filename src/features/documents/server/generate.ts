@@ -8,13 +8,10 @@ import { getSetting } from "@/features/settings/server/settings";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
+import { sanitizeFileName } from "@/shared/server/file-names";
 import { signPdf } from "@/shared/server/pdf-signing-client";
 import { ensureQueueAndSend } from "@/shared/server/queue";
-import {
-	getFileBuffer,
-	sanitizeFileName,
-	uploadFile,
-} from "@/shared/server/storage";
+import { getFileBuffer, uploadFile } from "@/shared/server/storage";
 
 export const DOCUMENT_GENERATE_QUEUE = "document-generate";
 

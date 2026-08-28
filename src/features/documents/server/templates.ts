@@ -4,11 +4,8 @@ import {
 	PLACEHOLDER_KEYS,
 } from "@/features/documents/lib/placeholders";
 import { prisma } from "@/shared/server/db.server";
-import {
-	deleteFile,
-	sanitizeFileName,
-	uploadFile,
-} from "@/shared/server/storage";
+import { sanitizeFileName } from "@/shared/server/file-names";
+import { deleteFile, uploadFile } from "@/shared/server/storage";
 
 const DOCX_MIME =
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document";

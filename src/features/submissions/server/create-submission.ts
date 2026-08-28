@@ -19,10 +19,10 @@ import {
 import { logger } from "@/logger";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { prisma } from "@/shared/server/db.server";
+import { generateAuthorFileName } from "@/shared/server/file-names";
 import { fileToBuffer } from "@/shared/server/form-upload";
 import {
 	deleteFile,
-	generateAuthorFileName,
 	generateSubmissionFileKey,
 	uploadFile,
 } from "@/shared/server/storage";

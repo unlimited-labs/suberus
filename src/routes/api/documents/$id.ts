@@ -2,10 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authRequestMiddleware } from "@/features/auth/server/middleware";
 import { isUuid } from "@/shared/lib/uuid";
 import { prisma } from "@/shared/server/db.server";
-import {
-	contentDispositionAttachment,
-	getFileContent,
-} from "@/shared/server/storage";
+import { contentDispositionAttachment } from "@/shared/server/file-names";
+import { getFileContent } from "@/shared/server/storage";
 
 const ADMIN_ROLES = ["ADMIN", "EDITOR"];
 

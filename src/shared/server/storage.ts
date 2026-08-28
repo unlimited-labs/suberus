@@ -7,10 +7,9 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import filenamify from "filenamify";
-import latinize from "latinize";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { sanitizeFileName } from "./file-names";
 
 // S3-compatible object storage env (GARAGE_* honored as deprecated aliases)
 const S3_ENDPOINT = env.S3_ENDPOINT ?? env.GARAGE_ENDPOINT;
@@ -147,44 +146,6 @@ export async function fileExists(key: string): Promise<boolean> {
 	} catch {
 		return false;
 	}
-}
-
-export function sanitizeFileName(originalName: string): string {
-	return filenamify(latinize(originalName), { replacement: "_" });
-}
-
-/**
- * Build a `Content-Disposition: attachment` value with a latinized, ASCII-safe
- * filename (e.g. ą → a). HTTP header values are ByteStrings, so raw
- * diacritics throw; reuse the same sanitization as the S3 storage keys.
- */
-export function contentDispositionAttachment(originalName: string): string {
-	return `attachment; filename="${sanitizeFileName(originalName)}"`;
-}
-
-/**
- * Build the display name for a submission file from its authors:
- *   single author → Imie_Nazwisko.ext
- *   multiple      → Imie_Nazwisko_et_al.ext  (first author by orderIndex)
- * Diacritics are latinized; each name word is capitalized; ext preserved.
- */
-export function generateAuthorFileName(
-	authors: { firstName: string; lastName: string }[],
-	extension: string,
-): string {
-	const part = (s: string) =>
-		sanitizeFileName(
-			latinize(s)
-				.trim()
-				.toLowerCase()
-				.replace(/(^|[\s-])([a-z])/g, (_, sep, c) => sep + c.toUpperCase()),
-		).replace(/\s+/g, "_");
-
-	const first = authors[0];
-	const base = `${part(first.firstName)}_${part(first.lastName)}`;
-	const suffix = authors.length > 1 ? "_et_al" : "";
-	const ext = extension ? `.${extension.replace(/^\./, "")}` : "";
-	return `${base}${suffix}${ext}`;
 }
 
 export function generateSubmissionFileKey(

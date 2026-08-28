@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { resolveDownload } from "@/features/submissions/server/download-link";
-import {
-	contentDispositionAttachment,
-	getFileContent,
-} from "@/shared/server/storage";
+import { contentDispositionAttachment } from "@/shared/server/file-names";
+import { getFileContent } from "@/shared/server/storage";
 
 export const Route = createFileRoute("/api/submissions/download/$token")({
 	server: {
