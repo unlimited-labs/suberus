@@ -7,14 +7,24 @@ export function sanitizeFileName(originalName: string): string {
 
 /**
  * Header values are ByteStrings, so `filename` must be pure ASCII — latinize
- * only covers Latin diacritics. `filename*` (RFC 5987) carries the real name.
+ * only covers Latin diacritics. `filename*` (RFC 5987) carries the real name;
+ * encodeURIComponent leaves five characters that RFC 5987 attr-char forbids.
  */
-export function contentDispositionAttachment(originalName: string): string {
-	const ascii =
-		sanitizeFileName(originalName).replace(/[^\x20-\x7E]/g, "_") || "download";
-	const encoded = encodeURIComponent(originalName);
-	return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;
+export function contentDisposition(
+	disposition: "attachment" | "inline",
+	originalName: string,
+): string {
+	const name = originalName.trim() || "download";
+	const ascii = sanitizeFileName(name).replace(/[^\x20-\x7E]/g, "_");
+	const encoded = encodeURIComponent(name).replace(
+		/['()*!]/g,
+		(c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+	);
+	return `${disposition}; filename="${ascii}"; filename*=UTF-8''${encoded}`;
 }
+
+export const contentDispositionAttachment = (originalName: string) =>
+	contentDisposition("attachment", originalName);
 
 /**
  * Build the display name for a submission file from its authors:

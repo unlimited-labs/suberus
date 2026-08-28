@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contentDispositionAttachment } from "./file-names";
+import { contentDisposition, contentDispositionAttachment } from "./file-names";
 
 describe("contentDispositionAttachment", () => {
 	it("keeps a plain ASCII name in the fallback", () => {
@@ -30,5 +30,25 @@ describe("contentDispositionAttachment", () => {
 
 	it("leaves no bare quote in the fallback", () => {
 		expect(contentDispositionAttachment('we"ird.docx')).not.toContain('"we"');
+	});
+
+	it("percent-encodes what RFC 5987 attr-char forbids", () => {
+		expect(contentDispositionAttachment("O'Brien (1)*!.pdf")).toContain(
+			`filename*=UTF-8''O%27Brien%20%281%29%2A%21.pdf`,
+		);
+	});
+
+	it("never emits an empty ext-value", () => {
+		expect(contentDispositionAttachment("")).toContain(
+			`attachment; filename="download"; filename*=UTF-8''download`,
+		);
+	});
+});
+
+describe("contentDisposition", () => {
+	it("builds an inline disposition with the same safety", () => {
+		expect(contentDisposition("inline", "概要.pdf")).toBe(
+			`inline; filename="__.pdf"; filename*=UTF-8''${encodeURIComponent("概要.pdf")}`,
+		);
 	});
 });

@@ -4,7 +4,10 @@ import {
 	isIgnoredBulkEntry,
 } from "@/features/submissions/server/camera-ready-match";
 import { prisma } from "@/shared/server/db.server";
-import { sanitizeFileName } from "@/shared/server/file-names";
+import {
+	contentDisposition,
+	sanitizeFileName,
+} from "@/shared/server/file-names";
 import {
 	deleteFile,
 	getFileContent,
@@ -165,7 +168,7 @@ export async function cameraReadyFileResponse(
 	return new Response(result.body, {
 		headers: {
 			"Content-Type": "application/pdf",
-			"Content-Disposition": `inline; filename="${sanitizeFileName(file.originalName)}"`,
+			"Content-Disposition": contentDisposition("inline", file.originalName),
 			...(result.contentLength && {
 				"Content-Length": String(result.contentLength),
 			}),
