@@ -74,11 +74,27 @@ const CONTENT_RE =
 
 const CONTENT_CHAR = { noBreakHyphen: "-", tab: "\t", br: "\n" };
 
+const NAMED_ENTITY = { lt: "<", gt: ">", quot: '"', apos: "'", amp: "&" };
+
+const ENTITY_RE = /&(?:#x([0-9a-f]+)|#(\d+)|(lt|gt|quot|apos|amp));/gi;
+
+/** Single pass, so a decoded `&#38;` cannot combine with what follows it. */
+function decodeEntities(text: string): string {
+	return text.replace(ENTITY_RE, (whole, hex, dec, name) => {
+		if (hex) return String.fromCodePoint(Number.parseInt(hex, 16));
+		if (dec) return String.fromCodePoint(Number.parseInt(dec, 10));
+		return lookup(NAMED_ENTITY, name.toLowerCase()) ?? whole;
+	});
+}
+
 function parseRun(runXml: string): DocRun | null {
 	let text = "";
 	for (const match of runXml.matchAll(CONTENT_RE)) {
 		const [, content, element] = match;
-		text += content ?? lookup(CONTENT_CHAR, element) ?? "";
+		text +=
+			content === undefined
+				? (lookup(CONTENT_CHAR, element) ?? "")
+				: decodeEntities(content);
 	}
 	if (text.length === 0) return null;
 

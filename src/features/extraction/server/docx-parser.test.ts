@@ -39,6 +39,20 @@ describe("parseDocx", () => {
 		expect(parseDocx(buf)[0].text).toBe("microscopy");
 	});
 
+	it("decodes XML entities", () => {
+		const buf = docx(
+			run(
+				`<w:t>&#8216;Makoto&#x2019; &lt;m@x.pl&gt; &amp; &quot;co&apos;s&quot;</w:t>`,
+			),
+		);
+		expect(parseDocx(buf)[0].text).toBe(`‘Makoto’ <m@x.pl> & "co's"`);
+	});
+
+	it("does not double-decode an escaped entity", () => {
+		const buf = docx(run(`<w:t>a &amp;lt; b and &#38;gt; c</w:t>`));
+		expect(parseDocx(buf)[0].text).toBe("a &lt; b and &gt; c");
+	});
+
 	it("reads run formatting", () => {
 		const buf = docx(
 			run(
