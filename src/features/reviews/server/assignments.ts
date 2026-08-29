@@ -71,7 +71,9 @@ export async function getAvailableReviewers(
 		where: {
 			role: { in: ["REVIEWER", "EDITOR", "ADMIN"] },
 			isActive: true,
-			id: { notIn: [...assignedReviewerIds, ...authorUserIds] },
+			id: {
+				notIn: [...assignedReviewerIds, ...authorUserIds, submission.userId],
+			},
 			email: { notIn: authorEmails },
 		},
 		include: {

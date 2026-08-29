@@ -186,6 +186,7 @@ function SubmissionDetailPage() {
 				reviewDeadlineDays={config.reviewDeadlineDays}
 				revisionUploaded={revisionUploaded}
 				submission={submission}
+				submitter={submitter}
 			/>
 		</div>
 	);

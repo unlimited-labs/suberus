@@ -9,6 +9,7 @@ import {
 	bulkAssignReviewer,
 	bulkChangeStatus,
 	bulkUpdateSubmissionTrack,
+	changeSubmissionSubmitter,
 	checkSubmissionDeleteWarnings,
 	deleteSubmission,
 	type GetSubmissionsResponse,
@@ -21,6 +22,7 @@ import { adminEditSubmission } from "@/features/submissions/server/submissions";
 import {
 	adminSubmissionEditInput,
 	adminSubmissionsListInput,
+	submissionChangeSubmitterInput,
 	submissionIdInput,
 	submissionStatusFilterSchema,
 } from "@/features/submissions/validations";
@@ -45,6 +47,13 @@ export const adminEditSubmissionFn = createServerFn({ method: "POST" })
 	.handler(async ({ data, context }) => {
 		return adminEditSubmission(data.submissionId, context.user.id, data);
 	});
+
+export const changeSubmitterFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(submissionChangeSubmitterInput)
+	.handler(({ data, context }) =>
+		changeSubmissionSubmitter(data.submissionId, context.user.id, data.userId),
+	);
 
 export const adminSubmitDraftFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

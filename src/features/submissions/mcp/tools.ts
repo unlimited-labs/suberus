@@ -5,6 +5,7 @@ import {
 } from "@/features/mcp/scopes";
 import { getActiveSubmissionTypes } from "@/features/settings/server/settings";
 import {
+	changeSubmissionSubmitter,
 	getAdminSubmissions,
 	getSubmissionForEditor,
 	updateSubmissionForAdmin,
@@ -19,6 +20,7 @@ import { getValidationLimits } from "@/features/submissions/server/create-submis
 import { issueDownloadLink } from "@/features/submissions/server/download-link";
 import {
 	adminSubmissionsListInput,
+	submissionChangeSubmitterInput,
 	submissionCreateForUserInput,
 	submissionIdInput,
 	submissionUpdateInput,
@@ -188,6 +190,20 @@ const updateSubmission = defineTool({
 	},
 });
 
+const changeSubmitter = defineTool({
+	name: "submissions_change_submitter",
+	title: "Change a submission's submitter",
+	description:
+		"Move a submission to a different user account. The submitter owns the record — they see it in their submissions, upload revisions and receive its reminders — which is a separate thing from the author list; correct authors with submissions_update. Exhibitor and invited placeholders are refused. `userId` is the account that takes over; find it with users_list.",
+	input: submissionChangeSubmitterInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_SUBMISSIONS_WRITE,
+	destructive: true,
+	async handler({ submissionId, userId }, actor) {
+		return changeSubmissionSubmitter(submissionId, actor.id, userId);
+	},
+});
+
 const downloadLink = defineTool({
 	name: "submissions_download_link",
 	title: "Download link",
@@ -212,5 +228,6 @@ export const submissionsMcpTools: readonly McpTool[] = [
 	submitDraftTool,
 	deskAccept,
 	updateSubmission,
+	changeSubmitter,
 	downloadLink,
 ];

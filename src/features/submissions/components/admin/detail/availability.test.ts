@@ -78,6 +78,19 @@ describe("getActionAvailability", () => {
 		expect(accepted.canOverrideDecision).toBe(false);
 	});
 
+	it("offers the submitter change only on author submissions", () => {
+		for (const type of ["EXHIBITOR", "INVITED"] as const) {
+			expect(
+				getActionAvailability({ type, status: "SUBMITTED" }, config)
+					.canChangeSubmitter,
+			).toBe(false);
+		}
+		expect(
+			getActionAvailability({ type: "ABSTRACT", status: "DRAFT" }, config)
+				.canChangeSubmitter,
+		).toBe(true);
+	});
+
 	it("allows assign on UNDER_REVIEW and RESUBMITTED", () => {
 		expect(
 			getActionAvailability(

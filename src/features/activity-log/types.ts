@@ -42,6 +42,12 @@ type DetailShapes = AssertExhaustive<{
 	SUBMISSION_RESUBMITTED: StatusChange;
 	SUBMISSION_REVISION_UPLOADED: { version: number };
 	SUBMISSION_TRACK_CHANGED: { trackId: string | null };
+	SUBMISSION_SUBMITTER_CHANGED: {
+		fromUserId: string;
+		fromName: string;
+		toUserId: string;
+		toName: string;
+	};
 	SUBMISSION_EDITED: NoDetail;
 	SUBMISSION_DELETED: { title: string; sequentialNumber: number };
 	REVIEW_ASSIGNED: { assignmentId: string; deadline?: string };

@@ -16,6 +16,7 @@ const labels = {
 	SUBMISSION_RESUBMITTED: "Submission resubmitted",
 	SUBMISSION_REVISION_UPLOADED: "Revised version uploaded",
 	SUBMISSION_TRACK_CHANGED: "Track changed",
+	SUBMISSION_SUBMITTER_CHANGED: "Submitter changed",
 	SUBMISSION_EDITED: "Edited by admin",
 	SUBMISSION_DELETED: "Submission deleted",
 	REVIEW_ASSIGNED: "Reviewer assigned",

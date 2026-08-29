@@ -10,6 +10,7 @@ import {
 	IconRefresh,
 	IconSend,
 	IconUserPlus,
+	IconUserShare,
 	IconX,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
@@ -45,6 +46,7 @@ const activityConfig = {
 	SUBMISSION_RESUBMITTED: { color: "blue", icon: IconRefresh },
 	SUBMISSION_REVISION_UPLOADED: { color: "blue", icon: IconFileUpload },
 	SUBMISSION_TRACK_CHANGED: { color: "purple", icon: IconArrowsExchange },
+	SUBMISSION_SUBMITTER_CHANGED: { color: "purple", icon: IconUserShare },
 	REVIEW_ASSIGNED: { color: "orange", icon: IconUserPlus },
 	REVIEW_SUBMITTED: { color: "green", icon: IconEye },
 	REVIEW_CANCELLED: { color: "gray", icon: IconX },
@@ -217,6 +219,18 @@ const detailRenderers = {
 		const version = entry.detail.version as number | undefined;
 		if (!version) return null;
 		return <p className="text-muted-foreground text-sm">Version {version}</p>;
+	},
+	SUBMISSION_SUBMITTER_CHANGED: (entry) => {
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
+		const fromName = entry.detail.fromName as string | undefined;
+		// SAFETY: the activity type reaching this renderer carries that detail field (see DetailShapes).
+		const toName = entry.detail.toName as string | undefined;
+		if (!toName) return null;
+		return (
+			<p className="text-muted-foreground text-sm">
+				{fromName ? `${fromName} → ${toName}` : toName}
+			</p>
+		);
 	},
 } satisfies Record<string, DetailRenderer>;
 

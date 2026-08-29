@@ -5,6 +5,7 @@ import {
 	IconLoader2,
 	IconPencil,
 	IconTrash,
+	IconUserShare,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
@@ -129,6 +130,15 @@ export function ActionsCard({
 						</DropdownMenuItem>
 					))}
 					<DropdownMenuSeparator />
+					{availability.canChangeSubmitter && (
+						<DropdownMenuItem
+							data-testid="submission-change-submitter-action"
+							onClick={() => onOpenDialog("changeSubmitter")}
+						>
+							<IconUserShare className="mr-2 size-4" />
+							Change submitter
+						</DropdownMenuItem>
+					)}
 					{isOnlyAdmin && (
 						<DropdownMenuItem asChild>
 							<Link

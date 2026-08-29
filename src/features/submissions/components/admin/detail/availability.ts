@@ -1,6 +1,7 @@
 import { isPast } from "date-fns";
 import type { SubmissionTypeConfig } from "@/features/settings/types";
 import type { getSubmissionForEditor } from "@/features/submissions/server/admin-submissions";
+import { isNonSubmittable } from "@/features/submissions/submittable";
 
 // Derived from the editor-submission query payload so these stay in sync with
 // the server shape. `import type` is erased at build — no server/client leak.
@@ -33,6 +34,7 @@ export interface ActionAvailability {
 	canMakeDecision: boolean;
 	canConfirmConditions: boolean;
 	canOverrideDecision: boolean;
+	canChangeSubmitter: boolean;
 }
 
 /**
@@ -55,6 +57,7 @@ export function getActionAvailability(
 		canAssignReviewers:
 			!isExhibitor &&
 			["SUBMITTED", "UNDER_REVIEW", "RESUBMITTED"].includes(submission.status),
+		canChangeSubmitter: !isNonSubmittable(submission.type),
 		canDeskAccept: canDeskDecide,
 		canDeskReject: canDeskDecide,
 		canTransitionToAwaitingDecision:
@@ -74,7 +77,12 @@ export function getActionAvailability(
 export type PrimaryAction = "transition" | "decision" | "conditions";
 
 export function getPrimaryAction(
-	availability: ActionAvailability,
+	availability: Pick<
+		ActionAvailability,
+		| "canTransitionToAwaitingDecision"
+		| "canMakeDecision"
+		| "canConfirmConditions"
+	>,
 ): PrimaryAction | null {
 	if (availability.canTransitionToAwaitingDecision) return "transition";
 	if (availability.canMakeDecision) return "decision";

@@ -900,6 +900,91 @@ export async function bulkAssignReviewer(
 	return { assigned, errors };
 }
 
+function displayName(user: {
+	firstName: string | null;
+	lastName: string | null;
+	email: string;
+}): string {
+	return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email;
+}
+
+export async function changeSubmissionSubmitter(
+	submissionId: string,
+	actorId: string,
+	newUserId: string,
+): Promise<{ success: boolean; error?: string }> {
+	const submission = await prisma.submission.findUnique({
+		where: { id: submissionId },
+		select: {
+			userId: true,
+			type: true,
+			user: { select: { firstName: true, lastName: true, email: true } },
+		},
+	});
+	if (!submission) return { success: false, error: "Submission not found" };
+	if (submission.userId === newUserId) return { success: true };
+
+	// An exhibitor entry is 1:1 with its own user row and an invited talk belongs
+	// to the admin who created it; neither has a submitter to hand over.
+	if (isNonSubmittable(submission.type)) {
+		return {
+			success: false,
+			error: `${submission.type} placeholders are not author submissions, so they have no submitter to change`,
+		};
+	}
+
+	const newOwner = await prisma.user.findUnique({
+		where: { id: newUserId },
+		select: {
+			isActive: true,
+			firstName: true,
+			lastName: true,
+			email: true,
+		},
+	});
+	if (!newOwner) return { success: false, error: "User not found" };
+	if (!newOwner.isActive) {
+		return { success: false, error: "User account is deactivated" };
+	}
+
+	const ownReview = await prisma.reviewAssignment.findFirst({
+		where: {
+			submissionId,
+			reviewerId: newUserId,
+			status: { not: "CANCELLED" },
+		},
+		select: { id: true },
+	});
+	if (ownReview) {
+		return {
+			success: false,
+			error:
+				"That user is a reviewer on this submission — cancel the assignment before handing it over",
+		};
+	}
+
+	await prisma.$transaction(async (tx) => {
+		await tx.submission.update({
+			where: { id: submissionId },
+			data: { userId: newUserId },
+		});
+		await logActivityTx(tx, {
+			type: "SUBMISSION_SUBMITTER_CHANGED",
+			submissionId,
+			userId: newUserId,
+			performedBy: actorId,
+			detail: activityDetail("SUBMISSION_SUBMITTER_CHANGED", {
+				fromUserId: submission.userId,
+				fromName: displayName(submission.user),
+				toUserId: newUserId,
+				toName: displayName(newOwner),
+			}),
+		});
+	});
+
+	return { success: true };
+}
+
 /**
  * Patch semantics for the MCP edit tool: an omitted field keeps its current
  * value, so fixing one title cannot silently drop the author list that

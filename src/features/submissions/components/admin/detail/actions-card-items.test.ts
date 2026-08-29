@@ -11,6 +11,7 @@ const none: ActionAvailability = {
 	canMakeDecision: false,
 	canConfirmConditions: false,
 	canOverrideDecision: false,
+	canChangeSubmitter: false,
 };
 
 const ids = (a: ReturnType<typeof buildSecondaryActions>) => a.map((i) => i.id);
@@ -30,6 +31,7 @@ describe("buildSecondaryActions", () => {
 			canMakeDecision: true,
 			canConfirmConditions: true,
 			canOverrideDecision: true,
+			canChangeSubmitter: true,
 		};
 		expect(ids(buildSecondaryActions(all, null))).toEqual([
 			"submitDraft",

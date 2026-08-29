@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { AssignReviewerDialog } from "@/features/submissions/components/admin/assign-reviewer-dialog";
+import { ChangeSubmitterDialog } from "@/features/submissions/components/admin/change-submitter-dialog";
 import { ConfirmConditionsDialog } from "@/features/submissions/components/admin/confirm-conditions-dialog";
 import { DeskAcceptDialog } from "@/features/submissions/components/admin/desk-accept-dialog";
 import { DeskRejectDialog } from "@/features/submissions/components/admin/desk-reject-dialog";
@@ -11,6 +12,7 @@ import type { EditorReview, EditorSubmission } from "./availability";
 
 export type SubmissionDialogKind =
 	| "assign"
+	| "changeSubmitter"
 	| "submitDraft"
 	| "decision"
 	| "deskAccept"
@@ -23,6 +25,7 @@ interface DetailDialogsProps {
 	activeDialog: SubmissionDialogKind | null;
 	onClose: () => void;
 	submission: Pick<EditorSubmission, "id" | "title" | "currentVersionNumber">;
+	submitter: { id: string; firstName: string | null; lastName: string | null };
 	requiredReviewers: number;
 	reviewDeadlineDays: number;
 	currentRoundReviews: EditorReview[];
@@ -39,6 +42,7 @@ export function DetailDialogs({
 	activeDialog,
 	onClose,
 	submission,
+	submitter,
 	requiredReviewers,
 	reviewDeadlineDays,
 	currentRoundReviews,
@@ -109,6 +113,19 @@ export function DetailDialogs({
 				onOpenChange={onOpenChange}
 				onSubmitted={onInvalidate}
 				open={activeDialog === "submitDraft"}
+				submissionId={submission.id}
+				submissionTitle={submission.title}
+			/>
+
+			<ChangeSubmitterDialog
+				currentSubmitterId={submitter.id}
+				currentSubmitterName={
+					`${submitter.firstName ?? ""} ${submitter.lastName ?? ""}`.trim() ||
+					"—"
+				}
+				onChanged={onInvalidate}
+				onOpenChange={onOpenChange}
+				open={activeDialog === "changeSubmitter"}
 				submissionId={submission.id}
 				submissionTitle={submission.title}
 			/>

@@ -119,6 +119,11 @@ export const submissionUpdateInput = adminSubmissionEditFields
 	.partial()
 	.extend({ submissionId: z.uuid() });
 
+export const submissionChangeSubmitterInput = z.object({
+	submissionId: z.uuid(),
+	userId: z.uuid(),
+});
+
 export const submissionStatusFilterSchema = z.enum([
 	"DRAFT",
 	"SUBMITTED",
