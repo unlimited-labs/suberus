@@ -56,6 +56,27 @@ export function TypeFeatureTogglesSection({
 				</form.Field>
 			</div>
 
+			<div className="flex items-center justify-between">
+				<div className="space-y-0.5">
+					<Label htmlFor="enableAcknowledgment">Enable acknowledgment</Label>
+					<p className="text-muted-foreground/70 text-xs italic">
+						Authors get an optional acknowledgment field, auto-filled from an
+						uploaded DOCX when a matching section is found
+					</p>
+				</div>
+				<form.Field name="enableAcknowledgment">
+					{(field) => (
+						<Switch
+							checked={field.state.value}
+							id="enableAcknowledgment"
+							onCheckedChange={(checked) =>
+								field.handleChange(checked === true)
+							}
+						/>
+					)}
+				</form.Field>
+			</div>
+
 			{/* Track selection */}
 			{typeKey === "SUBMISSION_TYPE_ORAL_PRESENTATION" && (
 				<div className="flex items-center justify-between">

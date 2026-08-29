@@ -25,7 +25,7 @@ interface ContentTabProps {
 	versions: EditorVersion[];
 	submission: Pick<
 		EditorSubmission,
-		"currentVersionNumber" | "content" | "file"
+		"currentVersionNumber" | "content" | "acknowledgment" | "file"
 	>;
 }
 
@@ -168,6 +168,16 @@ export function ContentTab({
 								{para}
 							</p>
 						))}
+					</div>
+				)}
+				{submission.acknowledgment && (
+					<div className="mt-4 space-y-2 border-t pt-4">
+						<p className="text-muted-foreground text-sm font-medium">
+							Acknowledgment
+						</p>
+						<p className="wrap-break-word whitespace-pre-line">
+							{submission.acknowledgment}
+						</p>
 					</div>
 				)}
 			</SectionCard>

@@ -1,5 +1,6 @@
 import type { DocParagraph } from "./docx-parser";
 import {
+	ACK_RE,
 	AFF_MARKER_RE,
 	BODY_START_RE,
 	CAPITALIZED_START,
@@ -14,6 +15,8 @@ import {
 	MAX_PERSON_NAME_LENGTH,
 	MAX_TITLE_LENGTH,
 	MAX_TITLE_PARAGRAPHS,
+	REFERENCE_ENTRY_RE,
+	REFERENCES_RE,
 	SECTION_RE,
 	SMALL_FONT_SIZE_HP,
 } from "./extraction-patterns";
@@ -24,6 +27,7 @@ export type Zone =
 	| "AFFILIATIONS"
 	| "EMAILS"
 	| "KEYWORDS"
+	| "ACKNOWLEDGMENT"
 	| "BODY";
 
 export interface ClassifiedPara {
@@ -142,7 +146,22 @@ function stepFromKeywords({ text }: ZoneContext): ZoneStep {
 
 function stepFromBody({ text }: ZoneContext): ZoneStep {
 	if (KEYWORDS_RE.test(text)) return { assign: "KEYWORDS", next: "KEYWORDS" };
+	if (ACK_RE.test(text)) {
+		return { assign: "ACKNOWLEDGMENT", next: "ACKNOWLEDGMENT" };
+	}
 	return { assign: "BODY", next: "BODY" };
+}
+
+function stepFromAcknowledgment({ text }: ZoneContext): ZoneStep {
+	if (KEYWORDS_RE.test(text)) return { assign: "KEYWORDS", next: "KEYWORDS" };
+	if (
+		REFERENCES_RE.test(text) ||
+		REFERENCE_ENTRY_RE.test(text) ||
+		SECTION_RE.test(text)
+	) {
+		return { assign: "BODY", next: "BODY" };
+	}
+	return { assign: "ACKNOWLEDGMENT", next: "ACKNOWLEDGMENT" };
 }
 
 const ZONE_STEPS = {
@@ -151,6 +170,7 @@ const ZONE_STEPS = {
 	AFFILIATIONS: stepFromAffiliations,
 	EMAILS: stepFromEmails,
 	KEYWORDS: stepFromKeywords,
+	ACKNOWLEDGMENT: stepFromAcknowledgment,
 	BODY: stepFromBody,
 } satisfies Record<Zone, (ctx: ZoneContext) => ZoneStep>;
 

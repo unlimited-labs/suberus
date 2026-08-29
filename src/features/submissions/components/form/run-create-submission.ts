@@ -35,6 +35,7 @@ export function buildCreateSubmissionFormData(
 	formData.append("type", data.type);
 	formData.append("title", data.title);
 	formData.append("content", data.content);
+	formData.append("acknowledgment", data.acknowledgment);
 	formData.append("authors", JSON.stringify(data.authors));
 	formData.append("keywords", JSON.stringify(data.keywords));
 	formData.append("contentFormat", data.contentFormat);

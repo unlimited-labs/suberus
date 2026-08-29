@@ -1,6 +1,11 @@
 import type { DocParagraph } from "./docx-parser";
 import type { ExtractedAuthor } from "./extraction";
-import { INSTITUTION_RE, KEYWORDS_RE } from "./extraction-patterns";
+import {
+	ACK_RE,
+	INSTITUTION_RE,
+	KEYWORDS_RE,
+	MAX_ACKNOWLEDGMENT_LENGTH,
+} from "./extraction-patterns";
 import type { ClassifiedPara } from "./extraction-zones";
 
 export interface AuthorSegment {
@@ -14,6 +19,7 @@ export function extractFromZones(classified: ClassifiedPara[]) {
 	const affParas = classified.filter((c) => c.zone === "AFFILIATIONS");
 	const emailParas = classified.filter((c) => c.zone === "EMAILS");
 	const kwParas = classified.filter((c) => c.zone === "KEYWORDS");
+	const ackParas = classified.filter((c) => c.zone === "ACKNOWLEDGMENT");
 
 	const title = titleParas
 		.map((c) => c.para.text.trim())
@@ -24,11 +30,13 @@ export function extractFromZones(classified: ClassifiedPara[]) {
 	const emails = extractEmails([...emailParas, ...affParas]);
 	const authors = extractAuthors(authorParas, affiliations, emails);
 	const keywords = extractKeywords(kwParas);
+	const acknowledgment = extractAcknowledgment(ackParas);
 
 	return {
 		title: title || undefined,
 		authors: authors.length > 0 ? authors : undefined,
 		keywords: keywords.length > 0 ? keywords : undefined,
+		acknowledgment: acknowledgment || undefined,
 	};
 }
 
@@ -260,4 +268,22 @@ export function parseKwString(raw: string): string[] {
 		.filter((k) => k.length > 0 && k.length < 100)
 		.map((k) => k.replace(/\.+$/, "").trim())
 		.filter((k) => k.length > 0);
+}
+
+/** The heading itself may sit on its own line or prefix the text inline. */
+export function extractAcknowledgment(paras: ClassifiedPara[]): string {
+	if (paras.length === 0) return "";
+	const text = paras
+		.flatMap((c, i) => {
+			const line = (
+				i === 0 ? c.para.text.replace(ACK_RE, "") : c.para.text
+			).trim();
+			return line.length > 0 ? [line] : [];
+		})
+		.join("\n")
+		.trim();
+
+	// Past the cap the zone swallowed a bibliography; prefilling it would hand
+	// the author a field the form already rejects.
+	return text.length > MAX_ACKNOWLEDGMENT_LENGTH ? "" : text;
 }

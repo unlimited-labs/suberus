@@ -24,6 +24,8 @@ export interface SubmissionTypeConfig {
 	enableConfidenceLevel: boolean;
 	enableReviewAttachment: boolean;
 	enableTrackSelection: boolean;
+	/** Authors get an optional free-text Acknowledgment field on the submission form. */
+	enableAcknowledgment: boolean;
 }
 
 export interface ProgramQrSettings {

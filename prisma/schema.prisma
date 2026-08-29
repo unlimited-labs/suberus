@@ -137,6 +137,7 @@ model Submission {
   type              SubmissionType
   title             String
   content           String
+  acknowledgment    String?
   status            SubmissionStatus     @default(DRAFT)
   currentRound      Int                  @default(1)
   userId            String               @db.Uuid

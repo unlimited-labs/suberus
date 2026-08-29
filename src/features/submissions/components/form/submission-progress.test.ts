@@ -30,6 +30,7 @@ const values = (
 	type: "ABSTRACT",
 	title: "A long enough title",
 	content: "x".repeat(500),
+	acknowledgment: "",
 	authors: [author],
 	keywords: ["a", "b", "c"],
 	file: null,

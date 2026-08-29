@@ -57,6 +57,7 @@ function parseCreateSubmissionFormData(data: FormData) {
 		type: data.get("type"),
 		title: data.get("title"),
 		content: data.get("content"),
+		acknowledgment: formText(data.get("acknowledgment")) ?? "",
 		authors: JSON.parse(formText(authorsRaw) ?? "[]"),
 		keywords: JSON.parse(formText(keywordsRaw) ?? "[]"),
 		contentFormat: data.get("contentFormat"),

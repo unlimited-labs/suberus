@@ -70,6 +70,7 @@ function SubmissionDetailPage() {
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 						<div className="space-y-6">
 							<ContentTabs
+								acknowledgment={submission.acknowledgment}
 								authors={displayData.authors}
 								content={displayData.content}
 								file={displayData.file}

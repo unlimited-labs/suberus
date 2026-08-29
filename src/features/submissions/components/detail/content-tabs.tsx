@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 interface ContentTabsProps {
 	title: string;
 	content: string;
+	acknowledgment?: string | null;
 	keywords: string[];
 	authors: UserSubmissionAuthor[];
 	statusHistory: UserSubmissionStatusHistory[];
@@ -30,6 +31,7 @@ interface ContentTabsProps {
 export function ContentTabs({
 	title,
 	content,
+	acknowledgment,
 	keywords,
 	authors,
 	statusHistory,
@@ -101,6 +103,17 @@ export function ContentTabs({
 							</p>
 							<div className="text-muted-foreground border-border/50 bg-muted/30 rounded-lg border p-4 text-sm">
 								No content available
+							</div>
+						</div>
+					)}
+
+					{acknowledgment && (
+						<div className="space-y-2">
+							<p className="text-muted-foreground text-sm font-medium">
+								Acknowledgment
+							</p>
+							<div className="text-foreground bg-muted/30 border-border/50 rounded-lg border p-4 text-sm leading-relaxed wrap-break-word whitespace-pre-line">
+								{acknowledgment}
 							</div>
 						</div>
 					)}

@@ -45,6 +45,7 @@ const config = (
 	enableConfidenceLevel: false,
 	enableReviewAttachment: false,
 	enableTrackSelection: false,
+	enableAcknowledgment: false,
 	...overrides,
 });
 

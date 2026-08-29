@@ -474,6 +474,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 		sequentialNumber: number;
 		title: string;
 		content: string;
+		acknowledgment: string | null;
 		type: SubmissionType;
 		status: SubmissionStatus;
 		currentRound: number;
@@ -649,6 +650,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 			sequentialNumber: submission.sequentialNumber,
 			title: submission.title,
 			content: submission.currentVersion?.content ?? submission.content,
+			acknowledgment: submission.acknowledgment,
 			type: submission.type,
 			status: submission.status,
 			currentRound: submission.currentRound,
@@ -914,6 +916,7 @@ export async function updateSubmissionForAdmin(
 			type: true,
 			title: true,
 			content: true,
+			acknowledgment: true,
 			trackId: true,
 			currentVersion: { select: { content: true } },
 			authors: {
@@ -970,6 +973,10 @@ export async function updateSubmissionForAdmin(
 				affiliationName: a.affiliation?.name ?? "",
 			})),
 		keywords: patch.keywords ?? current.keywords.map((k) => k.keyword.name),
+		acknowledgment:
+			patch.acknowledgment === undefined
+				? current.acknowledgment
+				: patch.acknowledgment,
 		contentFormat: config.contentFormat,
 		trackId: patch.trackId === undefined ? current.trackId : patch.trackId,
 	};

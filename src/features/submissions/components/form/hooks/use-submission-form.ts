@@ -119,13 +119,16 @@ export function useSubmissionForm({
 	} = useDocumentExtraction({
 		enabled: !!extractionEnabled,
 		skipExtraction: !!initialData?.title,
-		onExtracted: ({ title, authors, keywords }) => {
+		onExtracted: ({ title, authors, keywords, acknowledgment }) => {
 			if (title) form.setFieldValue("title", title);
 			if (authors) {
 				form.setFieldValue("authors", authors);
 				markAutoFilled();
 			}
 			if (keywords) form.setFieldValue("keywords", keywords);
+			if (acknowledgment && currentTypeConfig?.config.enableAcknowledgment) {
+				form.setFieldValue("acknowledgment", acknowledgment);
+			}
 		},
 	});
 
@@ -135,6 +138,9 @@ export function useSubmissionForm({
 		const newConfig = typeConfigs.find((t) => t.type === value);
 		if (!newConfig) return;
 		form.setFieldValue("contentFormat", newConfig.config.contentFormat);
+		if (!newConfig.config.enableAcknowledgment) {
+			form.setFieldValue("acknowledgment", "");
+		}
 		if (newConfig.config.contentFormat === "TEXT") {
 			form.setFieldValue("file", null);
 		}

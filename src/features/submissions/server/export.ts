@@ -17,6 +17,7 @@ export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
 			sequentialNumber: true,
 			title: true,
 			content: true,
+			acknowledgment: true,
 			type: true,
 			authors: {
 				select: {
@@ -86,7 +87,8 @@ function getCoAuthors(
 }
 
 function buildCsv(submissions: ExportSubmission[]): string {
-	const header = "sequentialNumber,title,mainAuthor,coAuthors,keywords,track";
+	const header =
+		"sequentialNumber,title,mainAuthor,coAuthors,keywords,track,acknowledgment";
 	const rows = submissions.map((s) => {
 		const main = getMainAuthor(s.authors);
 		const mainName = main ? `${main.firstName} ${main.lastName}` : "";
@@ -103,6 +105,7 @@ function buildCsv(submissions: ExportSubmission[]): string {
 			escapeCsvField(coAuthors),
 			escapeCsvField(keywords),
 			escapeCsvField(track),
+			escapeCsvField(s.acknowledgment ?? ""),
 		].join(",");
 	});
 
@@ -127,7 +130,10 @@ export async function createSubmissionsZipStream(
 				}
 			}
 			const content = s.currentVersion?.content || s.content;
-			return { name: `${s.sequentialNumber}.txt`, data: content };
+			const body = s.acknowledgment
+				? `${content}\n\nAcknowledgment\n${s.acknowledgment}`
+				: content;
+			return { name: `${s.sequentialNumber}.txt`, data: body };
 		}),
 	);
 

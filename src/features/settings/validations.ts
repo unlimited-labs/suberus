@@ -166,6 +166,7 @@ export const submissionTypeConfigSchema = z
 		enableConfidenceLevel: z.boolean(),
 		enableReviewAttachment: z.boolean(),
 		enableTrackSelection: z.boolean(),
+		enableAcknowledgment: z.boolean(),
 	})
 	.superRefine((v, ctx) => {
 		if (v.contentFormat === "FILE" && v.allowedExtensions.length === 0) {
@@ -376,6 +377,7 @@ export function submissionTypeFormSchema(
 			enableConfidenceLevel: z.boolean(),
 			enableReviewAttachment: z.boolean(),
 			enableTrackSelection: z.boolean(),
+			enableAcknowledgment: z.boolean(),
 		})
 		.pipe(submissionTypeConfigSchema)
 		.superRefine((v, ctx) => {

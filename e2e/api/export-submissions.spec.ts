@@ -56,7 +56,7 @@ test.describe("Export Submissions as ZIP", () => {
 		const csv = zip.readAsText("submissions.csv");
 		const lines = csv.split("\n");
 		expect(lines[0]).toBe(
-			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track",
+			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track,acknowledgment",
 		);
 		const dataRow = lines.find((l) => l.includes("Export Text Test"));
 		expect(dataRow).toBeDefined();
@@ -148,7 +148,7 @@ test.describe("Export Submissions as ZIP", () => {
 		const lines = csv.split("\n");
 
 		expect(lines[0]).toBe(
-			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track",
+			"sequentialNumber,title,mainAuthor,coAuthors,keywords,track,acknowledgment",
 		);
 
 		const headerCommas = (lines[0].match(/,/g) || []).length;

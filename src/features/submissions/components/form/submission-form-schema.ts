@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { acknowledgmentSchema } from "@/features/submissions/validations";
 import type { ValidationSettings } from "./submission-form-types";
 
 /**
@@ -28,6 +29,7 @@ export function buildSubmissionFormSchema(
 					`Title must be at most ${settings.maxTitleLength} characters`,
 				),
 			content: z.string(),
+			acknowledgment: acknowledgmentSchema,
 			authors: z
 				.array(
 					z.object({

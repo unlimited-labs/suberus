@@ -12,6 +12,7 @@ export function buildSubmissionDefaultValues(
 		type: initialData?.type || defaultType,
 		title: initialData?.title || "",
 		content: initialData?.content || "",
+		acknowledgment: initialData?.acknowledgment || "",
 		authors: initialData?.authors || [
 			{
 				firstName: "",

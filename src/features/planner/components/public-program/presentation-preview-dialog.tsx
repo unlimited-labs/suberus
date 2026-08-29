@@ -262,7 +262,7 @@ function PreviewContent({
 		return <p className={ABSTRACT}>Preview is unavailable for this talk.</p>;
 	}
 
-	const { authors, content, keywords } = detail.data;
+	const { acknowledgment, authors, content, keywords } = detail.data;
 	return (
 		<div className="max-h-[55vh] space-y-5 overflow-y-auto">
 			{authors.length > 0 && (
@@ -273,6 +273,14 @@ function PreviewContent({
 					<h3 className={HEADING}>Abstract</h3>
 					<div className={cn("whitespace-pre-line wrap-break-word", ABSTRACT)}>
 						{content}
+					</div>
+				</section>
+			)}
+			{acknowledgment && (
+				<section className="space-y-2">
+					<h3 className={HEADING}>Acknowledgment</h3>
+					<div className={cn("whitespace-pre-line wrap-break-word", ABSTRACT)}>
+						{acknowledgment}
 					</div>
 				</section>
 			)}

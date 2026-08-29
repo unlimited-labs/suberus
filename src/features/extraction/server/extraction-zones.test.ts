@@ -194,3 +194,65 @@ describe("getMaxFontSize", () => {
 		).toBe(36);
 	});
 });
+
+describe("acknowledgment zone", () => {
+	it("re-enters from the body on the heading and ends at references", () => {
+		const zones = classifyZones([
+			p("A Study of Important Things"),
+			p("Jan Kowalski"),
+			p("University of Warsaw"),
+			p("Abstract"),
+			p("Body of the paper."),
+			p("Acknowledgments"),
+			p("Funded by grant NCN 2020/01/X."),
+			p("References"),
+			p("[1] Someone, Some paper, 2020."),
+		]).map((c) => c.zone);
+
+		expect(zones.slice(5)).toEqual([
+			"ACKNOWLEDGMENT",
+			"ACKNOWLEDGMENT",
+			"BODY",
+			"BODY",
+		]);
+	});
+
+	it("ends at a bracketed bibliography entry with no References heading", () => {
+		const zones = classifyZones([
+			p("Title"),
+			p("Abstract"),
+			p("Acknowledgments"),
+			p("Funded by grant NCN 2020/01/X."),
+			p("[1] Someone, Some paper, 2020."),
+			p("[2] Another, Other paper, 2021."),
+		]).map((c) => c.zone);
+
+		expect(zones.slice(2)).toEqual([
+			"ACKNOWLEDGMENT",
+			"ACKNOWLEDGMENT",
+			"BODY",
+			"BODY",
+		]);
+	});
+
+	it("ignores a body sentence that merely starts with the word", () => {
+		const zones = classifyZones([
+			p("Title"),
+			p("Abstract"),
+			p("Acknowledgement of prior work is discussed in section 3."),
+		]).map((c) => c.zone);
+
+		expect(zones.slice(2)).toEqual(["BODY"]);
+	});
+
+	it("ends at a numbered section heading", () => {
+		const zones = classifyZones([
+			p("Title"),
+			p("Abstract"),
+			p("Acknowledgment: thanks to the team."),
+			p("4. Conclusions"),
+		]).map((c) => c.zone);
+
+		expect(zones.slice(2)).toEqual(["ACKNOWLEDGMENT", "BODY"]);
+	});
+});

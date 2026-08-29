@@ -16,6 +16,7 @@ export interface PresentationDetailAuthor {
 
 export interface PresentationDetail {
 	content: string;
+	acknowledgment: string | null;
 	keywords: string[];
 	authors: PresentationDetailAuthor[];
 	cameraReadyUrl: string | null;
@@ -69,6 +70,7 @@ export async function getPresentationDetail(
 				submission: {
 					select: {
 						content: true,
+						acknowledgment: true,
 						cameraReadyFileId: true,
 						authors: {
 							orderBy: { orderIndex: "asc" },
@@ -103,6 +105,7 @@ export async function getPresentationDetail(
 	const { submission } = slot;
 	return {
 		content: submission.content,
+		acknowledgment: submission.acknowledgment,
 		cameraReadyUrl: submission.cameraReadyFileId
 			? `/api/program/camera-ready/${slotId}`
 			: null,

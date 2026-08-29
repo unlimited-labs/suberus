@@ -102,6 +102,7 @@ function AdminEditSubmissionPage() {
 		type: subType,
 		title: submission.title,
 		content: submission.content,
+		acknowledgment: submission.acknowledgment ?? "",
 		authors: data.authors.map((a) => ({
 			firstName: a.firstName,
 			lastName: a.lastName,
@@ -126,6 +127,7 @@ function AdminEditSubmissionPage() {
 					type: formData.type,
 					title: formData.title,
 					content: formData.content,
+					acknowledgment: formData.acknowledgment,
 					authors: formData.authors,
 					keywords: formData.keywords,
 					contentFormat: formData.contentFormat,

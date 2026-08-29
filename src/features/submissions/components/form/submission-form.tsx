@@ -1,5 +1,6 @@
 import {
 	IconDeviceFloppy,
+	IconHeartHandshake,
 	IconPresentation,
 	IconSend,
 	IconTags,
@@ -19,6 +20,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
+import { Textarea } from "@/shared/ui/textarea";
 import { FileUploadSection } from "./file-upload-section";
 import { useSubmissionForm } from "./hooks/use-submission-form";
 import { KeywordsInput } from "./keywords-input";
@@ -199,6 +201,50 @@ export function SubmissionForm(props: SubmissionFormProps) {
 																value={field.state.value}
 															/>
 														</div>
+														<FieldError
+															errors={
+																hasError ? field.state.meta.errors : undefined
+															}
+														/>
+													</Field>
+												);
+											}}
+										</form.Field>
+									</div>
+								</>
+							)}
+
+							{currentTypeConfig?.config.enableAcknowledgment && (
+								<>
+									<div className="border-t" />
+
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<IconHeartHandshake className="text-muted-foreground size-5" />
+											<h2 className="text-foreground text-lg font-semibold">
+												Acknowledgment
+											</h2>
+										</div>
+
+										<form.Field name="acknowledgment">
+											{(field) => {
+												const hasError = isFieldErrorVisible(
+													field.state.meta,
+													submissionAttempts,
+												);
+												return (
+													<Field data-invalid={hasError}>
+														<Textarea
+															aria-invalid={hasError}
+															id="acknowledgment"
+															onBlur={field.handleBlur}
+															onChange={(e) =>
+																field.handleChange(e.target.value)
+															}
+															placeholder="Optional — funding, grants, people you want to thank"
+															rows={3}
+															value={field.state.value}
+														/>
 														<FieldError
 															errors={
 																hasError ? field.state.meta.errors : undefined

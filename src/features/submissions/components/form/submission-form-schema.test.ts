@@ -30,6 +30,7 @@ const base = {
 	type: "ABSTRACT" as const,
 	title: "A sufficiently long title",
 	content: "",
+	acknowledgment: "",
 	authors: [author()],
 	keywords: [],
 	file: null,

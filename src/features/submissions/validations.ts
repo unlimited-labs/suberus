@@ -28,6 +28,15 @@ export const submissionAuthorsSchema = z
 		"Exactly one presenter is required",
 	);
 
+export const ACKNOWLEDGMENT_MAX_LENGTH = 2000;
+
+export const acknowledgmentSchema = z
+	.string()
+	.max(
+		ACKNOWLEDGMENT_MAX_LENGTH,
+		`Acknowledgment must be at most ${ACKNOWLEDGMENT_MAX_LENGTH} characters`,
+	);
+
 export const submissionIdInput = z.object({ submissionId: z.uuid() });
 
 // EXHIBITOR absent: decided through the exhibitor flow, never listed here.
@@ -41,6 +50,7 @@ export const submissionCreateInput = z.object({
 	type: submissionTypeFilterSchema,
 	title: z.string(),
 	content: z.string(),
+	acknowledgment: acknowledgmentSchema.nullish(),
 	authors: z.array(authorSchema),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
@@ -69,6 +79,7 @@ const adminSubmissionEditFields = z.object({
 	type: submissionTypeFilterSchema,
 	title: z.string(),
 	content: z.string(),
+	acknowledgment: acknowledgmentSchema.nullish(),
 	authors: z.array(authorSchema),
 	keywords: z.array(z.string()),
 	contentFormat: z.enum(["TEXT", "FILE"]),
@@ -182,6 +193,7 @@ export function createDynamicSubmissionSchema(limits: ValidationLimits) {
 				`Title must be at most ${limits.maxTitleLength} characters`,
 			),
 		content: z.string(),
+		acknowledgment: acknowledgmentSchema.nullish(),
 		authors: submissionAuthorsSchema,
 		keywords: keywordsArraySchema,
 		contentFormat: z.enum(["TEXT", "FILE"]),

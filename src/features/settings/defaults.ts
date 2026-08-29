@@ -18,6 +18,7 @@ export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
 	enableConfidenceLevel: true,
 	enableReviewAttachment: true,
 	enableTrackSelection: false,
+	enableAcknowledgment: false,
 };
 
 export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
@@ -38,6 +39,7 @@ export const DEFAULT_POSTER_CONFIG: SubmissionTypeConfig = {
 	enableConfidenceLevel: true,
 	enableReviewAttachment: true,
 	enableTrackSelection: false,
+	enableAcknowledgment: false,
 };
 
 export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
@@ -64,6 +66,7 @@ export const DEFAULT_FULL_PAPER_CONFIG: SubmissionTypeConfig = {
 	enableConfidenceLevel: true,
 	enableReviewAttachment: true,
 	enableTrackSelection: false,
+	enableAcknowledgment: false,
 };
 
 export const DEFAULT_EXHIBITOR_CONFIG: SubmissionTypeConfig = {
@@ -83,6 +86,7 @@ export const DEFAULT_EXHIBITOR_CONFIG: SubmissionTypeConfig = {
 	enableConfidenceLevel: false,
 	enableReviewAttachment: false,
 	enableTrackSelection: false,
+	enableAcknowledgment: false,
 };
 
 export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {

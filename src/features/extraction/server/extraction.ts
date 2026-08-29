@@ -25,6 +25,7 @@ export interface ExtractionResult {
 	title?: string;
 	authors?: ExtractedAuthor[];
 	keywords?: string[];
+	acknowledgment?: string;
 }
 
 export interface ExtractionConfig {
@@ -61,7 +62,11 @@ export async function extractFromDocx(
 			if (pdfApiMd) return cutAtAbstract(pdfApiMd);
 		}
 		return classified
-			.flatMap((c) => (c.zone !== "BODY" ? [c.para.text.trim()] : []))
+			.flatMap((c) =>
+				c.zone === "BODY" || c.zone === "ACKNOWLEDGMENT"
+					? []
+					: [c.para.text.trim()],
+			)
 			.join("\n");
 	}
 
@@ -194,5 +199,5 @@ export function mergeResults(
 		authors = ai.authors;
 	}
 
-	return { title, authors, keywords };
+	return { title, authors, keywords, acknowledgment: heuristic.acknowledgment };
 }

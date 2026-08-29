@@ -3,6 +3,7 @@ import type { DocParagraph, DocRun } from "./docx-parser";
 import {
 	cleanName,
 	extractAuthorSegments,
+	extractAcknowledgment,
 	extractAuthors,
 	extractEmails,
 	extractFromZones,
@@ -212,5 +213,38 @@ describe("parseName", () => {
 describe("cleanName", () => {
 	it("removes affiliation markers and normalizes whitespace", () => {
 		expect(cleanName("Jan*† Kowalski")).toBe("Jan Kowalski");
+	});
+});
+
+describe("extractAcknowledgment", () => {
+	const ack = (text: string): ClassifiedPara => ({
+		zone: "ACKNOWLEDGMENT",
+		para: p(text),
+	});
+
+	it("strips the inline heading", () => {
+		expect(
+			extractAcknowledgment([ack("Acknowledgments: Funded by NCN.")]),
+		).toBe("Funded by NCN.");
+	});
+
+	it("drops a heading that sits on its own line and joins the rest", () => {
+		expect(
+			extractAcknowledgment([
+				ack("Acknowledgements"),
+				ack("Funded by NCN."),
+				ack("Thanks to the reviewers."),
+			]),
+		).toBe("Funded by NCN.\nThanks to the reviewers.");
+	});
+
+	it("drops an over-long capture rather than prefilling an invalid field", () => {
+		expect(
+			extractAcknowledgment([ack("Acknowledgments"), ack("x".repeat(2001))]),
+		).toBe("");
+	});
+
+	it("returns an empty string without an acknowledgment zone", () => {
+		expect(extractAcknowledgment([])).toBe("");
 	});
 });

@@ -15,6 +15,7 @@ interface UseDocumentExtractionOptions {
 		title?: string;
 		authors?: Author[];
 		keywords?: string[];
+		acknowledgment?: string;
 	}) => void;
 }
 
@@ -106,6 +107,7 @@ export function useDocumentExtraction({
 						affiliationName?: string;
 					}[];
 					keywords?: string[];
+					acknowledgment?: string;
 				} | null;
 
 				if (!result) {
@@ -119,6 +121,8 @@ export function useDocumentExtraction({
 					extracted.authors = mapToFormAuthors(result.authors);
 				if (result.keywords && result.keywords.length > 0)
 					extracted.keywords = result.keywords;
+				if (result.acknowledgment)
+					extracted.acknowledgment = result.acknowledgment;
 
 				if (!cancelled) onExtractedRef.current(extracted);
 			} catch (error) {

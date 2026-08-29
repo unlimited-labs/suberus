@@ -21,6 +21,7 @@ export interface SubmissionFormData {
 	type: "ABSTRACT" | "POSTER" | "FULL_PAPER";
 	title: string;
 	content: string;
+	acknowledgment: string;
 	authors: Author[];
 	keywords: string[];
 	file: File | null;

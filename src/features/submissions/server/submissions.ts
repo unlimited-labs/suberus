@@ -245,6 +245,7 @@ export async function createNewSubmission(
 				type: data.type,
 				title: data.title,
 				content: data.content,
+				acknowledgment: data.acknowledgment?.trim() || null,
 				status: initialStatus,
 				userId,
 				trackId: data.trackId || null,
@@ -489,6 +490,7 @@ export interface UserSubmissionVersion {
 export interface SubmissionDetail {
 	submission: UserSubmission & {
 		content: string;
+		acknowledgment: string | null;
 		authors: UserSubmissionAuthor[];
 		keywords: string[];
 	};
@@ -765,6 +767,7 @@ export async function getSubmissionById(
 				createdAt: submission.createdAt,
 				updatedAt: submission.updatedAt,
 				content: submission.currentVersion?.content ?? submission.content,
+				acknowledgment: submission.acknowledgment,
 				authors,
 				keywords,
 				role: submission.userId === userId ? "author" : "coauthor",
@@ -1051,6 +1054,7 @@ async function applyInPlaceSubmissionEdit(
 			type: data.type,
 			title: data.title,
 			content: data.content,
+			acknowledgment: data.acknowledgment?.trim() || null,
 			trackId: data.trackId || null,
 		},
 	});

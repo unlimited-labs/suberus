@@ -104,6 +104,7 @@ function EditSubmissionPage() {
 		type: submission.type,
 		title: submission.title,
 		content: submission.content,
+		acknowledgment: submission.acknowledgment ?? "",
 		authors: submission.authors.map((a) => ({
 			firstName: a.firstName,
 			lastName: a.lastName,
@@ -127,6 +128,7 @@ function EditSubmissionPage() {
 					type: formData.type,
 					title: formData.title,
 					content: formData.content,
+					acknowledgment: formData.acknowledgment,
 					authors: formData.authors,
 					keywords: formData.keywords,
 					contentFormat: formData.contentFormat,
