@@ -1,10 +1,13 @@
 import { test, expect, isoDay } from "./fixtures";
 import {
+	addPresentationToSession,
 	createProgramSession,
 	createRoom,
+	createSubmission,
 	getPrisma,
 	setConferenceDates,
 } from "../../helpers/test-db";
+import { SubmissionStatus, SubmissionType } from "../../../src/generated/prisma/enums";
 
 test.describe.serial("Planner — Session editor", () => {
 	test.beforeEach(async () => {
@@ -87,6 +90,84 @@ test.describe.serial("Planner — Session editor", () => {
 				);
 			}, { timeout: 10000 })
 			.toBe(120);
+	});
+
+	test("reorders presentations by keyboard and by dragging the handle", async ({
+		plannerPage,
+		testRun,
+		cleanup,
+	}) => {
+		const first = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "First Talk",
+			status: SubmissionStatus.ACCEPTED,
+			type: SubmissionType.ABSTRACT,
+		});
+		cleanup.track(first.id);
+		const second = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Second Talk",
+			status: SubmissionStatus.ACCEPTED,
+			type: SubmissionType.ABSTRACT,
+		});
+		cleanup.track(second.id);
+
+		const roomId = await createRoom(testRun.testRunId, "Room D");
+		const sessionId = await createProgramSession({
+			testRunId: testRun.testRunId,
+			title: "Reorderable",
+			startAt: isoDay(0, 9),
+			endAt: isoDay(0, 11),
+			roomId,
+		});
+		const firstSlot = await addPresentationToSession(sessionId, first.id, {
+			order: 0,
+		});
+		await addPresentationToSession(sessionId, second.id, { order: 1 });
+
+		await plannerPage.goto();
+		await plannerPage.openSessionEditor(sessionId);
+
+		const slots = plannerPage.sessionEditor.locator(
+			'[data-testid^="session-editor-slot-"]',
+		);
+		await expect(slots).toHaveCount(2);
+
+		await slots.nth(1).scrollIntoViewIfNeeded();
+
+		const grip = plannerPage.sessionEditor.getByRole("button", {
+			name: /^Reorder .*First Talk$/,
+		});
+		await grip.focus();
+		await plannerPage.page.keyboard.press("ArrowDown");
+
+		const db = getPrisma();
+		const slotOrder = async () =>
+			(await db.presentationSlot.findUnique({ where: { id: firstSlot } }))
+				?.order;
+		await expect.poll(slotOrder, { timeout: 10000 }).toBe(1);
+
+		await plannerPage.page.keyboard.press("ArrowUp");
+		await expect.poll(slotOrder, { timeout: 10000 }).toBe(0);
+
+		const from = await grip.boundingBox();
+		const target = await slots.nth(1).boundingBox();
+		if (!from || !target) throw new Error("missing bounding box");
+
+		// dnd-kit PointerSensor needs incremental moves, not a single jump.
+		const mouse = plannerPage.page.mouse;
+		await mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+		await mouse.down();
+		const endY = target.y + target.height * 0.75;
+		for (let i = 1; i <= 10; i++) {
+			await mouse.move(
+				from.x + from.width / 2,
+				from.y + from.height / 2 + ((endY - from.y - from.height / 2) * i) / 10,
+			);
+		}
+		await mouse.up();
+
+		await expect.poll(slotOrder, { timeout: 10000 }).toBe(1);
 	});
 
 	test("deletes session from editor", async ({ plannerPage, testRun }) => {
