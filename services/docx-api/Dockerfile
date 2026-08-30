@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 # Pinned Pandoc (participates in the artifact cache key — bump deliberately).
 ARG PANDOC_VERSION=3.5
