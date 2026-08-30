@@ -34,6 +34,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { InvitedTalkDialog } from "./invited-talk-dialog";
 import { useSessionEditor } from "./session-editor-context";
 
@@ -177,44 +178,67 @@ function PresentationRow({
 							</SelectContent>
 						</Select>
 					)}
-					<Button
-						aria-label={
-							p.cancelled
-								? `Restore ${p.submissionTitle}`
-								: `Cancel ${p.submissionTitle}`
-						}
-						aria-pressed={p.cancelled}
-						className={cn(p.cancelled && "text-destructive")}
-						data-testid={`presentation-cancel-${p.id}`}
-						onClick={() => mutations.setCancelled(p.id, !p.cancelled)}
-						size="icon-sm"
-						variant="ghost"
-					>
-						<IconBan size={12} />
-					</Button>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								aria-label={
+									p.cancelled
+										? `Restore ${p.submissionTitle}`
+										: `Cancel ${p.submissionTitle}`
+								}
+								aria-pressed={p.cancelled}
+								className={cn(p.cancelled && "text-destructive")}
+								data-testid={`presentation-cancel-${p.id}`}
+								onClick={() => mutations.setCancelled(p.id, !p.cancelled)}
+								size="icon-sm"
+								variant="ghost"
+							>
+								<IconBan size={12} />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{p.cancelled
+								? "Restore this presentation"
+								: "Cancel this presentation - it stays in the programme, shown struck through"}
+						</TooltipContent>
+					</Tooltip>
 					{p.invited && (
-						<Button
-							aria-label={`Edit ${p.submissionTitle}`}
-							data-testid={`invited-talk-edit-${p.id}`}
-							onClick={() => onEditInvited(p.id)}
-							size="icon-sm"
-							variant="ghost"
-						>
-							<IconPencil size={12} />
-						</Button>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									aria-label={`Edit ${p.submissionTitle}`}
+									data-testid={`invited-talk-edit-${p.id}`}
+									onClick={() => onEditInvited(p.id)}
+									size="icon-sm"
+									variant="ghost"
+								>
+									<IconPencil size={12} />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Edit invited talk</TooltipContent>
+						</Tooltip>
 					)}
 				</div>
 			</div>
 
-			<Button
-				aria-label={`Remove ${p.submissionTitle}`}
-				data-testid={`presentation-remove-${p.id}`}
-				onClick={() => mutations.removePresentation(p.id)}
-				size="icon-sm"
-				variant="ghost"
-			>
-				<IconX size={12} />
-			</Button>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						aria-label={`Remove ${p.submissionTitle}`}
+						data-testid={`presentation-remove-${p.id}`}
+						onClick={() => mutations.removePresentation(p.id)}
+						size="icon-sm"
+						variant="ghost"
+					>
+						<IconX size={12} />
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					{p.invited
+						? "Delete this invited talk"
+						: "Remove from this session - the abstract returns to the unscheduled queue"}
+				</TooltipContent>
+			</Tooltip>
 		</div>
 	);
 }
