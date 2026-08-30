@@ -2,7 +2,7 @@
 name = "suberus-docx-api"
 version = "0.1.0"
 description = "DOCX -> normalized-HTML + rasterized-figure bundle for the submission version-diff pipeline"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<3.15"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
