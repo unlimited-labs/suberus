@@ -1,13 +1,21 @@
 import {
 	IconCut,
 	IconDeviceFloppy,
+	IconDotsVertical,
 	IconRepeat,
 	IconTrash,
 } from "@tabler/icons-react";
 import { useStore } from "@tanstack/react-store";
-import { useState } from "react";
 import { Button } from "@/shared/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import { SheetFooter } from "@/shared/ui/sheet";
 import { useSessionEditor } from "./session-editor-context";
 
@@ -20,19 +28,14 @@ export function SessionEditorFooter() {
 		mutations,
 		onDelete,
 	} = useSessionEditor();
-	const [splitOpen, setSplitOpen] = useState(false);
 	const isDirty = useStore(form.store, (s) => s.isDirty);
 	const isSubmitting = useStore(form.store, (s) => s.isSubmitting);
-
-	const handleSplit = (order: number) => {
-		mutations.split(order);
-		setSplitOpen(false);
-	};
+	const canSplit = presentations.length >= 2 && !session.untimedSlots;
 
 	return (
-		<SheetFooter className="flex flex-col gap-2 border-t p-4">
+		<SheetFooter className="flex flex-row items-center gap-2 border-t p-4">
 			<Button
-				className="w-full"
+				className="flex-1"
 				data-testid="session-editor-save"
 				disabled={!isDirty || isSubmitting}
 				onClick={() => form.handleSubmit()}
@@ -42,63 +45,62 @@ export function SessionEditorFooter() {
 				<IconDeviceFloppy size={14} />
 				{isSubmitting ? "Saving…" : "Save"}
 			</Button>
-			<div className="flex gap-2">
-				<Button
-					className="flex-1"
-					data-testid="session-editor-continue-series"
-					onClick={mutations.continueSeries}
-					size="sm"
-					variant="outline"
-				>
-					<IconRepeat size={13} />
-					Continue series
-				</Button>
-				<Popover onOpenChange={setSplitOpen} open={splitOpen}>
-					<PopoverTrigger asChild>
-						<Button
-							className="flex-1"
-							data-testid="session-editor-split"
-							disabled={presentations.length < 2 || session.untimedSlots}
-							size="sm"
-							variant="outline"
-						>
-							<IconCut size={13} />
-							Split
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent align="end" className="w-72 p-0">
-						<div className="border-b p-2 text-xs font-medium">
-							Split after presentation:
-						</div>
-						<div className="max-h-64 overflow-y-auto p-1">
-							{presentations.slice(0, -1).map((p) => (
-								<button
-									className="hover:bg-muted block w-full rounded px-2 py-1.5 text-left text-xs"
-									key={p.id}
-									onClick={() => handleSplit(p.order)}
-									type="button"
-								>
-									<span className="text-muted-foreground mr-2 font-mono">
-										{p.order + 1}.
-									</span>
-									<span className="line-clamp-1">{p.submissionTitle}</span>
-								</button>
-							))}
-						</div>
-					</PopoverContent>
-				</Popover>
-			</div>
 			<Button
-				className="w-full"
 				data-testid="session-editor-delete"
 				disabled={deleting}
 				onClick={onDelete}
 				size="sm"
+				type="button"
 				variant="destructive"
 			>
 				<IconTrash size={14} />
-				Delete session
+				Delete
 			</Button>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button
+						aria-label="More session actions"
+						data-testid="session-editor-more"
+						size="icon-sm"
+						type="button"
+						variant="outline"
+					>
+						<IconDotsVertical size={14} />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end" className="w-56">
+					<DropdownMenuItem
+						data-testid="session-editor-continue-series"
+						onClick={mutations.continueSeries}
+					>
+						<IconRepeat size={13} />
+						Continue series
+					</DropdownMenuItem>
+					<DropdownMenuSub>
+						<DropdownMenuSubTrigger
+							data-testid="session-editor-split"
+							disabled={!canSplit}
+						>
+							<IconCut size={13} />
+							Split after presentation
+						</DropdownMenuSubTrigger>
+						<DropdownMenuSubContent className="max-h-64 w-72 overflow-y-auto">
+							{presentations.slice(0, -1).map((p) => (
+								<DropdownMenuItem
+									className="text-xs"
+									key={p.id}
+									onClick={() => mutations.split(p.order)}
+								>
+									<span className="text-muted-foreground mr-1 font-mono">
+										{p.order + 1}.
+									</span>
+									<span className="line-clamp-1">{p.submissionTitle}</span>
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuSubContent>
+					</DropdownMenuSub>
+				</DropdownMenuContent>
+			</DropdownMenu>
 		</SheetFooter>
 	);
 }
