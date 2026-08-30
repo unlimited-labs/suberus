@@ -61,6 +61,8 @@ test.describe("Admin changes a submission's submitter", () => {
 		expect(moved?.userId).toBe(newOwner.id)
 
 		await page.getByRole("tab", { name: /History/i }).click()
-		await expect(page.getByText("Submitter changed")).toBeVisible()
+		const history = page.getByRole("tabpanel")
+		await expect(history.getByText("Submitter changed")).toBeVisible()
+		await expect(history.getByText(/→ Newsub Owner/)).toBeVisible()
 	})
 })

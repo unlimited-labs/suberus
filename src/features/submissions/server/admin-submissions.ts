@@ -622,6 +622,7 @@ export async function getSubmissionForEditor(submissionId: string): Promise<{
 							"SUBMISSION_RESUBMITTED",
 							"SUBMISSION_REVISION_UPLOADED",
 							"SUBMISSION_TRACK_CHANGED",
+							"SUBMISSION_SUBMITTER_CHANGED",
 							"REVIEW_ASSIGNED",
 							"REVIEW_SUBMITTED",
 							"REVIEW_CANCELLED",
