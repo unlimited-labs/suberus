@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.12-slim AS builder
+FROM python:3.14-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1 libglib2.0-0 \
@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     && mkdir -p "${EASYOCR_MODULE_PATH}/model"
 
 
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 # Pinned Pandoc (markdown -> HTML for the diff /bundle; participates in the artifact
 # cache key as pandocVersion — bump deliberately, mirror docx-api).
