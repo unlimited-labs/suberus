@@ -105,7 +105,7 @@ export function ProgramBadgesSection() {
 							</Select>
 						</div>
 						<div className="flex h-9 items-center gap-2">
-							<span className="relative inline-flex h-14 w-40 items-center overflow-hidden rounded-md border px-2">
+							<span className="relative inline-flex h-16 w-40 items-center overflow-hidden rounded-md border px-2">
 								<PresentationBadge badge={badge} />
 							</span>
 							<Button

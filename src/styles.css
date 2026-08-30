@@ -435,6 +435,22 @@
 	}
 }
 
+@utility program-ribbon {
+	/* Corner ribbon anchored to the top-right corner, centred on the corner
+	   diagonal for any label length; needs a clip box at least 0.707x its own
+	   width tall. https://kittygiraudel.com/2020/01/22/corner-ribbon-with-trigonometry/ */
+	transform: translateY(-100%) rotate(90deg) translateX(calc(cos(45deg) * 100%))
+		rotate(-45deg);
+	transform-origin: bottom right;
+	/* Sheen overlaid on the badge's own background-color, which stays inline. */
+	background-image: linear-gradient(
+		to bottom,
+		rgb(255 255 255 / 0.18),
+		rgb(255 255 255 / 0) 45%,
+		rgb(0 0 0 / 0.14)
+	);
+}
+
 @layer base {
 	input:-webkit-autofill,
 	input:-webkit-autofill:hover,

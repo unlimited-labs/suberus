@@ -255,7 +255,8 @@ function PresentationRow({
 				numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
 				"cursor-pointer transition-colors hover:bg-accent",
 				!numbered && "-mx-2 rounded-md px-2",
-				badge?.style === "ribbon" && "relative overflow-hidden pr-12",
+				// min-h is the clip height program-ribbon needs at max-w-22.
+				badge?.style === "ribbon" && "relative min-h-16 overflow-hidden pr-12",
 			)}
 			data-testid="presentation-row"
 			{...rowActivation(open)}

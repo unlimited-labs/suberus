@@ -1,6 +1,7 @@
 import type { ProgramBadge } from "@/features/settings/types";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 
 export function readableTextOn(hex: string): "#000000" | "#ffffff" {
 	const channel = (offset: number) => {
@@ -27,16 +28,21 @@ export function PresentationBadge({
 
 	if (badge.style === "ribbon") {
 		return (
-			<span
-				className={cn(
-					"pointer-events-none absolute -right-7 top-1.5 w-28 truncate rotate-45 px-1 py-0.5 text-center font-(family-name:--prog-font-meta) text-[10px] leading-4 font-semibold tracking-(--prog-tracking) uppercase",
-					className,
-				)}
-				data-testid="presentation-badge"
-				style={colors}
-			>
-				{badge.label}
-			</span>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<span
+						className={cn(
+							"program-ribbon absolute top-0 right-0 max-w-22 truncate px-4 py-0.5 text-center font-(family-name:--prog-font-meta) text-[9px] leading-4 font-semibold tracking-(--prog-tracking) uppercase",
+							className,
+						)}
+						data-testid="presentation-badge"
+						style={colors}
+					>
+						{badge.label}
+					</span>
+				</TooltipTrigger>
+				<TooltipContent>{badge.label}</TooltipContent>
+			</Tooltip>
 		);
 	}
 
