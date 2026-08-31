@@ -14,6 +14,7 @@ import {
 } from "@/shared/ui/dialog";
 import { Label } from "@/shared/ui/label";
 import { Stepper } from "../stepper";
+import { InvitedSpeakersInput } from "./invited-speakers-input";
 import { useInvitedTalkForm } from "./use-invited-talk-form";
 
 interface InvitedTalkDialogProps {
@@ -42,7 +43,10 @@ export function InvitedTalkDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent data-testid="invited-talk-dialog">
+			<DialogContent
+				className="fade-y max-h-[90vh] overflow-y-auto"
+				data-testid="invited-talk-dialog"
+			>
 				<DialogHeader>
 					<DialogTitle>
 						{slotId ? "Edit invited talk" : "Add invited talk"}
@@ -109,36 +113,17 @@ function InvitedTalkForm({
 				)}
 			</form.AppField>
 
-			<div className="grid gap-4 sm:grid-cols-2">
-				<form.AppField name="speakerFirstName">
+			<div className="space-y-2">
+				<Label>Speakers</Label>
+				<form.Field name="speakers">
 					{(field) => (
-						<field.InputField
-							label="Speaker first name"
-							placeholder="Optional"
-							testId="invited-talk-first-name"
+						<InvitedSpeakersInput
+							onChange={field.handleChange}
+							value={field.state.value}
 						/>
 					)}
-				</form.AppField>
-				<form.AppField name="speakerLastName">
-					{(field) => (
-						<field.InputField
-							label="Speaker last name"
-							placeholder="Optional"
-							testId="invited-talk-last-name"
-						/>
-					)}
-				</form.AppField>
+				</form.Field>
 			</div>
-
-			<form.AppField name="affiliationName">
-				{(field) => (
-					<field.InputField
-						label="Affiliation"
-						placeholder="Optional — university, company, …"
-						testId="invited-talk-affiliation"
-					/>
-				)}
-			</form.AppField>
 
 			<form.AppField name="abstract">
 				{(field) => (

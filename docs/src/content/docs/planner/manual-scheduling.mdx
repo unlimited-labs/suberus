@@ -217,8 +217,9 @@ them straight from the session editor.
 3. Fill in what you know — only the **title** is required — and press **Add**.
 
 The talk appears in the presentation list like any other, and on the public
-program it renders as an ordinary row: title, speaker, and a preview dialog with
-the abstract. Attendees can add it to their favourites and get reminders for it.
+program it renders as an ordinary row: title, speaker(s), and a preview dialog
+with the abstract. Attendees can add it to their favourites and get reminders
+for it.
 
 To change it later, press the ✎ button on its row. Remove it with ✕ — an invited
 talk has no submission to return to the unscheduled list, so it is deleted
@@ -229,9 +230,8 @@ outright.
 | Field | Required | Notes |
 |---|---|---|
 | **Title** | Yes | Shown on the grid and the public program. |
-| **Speaker first name** | No | Fill both name fields or neither. |
-| **Speaker last name** | No | Fill both name fields or neither. |
-| **Affiliation** | No | University, company, institute — reuses the existing affiliation list. |
+| **Speakers** | No | Add any number of speakers with **+ Add speaker**. Each needs both a first and last name, or neither. The star marks the presenter. |
+| **Affiliation** | No | Per speaker, free text. Reuses the existing affiliation list. |
 | **Abstract** | No | Shown in the talk preview on the public program. Left out entirely when blank. |
 | **Duration (min)** | Yes | Counts against the session's capacity. Hidden for untimed sessions. |
 
@@ -239,7 +239,7 @@ outright.
 
 <Aside type="note" title="Invited talks stay in the program">
 An invited talk is not a submission: it never shows up in **Submissions**,
-statistics or exports, it is never sent for review, and the speaker needs no
+statistics or exports, it is never sent for review, and its speakers need no
 account. It also keeps the **autoplanner out** — a session containing an invited
 talk is skipped by autoplan, because autoplan rewrites the sessions it plans.
 </Aside>

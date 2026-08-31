@@ -3,12 +3,17 @@ import { prisma } from "@/shared/server/db.server";
 import { reserveSlotOrder } from "./presentations";
 import { computeSessionUsage } from "./session-usage";
 
+export interface InvitedSpeaker {
+	firstName: string;
+	lastName: string;
+	affiliationName: string;
+	isPresenter: boolean;
+}
+
 export interface InvitedTalkFields {
 	title: string;
 	abstract?: string | null;
-	speakerFirstName?: string | null;
-	speakerLastName?: string | null;
-	affiliationName?: string | null;
+	speakers: InvitedSpeaker[];
 }
 
 export interface InvitedTalkDetail extends InvitedTalkFields {
@@ -16,57 +21,51 @@ export interface InvitedTalkDetail extends InvitedTalkFields {
 	durationMin: number;
 }
 
-async function resolveAffiliationId(
-	tx: Prisma.TransactionClient,
-	name: string | null | undefined,
-): Promise<string | null> {
-	const trimmed = name?.trim();
-	if (!trimmed) return null;
-	const affiliation = await tx.affiliation.upsert({
-		where: { name: trimmed },
-		update: {},
-		create: { name: trimmed },
-	});
-	return affiliation.id;
-}
-
-/**
- * Replace the placeholder's single speaker row. `presenterId` must be cleared
- * before the delete because it FKs into submission_authors.
- */
-async function writeSpeaker(
+async function writeSpeakers(
 	tx: Prisma.TransactionClient,
 	submissionId: string,
-	fields: InvitedTalkFields,
+	speakers: InvitedSpeaker[],
 ): Promise<void> {
-	await tx.submission.update({
-		where: { id: submissionId },
-		data: { presenterId: null },
-	});
 	await tx.submissionAuthor.deleteMany({ where: { submissionId } });
 
-	const firstName = fields.speakerFirstName?.trim() ?? "";
-	const lastName = fields.speakerLastName?.trim() ?? "";
-	if (!firstName && !lastName) return;
+	const rows = speakers.filter(
+		(s) => s.firstName.trim() || s.lastName.trim() || s.affiliationName.trim(),
+	);
 
-	const author = await tx.submissionAuthor.create({
-		data: {
-			submissionId,
-			firstName,
-			lastName,
-			// ponytail: invited speakers often have no address on file and the column
-			// is non-nullable; INVITED never enters a flow that mails an author.
-			email: "",
-			affiliationId: await resolveAffiliationId(tx, fields.affiliationName),
-			orderIndex: 0,
-			isPresenter: true,
-		},
-		select: { id: true },
-	});
-	await tx.submission.update({
-		where: { id: submissionId },
-		data: { presenterId: author.id },
-	});
+	// Affiliations are upserted dedupe-by-name and sequentially to avoid an
+	// intra-transaction race on the unique constraint (same pattern as
+	// replaceSubmissionAuthors in submissions/server/submissions.ts).
+	const uniqueAffiliationNames = Array.from(
+		new Set(rows.map((s) => s.affiliationName.trim()).filter(Boolean)),
+	);
+	const affiliationIdByName = new Map<string, string>();
+	for (const name of uniqueAffiliationNames) {
+		const affiliation = await tx.affiliation.upsert({
+			where: { name },
+			update: {},
+			create: { name },
+		});
+		affiliationIdByName.set(name, affiliation.id);
+	}
+
+	await Promise.all(
+		rows.map((s, orderIndex) =>
+			tx.submissionAuthor.create({
+				data: {
+					submissionId,
+					firstName: s.firstName.trim(),
+					lastName: s.lastName.trim(),
+					// ponytail: invited speakers often have no address on file and the column
+					// is non-nullable; INVITED never enters a flow that mails an author.
+					email: "",
+					affiliationId:
+						affiliationIdByName.get(s.affiliationName.trim()) ?? null,
+					orderIndex,
+					isPresenter: s.isPresenter,
+				},
+			}),
+		),
+	);
 }
 
 export async function createInvitedTalk(
@@ -85,7 +84,7 @@ export async function createInvitedTalk(
 			},
 			select: { id: true },
 		});
-		await writeSpeaker(tx, submission.id, data);
+		await writeSpeakers(tx, submission.id, data.speakers);
 		return tx.presentationSlot.create({
 			data: {
 				sessionId: data.sessionId,
@@ -98,8 +97,6 @@ export async function createInvitedTalk(
 	});
 }
 
-/** Title, speaker and duration move together so a rejected duration cannot
- * leave the other fields half-saved. */
 export async function updateInvitedTalk(
 	slotId: string,
 	fields: InvitedTalkFields & { durationMin?: number },
@@ -152,7 +149,7 @@ export async function updateInvitedTalk(
 				content: fields.abstract?.trim() ?? "",
 			},
 		});
-		await writeSpeaker(tx, slot.submissionId, fields);
+		await writeSpeakers(tx, slot.submissionId, fields.speakers);
 	});
 }
 
@@ -171,10 +168,10 @@ export async function getInvitedTalk(
 					content: true,
 					authors: {
 						orderBy: { orderIndex: "asc" },
-						take: 1,
 						select: {
 							firstName: true,
 							lastName: true,
+							isPresenter: true,
 							affiliation: { select: { name: true } },
 						},
 					},
@@ -183,14 +180,16 @@ export async function getInvitedTalk(
 		},
 	});
 	if (slot?.submission.type !== "INVITED") return null;
-	const speaker = slot.submission.authors[0];
 	return {
 		slotId: slot.id,
 		durationMin: slot.durationMin,
 		title: slot.submission.title,
 		abstract: slot.submission.content,
-		speakerFirstName: speaker?.firstName ?? "",
-		speakerLastName: speaker?.lastName ?? "",
-		affiliationName: speaker?.affiliation?.name ?? "",
+		speakers: slot.submission.authors.map((a) => ({
+			firstName: a.firstName,
+			lastName: a.lastName,
+			affiliationName: a.affiliation?.name ?? "",
+			isPresenter: a.isPresenter,
+		})),
 	};
 }

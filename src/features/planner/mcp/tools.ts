@@ -452,7 +452,7 @@ const invitedCreate = defineTool({
 	name: "program_invited_create",
 	title: "Add an invited talk",
 	description:
-		"Add a talk that never went through submission (keynote, invited lecture, sponsor talk) as the next slot in a session. Speaker, affiliation and abstract are all optional; the item exists only inside the programme and never appears among submissions.",
+		"Add a talk that never went through submission (keynote, invited lecture, sponsor talk) as the next slot in a session. Speakers (zero or more, each with firstName/lastName/affiliationName/isPresenter) and abstract are all optional; the item exists only inside the programme and never appears among submissions.",
 	input: invitedTalkCreateInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SCHEDULE_WRITE,
@@ -465,7 +465,7 @@ const invitedUpdate = defineTool({
 	name: "program_invited_update",
 	title: "Edit an invited talk",
 	description:
-		"Change the title, speaker, affiliation or abstract of an invited talk. Duration and cancellation go through program_presentation_update; deletion through program_presentation_delete.",
+		"Change the title, speakers or abstract of an invited talk. Duration and cancellation go through program_presentation_update; deletion through program_presentation_delete.",
 	input: invitedTalkUpdateInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_SCHEDULE_WRITE,

@@ -38,11 +38,15 @@ test.describe.serial("Planner — Invited talks", () => {
 		await dialog
 			.getByTestId("invited-talk-title")
 			.fill(`${testRun.testRunId}_Opening keynote`);
-		await dialog.getByTestId("invited-talk-first-name").fill("Ada");
-		await dialog.getByTestId("invited-talk-last-name").fill("Lovelace");
+		await dialog.getByTestId("invited-talk-add-speaker").click();
+		await dialog.getByTestId("invited-talk-speaker-0-first-name").fill("Ada");
+		await dialog.getByTestId("invited-talk-speaker-0-last-name").fill("Lovelace");
 		await dialog
-			.getByTestId("invited-talk-affiliation")
+			.getByTestId("invited-talk-speaker-0-affiliation")
 			.fill("Analytical Engine Institute");
+		await dialog.getByTestId("invited-talk-add-speaker").click();
+		await dialog.getByTestId("invited-talk-speaker-1-first-name").fill("Grace");
+		await dialog.getByTestId("invited-talk-speaker-1-last-name").fill("Hopper");
 		await dialog.getByTestId("invited-talk-submit").click();
 		await expect(dialog).toBeHidden();
 
@@ -65,13 +69,17 @@ test.describe.serial("Planner — Invited talks", () => {
 			select: {
 				status: true,
 				content: true,
-				authors: { select: { firstName: true, lastName: true, email: true } },
+				authors: {
+					orderBy: { orderIndex: "asc" },
+					select: { firstName: true, lastName: true, email: true },
+				},
 			},
 		});
 		expect(placeholder.status).toBe("ACCEPTED");
 		expect(placeholder.content).toBe("");
 		expect(placeholder.authors).toEqual([
 			{ firstName: "Ada", lastName: "Lovelace", email: "" },
+			{ firstName: "Grace", lastName: "Hopper", email: "" },
 		]);
 
 		await setSchedulePublished(true);
@@ -81,6 +89,7 @@ test.describe.serial("Planner — Invited talks", () => {
 			.filter({ hasText: `${testRun.testRunId}_Opening keynote` });
 		await expect(row).toBeVisible({ timeout: 10000 });
 		await expect(row).toContainText("Ada Lovelace");
+		await expect(row).toContainText("Grace Hopper");
 
 		await plannerPage.goto();
 		await plannerPage.openSessionEditor(sessionId);

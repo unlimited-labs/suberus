@@ -270,51 +270,48 @@ export const presentationCreateInput = z.object({
 const invitedTalkText = {
 	title: z.string().min(1, "Title is required").max(300),
 	abstract: z.string().max(5000),
-	speakerFirstName: z.string().max(100),
-	speakerLastName: z.string().max(100),
-	affiliationName: z.string().max(200),
 };
+
+function hasCompleteSpeakerName(v: {
+	firstName: string;
+	lastName: string;
+}): boolean {
+	return !v.firstName.trim() === !v.lastName.trim();
+}
+
+const invitedSpeakerSchema = z
+	.object({
+		firstName: z.string().max(100),
+		lastName: z.string().max(100),
+		affiliationName: z.string().max(200),
+		isPresenter: z.boolean(),
+	})
+	.refine(hasCompleteSpeakerName, {
+		message: "Provide both the speaker's first and last name, or neither",
+		path: ["lastName"],
+	});
 
 const invitedTalkFields = z.object({
 	title: invitedTalkText.title,
 	abstract: invitedTalkText.abstract.nullish(),
-	speakerFirstName: invitedTalkText.speakerFirstName.nullish(),
-	speakerLastName: invitedTalkText.speakerLastName.nullish(),
-	affiliationName: invitedTalkText.affiliationName.nullish(),
+	speakers: z.array(invitedSpeakerSchema).max(20),
 });
 
-const speakerNameComplete = {
-	message: "Provide both the speaker's first and last name, or neither",
-	path: ["speakerLastName"],
-};
+export const invitedTalkCreateInput = invitedTalkFields.extend({
+	sessionId: z.uuid(),
+	durationMin: z.number().int().positive().max(600),
+});
 
-function hasCompleteSpeakerName(v: {
-	speakerFirstName?: string | null;
-	speakerLastName?: string | null;
-}): boolean {
-	return !v.speakerFirstName?.trim() === !v.speakerLastName?.trim();
-}
+export const invitedTalkUpdateInput = invitedTalkFields.extend({
+	id: z.uuid(),
+	durationMin: z.number().int().positive().max(600).optional(),
+});
 
-export const invitedTalkCreateInput = invitedTalkFields
-	.extend({
-		sessionId: z.uuid(),
-		durationMin: z.number().int().positive().max(600),
-	})
-	.refine(hasCompleteSpeakerName, speakerNameComplete);
-
-export const invitedTalkUpdateInput = invitedTalkFields
-	.extend({
-		id: z.uuid(),
-		durationMin: z.number().int().positive().max(600).optional(),
-	})
-	.refine(hasCompleteSpeakerName, speakerNameComplete);
-
-export const invitedTalkFormSchema = z
-	.object({
-		...invitedTalkText,
-		durationMin: z.number().int().positive().max(600),
-	})
-	.refine(hasCompleteSpeakerName, speakerNameComplete);
+export const invitedTalkFormSchema = z.object({
+	...invitedTalkText,
+	speakers: z.array(invitedSpeakerSchema).max(20),
+	durationMin: z.number().int().positive().max(600),
+});
 
 export const presentationDurationValue = z.number().int().positive().max(600);
 

@@ -31,9 +31,7 @@ export function useInvitedTalkForm({
 		defaultValues: {
 			title: talk?.title ?? "",
 			abstract: talk?.abstract ?? "",
-			speakerFirstName: talk?.speakerFirstName ?? "",
-			speakerLastName: talk?.speakerLastName ?? "",
-			affiliationName: talk?.affiliationName ?? "",
+			speakers: talk?.speakers ?? [],
 			durationMin: talk?.durationMin ?? defaultDurationMin,
 		},
 		validators: {
