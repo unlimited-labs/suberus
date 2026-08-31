@@ -272,7 +272,7 @@ const invitedTalkText = {
 	abstract: z.string().max(5000),
 };
 
-function hasCompleteSpeakerName(v: {
+export function hasCompleteSpeakerName(v: {
 	firstName: string;
 	lastName: string;
 }): boolean {
@@ -283,6 +283,7 @@ const invitedSpeakerSchema = z
 	.object({
 		firstName: z.string().max(100),
 		lastName: z.string().max(100),
+		affiliationId: z.uuid().nullable().default(null),
 		affiliationName: z.string().max(200),
 		isPresenter: z.boolean(),
 	})

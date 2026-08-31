@@ -6,6 +6,7 @@ import { computeSessionUsage } from "./session-usage";
 export interface InvitedSpeaker {
 	firstName: string;
 	lastName: string;
+	affiliationId?: string | null;
 	affiliationName: string;
 	isPresenter: boolean;
 }
@@ -36,7 +37,12 @@ async function writeSpeakers(
 	// intra-transaction race on the unique constraint (same pattern as
 	// replaceSubmissionAuthors in submissions/server/submissions.ts).
 	const uniqueAffiliationNames = Array.from(
-		new Set(rows.map((s) => s.affiliationName.trim()).filter(Boolean)),
+		new Set(
+			rows.flatMap((s) => {
+				const name = s.affiliationId ? "" : s.affiliationName.trim();
+				return name ? [name] : [];
+			}),
+		),
 	);
 	const affiliationIdByName = new Map<string, string>();
 	for (const name of uniqueAffiliationNames) {
@@ -59,7 +65,9 @@ async function writeSpeakers(
 					// is non-nullable; INVITED never enters a flow that mails an author.
 					email: "",
 					affiliationId:
-						affiliationIdByName.get(s.affiliationName.trim()) ?? null,
+						s.affiliationId ??
+						affiliationIdByName.get(s.affiliationName.trim()) ??
+						null,
 					orderIndex,
 					isPresenter: s.isPresenter,
 				},
@@ -172,7 +180,7 @@ export async function getInvitedTalk(
 							firstName: true,
 							lastName: true,
 							isPresenter: true,
-							affiliation: { select: { name: true } },
+							affiliation: { select: { id: true, name: true } },
 						},
 					},
 				},
@@ -188,6 +196,7 @@ export async function getInvitedTalk(
 		speakers: slot.submission.authors.map((a) => ({
 			firstName: a.firstName,
 			lastName: a.lastName,
+			affiliationId: a.affiliation?.id ?? null,
 			affiliationName: a.affiliation?.name ?? "",
 			isPresenter: a.isPresenter,
 		})),

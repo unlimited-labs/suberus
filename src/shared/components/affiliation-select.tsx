@@ -25,9 +25,12 @@ interface AffiliationSelectProps {
 	/** If provided, fetches affiliation name on mount when displayValue is empty */
 	initValueId?: string | null;
 	onChange: (affiliationId: string | null, affiliationName: string) => void;
+	/** Fires on every keystroke. onChange fires only on select, create or clear. */
+	onTextChange?: (affiliationName: string) => void;
 	hasError?: boolean;
 	className?: string;
 	placeholder?: string;
+	testId?: string;
 }
 
 function AffiliationOption({
@@ -126,6 +129,7 @@ function AffiliationInput({
 	hasError,
 	isLoading,
 	placeholder,
+	testId,
 	onValueChange,
 	onFocus,
 	onBlur,
@@ -139,6 +143,7 @@ function AffiliationInput({
 	hasError?: boolean;
 	isLoading: boolean;
 	placeholder: string;
+	testId?: string;
 	onValueChange: (value: string) => void;
 	onFocus: () => void;
 	onBlur: () => void;
@@ -165,6 +170,7 @@ function AffiliationInput({
 					hasError && "border-destructive",
 				)}
 				data-affiliation-id={affiliationId || undefined}
+				data-testid={testId}
 				onBlur={onBlur}
 				onChange={(e) => onValueChange(e.target.value)}
 				onFocus={onFocus}
@@ -184,9 +190,11 @@ export function AffiliationSelect({
 	displayValue = "",
 	initValueId,
 	onChange,
+	onTextChange,
 	hasError,
 	className,
 	placeholder = "Type affiliation...",
+	testId,
 }: AffiliationSelectProps) {
 	const [inputValue, setInputValue] = useState(displayValue);
 	const [open, setOpen] = useState(false);
@@ -199,6 +207,11 @@ export function AffiliationSelect({
 	const inputRef = useRef<HTMLInputElement>(null);
 	const isCreatingRef = useRef(false);
 	const isSelectingRef = useRef(false);
+	const blurTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+	// Callers key their update by list index. A blur that resolves after the row is
+	// gone would write to whoever moved into that index.
+	useEffect(() => () => clearTimeout(blurTimerRef.current), []);
 
 	const debouncedInput = useDebounce(inputValue, 300);
 
@@ -293,7 +306,7 @@ export function AffiliationSelect({
 
 	const handleBlur = () => {
 		// Delay to allow click events on dropdown items to fire
-		setTimeout(() => {
+		blurTimerRef.current = setTimeout(() => {
 			if (isSelectingRef.current) {
 				isSelectingRef.current = false;
 				return;
@@ -309,6 +322,7 @@ export function AffiliationSelect({
 
 	const handleValueChange = (val: string) => {
 		setInputValue(val);
+		onTextChange?.(val);
 		if (!val.trim()) {
 			onChange(null, "");
 			setSearchResults({ query: debouncedInput, items: [] });
@@ -377,6 +391,7 @@ export function AffiliationSelect({
 				onValueChange={handleValueChange}
 				open={open}
 				placeholder={placeholder}
+				testId={testId}
 				value={inputValue}
 			/>
 			{showDropdown && (

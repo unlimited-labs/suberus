@@ -44,7 +44,7 @@ export function InvitedTalkDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className="max-h-[90vh] overflow-y-auto"
+				className="max-h-[90vh] grid-cols-[minmax(0,1fr)] overflow-y-auto sm:max-w-3xl"
 				data-testid="invited-talk-dialog"
 			>
 				<DialogHeader>
@@ -103,15 +103,34 @@ function InvitedTalkForm({
 				void form.handleSubmit();
 			}}
 		>
-			<form.AppField name="title">
-				{(field) => (
-					<field.InputField
-						label="Title"
-						placeholder="Opening lecture, sponsor address, …"
-						testId="invited-talk-title"
-					/>
+			<div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+				<form.AppField name="title">
+					{(field) => (
+						<field.InputField
+							label="Title"
+							placeholder="Opening lecture, sponsor address, …"
+							testId="invited-talk-title"
+						/>
+					)}
+				</form.AppField>
+
+				{!untimed && (
+					<form.Field name="durationMin">
+						{(field) => (
+							<div className="w-28 space-y-2">
+								<Label>Duration (min)</Label>
+								<Stepper
+									max={240}
+									min={5}
+									onChange={field.handleChange}
+									step={5}
+									value={field.state.value}
+								/>
+							</div>
+						)}
+					</form.Field>
 				)}
-			</form.AppField>
+			</div>
 
 			<div className="space-y-2">
 				<Label>Speakers</Label>
@@ -130,28 +149,11 @@ function InvitedTalkForm({
 					<field.TextareaField
 						description="Optional — shown in the talk preview on the public programme."
 						label="Abstract"
-						rows={4}
+						rows={3}
 						testId="invited-talk-abstract"
 					/>
 				)}
 			</form.AppField>
-
-			{!untimed && (
-				<form.Field name="durationMin">
-					{(field) => (
-						<div className="space-y-2">
-							<Label>Duration (min)</Label>
-							<Stepper
-								max={240}
-								min={5}
-								onChange={field.handleChange}
-								step={5}
-								value={field.state.value}
-							/>
-						</div>
-					)}
-				</form.Field>
-			)}
 
 			<DialogFooter>
 				<Button onClick={onClose} type="button" variant="outline">
