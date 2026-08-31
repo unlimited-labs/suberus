@@ -104,6 +104,12 @@
 	--prog-card-radius: 0.75rem;
 	--prog-badge-radius: 999px;
 	--prog-max-width: 64rem;
+	--sx-fg: var(--foreground);
+	--sx-muted: var(--muted-foreground);
+	--sx-tag: var(--primary);
+	--sx-attr: oklch(0.5 0.16 305);
+	--sx-string: oklch(0.5 0.12 155);
+	--sx-accent: oklch(0.55 0.16 45);
 }
 
 .dark {
@@ -179,6 +185,9 @@
 	--shadow-offset-y: 1px;
 	--letter-spacing: 0em;
 	--spacing: 0.25rem;
+	--sx-attr: oklch(0.78 0.13 305);
+	--sx-string: oklch(0.76 0.13 155);
+	--sx-accent: oklch(0.78 0.14 55);
 }
 
 /* Public program theme skins — see features/planner/components/public-program.

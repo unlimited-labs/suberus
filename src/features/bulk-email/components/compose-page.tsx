@@ -12,9 +12,12 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-email";
+import type { EmailCampaignFormat } from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import type { CodeLang } from "@/shared/lib/code-highlighter";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { CodeArea } from "@/shared/ui/code-area";
 import {
 	Dialog,
 	DialogContent,
@@ -26,7 +29,6 @@ import {
 import { SectionCard } from "@/shared/ui/section-card";
 import { Separator } from "@/shared/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Textarea } from "@/shared/ui/textarea";
 import { AttachmentDropzone } from "./attachment-dropzone";
 import { CampaignProgressCard } from "./campaign-progress-card";
 import { FormatSelector } from "./format-selector";
@@ -34,6 +36,12 @@ import { PlaceholderHelp } from "./placeholder-help";
 import { PreviewIframe } from "./preview-iframe";
 import { RecipientSummary } from "./recipient-summary";
 import { useComposeCampaign } from "./use-compose-campaign";
+
+const BODY_LANG = {
+	MARKDOWN: "markdown",
+	MJML: "xml",
+	PLAIN: undefined,
+} satisfies Record<EmailCampaignFormat, CodeLang | undefined>;
 
 interface ComposePageProps {
 	campaignId: string;
@@ -121,19 +129,28 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 									</div>
 
 									<TabsContent className="mt-0" value="body">
-										<compose.form.AppField name="bodySource">
-											{(field) => (
-												<Textarea
-													className="h-[28rem] resize-none font-mono text-sm leading-relaxed"
-													data-testid="campaign-body"
-													disabled={!compose.isDraft}
-													id="campaign-body"
-													onBlur={field.handleBlur}
-													onChange={(e) => field.handleChange(e.target.value)}
-													value={field.state.value}
-												/>
+										<compose.form.Subscribe
+											selector={(state) => state.values.format}
+										>
+											{(format) => (
+												<compose.form.AppField name="bodySource">
+													{(field) => (
+														<CodeArea
+															className="h-[28rem] resize-none font-mono text-sm leading-relaxed"
+															data-testid="campaign-body"
+															disabled={!compose.isDraft}
+															id="campaign-body"
+															lang={BODY_LANG[format]}
+															onBlur={field.handleBlur}
+															onChange={(e) =>
+																field.handleChange(e.target.value)
+															}
+															value={field.state.value}
+														/>
+													)}
+												</compose.form.AppField>
 											)}
-										</compose.form.AppField>
+										</compose.form.Subscribe>
 									</TabsContent>
 
 									<TabsContent className="mt-0" value="preview">

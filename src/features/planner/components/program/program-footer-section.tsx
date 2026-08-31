@@ -11,10 +11,10 @@ import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { CodeArea } from "@/shared/ui/code-area";
 import { FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Textarea } from "@/shared/ui/textarea";
 
 export function ProgramFooterSection() {
 	const queryClient = useQueryClient();
@@ -73,10 +73,11 @@ export function ProgramFooterSection() {
 										<TabsTrigger value="preview">Preview</TabsTrigger>
 									</TabsList>
 									<TabsContent value="edit">
-										<Textarea
+										<CodeArea
 											aria-invalid={hasError}
 											className="font-mono text-sm"
 											id="program-footer-html"
+											lang="html"
 											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 											placeholder='<div class="flex justify-center gap-6"><img src="https://example.org/logo.svg" alt="Sponsor" class="h-14" /></div>'

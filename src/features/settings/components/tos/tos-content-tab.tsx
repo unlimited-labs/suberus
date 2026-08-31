@@ -12,11 +12,11 @@ import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { CodeArea } from "@/shared/ui/code-area";
 import { FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
 import { Markdown, MarkdownHint } from "@/shared/ui/markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Textarea } from "@/shared/ui/textarea";
 
 interface TosContentTabProps {
 	initialContent: string;
@@ -74,10 +74,11 @@ export function TosContentTab({ initialContent }: TosContentTabProps) {
 											<TabsTrigger value="preview">Preview</TabsTrigger>
 										</TabsList>
 										<TabsContent value="edit">
-											<Textarea
+											<CodeArea
 												aria-invalid={hasError}
 												className="font-mono text-sm"
 												id="tos-content"
+												lang="markdown"
 												onBlur={field.handleBlur}
 												onChange={(e) => field.handleChange(e.target.value)}
 												placeholder="# Terms of Service&#10;&#10;Enter terms of service here..."

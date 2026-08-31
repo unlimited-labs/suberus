@@ -20,12 +20,12 @@ import {
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
+import { CodeArea } from "@/shared/ui/code-area";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Markdown, MarkdownHint } from "@/shared/ui/markdown";
 import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Textarea } from "@/shared/ui/textarea";
 
 interface FeeType {
 	id: string;
@@ -325,9 +325,10 @@ export function FeeTab({
 								<TabsTrigger value="preview">Preview</TabsTrigger>
 							</TabsList>
 							<TabsContent value="edit">
-								<Textarea
+								<CodeArea
 									className="font-mono text-sm"
 									id="instructions"
+									lang="markdown"
 									onChange={(e) => setContent(e.target.value)}
 									placeholder="# Payment Instructions&#10;&#10;Enter payment details here..."
 									rows={15}
