@@ -51,7 +51,7 @@ function MyDocumentsPage() {
 					</Link>
 				</Button>
 			</PageHeader>
-			<div className="fade flex-1 overflow-auto p-4 sm:p-8">
+			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					<SectionCard
 						description="Documents issued by the organisers."

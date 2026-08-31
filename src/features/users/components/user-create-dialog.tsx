@@ -129,7 +129,7 @@ export function UserCreateDialog({
 			onOpenChange={(next) => (next ? onOpenChange(true) : close())}
 			open={open}
 		>
-			<DialogContent className="fade-y max-h-[90vh] overflow-y-auto sm:max-w-lg">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Add User</DialogTitle>
 					<DialogDescription>

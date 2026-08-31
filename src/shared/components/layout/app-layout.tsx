@@ -54,7 +54,7 @@ export function AppLayout({
 				</div>
 				<main className="bg-background flex flex-1 flex-col overflow-auto shadow-lg md:m-2 md:rounded-2xl">
 					<EmailVerificationBanner />
-					<div className="fade-y flex min-h-0 flex-1 flex-col overflow-auto">
+					<div className="flex min-h-0 flex-1 flex-col overflow-auto">
 						{children}
 					</div>
 					{footerText && (

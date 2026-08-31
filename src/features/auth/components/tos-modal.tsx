@@ -24,7 +24,7 @@ export function TosModal({ open, content, onOpenChange }: TosModalProps) {
 						The conference terms of service document.
 					</DialogDescription>
 				</DialogHeader>
-				<div className="fade-y flex-1 overflow-y-auto pr-2">
+				<div className="flex-1 overflow-y-auto pr-2">
 					<Markdown content={content} />
 				</div>
 				<DialogFooter showCloseButton />

@@ -45,7 +45,7 @@ function AdminSubmissionsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileStack} title="Submissions" />
-			<div className="fade flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
+			<div className="flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
 				<DataTable
 					columns={submissionColumns}
 					data={submissions}

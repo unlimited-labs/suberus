@@ -98,7 +98,7 @@ function AutoPlanPage() {
 				</Button>
 			</PageHeader>
 
-			<div className="fade-y flex-1 overflow-y-auto">
+			<div className="flex-1 overflow-y-auto">
 				<div className="mx-auto max-w-5xl px-8 py-10">
 					{!jobId && !startPending && !errorMsg && (
 						<IntroView

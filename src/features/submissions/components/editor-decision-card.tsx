@@ -44,7 +44,7 @@ function DecisionContent({ decision }: { decision: UserSubmissionDecision }) {
 				<p className="text-muted-foreground mb-2 text-sm font-medium">
 					Letter to Author:
 				</p>
-				<div className="text-foreground bg-background/50 fade-y max-h-64 overflow-y-auto rounded-lg border p-4 text-sm leading-relaxed whitespace-pre-line">
+				<div className="text-foreground bg-background/50 max-h-64 overflow-y-auto rounded-lg border p-4 text-sm leading-relaxed whitespace-pre-line">
 					{decision.letterToAuthor}
 				</div>
 			</div>

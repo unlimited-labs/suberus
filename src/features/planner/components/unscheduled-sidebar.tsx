@@ -36,7 +36,7 @@ type GroupRenderProps = Omit<
 
 function ScheduledBody(props: ComponentProps<typeof ScheduledList>) {
 	return (
-		<div className="fade-y flex-1 overflow-y-auto">
+		<div className="flex-1 overflow-y-auto">
 			<ScheduledList {...props} />
 		</div>
 	);
@@ -66,7 +66,7 @@ function UnscheduledBody({
 	return (
 		<>
 			<GroupingTabs mode={mode} onChange={onModeChange} />
-			<div className="fade-y flex-1 overflow-y-auto">
+			<div className="flex-1 overflow-y-auto">
 				{groups.length === 0 ? (
 					<UnscheduledEmpty hasSearch={Boolean(search)} />
 				) : (

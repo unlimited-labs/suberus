@@ -90,7 +90,7 @@ export function IssuesPanel({ sessions }: IssuesPanelProps) {
 					<div className="border-b px-3 py-2 text-xs font-medium">
 						Issues ({issues.length})
 					</div>
-					<ul className="fade-y max-h-[60vh] overflow-y-auto p-2">
+					<ul className="max-h-[60vh] overflow-y-auto p-2">
 						{issues.map((issue, i) => {
 							const dot = (
 								<span

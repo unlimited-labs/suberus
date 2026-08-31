@@ -68,7 +68,7 @@ export function RevisionDiffPanel({
 					<p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 						Content
 					</p>
-					<div className="border-border bg-muted/30 fade max-h-96 overflow-auto rounded-lg border p-4">
+					<div className="border-border bg-muted/30 max-h-96 overflow-auto rounded-lg border p-4">
 						<TextDiffView
 							emptyLabel="Content unchanged."
 							segments={diffText(previous.content, content)}

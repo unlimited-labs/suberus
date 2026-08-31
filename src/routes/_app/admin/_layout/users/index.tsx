@@ -88,7 +88,7 @@ function UsersPage() {
 					</Link>
 				</Button>
 			</PageHeader>
-			<div className="fade flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
+			<div className="flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
 				<DataTable
 					columns={columns}
 					data={users}

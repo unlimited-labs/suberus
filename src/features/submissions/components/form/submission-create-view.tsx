@@ -117,7 +117,7 @@ export function SubmissionCreateView(props: SubmissionCreateViewProps) {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileText} title={title} />
-			<div className="fade flex-1 overflow-auto p-6">
+			<div className="flex-1 overflow-auto p-6">
 				<SubmissionForm
 					availableTracks={availableTracks}
 					extractionEnabled={extractionSettings.enabled}

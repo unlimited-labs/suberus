@@ -92,7 +92,7 @@ function CopyBlock({
 			onClick={copy}
 			type="button"
 		>
-			<code className="fade-x min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap">
+			<code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap">
 				{value}
 			</code>
 			<span className="text-muted-foreground group-hover:bg-background group-hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded transition-colors">

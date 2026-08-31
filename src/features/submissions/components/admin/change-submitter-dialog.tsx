@@ -87,7 +87,7 @@ export function ChangeSubmitterDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="fade-y max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader className="min-w-0">
 					<DialogTitle>Change Submitter</DialogTitle>
 					<DialogDescription className="truncate">
@@ -130,7 +130,7 @@ export function ChangeSubmitterDialog({
 								{search ? "No users found matching search" : "No users found"}
 							</p>
 						) : (
-							<div className="fade-y max-h-64 space-y-2 overflow-y-auto">
+							<div className="max-h-64 space-y-2 overflow-y-auto">
 								{candidates.map((user) => (
 									<div
 										className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3"

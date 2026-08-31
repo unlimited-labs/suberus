@@ -52,7 +52,7 @@ export function SessionEditorSheet({
 						users={users}
 					>
 						<SessionEditorHeader />
-						<div className="fade-y flex-1 divide-y overflow-y-auto">
+						<div className="flex-1 divide-y overflow-y-auto">
 							<ChairsSection />
 							<PresentationsSection />
 						</div>

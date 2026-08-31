@@ -62,7 +62,7 @@ export function RecipientSummary({
 				) : null}
 			</p>
 
-			<ul className="fade -mx-1 max-h-64 space-y-0.5 overflow-auto px-1">
+			<ul className="-mx-1 max-h-64 space-y-0.5 overflow-auto px-1">
 				{recipients.map((r) => {
 					const variant = statusVariant(r.status);
 					return (

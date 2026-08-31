@@ -116,7 +116,7 @@ function ReviewFormPage() {
 				</Link>
 			</PageHeader>
 
-			<div className="fade flex-1 overflow-auto p-6">
+			<div className="flex-1 overflow-auto p-6">
 				<ReviewForm
 					assignmentId={assignment.id}
 					contentFormat={config.contentFormat}

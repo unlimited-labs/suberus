@@ -44,7 +44,7 @@ export function InvitedTalkDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className="fade-y max-h-[90vh] overflow-y-auto"
+				className="max-h-[90vh] overflow-y-auto"
 				data-testid="invited-talk-dialog"
 			>
 				<DialogHeader>

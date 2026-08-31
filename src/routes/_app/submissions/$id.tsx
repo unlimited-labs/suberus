@@ -65,7 +65,7 @@ function SubmissionDetailPage() {
 				</div>
 			</PageHeader>
 
-			<div className="fade flex-1 overflow-auto p-6">
+			<div className="flex-1 overflow-auto p-6">
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 						<div className="space-y-6">

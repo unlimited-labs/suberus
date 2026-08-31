@@ -30,7 +30,7 @@ function AdminDashboard() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Admin Dashboard" />
-			<div className="fade flex-1 space-y-6 overflow-auto p-6">
+			<div className="flex-1 space-y-6 overflow-auto p-6">
 				<HealthAlerts data={data.health} s3={data.s3} smtp={data.smtp} />
 				<MetricsGrid isLoading={false} metrics={data} />
 				<div className="grid gap-6 lg:grid-cols-2">

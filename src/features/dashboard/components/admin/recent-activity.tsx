@@ -147,7 +147,7 @@ export function RecentActivity({ events }: RecentActivityProps) {
 
 	return (
 		<SectionCard title="Recent Activity">
-			<div className="fade-y max-h-[400px] space-y-3 overflow-y-auto">
+			<div className="max-h-[400px] space-y-3 overflow-y-auto">
 				{allEvents.map((event) => (
 					<ActivityEventRow event={event} key={event.id} />
 				))}

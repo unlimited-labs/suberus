@@ -287,7 +287,7 @@ export function OptionsEditor({
 				sensors={sensors}
 			>
 				<SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-					<div className="fade-y max-h-44 space-y-1.5 overflow-y-auto">
+					<div className="max-h-44 space-y-1.5 overflow-y-auto">
 						{options.map((opt, i) => (
 							<SortableOption
 								id={itemIds[i]}

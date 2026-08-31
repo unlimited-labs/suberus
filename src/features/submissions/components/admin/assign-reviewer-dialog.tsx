@@ -144,7 +144,7 @@ export function AssignReviewerDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="fade-y max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader className="min-w-0">
 					<DialogTitle>Assign Reviewers</DialogTitle>
 					<DialogDescription className="truncate">
@@ -260,7 +260,7 @@ export function AssignReviewerDialog({
 									: "No available reviewers"}
 							</p>
 						) : (
-							<div className="fade-y max-h-64 space-y-2 overflow-y-auto">
+							<div className="max-h-64 space-y-2 overflow-y-auto">
 								{filteredReviewers.map((reviewer) => (
 									<div
 										className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3"

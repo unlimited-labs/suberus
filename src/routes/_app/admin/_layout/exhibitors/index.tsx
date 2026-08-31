@@ -18,7 +18,7 @@ function AdminExhibitorsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconBuildingStore} title="Exhibitors" />
-			<div className="fade flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
+			<div className="flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
 				<ExhibitorsTable exhibitors={exhibitors} />
 			</div>
 		</div>
