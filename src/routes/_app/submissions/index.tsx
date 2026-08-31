@@ -74,7 +74,7 @@ function SubmissionsPage() {
 					urgent={deadlineUrgent}
 				/>
 			)}
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6">
 				{sortedSubmissions.length === 0 ? (
 					<SubmissionsEmptyState canSubmit={canSubmit} />
 				) : (

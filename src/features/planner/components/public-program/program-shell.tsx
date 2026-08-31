@@ -65,7 +65,7 @@ export function ProgramFrame({
 	return (
 		<TooltipProvider>
 			<div
-				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground h-screen overflow-y-auto font-(family-name:--prog-font-body)"
+				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground fade-y h-screen overflow-y-auto font-(family-name:--prog-font-body)"
 				data-program-theme={themeId}
 				data-testid={`program-theme-${themeId}`}
 			>
@@ -368,7 +368,7 @@ function MinimalNav({
 	return (
 		<nav
 			aria-label="Select day"
-			className="-mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:px-0"
+			className="fade-x -mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:px-0"
 			style={{ scrollbarWidth: "none" }}
 		>
 			{days.map((day, i) => {
@@ -427,7 +427,7 @@ function FramedNav({
 	return (
 		<nav
 			aria-label="Select day"
-			className="-mx-5 flex items-stretch gap-0 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
+			className="fade-x -mx-5 flex items-stretch gap-0 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
 			style={{ scrollbarWidth: "none" }}
 		>
 			{days.map((day, i) => {

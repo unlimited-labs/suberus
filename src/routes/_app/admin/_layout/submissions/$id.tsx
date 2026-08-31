@@ -96,7 +96,7 @@ function SubmissionDetailPage() {
 				</Link>
 			</PageHeader>
 
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6">
 				<div className="mx-auto max-w-6xl space-y-6">
 					<div className="space-y-2">
 						<Badge variant="outline">{typeLabels[submission.type]}</Badge>

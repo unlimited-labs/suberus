@@ -62,7 +62,7 @@ export function PreviewIframe({ body, isHtml, isLoading }: PreviewIframeProps) {
 				</div>
 			</div>
 			{isHtml ? (
-				<div className="bg-muted/30 flex justify-center overflow-auto p-3">
+				<div className="bg-muted/30 fade flex justify-center overflow-auto p-3">
 					<iframe
 						className={cn("h-96 shrink-0 rounded-sm bg-white", FRAME[viewport])}
 						sandbox=""
@@ -71,7 +71,7 @@ export function PreviewIframe({ body, isHtml, isLoading }: PreviewIframeProps) {
 					/>
 				</div>
 			) : (
-				<pre className="h-96 overflow-auto p-3 text-sm whitespace-pre-wrap">
+				<pre className="fade h-96 overflow-auto p-3 text-sm whitespace-pre-wrap">
 					{body}
 				</pre>
 			)}

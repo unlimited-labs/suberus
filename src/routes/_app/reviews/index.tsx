@@ -32,7 +32,7 @@ function ReviewsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconClipboardCheck} title="Reviews" />
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
 				{assignments.length === 0 ? (
 					<div className="border-border text-muted-foreground rounded-lg border p-8 text-center">
 						No reviews assigned

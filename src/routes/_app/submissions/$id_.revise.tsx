@@ -225,7 +225,7 @@ function RevisionForm({
 				</Link>
 			</PageHeader>
 
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6">
 				<div className="mx-auto max-w-3xl">
 					<Form className="space-y-6" onSubmit={() => void form.handleSubmit()}>
 						<form.AppField name="title">

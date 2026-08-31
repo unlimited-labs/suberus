@@ -62,7 +62,7 @@ export function GridBody({
 			style={{ maxWidth: `max(var(--prog-max-width), ${naturalRem}rem)` }}
 		>
 			<div className="hidden md:block">
-				<div className="overflow-x-auto">
+				<div className="fade-x overflow-x-auto">
 					<div style={{ minWidth }}>
 						<div
 							className="border-primary grid border-b"
@@ -220,7 +220,7 @@ function MobileSwipe({
 				</div>
 			)}
 			<div
-				className="-mx-5 flex snap-x snap-mandatory overflow-x-auto"
+				className="fade-x -mx-5 flex snap-x snap-mandatory overflow-x-auto"
 				onScroll={() => setSwiped(true)}
 				style={{ scrollbarWidth: "none" }}
 			>

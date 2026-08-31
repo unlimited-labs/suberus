@@ -65,7 +65,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 				</Badge>
 			</PageHeader>
 
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6">
 				<div className="mx-auto w-full max-w-7xl">
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 						<div className="bg-card overflow-hidden rounded-2xl shadow-2xl">

@@ -127,7 +127,7 @@ export function EditorDecisionDialog({
 
 	return (
 		<Dialog onOpenChange={handleOpenChange} open={open}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+			<DialogContent className="fade-y max-h-[90vh] overflow-y-auto sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>Editor Decision</DialogTitle>
 					<DialogDescription className="truncate">
@@ -139,7 +139,7 @@ export function EditorDecisionDialog({
 					{reviews.length > 0 && (
 						<div className="space-y-3">
 							<Label className="text-base">Reviewer Recommendations</Label>
-							<div className="max-h-48 space-y-2 overflow-y-auto">
+							<div className="fade-y max-h-48 space-y-2 overflow-y-auto">
 								{reviews.map((review) => (
 									<div
 										className="space-y-2 rounded-lg border p-3"

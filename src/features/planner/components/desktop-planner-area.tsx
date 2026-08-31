@@ -31,7 +31,7 @@ export function DesktopPlannerArea({
 	return (
 		<div className="hidden min-h-0 flex-1 md:flex">
 			<UnscheduledSidebar />
-			<div className="flex-1 overflow-auto p-4">
+			<div className="fade flex-1 overflow-auto p-4">
 				<PlannerToolsProvider
 					defaultStartAt={defaultStartAt}
 					onCreated={onCreated}

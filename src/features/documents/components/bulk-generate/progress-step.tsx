@@ -21,7 +21,7 @@ export function ProgressStep({
 				<span className="text-muted-foreground">of {progress.total}</span>
 			</div>
 			{progress.failures.length > 0 && (
-				<div className="border-destructive/30 max-h-48 overflow-auto rounded-md border p-2">
+				<div className="border-destructive/30 fade max-h-48 overflow-auto rounded-md border p-2">
 					{progress.failures.map((f) => (
 						<div
 							className="flex items-center justify-between gap-2 p-1 text-xs"

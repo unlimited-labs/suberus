@@ -88,7 +88,7 @@ function AffiliationDropdown({
 }) {
 	return (
 		<div
-			className="bg-popover text-popover-foreground absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border p-1 shadow-md"
+			className="bg-popover text-popover-foreground fade absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border p-1 shadow-md"
 			id="affiliation-listbox"
 			role="listbox"
 		>

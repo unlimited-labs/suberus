@@ -33,7 +33,7 @@ function FeePage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconCash} title="Conference Fee" />
 
-			<div className="flex-1 overflow-auto p-4 sm:p-8">
+			<div className="fade flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl space-y-8">
 					{fee ? (
 						<SettingsSection

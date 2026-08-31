@@ -214,7 +214,7 @@ export function SubmissionsColumnHeader({
 						)}
 					</div>
 					<Separator />
-					<div className="max-h-80 overflow-auto">
+					<div className="fade max-h-80 overflow-auto">
 						<FilterSection
 							facets={columns.type?.getFacetedUniqueValues()}
 							onToggle={(v) => toggle("type", v)}

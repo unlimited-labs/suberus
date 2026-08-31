@@ -47,7 +47,7 @@ function ExhibitorPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconBuildingStore} title="Exhibitor Panel" />
 
-			<div className="flex-1 overflow-auto p-4 sm:p-8">
+			<div className="fade flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-3xl space-y-6">
 					{exhibitor ? (
 						<>

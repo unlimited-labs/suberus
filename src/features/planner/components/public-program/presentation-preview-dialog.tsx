@@ -253,7 +253,7 @@ function PreviewContent({
 
 	if (detail.isPending) {
 		return (
-			<div className="max-h-[55vh] space-y-5 overflow-y-auto">
+			<div className="fade-y max-h-[55vh] space-y-5 overflow-y-auto">
 				<PreviewSkeleton />
 			</div>
 		);
@@ -264,7 +264,7 @@ function PreviewContent({
 
 	const { acknowledgment, authors, content, keywords } = detail.data;
 	return (
-		<div className="max-h-[55vh] space-y-5 overflow-y-auto">
+		<div className="fade-y max-h-[55vh] space-y-5 overflow-y-auto">
 			{authors.length > 0 && (
 				<Authors authors={authors} onSelect={onSelectAuthor} />
 			)}

@@ -23,7 +23,7 @@ export function ReviewStep({ preview }: { preview: BulkPreview }) {
 				</p>
 			</div>
 			{preview.skipped.length > 0 && (
-				<div className="max-h-56 overflow-auto rounded-md border border-amber-200 bg-amber-50/60 p-2 dark:border-amber-900/40 dark:bg-amber-950/20">
+				<div className="fade max-h-56 overflow-auto rounded-md border border-amber-200 bg-amber-50/60 p-2 dark:border-amber-900/40 dark:bg-amber-950/20">
 					<div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
 						<IconAlertTriangle className="size-3.5" />
 						Skipped — missing data

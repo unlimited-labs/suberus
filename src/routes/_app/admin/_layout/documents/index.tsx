@@ -97,7 +97,7 @@ function AdminDocumentsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconFileCertificate} title="Documents" />
-			<div className="flex-1 overflow-auto p-4 sm:p-8">
+			<div className="fade flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					<SigningBanner />
 					<Tabs

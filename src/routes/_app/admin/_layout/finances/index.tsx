@@ -19,7 +19,7 @@ function AdminFinancesPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconCash} title="Finances" />
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6">
 				<FinancesBoard />
 			</div>
 		</div>

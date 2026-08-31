@@ -94,7 +94,7 @@ export function DataTableColumnFilter<TData extends RowData, TValue>({
 					</div>
 				</div>
 				<Separator />
-				<div className="max-h-64 overflow-auto p-2">
+				<div className="max-h-64 overflow-auto fade p-2">
 					<div className="space-y-2">
 						{options.map((option) => {
 							const isSelected = selectedValues.has(option.value);

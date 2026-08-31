@@ -277,7 +277,7 @@ function CountryList({
 	const rows = aggregateByCountry(data);
 
 	return (
-		<div className="max-h-[300px] space-y-1 overflow-y-auto md:max-h-[400px]">
+		<div className="fade-y max-h-[300px] space-y-1 overflow-y-auto md:max-h-[400px]">
 			{rows.map((row) => (
 				<div
 					className="flex items-center justify-between gap-3 border-b py-2 last:border-b-0"

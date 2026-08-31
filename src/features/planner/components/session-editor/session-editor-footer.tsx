@@ -84,7 +84,7 @@ export function SessionEditorFooter() {
 							<IconCut size={13} />
 							Split after presentation
 						</DropdownMenuSubTrigger>
-						<DropdownMenuSubContent className="max-h-64 w-72 overflow-y-auto">
+						<DropdownMenuSubContent className="fade-y max-h-64 w-72 overflow-y-auto">
 							{presentations.slice(0, -1).map((p) => (
 								<DropdownMenuItem
 									className="text-xs"

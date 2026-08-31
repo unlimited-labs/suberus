@@ -81,7 +81,7 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 	}
 
 	return (
-		<div className="overflow-x-auto rounded-md border">
+		<div className="fade-x overflow-x-auto rounded-md border">
 			<Table>
 				<TableHeader>
 					<TableRow>

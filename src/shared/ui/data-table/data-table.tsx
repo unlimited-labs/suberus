@@ -93,10 +93,10 @@ export function DataTable<TData extends RowData>({
 	});
 
 	return (
-		<div className="space-y-4">
-			<div>{toolbar?.(table, rowSelection)}</div>
+		<div className="flex min-h-0 flex-1 flex-col gap-4">
+			<div className="shrink-0">{toolbar?.(table, rowSelection)}</div>
 
-			<div className="hidden md:block rounded-md border border-border/50">
+			<div className="hidden min-h-0 rounded-md border border-border/50 md:flex md:flex-1 md:flex-col">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -165,7 +165,7 @@ export function DataTable<TData extends RowData>({
 				</div>
 			)}
 
-			<div className="hidden md:block">
+			<div className="hidden shrink-0 md:block">
 				<DataTablePagination table={table} pagination={pagination} />
 			</div>
 		</div>

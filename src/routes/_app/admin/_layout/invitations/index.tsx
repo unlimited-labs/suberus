@@ -82,7 +82,7 @@ function InvitationsPage() {
 					Invite User
 				</Button>
 			</PageHeader>
-			<div className="flex-1 overflow-auto p-6">
+			<div className="fade flex-1 overflow-auto p-6 md:flex md:min-h-0 md:flex-col md:overflow-hidden">
 				<DataTable
 					columns={columns}
 					data={invitations}

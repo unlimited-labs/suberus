@@ -50,7 +50,7 @@ export function ExhibitorPresentationCard({
 						{submission.content && (
 							<div className="space-y-1">
 								<p className="text-muted-foreground">Abstract</p>
-								<div className="bg-muted/30 max-h-96 overflow-auto rounded-lg border p-4 leading-relaxed whitespace-pre-wrap">
+								<div className="bg-muted/30 fade max-h-96 overflow-auto rounded-lg border p-4 leading-relaxed whitespace-pre-wrap">
 									{submission.content}
 								</div>
 							</div>

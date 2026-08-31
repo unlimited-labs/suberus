@@ -40,7 +40,7 @@ export function SurveyQuestionDialog({
 	const isEdit = question !== null;
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+			<DialogContent className="fade-y max-h-[90vh] overflow-y-auto sm:max-w-3xl">
 				<DialogHeader>
 					<DialogTitle>{isEdit ? "Edit question" : "Add question"}</DialogTitle>
 					<DialogDescription>

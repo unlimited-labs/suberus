@@ -43,7 +43,7 @@ export function ProgramTracksList({
 
 	return (
 		<div
-			className="overflow-x-auto rounded-md border"
+			className="fade-x overflow-x-auto rounded-md border"
 			data-testid="program-tracks-list"
 		>
 			<Table>

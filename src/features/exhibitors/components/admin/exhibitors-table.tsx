@@ -202,7 +202,10 @@ export function ExhibitorsTable({
 	}
 
 	return (
-		<div data-testid="exhibitors-table">
+		<div
+			className="flex h-full min-h-0 flex-col"
+			data-testid="exhibitors-table"
+		>
 			<DataTable
 				columns={columns}
 				data={exhibitors}
