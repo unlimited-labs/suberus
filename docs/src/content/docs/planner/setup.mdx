@@ -16,9 +16,10 @@ The walkthrough below sets these up for the running example — **ICCMS 2026**,
 14–16 September, two rooms (*Aula Magna* and *Room 101*).
 
 <Aside type="note" title="Where to find it">
-**Settings › Program** holds the *Planner*, *Appearance*, *Rooms*, and *Program
-Tracks* sections (the *Planner* section has its own **Save**; appearance, rooms, and
-tracks save as you change them). The **conference dates and timezone** live on
+**Settings › Program** holds the *Planner*, *Appearance*, *Presentation badges*,
+*Footer content*, *Rooms*, and *Program Tracks* sections (the *Planner* section
+has its own **Save**; appearance, rooms, and tracks save as you change them). The
+**conference dates and timezone** live on
 **[Settings › Conference](/settings/conference/)**.
 </Aside>
 
@@ -132,6 +133,42 @@ keeps the badges already given to the talks it re-seats. Badges follow the activ
 **Appearance** theme's fonts and corner style automatically. In the talk preview
 dialog a ribbon is shown as a normal badge.
 </Aside>
+
+## Footer content
+
+Custom HTML shown at the bottom of the public
+**[program page](/planner/publishing/)** — typically a row of partner,
+sponsor, or funding-body logos with a caption.
+
+🖼️ [Screenshot placeholder — Settings › Program › Footer content]
+
+<Steps>
+
+1. Paste your HTML into the **HTML** field (raw HTML with Tailwind CSS
+   classes for layout — e.g. `<div class="flex justify-center gap-6">…`).
+
+2. Click **Save footer content**. The **Preview** tab shows the saved,
+   sanitized version — save first to see changes reflected there.
+
+</Steps>
+
+Allowed elements: `div`, `p`, `span`, `a`, `img`, `br`, `strong`, `em`, `b`,
+`i`, `ul`, `ol`, `li`, with `class`, `style`, `href`, `target`, `rel`, `src`,
+`alt`, `title`, `width`, `height`, `loading`, and `decoding` attributes.
+`<script>`, inline event handlers (`onclick`, …), and other tags/attributes
+outside this list are stripped on save. Images must be hosted externally
+(paste a full `https://…` URL) — there's no image upload for this field.
+
+<Aside type="caution" title="Only common Tailwind classes are guaranteed to work">
+The site's CSS is generated at build time from classes that already appear in
+the app's own source code. A common utility (`flex`, `gap-6`, `text-xs`,
+`text-gray-400`, …) almost certainly works; an unusual or very specific
+utility that isn't used anywhere else in the app may render with no effect,
+since its CSS was never generated. Prefer inline `style` attributes for
+anything exotic.
+</Aside>
+
+Applies to **every** program theme (Default, Editorial, Crimson, Academic).
 
 ## Rooms
 

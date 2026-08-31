@@ -204,6 +204,7 @@ export type AppSettingsMap = {
 	PROGRAM_SHOW_AUTHOR_INFO: boolean;
 	PROGRAM_QR: ProgramQrSettings;
 	PROGRAM_BADGES: ProgramBadge[];
+	PROGRAM_FOOTER_HTML: string;
 
 	DOCUMENT_SIGNING: DocumentSigningSettings | null;
 };

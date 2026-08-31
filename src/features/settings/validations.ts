@@ -291,6 +291,10 @@ export const tosContentSchema = z.object({
 	content: z.string().min(1, "Terms of Service cannot be empty"),
 });
 
+export const programFooterHtmlSchema = z.object({
+	html: z.string().max(20000),
+});
+
 export const signingAppearanceSchema = z.object({
 	sealReason: z.string().trim().max(120),
 	sealCorner: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]),

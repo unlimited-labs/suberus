@@ -1,4 +1,5 @@
 import { IconEye, IconSearch, IconX } from "@tabler/icons-react";
+import parse from "html-react-parser";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -100,6 +101,9 @@ export function ProgramFrame({
 				</main>
 
 				{framed && <FramedFooter settings={settings} themeId={themeId} />}
+				{settings.footerHtml.trim() && (
+					<CustomFooter html={settings.footerHtml} />
+				)}
 			</div>
 		</TooltipProvider>
 	);
@@ -351,6 +355,14 @@ function FramedFooter({
 				{themeId === "academic" ? settings.name || "Conference" : "— Fin —"}
 			</div>
 		</footer>
+	);
+}
+
+function CustomFooter({ html }: { html: string }) {
+	return (
+		<div className="border-t px-5 py-8 sm:px-10" style={RULE_STYLE}>
+			<div className="mx-auto max-w-(--prog-max-width)">{parse(html)}</div>
+		</div>
 	);
 }
 

@@ -104,6 +104,7 @@ export interface PublicConferenceInfo {
 	timezone: string;
 	theme: string;
 	badges: ProgramBadge[];
+	footerHtml: string;
 	showAuthorInfo: boolean;
 	viewerIsAuthenticated: boolean;
 	viewerIsParticipant: boolean;
@@ -131,6 +132,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		"PROGRAM_THEME",
 		"PROGRAM_SHOW_AUTHOR_INFO",
 		"PROGRAM_BADGES",
+		"PROGRAM_FOOTER_HTML",
 	]);
 	return {
 		name: s.CONFERENCE_NAME,
@@ -140,6 +142,7 @@ export const getPublicConferenceInfoFn = createServerFn({
 		timezone: s.CONFERENCE_TIMEZONE,
 		theme: s.PROGRAM_THEME,
 		badges: s.PROGRAM_BADGES,
+		footerHtml: s.PROGRAM_FOOTER_HTML,
 		showAuthorInfo: s.PROGRAM_SHOW_AUTHOR_INFO,
 		viewerIsAuthenticated: !!session?.user,
 		viewerIsParticipant: session?.user

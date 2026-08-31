@@ -103,6 +103,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 				adminSettingQueryOptions("PROGRAM_BADGES"),
 			),
 			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("PROGRAM_FOOTER_HTML"),
+			),
+			context.queryClient.ensureQueryData(
 				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
 			),
 			context.queryClient.ensureQueryData(

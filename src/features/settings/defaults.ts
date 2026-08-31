@@ -209,6 +209,7 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 		includeWithoutCameraReady: true,
 	},
 	PROGRAM_BADGES: [],
+	PROGRAM_FOOTER_HTML: "",
 
 	DOCUMENT_SIGNING: null,
 };

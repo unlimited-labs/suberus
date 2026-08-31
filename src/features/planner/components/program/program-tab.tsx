@@ -24,6 +24,7 @@ import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { usePlannerSettingsForm } from "./hooks/use-planner-settings-form";
 import { ProgramBadgesSection } from "./program-badges-section";
+import { ProgramFooterSection } from "./program-footer-section";
 import { ProgramThemeSection } from "./program-theme-section";
 import { ProgramTrackDialog } from "./program-track-dialog";
 import { ProgramTracksList } from "./program-tracks-list";
@@ -404,6 +405,7 @@ export function ProgramTab({
 
 			<ProgramThemeSection />
 			<ProgramBadgesSection />
+			<ProgramFooterSection />
 			<QrCodesSection />
 
 			<SettingsSection
