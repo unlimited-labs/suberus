@@ -1,4 +1,5 @@
 import { format, isAfter } from "date-fns";
+import { inTz, tzDayStart } from "@/features/planner/tz-datetime";
 import type { ProgramItem, TimeGroup } from "./program-types";
 
 export function dayLabelParts(date: Date) {
@@ -9,8 +10,11 @@ export function dayLabelParts(date: Date) {
 	};
 }
 
-export function formatLongDate(dateStr: string): string {
-	return format(new Date(dateStr), "MMMM d, yyyy");
+export function formatLongDate(
+	dateStr: string,
+	zone: string | undefined,
+): string {
+	return format(tzDayStart(dateStr, zone), "MMMM d, yyyy", inTz(zone));
 }
 
 function sharesStartTime(group: TimeGroup, item: ProgramItem): boolean {

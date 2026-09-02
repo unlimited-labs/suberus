@@ -4,9 +4,13 @@ import {
 	IconChevronRight,
 	IconLayoutList,
 } from "@tabler/icons-react";
-import { addDays } from "date-fns";
+import { addDays, differenceInCalendarDays } from "date-fns";
 import { useState } from "react";
-import { formatDayLabel, sameDayInTz } from "@/features/planner/tz-datetime";
+import {
+	formatDayLabel,
+	inTz,
+	sameDayInTz,
+} from "@/features/planner/tz-datetime";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
 import { MobileSessionRow } from "./mobile/mobile-session-row";
 import { buildPlannerItems } from "./mobile/planner-item";
@@ -41,11 +45,15 @@ export function MobilePlanner({
 	);
 
 	const shiftDay = (delta: number) => {
-		setCursor(addDays(cursor, delta));
+		setCursor(addDays(cursor, delta, inTz(timezone)));
 	};
 
-	const canPrev = !conferenceStart || cursor > conferenceStart;
-	const canNext = !conferenceEnd || cursor < conferenceEnd;
+	const canPrev =
+		!conferenceStart ||
+		differenceInCalendarDays(cursor, conferenceStart, inTz(timezone)) > 0;
+	const canNext =
+		!conferenceEnd ||
+		differenceInCalendarDays(cursor, conferenceEnd, inTz(timezone)) < 0;
 
 	return (
 		<div className="flex flex-col" data-testid="mobile-planner">

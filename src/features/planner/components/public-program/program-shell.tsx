@@ -1,6 +1,7 @@
 import { IconEye, IconSearch, IconX } from "@tabler/icons-react";
 import parse from "html-react-parser";
 import type { CSSProperties, ReactNode } from "react";
+import { formatZoneLabel } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -87,6 +88,14 @@ export function ProgramFrame({
 					searchPlaceholder={searchPlaceholder}
 					setActiveDay={setActiveDay}
 					setSearch={setSearch}
+					zoneLabel={
+						settings.timezone && days.length > 0
+							? formatZoneLabel(
+									days[activeDay] ?? new Date(),
+									settings.timezone,
+								)
+							: null
+					}
 				/>
 
 				<main
@@ -191,6 +200,7 @@ function ProgramStickyBar({
 	search,
 	searchPlaceholder,
 	setSearch,
+	zoneLabel,
 }: {
 	framed: boolean;
 	days: Date[];
@@ -200,6 +210,7 @@ function ProgramStickyBar({
 	search: string;
 	searchPlaceholder?: string;
 	setSearch: (value: string) => void;
+	zoneLabel: string | null;
 }) {
 	return (
 		<div
@@ -238,6 +249,21 @@ function ProgramStickyBar({
 					setSearch={setSearch}
 				/>
 			</div>
+			{zoneLabel && (
+				<div
+					className={cn(
+						"mx-auto max-w-(--prog-max-width) px-5 pb-2",
+						framed ? "sm:px-10" : "sm:px-8",
+					)}
+				>
+					<p
+						className="text-muted-foreground text-[0.7rem] tracking-wide"
+						data-testid="program-timezone-note"
+					>
+						All times shown in {zoneLabel}
+					</p>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -265,7 +291,7 @@ function MinimalHeader({
 				</div>
 				{settings.startDate && (
 					<p className="text-primary text-xs font-medium tracking-[0.2em] uppercase">
-						{formatLongDate(settings.startDate)}
+						{formatLongDate(settings.startDate, settings.timezone)}
 					</p>
 				)}
 				<h1 className="text-foreground mt-3 font-(family-name:--prog-font-display) text-3xl font-bold tracking-tight sm:text-5xl">

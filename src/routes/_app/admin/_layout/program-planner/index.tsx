@@ -83,7 +83,7 @@ function ProgramPlannerContent() {
 		breaks,
 	);
 
-	const hiddenWeekdays = computeHiddenWeekdays(confStart, confEnd);
+	const hiddenWeekdays = computeHiddenWeekdays(confStart, confEnd, tz);
 	const { invalidate, handleSubmissionDrop, handleEventUpdate } =
 		usePlannerMutations(settings.defaultPresentationMin);
 	const {
@@ -102,6 +102,7 @@ function ProgramPlannerContent() {
 		currentDate,
 		confStart,
 		confEnd,
+		tz,
 	);
 
 	const closeMobileQueue = () => setMobileQueueOpen(false);

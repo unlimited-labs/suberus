@@ -1,10 +1,14 @@
-import { compareAsc, eachDayOfInterval } from "date-fns";
+import { compareAsc } from "date-fns";
 import type { PublicConferenceInfo } from "@/features/planner/api/schedule";
 import type {
 	PublicProgram,
 	PublicProgramSession,
 } from "@/features/planner/server/schedule";
-import { sameDayInTz } from "@/features/planner/tz-datetime";
+import {
+	eachDayInTz,
+	sameDayInTz,
+	tzDayStart,
+} from "@/features/planner/tz-datetime";
 import { buildTimeGroups } from "./program-formatting";
 import type { ProgramItem } from "./program-types";
 
@@ -51,13 +55,14 @@ export function useProgramSchedule({
 	search,
 	activeDay,
 }: UseProgramScheduleArgs) {
-	const tz = settings.timezone || undefined;
+	const tzName = settings.timezone || undefined;
 	const days =
 		settings.startDate && settings.endDate
-			? eachDayOfInterval({
-					start: new Date(settings.startDate),
-					end: new Date(settings.endDate),
-				})
+			? eachDayInTz(
+					tzDayStart(settings.startDate, tzName),
+					tzDayStart(settings.endDate, tzName),
+					tzName,
+				)
 			: [];
 
 	const q = search.toLowerCase().trim();
@@ -80,10 +85,10 @@ export function useProgramSchedule({
 	const itemsForDay = (day: Date): ProgramItem[] => {
 		if (!program) return [];
 		const sessions = program.sessions.filter(
-			(s) => sameDayInTz(new Date(s.startAt), day, tz) && sessionMatches(s),
+			(s) => sameDayInTz(new Date(s.startAt), day, tzName) && sessionMatches(s),
 		);
 		const breaks = program.breaks.filter(
-			(b) => sameDayInTz(new Date(b.startAt), day, tz) && breakMatches(b),
+			(b) => sameDayInTz(new Date(b.startAt), day, tzName) && breakMatches(b),
 		);
 		const all: ProgramItem[] = [
 			...sessions.map((s) => ({ kind: "session" as const, data: s })),
@@ -104,7 +109,7 @@ export function useProgramSchedule({
 	const activeMatchCount = q ? countHits(activeItems) : 0;
 
 	return {
-		tz,
+		tz: tzName,
 		days,
 		q,
 		activeItems,
