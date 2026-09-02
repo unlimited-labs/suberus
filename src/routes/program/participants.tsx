@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { publicParticipantsQueryOptions } from "@/features/planner/api/participants";
 import { publicConferenceInfoQueryOptions } from "@/features/planner/api/schedule";
 import { ParticipantsList } from "@/features/planner/components/public-program/participants-list";
@@ -41,14 +41,10 @@ function ParticipantsPage() {
 	const [search, setSearch] = useState("");
 	const q = search.trim().toLowerCase();
 
-	const filtered = useMemo(
-		() =>
-			(participants ?? []).filter((p) =>
-				`${p.firstName} ${p.lastName} ${p.affiliationName ?? ""}`
-					.toLowerCase()
-					.includes(q),
-			),
-		[participants, q],
+	const filtered = (participants ?? []).filter((p) =>
+		`${p.firstName} ${p.lastName} ${p.affiliationName ?? ""}`
+			.toLowerCase()
+			.includes(q),
 	);
 
 	const theme = resolveProgramTheme(settings.theme);

@@ -378,11 +378,7 @@ function MinimalNav({
 	setActiveDay: (i: number) => void;
 }) {
 	return (
-		<nav
-			aria-label="Select day"
-			className="-mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:px-0"
-			style={{ scrollbarWidth: "none" }}
-		>
+		<nav aria-label="Select day" className="flex flex-wrap gap-2">
 			{days.map((day, i) => {
 				const label = dayLabelParts(day);
 				const isActive = activeDay === i;
@@ -439,8 +435,7 @@ function FramedNav({
 	return (
 		<nav
 			aria-label="Select day"
-			className="-mx-5 flex items-stretch gap-0 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
-			style={{ scrollbarWidth: "none" }}
+			className="flex flex-wrap items-stretch gap-x-6 gap-y-4"
 		>
 			{days.map((day, i) => {
 				const label = dayLabelParts(day);
@@ -449,7 +444,7 @@ function FramedNav({
 				return (
 					<button
 						className={cn(
-							"group relative flex shrink-0 items-baseline gap-2 px-3 py-1.5 text-left whitespace-nowrap transition-colors first:pl-0 sm:py-2",
+							"group relative flex shrink-0 items-baseline gap-2 py-1.5 text-left whitespace-nowrap transition-colors sm:py-2",
 							isActive
 								? "text-primary"
 								: "text-(--prog-faint) hover:text-foreground",

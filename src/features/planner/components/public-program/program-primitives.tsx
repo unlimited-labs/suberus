@@ -182,14 +182,22 @@ export function PresentationList({
 	if (session.presentations.length === 0) return null;
 
 	const showAll = !query || sessionSelfMatches(session, query);
+	const slots: {
+		presentation: (typeof session.presentations)[number];
+		index: number;
+		presStart: Date;
+	}[] = [];
 	let offset = 0;
-	const slots = session.presentations.map((p, i) => {
-		const presStart = session.untimedSlots
-			? new Date(session.startAt)
-			: addMinutes(new Date(session.startAt), offset);
+	for (const [i, p] of session.presentations.entries()) {
+		slots.push({
+			presentation: p,
+			index: i,
+			presStart: session.untimedSlots
+				? new Date(session.startAt)
+				: addMinutes(new Date(session.startAt), offset),
+		});
 		offset += p.durationMin;
-		return { presentation: p, index: i, presStart };
-	});
+	}
 
 	return (
 		<ol className={cn("border-t border-border", className)}>

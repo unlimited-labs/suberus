@@ -1,5 +1,5 @@
 import { onlineManager } from "@tanstack/react-query";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
 	prompt: () => Promise<void>;
@@ -36,11 +36,11 @@ export function useInstallPrompt() {
 		};
 	}, []);
 
-	const install = useCallback(async () => {
+	const install = async () => {
 		if (!promptEvent) return;
 		await promptEvent.prompt();
 		setPromptEvent(null);
-	}, [promptEvent]);
+	};
 
 	return { canInstall: !!promptEvent, install };
 }
