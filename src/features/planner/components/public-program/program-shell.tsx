@@ -69,7 +69,7 @@ export function ProgramFrame({
 	return (
 		<TooltipProvider>
 			<div
-				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground h-screen overflow-y-auto font-(family-name:--prog-font-body)"
+				className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground h-dvh overflow-y-auto font-(family-name:--prog-font-body)"
 				data-program-theme={themeId}
 				data-testid={`program-theme-${themeId}`}
 			>

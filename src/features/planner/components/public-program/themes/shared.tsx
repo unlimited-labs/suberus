@@ -239,7 +239,7 @@ export function Highlight({
 
 export function ProgramEmptyState() {
 	return (
-		<div className="bg-background flex h-screen flex-col items-center justify-center gap-3 p-8 text-center">
+		<div className="bg-background flex h-dvh flex-col items-center justify-center gap-3 p-8 text-center">
 			<IconCalendar className="text-muted-foreground size-12" />
 			<p className="text-foreground text-2xl font-semibold">
 				Programme not published yet
