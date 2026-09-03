@@ -32,7 +32,7 @@ export interface ProgramQrSettings {
 	errorCorrectionLevel: "L" | "M" | "Q" | "H";
 	width: number;
 	margin: number;
-	format: "svg" | "png";
+	format: "svg" | "png" | "eps";
 	/** Substitute short-link base, e.g. "https://short.dom/s". Empty = APP_BASE_URL + "/s". */
 	baseUrl: string;
 	includeWithoutCameraReady: boolean;

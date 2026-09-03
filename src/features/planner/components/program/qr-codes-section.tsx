@@ -19,6 +19,7 @@ const ERROR_CORRECTION_OPTIONS = [
 const FORMAT_OPTIONS = [
 	{ value: "svg", label: "SVG" },
 	{ value: "png", label: "PNG" },
+	{ value: "eps", label: "EPS" },
 ] as const;
 
 function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
@@ -38,7 +39,8 @@ function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
 						)}
 					</form.AppField>
 					<p className="text-muted-foreground text-xs">
-						SVG scales losslessly for print; PNG for tools that need a bitmap.
+						SVG scales losslessly for print; PNG for tools that need a bitmap;
+						EPS for print shops and DTP software.
 					</p>
 				</div>
 				<div className="space-y-2">

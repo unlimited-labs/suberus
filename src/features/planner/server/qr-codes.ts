@@ -35,6 +35,37 @@ export interface RenderedQr {
 	contentType: string;
 }
 
+function qrToEps(url: string, settings: ProgramQrSettings): string {
+	const { modules } = QRCode.create(url, {
+		errorCorrectionLevel: settings.errorCorrectionLevel,
+	});
+	const side = settings.width;
+	const cell = side / (modules.size + settings.margin * 2);
+	const rects: string[] = [];
+	for (let row = 0; row < modules.size; row++) {
+		for (let col = 0; col < modules.size; col++) {
+			if (!modules.get(row, col)) continue;
+			const x = (col + settings.margin) * cell;
+			const y = side - (row + 1 + settings.margin) * cell;
+			rects.push(
+				`${x.toFixed(3)} ${y.toFixed(3)} ${cell.toFixed(3)} dup rectfill`,
+			);
+		}
+	}
+	return [
+		"%!PS-Adobe-3.0 EPSF-3.0",
+		`%%BoundingBox: 0 0 ${Math.ceil(side)} ${Math.ceil(side)}`,
+		"%%Creator: Suberus",
+		"%%EndComments",
+		`1 setgray 0 0 ${Math.ceil(side)} dup rectfill`,
+		"0 setgray",
+		...rects,
+		"showpage",
+		"%%EOF",
+		"",
+	].join("\n");
+}
+
 export async function renderQr(
 	url: string,
 	settings: ProgramQrSettings,
@@ -45,6 +76,12 @@ export async function renderQr(
 		width: settings.width,
 	} as const;
 
+	if (settings.format === "eps") {
+		return {
+			body: qrToEps(url, settings),
+			contentType: "application/postscript",
+		};
+	}
 	if (settings.format === "png") {
 		const png = await QRCode.toBuffer(url, { ...options, type: "png" });
 		return { body: new Uint8Array(png), contentType: "image/png" };

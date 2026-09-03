@@ -161,7 +161,7 @@ export const programQrSettingsSchema = z.object({
 		.min(128, "At least 128 px")
 		.max(2048, "At most 2048 px"),
 	margin: z.number().int().min(0, "At least 0").max(16, "At most 16"),
-	format: z.enum(["svg", "png"]),
+	format: z.enum(["svg", "png", "eps"]),
 	baseUrl: z.union([z.literal(""), z.httpUrl("Must be a valid URL")]),
 	includeWithoutCameraReady: z.boolean(),
 });

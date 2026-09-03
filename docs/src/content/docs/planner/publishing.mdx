@@ -188,9 +188,9 @@ codes — one per scheduled talk, plus one for the public program page.
 
 | Field | Detail |
 |---|---|
-| **File format** | **SVG** (default) scales losslessly for print; **PNG** for tools that need a bitmap. |
+| **File format** | **SVG** (default) scales losslessly for print; **PNG** for tools that need a bitmap; **EPS** for print shops and DTP software that ask for PostScript (pure black, no colour separation). |
 | **Error correction** | **L** (7%), **M** (15%, default), **Q** (25%), **H** (30%). Higher levels survive scuffs and overprinting but pack the pattern denser. |
-| **Size** | Output width in pixels, 128–2048 (default 512). For SVG this only sets the `width`/`height` attributes — the graphic stays vector. |
+| **Size** | Output width in pixels, 128–2048 (default 512). For SVG this only sets the `width`/`height` attributes and for EPS the bounding box (in points) — both stay vector. |
 | **Quiet zone** | Blank margin around the code, in modules, 0–16 (default 4). Below 4 some scanners struggle. |
 | **Substitute domain** | Leave empty to encode this site's own address. Enter e.g. `https://example.com/conf` and talk QRs encode `https://example.com/conf/42`, while the program QR encodes `https://example.com/conf` itself. That domain must forward both — see [Forwarding a substitute domain](#forwarding-a-substitute-domain) — otherwise the printed codes lead nowhere. |
 | **Include talks without a camera-ready PDF** | On by default, so you can print before every file is in. Those QRs return 404 until the PDF is uploaded — then they start working with no reprint. |

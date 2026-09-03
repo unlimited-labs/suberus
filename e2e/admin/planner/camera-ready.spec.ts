@@ -231,6 +231,26 @@ test.describe.serial("Camera-ready", () => {
 		await page.getByTestId("qr-generate-program").click();
 		expect((await programDownload).suggestedFilename()).toBe("program-qr.svg");
 
+		await page.locator("#format").click();
+		await page.getByRole("option", { name: "EPS", exact: true }).click();
+
+		const epsZipDownload = page.waitForEvent("download");
+		await page.getByTestId("qr-generate-zip").click();
+		const epsEntry = new AdmZip(
+			await (await epsZipDownload).createReadStream().then(streamToBuffer),
+		)
+			.getEntries()
+			.find((e) => e.entryName === `${sequentialNumber}.eps`);
+		expect(epsEntry?.getData().toString("utf8")).toContain(
+			"%!PS-Adobe-3.0 EPSF-3.0",
+		);
+
+		const epsProgramDownload = page.waitForEvent("download");
+		await page.getByTestId("qr-generate-program").click();
+		expect((await epsProgramDownload).suggestedFilename()).toBe(
+			"program-qr.eps",
+		);
+
 		await programSettingsPage.goto();
 		await expect(page.getByTestId("qr-base-url")).toHaveValue(
 			"https://short.example/s",
