@@ -7,6 +7,7 @@ import {
 	EventDetails,
 	PresentationList,
 	SessionHeader,
+	TimeRange,
 } from "../program-primitives";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "../themes/registry";
@@ -127,8 +128,18 @@ function GridRow({
 							STICKY_COL,
 						)}
 					>
-						<span className="text-primary-ink block">{start}</span>
-						<span className="block text-(--prog-faint)">{end}</span>
+						<time
+							className="text-primary-ink block"
+							dateTime={new Date(group.startAt).toISOString()}
+						>
+							{start}
+						</time>
+						<time
+							className="block text-(--prog-faint)"
+							dateTime={new Date(group.endAt).toISOString()}
+						>
+							{end}
+						</time>
 					</div>
 					{cols.map((c) => {
 						const sessions = group.sessions.filter(
@@ -160,7 +171,6 @@ function BreakBand({
 	tz?: string;
 	inset?: boolean;
 }) {
-	const { start, end } = timeRange(group, tz);
 	const events = group.breaks.filter((b) => b.kind === "EVENT");
 	const plainBreaks = group.breaks.filter((b) => b.kind !== "EVENT");
 	return (
@@ -170,7 +180,7 @@ function BreakBand({
 			{plainBreaks.length > 0 && (
 				<div className="flex items-center gap-3 sm:gap-5">
 					<span className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.2em] text-(--prog-faint) uppercase tabular-nums">
-						{start} – {end}
+						<TimeRange endAt={group.endAt} startAt={group.startAt} tz={tz} />
 					</span>
 					<span className="text-muted-foreground text-base">
 						{plainBreaks.map((b) => b.title).join(" · ")}
@@ -274,13 +284,16 @@ function MobileRoomTimeline({
 				);
 				const hasBreak = group.breaks.length > 0;
 				if (sessions.length === 0 && !hasBreak) return null;
-				const { start, end } = timeRange(group, tz);
 				return (
 					<div key={`${group.startAt}-${gi}`}>
 						{sessions.length > 0 && (
 							<>
 								<div className="mb-2 font-(family-name:--prog-font-meta) text-[11px] tracking-[0.15em] text-(--prog-faint) uppercase tabular-nums">
-									{start} – {end}
+									<TimeRange
+										endAt={group.endAt}
+										startAt={group.startAt}
+										tz={tz}
+									/>
 								</div>
 								{sessions.map((s) => (
 									<SessionCell key={s.id} query={query} session={s} tz={tz} />

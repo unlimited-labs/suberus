@@ -2,12 +2,12 @@ import type {
 	PublicProgramBreak,
 	PublicProgramSession,
 } from "@/features/planner/server/schedule";
-import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import {
 	EventDetails,
 	PresentationList,
 	SessionHeader,
+	TimeRange,
 } from "../program-primitives";
 import type { TimeGroup } from "../program-types";
 import type { ProgramThemeProps } from "../themes/registry";
@@ -46,28 +46,18 @@ function TimeSlot({
 	query: string;
 	framed: boolean;
 }) {
-	const start = formatClockTime(new Date(group.startAt), tz);
-	const end = formatClockTime(new Date(group.endAt), tz);
 	const dash = framed ? "—" : "–";
 
 	const hasEvent = group.breaks.some((b) => b.kind === "EVENT");
 	if (group.sessions.length === 0 && group.breaks.length > 0 && !hasEvent) {
-		return (
-			<BreakOnlyRow
-				dash={dash}
-				end={end}
-				framed={framed}
-				group={group}
-				start={start}
-			/>
-		);
+		return <BreakOnlyRow dash={dash} framed={framed} group={group} tz={tz} />;
 	}
 
 	const parallel = group.sessions.length > 1;
 
 	return (
 		<section>
-			<SlotHeading dash={dash} end={end} framed={framed} start={start} />
+			<SlotHeading dash={dash} framed={framed} group={group} tz={tz} />
 			<div
 				className={cn(
 					"grid",
@@ -94,44 +84,50 @@ function TimeSlot({
 }
 
 function SlotHeading({
-	start,
-	end,
+	group,
 	dash,
 	framed,
+	tz,
 }: {
-	start: string;
-	end: string;
+	group: TimeGroup;
 	dash: string;
 	framed: boolean;
+	tz?: string;
 }) {
+	const range = (
+		<TimeRange
+			dash={dash}
+			endAt={group.endAt}
+			startAt={group.startAt}
+			tz={tz}
+		/>
+	);
 	if (framed) {
 		return (
 			<div className="border-border mb-6 border-b pb-3">
 				<h2 className="text-muted-foreground font-(family-name:--prog-font-meta) text-sm font-normal tracking-[0.2em] uppercase tabular-nums">
-					{start} {dash} {end}
+					{range}
 				</h2>
 			</div>
 		);
 	}
 	return (
 		<h2 className="text-primary-ink mb-4 text-sm font-semibold tracking-wide uppercase tabular-nums">
-			{start} {dash} {end}
+			{range}
 		</h2>
 	);
 }
 
 function BreakOnlyRow({
 	group,
-	start,
-	end,
 	dash,
 	framed,
+	tz,
 }: {
 	group: TimeGroup;
-	start: string;
-	end: string;
 	dash: string;
 	framed: boolean;
+	tz?: string;
 }) {
 	return (
 		<div
@@ -147,7 +143,12 @@ function BreakOnlyRow({
 							: "text-xs tracking-wide",
 					)}
 				>
-					{start} {dash} {end}
+					<TimeRange
+						dash={dash}
+						endAt={group.endAt}
+						startAt={group.startAt}
+						tz={tz}
+					/>
 				</p>
 				<p
 					className={cn(
@@ -197,8 +198,12 @@ function BreakCard({
 							: "text-xs tracking-wide",
 					)}
 				>
-					{formatClockTime(new Date(item.startAt), tz)} {dash}{" "}
-					{formatClockTime(new Date(item.endAt), tz)}
+					<TimeRange
+						dash={dash}
+						endAt={item.endAt}
+						startAt={item.startAt}
+						tz={tz}
+					/>
 					{item.room && ` · ${item.room.name}`}
 				</p>
 				<p

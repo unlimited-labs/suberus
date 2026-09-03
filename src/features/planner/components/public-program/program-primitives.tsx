@@ -25,6 +25,28 @@ export const MARK =
 const ROW_TITLE =
 	"text-left after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2";
 
+export function TimeRange({
+	startAt,
+	endAt,
+	dash = "–",
+	tz,
+}: {
+	startAt: string | Date;
+	endAt: string | Date;
+	dash?: string;
+	tz?: string;
+}) {
+	const start = new Date(startAt);
+	const end = new Date(endAt);
+	return (
+		<>
+			<time dateTime={start.toISOString()}>{formatClockTime(start, tz)}</time>{" "}
+			{dash}{" "}
+			<time dateTime={end.toISOString()}>{formatClockTime(end, tz)}</time>
+		</>
+	);
+}
+
 export function EventDetails({
 	item,
 	tz,
@@ -38,8 +60,7 @@ export function EventDetails({
 		<>
 			<p className="flex items-center gap-2 font-(family-name:--prog-font-meta) text-xs tracking-wide text-(--primary-ink) uppercase">
 				<IconCalendarEvent className="size-3.5 shrink-0" />
-				{formatClockTime(new Date(item.startAt), tz)} –{" "}
-				{formatClockTime(new Date(item.endAt), tz)}
+				<TimeRange endAt={item.endAt} startAt={item.startAt} tz={tz} />
 			</p>
 			<p className={cn("mt-1 text-foreground", titleClass)}>{item.title}</p>
 			{item.description && (
@@ -263,16 +284,17 @@ function PresentationRow({
 					</span>
 				)}
 				{!session.untimedSlots && (
-					<span
+					<time
 						className={cn(
 							"block tabular-nums",
 							numbered
 								? "mt-1 font-(family-name:--prog-font-meta) text-[10px] uppercase tracking-(--prog-tracking) text-(--prog-faint)"
 								: "text-sm font-medium text-muted-foreground",
 						)}
+						dateTime={presStart.toISOString()}
 					>
 						{formatClockTime(presStart, tz)}
-					</span>
+					</time>
 				)}
 			</div>
 			<div className="min-w-0">
