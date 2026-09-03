@@ -445,13 +445,15 @@ function MinimalNav({
 							{label.weekday.slice(0, 3)} {label.month.slice(0, 3)}
 						</span>
 						{!isActive && !!matches && (
-							<span
-								aria-label={`${matches} matches`}
-								className="bg-primary/15 text-primary-ink rounded-full px-1.5 text-xs font-semibold tabular-nums"
-								data-testid={`day-match-count-${i}`}
-							>
-								{matches}
-							</span>
+							<>
+								<span
+									className="bg-primary/15 text-primary-ink rounded-full px-1.5 text-xs font-semibold tabular-nums"
+									data-testid={`day-match-count-${i}`}
+								>
+									{matches}
+								</span>
+								<span className="sr-only">matches</span>
+							</>
 						)}
 					</button>
 				);
@@ -508,17 +510,19 @@ function FramedNav({
 							</span>
 						</span>
 						{!isActive && !!matches && (
-							<span
-								aria-label={`${matches} matches`}
-								className="text-primary-ink flex items-baseline gap-1 font-(family-name:--prog-font-meta) text-[10px] font-semibold tabular-nums"
-								data-testid={`day-match-count-${i}`}
-							>
+							<>
 								<span
-									aria-hidden
-									className="bg-primary size-1.5 rounded-full"
-								/>
-								{matches}
-							</span>
+									className="text-primary-ink flex items-baseline gap-1 font-(family-name:--prog-font-meta) text-[10px] font-semibold tabular-nums"
+									data-testid={`day-match-count-${i}`}
+								>
+									<span
+										aria-hidden
+										className="bg-primary size-1.5 rounded-full"
+									/>
+									{matches}
+								</span>
+								<span className="sr-only">matches</span>
+							</>
 						)}
 						{isActive && (
 							<span className="bg-primary absolute bottom-[-13px] left-0 h-[2px] w-full sm:bottom-[-10px]" />
