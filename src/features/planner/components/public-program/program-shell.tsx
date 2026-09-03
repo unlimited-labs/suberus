@@ -160,11 +160,9 @@ export function ProgramShell({
 			settings={settings}
 			themeId={themeId}
 		>
-			{q && (
-				<p className="sr-only" role="status">
-					{activeMatchCount} results
-				</p>
-			)}
+			<p className="sr-only" role="status">
+				{q ? `${activeMatchCount} results on this day` : ""}
+			</p>
 			{q && activeMatchCount === 0 && (
 				<SearchNotice
 					days={days}
@@ -224,7 +222,8 @@ function ProgramStickyBar({
 	zoneLabel: string | null;
 }) {
 	return (
-		<search
+		<section
+			aria-label="Programme filters"
 			className={cn(
 				"sticky top-0 z-20 block border-b border-border bg-background/90 backdrop-blur",
 				framed && "bg-background/95",
@@ -275,7 +274,7 @@ function ProgramStickyBar({
 					</p>
 				</div>
 			)}
-		</search>
+		</section>
 	);
 }
 
@@ -547,7 +546,7 @@ function SearchBox({
 }) {
 	const label = placeholder ?? DEFAULT_SEARCH_PLACEHOLDER;
 	return (
-		<div className="relative w-full sm:w-72 sm:shrink-0">
+		<search className="relative block w-full sm:w-72 sm:shrink-0">
 			<IconSearch
 				className={cn(
 					"absolute top-1/2 -translate-y-1/2 text-muted-foreground",
@@ -581,7 +580,7 @@ function SearchBox({
 					<IconX size={framed ? 14 : 15} />
 				</button>
 			)}
-		</div>
+		</search>
 	);
 }
 

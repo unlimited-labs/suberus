@@ -154,8 +154,7 @@ const DARK_SURFACE = "#262626";
 
 function buildBrandVars(primaryColor: string): CSSProperties | undefined {
 	if (
-		!primaryColor ||
-		primaryColor === "var(--primary)" ||
+		!/^#[0-9a-fA-F]{6}$/.test(primaryColor) ||
 		primaryColor === APP_SETTINGS_DEFAULTS.BRANDING_PRIMARY_COLOR
 	) {
 		return undefined;

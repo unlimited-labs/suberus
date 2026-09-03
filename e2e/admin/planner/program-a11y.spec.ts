@@ -1,22 +1,17 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, isoDay, test } from "./fixtures";
+import { expect, isoDay, resetPlannerProgramDefaults, test } from "./fixtures";
 import {
 	createProgramSession,
 	createRoom,
 	setAppSetting,
-	setConferenceDates,
 	setSchedulePublished,
 } from "../../helpers/test-db";
 
 const THEMES = ["default", "editorial", "crimson", "academic"] as const;
 
 test.describe.serial("Public /program accessibility", () => {
-	test.beforeEach(async () => {
-		await setConferenceDates(
-			isoDay(0, 0).toISOString(),
-			isoDay(30, 23).toISOString(),
-		);
-	});
+	test.beforeEach(resetPlannerProgramDefaults);
+	test.afterAll(resetPlannerProgramDefaults);
 
 	for (const theme of THEMES) {
 		test(`${theme} theme has no axe violations`, async ({
