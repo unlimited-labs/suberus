@@ -43,7 +43,7 @@ function DeadlineCell({
 	if (status === "COMPLETED") {
 		return (
 			<div className="flex items-center gap-2">
-				<IconCircleCheck className="text-primary size-4 shrink-0" />
+				<IconCircleCheck className="text-primary-ink size-4 shrink-0" />
 				<span className="text-muted-foreground text-sm">{dateStr}</span>
 			</div>
 		);

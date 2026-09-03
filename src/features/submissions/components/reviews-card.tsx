@@ -151,7 +151,7 @@ function ReviewAttachment({
 				Attachment
 			</p>
 			<a
-				className="text-primary bg-background/50 inline-flex items-center gap-2 rounded-lg border p-2 text-sm hover:underline"
+				className="text-primary-ink bg-background/50 inline-flex items-center gap-2 rounded-lg border p-2 text-sm hover:underline"
 				href={`/api/files/${attachment.id}`}
 			>
 				<IconDownload className="size-4" />

@@ -412,7 +412,7 @@ export function AuthorsInput({
 					"w-full flex items-center justify-center gap-2 py-3 rounded-lg",
 					"border border-dashed border-border/50",
 					"text-xs font-medium text-muted-foreground",
-					"hover:border-primary hover:text-primary hover:bg-primary/5",
+					"hover:border-primary hover:text-primary-ink hover:bg-primary/5",
 					"transition-all",
 				)}
 				onClick={addAuthor}

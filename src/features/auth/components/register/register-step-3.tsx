@@ -114,7 +114,7 @@ export function RegisterStep3({
 									>
 										I agree to the{" "}
 										<button
-											className="text-primary hover:underline"
+											className="text-primary-ink hover:underline"
 											onClick={(e) => {
 												e.preventDefault();
 												onOpenTos();

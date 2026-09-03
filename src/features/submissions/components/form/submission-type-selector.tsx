@@ -65,7 +65,7 @@ export function SubmissionTypeSelector({
 								<Icon
 									className={cn(
 										"size-5",
-										isSelected ? "text-primary" : "text-muted-foreground",
+										isSelected ? "text-primary-ink" : "text-muted-foreground",
 									)}
 								/>
 							</div>

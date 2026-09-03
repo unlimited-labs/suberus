@@ -98,7 +98,7 @@ export function SubmissionsTable({ submissions }: SubmissionsTableProps) {
 									<td className="p-2 align-middle">
 										<div className="flex items-center gap-2">
 											<Link
-												className="text-foreground hover:text-primary line-clamp-2 font-medium"
+												className="text-foreground hover:text-primary-ink line-clamp-2 font-medium"
 												params={{ id: submission.id }}
 												to="/submissions/$id"
 											>

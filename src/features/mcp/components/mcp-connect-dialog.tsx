@@ -47,7 +47,7 @@ function Step({
 	return (
 		<div className="min-w-0 space-y-1.5">
 			<div className="flex items-center gap-2">
-				<span className="bg-primary/10 text-primary flex size-5 items-center justify-center rounded-full text-[11px] font-medium tabular-nums">
+				<span className="bg-primary/10 text-primary-ink flex size-5 items-center justify-center rounded-full text-[11px] font-medium tabular-nums">
 					{number}
 				</span>
 				<span className="text-sm font-medium">{label}</span>
@@ -132,7 +132,7 @@ function ClientRow({
 			className="animate-in fade-in slide-in-from-bottom-1 flex min-w-0 items-start gap-3 py-2.5 duration-300"
 			style={{ animationDelay: `${index * 60}ms`, animationFillMode: "both" }}
 		>
-			<span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold uppercase">
+			<span className="bg-primary/10 text-primary-ink flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold uppercase">
 				{label.replace(/^https?:\/\//, "").charAt(0)}
 			</span>
 			<div className="min-w-0 flex-1">
@@ -272,7 +272,7 @@ export function McpConnectDialog({
 				data-testid="mcp-connect-dialog"
 			>
 				<DialogHeader className="min-w-0 flex-row items-start gap-3 space-y-0 text-left">
-					<span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+					<span className="bg-primary/10 text-primary-ink flex size-10 shrink-0 items-center justify-center rounded-lg">
 						<IconPlugConnected className="size-5" />
 					</span>
 					<div className="min-w-0 flex-1">

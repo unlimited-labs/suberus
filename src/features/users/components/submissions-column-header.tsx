@@ -191,7 +191,7 @@ export function SubmissionsColumnHeader({
 			>
 				<PopoverTrigger asChild>
 					<Button
-						className={cn("size-6 shrink-0", hasFilters && "text-primary")}
+						className={cn("size-6 shrink-0", hasFilters && "text-primary-ink")}
 						data-testid="submissions-filter-trigger"
 						size="icon-sm"
 						variant="ghost"

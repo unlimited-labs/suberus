@@ -326,7 +326,7 @@ function Authors({
 							<div
 								className={cn(
 									"flex size-6 shrink-0 items-center justify-center rounded-(--radius) bg-muted text-xs font-semibold text-muted-foreground",
-									author.isPresenter && "bg-primary/10 text-primary",
+									author.isPresenter && "bg-primary/10 text-primary-ink",
 								)}
 							>
 								{index + 1}
@@ -337,7 +337,7 @@ function Authors({
 										{author.firstName} {author.lastName}
 									</span>
 									{author.isPresenter && (
-										<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
+										<span className="text-primary-ink inline-flex items-center gap-1 text-xs font-medium">
 											<IconStarFilled className="size-3" />
 											Presenter
 										</span>

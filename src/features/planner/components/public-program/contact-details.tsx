@@ -23,7 +23,7 @@ export function ContactDetails({
 	return (
 		<div className="space-y-4">
 			{isPresenter && (
-				<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
+				<span className="text-primary-ink inline-flex items-center gap-1 text-xs font-medium">
 					<IconStarFilled className="size-3" />
 					Presenter
 				</span>

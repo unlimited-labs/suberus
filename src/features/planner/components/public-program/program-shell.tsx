@@ -291,17 +291,17 @@ function MinimalHeader({
 					<ProgramPwaStatus className="text-muted-foreground" />
 					{settings.showAuthorInfo && settings.viewerIsParticipant && (
 						<ProgramParticipantsLink
-							className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
+							className="text-muted-foreground hover:text-primary-ink text-sm font-medium transition-colors"
 							labelClassName="hidden sm:inline"
 						/>
 					)}
 					<ProgramAuthLink
-						className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors"
+						className="text-muted-foreground hover:text-primary-ink text-sm font-medium transition-colors"
 						labelClassName="hidden sm:inline"
 					/>
 				</div>
 				{settings.startDate && (
-					<p className="text-primary text-xs font-medium tracking-[0.2em] uppercase">
+					<p className="text-primary-ink text-xs font-medium tracking-[0.2em] uppercase">
 						{formatLongDate(settings.startDate, settings.timezone)}
 					</p>
 				)}
@@ -329,7 +329,7 @@ function FramedHeader({
 		themeId === "academic" ? "Conference Programme" : "◆ Programme ◆";
 	const dividerClass =
 		themeId === "academic"
-			? "text-primary text-[10px] tracking-[0.35em]"
+			? "text-primary-ink text-[10px] tracking-[0.35em]"
 			: "text-[var(--prog-faint)] text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em]";
 
 	return (
@@ -447,7 +447,7 @@ function MinimalNav({
 						{!isActive && !!matches && (
 							<span
 								aria-label={`${matches} matches`}
-								className="bg-primary/15 text-primary rounded-full px-1.5 text-xs font-semibold tabular-nums"
+								className="bg-primary/15 text-primary-ink rounded-full px-1.5 text-xs font-semibold tabular-nums"
 								data-testid={`day-match-count-${i}`}
 							>
 								{matches}
@@ -486,7 +486,7 @@ function FramedNav({
 						className={cn(
 							"group relative flex shrink-0 items-baseline gap-2 py-1.5 text-left whitespace-nowrap transition-colors sm:py-2",
 							isActive
-								? "text-primary"
+								? "text-primary-ink"
 								: "text-(--prog-faint) hover:text-foreground",
 							!isActive &&
 								matches !== undefined &&
@@ -510,7 +510,7 @@ function FramedNav({
 						{!isActive && !!matches && (
 							<span
 								aria-label={`${matches} matches`}
-								className="text-primary flex items-baseline gap-1 font-(family-name:--prog-font-meta) text-[10px] font-semibold tabular-nums"
+								className="text-primary-ink flex items-baseline gap-1 font-(family-name:--prog-font-meta) text-[10px] font-semibold tabular-nums"
 								data-testid={`day-match-count-${i}`}
 							>
 								<span

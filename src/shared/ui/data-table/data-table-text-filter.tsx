@@ -32,7 +32,7 @@ export function DataTableTextFilter<TData extends RowData, TValue>({
 				<Button
 					variant="ghost"
 					size="icon-sm"
-					className={cn("size-6 shrink-0", hasFilter && "text-primary")}
+					className={cn("size-6 shrink-0", hasFilter && "text-primary-ink")}
 				>
 					{hasFilter ? (
 						<IconFilterFilled className="size-3.5" />

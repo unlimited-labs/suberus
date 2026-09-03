@@ -50,7 +50,7 @@ export function SidebarHeader({
 							aria-pressed={selectMode}
 							className={`hover:bg-muted flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium ${
 								selectMode
-									? "bg-primary/10 text-primary hover:bg-primary/15"
+									? "bg-primary/10 text-primary-ink hover:bg-primary/15"
 									: "text-muted-foreground hover:text-foreground"
 							}`}
 							data-testid="sidebar-toggle-select-mode"

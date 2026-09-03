@@ -21,7 +21,7 @@ function ProgressRow({ done, label }: ProgressRowProps) {
 			data-testid={`progress-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
 		>
 			{done ? (
-				<IconCircleCheck className="text-primary size-5" />
+				<IconCircleCheck className="text-primary-ink size-5" />
 			) : (
 				<IconCircle className="text-muted-foreground size-5" />
 			)}

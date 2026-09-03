@@ -66,7 +66,7 @@ export function ContentTab({
 								className={cn(
 									"flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold",
 									author.isPresenter
-										? "bg-primary/10 text-primary"
+										? "bg-primary/10 text-primary-ink"
 										: "bg-muted text-muted-foreground",
 								)}
 							>
@@ -76,7 +76,7 @@ export function ContentTab({
 								<div className="flex flex-wrap items-center gap-2">
 									{author.userId ? (
 										<Link
-											className="text-foreground hover:text-primary flex items-center gap-1 font-medium hover:underline"
+											className="text-foreground hover:text-primary-ink flex items-center gap-1 font-medium hover:underline"
 											data-testid={`author-profile-link-${index}`}
 											params={{ id: author.userId }}
 											to="/admin/users/$id"
@@ -91,7 +91,7 @@ export function ContentTab({
 									)}
 									{author.isPresenter && (
 										<Badge
-											className="border-primary/20 bg-primary/10 text-primary gap-1 text-xs"
+											className="border-primary/20 bg-primary/10 text-primary-ink gap-1 text-xs"
 											variant="secondary"
 										>
 											<IconStarFilled className="size-3" />
@@ -142,7 +142,7 @@ export function ContentTab({
 				{displayedFile ? (
 					<div className="bg-muted/30 flex items-center gap-4 rounded-lg border p-4">
 						<div className="bg-primary/10 shrink-0 rounded-md p-2">
-							<IconFile className="text-primary size-6" />
+							<IconFile className="text-primary-ink size-6" />
 						</div>
 						<div className="min-w-0 flex-1">
 							<p className="text-foreground truncate text-sm font-medium">

@@ -63,7 +63,7 @@ export function ScheduledList({
 						key={s.id}
 					>
 						<button
-							className="hover:text-primary mb-1 block w-full text-left"
+							className="hover:text-primary-ink mb-1 block w-full text-left"
 							onClick={() => onOpenSession(s.id)}
 							type="button"
 						>
@@ -96,7 +96,7 @@ export function ScheduledList({
 										key={p.id}
 									>
 										<button
-											className="hover:text-primary block w-full text-left"
+											className="hover:text-primary-ink block w-full text-left"
 											onClick={() => onOpenSession(s.id)}
 											type="button"
 										>

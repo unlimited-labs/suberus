@@ -63,7 +63,7 @@ function InstallPage() {
 				<div className="bg-card text-foreground flex flex-1 flex-col p-5 sm:p-6 lg:p-8">
 					<div className="mb-5">
 						<div className="mb-1 flex items-center gap-2">
-							<IconSettings className="text-primary size-5" />
+							<IconSettings className="text-primary-ink size-5" />
 							<h1 className="text-xl font-semibold tracking-tight">
 								Setup Suberus
 							</h1>

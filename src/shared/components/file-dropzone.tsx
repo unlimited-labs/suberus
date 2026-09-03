@@ -120,7 +120,7 @@ export function FileDropzone({
 							<IconUpload
 								className={cn(
 									"size-8 transition-colors",
-									isDragging ? "text-primary" : "text-muted-foreground",
+									isDragging ? "text-primary-ink" : "text-muted-foreground",
 								)}
 							/>
 						</div>
@@ -135,7 +135,7 @@ export function FileDropzone({
 			) : (
 				<div className="border-border bg-muted/30 flex items-center gap-3 rounded-lg border p-4">
 					<div className="bg-primary/10 shrink-0 rounded p-2">
-						<IconFile className="text-primary size-5" />
+						<IconFile className="text-primary-ink size-5" />
 					</div>
 					<div className="min-w-0 flex-1">
 						<p className="text-foreground truncate text-sm font-medium">

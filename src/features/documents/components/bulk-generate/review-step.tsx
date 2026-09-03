@@ -6,7 +6,7 @@ export function ReviewStep({ preview }: { preview: BulkPreview }) {
 	return (
 		<div className="space-y-3 py-1">
 			<div className="bg-muted/40 flex items-center gap-2 rounded-md border p-3">
-				<IconUsers className="text-primary size-5" />
+				<IconUsers className="text-primary-ink size-5" />
 				<p className="text-sm">
 					<span className="font-semibold">{preview.resolvableIds.length}</span>{" "}
 					will be generated

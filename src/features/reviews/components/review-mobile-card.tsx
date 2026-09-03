@@ -20,7 +20,7 @@ import { type DeadlineVariant, getDeadlineDisplay } from "./review-deadline";
 const DEADLINE_PRESENTATION = {
 	completed: {
 		Icon: IconCircleCheck,
-		iconClassName: "size-4 text-primary",
+		iconClassName: "size-4 text-primary-ink",
 		textClassName: "text-sm text-muted-foreground",
 	},
 	overdue: {

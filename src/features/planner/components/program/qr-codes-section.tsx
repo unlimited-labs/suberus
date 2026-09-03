@@ -109,7 +109,7 @@ function QrCodesForm({ settings }: { settings: ProgramQrSettings }) {
 					<p>
 						Leave empty to use this site address.{" "}
 						<a
-							className="text-primary inline-flex items-center gap-1 underline underline-offset-4"
+							className="text-primary-ink inline-flex items-center gap-1 underline underline-offset-4"
 							href="https://docs.suberus.app/planner/publishing/#forwarding-a-substitute-domain"
 							rel="noopener noreferrer"
 							target="_blank"

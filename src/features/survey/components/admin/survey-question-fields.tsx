@@ -136,7 +136,7 @@ export function TypePicker({
 						<Icon
 							className={cn(
 								"size-5 shrink-0",
-								selected ? "text-primary" : "text-muted-foreground",
+								selected ? "text-primary-ink" : "text-muted-foreground",
 							)}
 						/>
 						<span className="text-xs leading-tight font-medium">

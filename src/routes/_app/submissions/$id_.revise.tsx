@@ -241,7 +241,7 @@ function RevisionForm({
 								<Label>Document *</Label>
 								{currentFile && !file && (
 									<div className="border-border/50 bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
-										<IconFile className="text-primary size-5" />
+										<IconFile className="text-primary-ink size-5" />
 										<div className="min-w-0 flex-1">
 											<p className="truncate text-sm font-medium">
 												{currentFile.originalName}

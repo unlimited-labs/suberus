@@ -50,7 +50,7 @@ export function DecisionField({ form, readOnly }: DecisionFieldProps) {
 														className={cn(
 															"size-4",
 															isSelected
-																? "text-primary"
+																? "text-primary-ink"
 																: "text-muted-foreground",
 														)}
 													/>

@@ -145,7 +145,7 @@ function LoginPage() {
 						</form.AppField>
 
 						<Link
-							className="text-primary text-sm whitespace-nowrap hover:underline"
+							className="text-primary-ink text-sm whitespace-nowrap hover:underline"
 							to="/forgot-password"
 						>
 							Forgot password?
@@ -162,7 +162,7 @@ function LoginPage() {
 			<p className="text-muted-foreground mt-3 text-center text-sm">
 				Don't have an account?{" "}
 				<Link
-					className="text-primary font-medium hover:underline"
+					className="text-primary-ink font-medium hover:underline"
 					to="/register"
 				>
 					Create one

@@ -246,7 +246,7 @@ function CertificateSection({
 					>
 						<div className="mb-3 flex items-center justify-between gap-3">
 							<div className="flex items-center gap-2">
-								<IconCertificate className="text-primary size-5" />
+								<IconCertificate className="text-primary-ink size-5" />
 								<span className="font-medium">Certificate installed</span>
 							</div>
 							<Badge variant="secondary">

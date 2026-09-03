@@ -90,7 +90,7 @@ export function DetailsCard({
 					Submitter
 				</span>
 				<Link
-					className="hover:text-primary flex items-center gap-1 font-medium hover:underline"
+					className="hover:text-primary-ink flex items-center gap-1 font-medium hover:underline"
 					data-testid="submission-submitter-link"
 					params={{ id: submitter.id }}
 					to="/admin/users/$id"

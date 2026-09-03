@@ -66,7 +66,7 @@ export function ContentTabs({
 							</p>
 							<div className="border-border/50 bg-muted/30 flex items-center gap-4 rounded-lg border p-4">
 								<div className="bg-primary/10 shrink-0 rounded-md p-2">
-									<IconFile className="text-primary size-6" />
+									<IconFile className="text-primary-ink size-6" />
 								</div>
 								<div className="min-w-0 flex-1">
 									<p className="text-foreground truncate text-sm font-medium">
@@ -156,7 +156,7 @@ export function ContentTabs({
 										{author.firstName} {author.lastName}
 									</span>
 									{author.isPresenter && (
-										<IconStarFilled className="text-primary size-3" />
+										<IconStarFilled className="text-primary-ink size-3" />
 									)}
 									<span className="text-muted-foreground">
 										• {author.affiliation}

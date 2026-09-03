@@ -13,7 +13,7 @@ export function NoTemplatesHint() {
 		<p className="text-muted-foreground text-xs">
 			No templates yet.{" "}
 			<Link
-				className="text-primary font-medium hover:underline"
+				className="text-primary-ink font-medium hover:underline"
 				search={{ tab: "templates" }}
 				to="/admin/documents"
 			>

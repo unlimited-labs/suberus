@@ -252,15 +252,15 @@ const STAGE_STYLES = {
 			"border-primary/60 shadow-md shadow-primary/10 ring-2 ring-primary/20",
 		iconWrap:
 			"bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/40",
-		statusText: "text-primary",
+		statusText: "text-primary-ink",
 		statusDot: "animate-pulse bg-primary",
 		label: "",
 		strip: "bg-primary/15",
 	},
 	done: {
 		container: "border-primary/30 bg-primary/[0.03]",
-		iconWrap: "bg-primary/15 text-primary ring-1 ring-primary/20",
-		statusText: "text-primary/70",
+		iconWrap: "bg-primary/15 text-primary-ink ring-1 ring-primary/20",
+		statusText: "text-primary-ink/70",
 		statusDot: "bg-primary",
 		label: "",
 		strip: "bg-primary/40",
@@ -415,7 +415,7 @@ function ResultsView({
 						{proposal.stats.sizeMax})
 					</Badge>
 					{changedCount > 0 && (
-						<Badge className="bg-primary/15 text-primary hover:bg-primary/15 h-6 gap-1">
+						<Badge className="bg-primary/15 text-primary-ink hover:bg-primary/15 h-6 gap-1">
 							<IconSparkles className="size-3" />
 							{changedCount} renamed
 						</Badge>
@@ -479,7 +479,7 @@ function SessionCard({
 				<div className="min-w-0 flex-1 space-y-1">
 					<div className="flex items-center gap-1.5 text-sm font-semibold">
 						{titleChanged && (
-							<IconSparkles className="text-primary size-3.5 shrink-0" />
+							<IconSparkles className="text-primary-ink size-3.5 shrink-0" />
 						)}
 						<span className="truncate">
 							{s.proposedTitle || (

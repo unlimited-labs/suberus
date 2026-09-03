@@ -64,7 +64,7 @@ export function AuthSidebar({
 								className={cn(
 									"flex size-6 items-center justify-center rounded-full border-2 text-xs font-medium transition-all",
 									step.id < currentStep &&
-										"border-primary-foreground bg-primary-foreground text-primary",
+										"border-primary-foreground bg-primary-foreground text-primary-ink",
 									step.id === currentStep &&
 										"border-primary-foreground bg-transparent",
 									step.id > currentStep &&

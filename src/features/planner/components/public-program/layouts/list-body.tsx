@@ -114,7 +114,7 @@ function SlotHeading({
 		);
 	}
 	return (
-		<h2 className="text-primary mb-4 text-sm font-semibold tracking-wide uppercase tabular-nums">
+		<h2 className="text-primary-ink mb-4 text-sm font-semibold tracking-wide uppercase tabular-nums">
 			{start} {dash} {end}
 		</h2>
 	);

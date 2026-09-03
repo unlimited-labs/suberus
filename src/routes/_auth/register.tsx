@@ -85,7 +85,7 @@ function RegistrationClosedPage() {
 				<p className="text-muted-foreground text-sm">
 					If you already have an account, you can{" "}
 					<Link
-						className="text-primary font-medium hover:underline"
+						className="text-primary-ink font-medium hover:underline"
 						to="/login"
 					>
 						sign in
@@ -235,7 +235,10 @@ function RegisterForm() {
 
 			<p className="text-muted-foreground mt-3 text-center text-sm">
 				Already have an account?{" "}
-				<Link className="text-primary font-medium hover:underline" to="/login">
+				<Link
+					className="text-primary-ink font-medium hover:underline"
+					to="/login"
+				>
 					Sign in
 				</Link>
 			</p>

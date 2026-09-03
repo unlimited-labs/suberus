@@ -22,7 +22,7 @@ export function SettingsSection({
 				<div className="absolute top-0 right-0 size-24 opacity-5">
 					<svg
 						aria-hidden="true"
-						className="text-primary"
+						className="text-primary-ink"
 						viewBox="0 0 100 100"
 					>
 						<path
@@ -36,7 +36,7 @@ export function SettingsSection({
 				<div className="border-border/30 bg-muted/20 relative border-b px-6 py-5 sm:px-8 sm:py-6">
 					<div className="flex items-start gap-4">
 						<div className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110">
-							<IconComponent className="text-primary size-6 transition-transform duration-300 group-hover:rotate-12" />
+							<IconComponent className="text-primary-ink size-6 transition-transform duration-300 group-hover:rotate-12" />
 						</div>
 						<div className="flex-1">
 							<h2 className="text-foreground mb-1 text-xl font-bold tracking-tight">

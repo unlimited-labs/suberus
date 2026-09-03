@@ -410,7 +410,7 @@ export function SurveyQuestionsTab({
 							className={cn(
 								"flex flex-1 items-center justify-center gap-2 rounded-lg py-3",
 								"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
-								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
+								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary-ink",
 							)}
 							data-testid="add-question-button"
 							onClick={() => setDialog({ question: null })}
@@ -423,7 +423,7 @@ export function SurveyQuestionsTab({
 							className={cn(
 								"flex flex-1 items-center justify-center gap-2 rounded-lg py-3",
 								"border border-dashed border-border/60 text-sm font-medium text-muted-foreground",
-								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary",
+								"transition-all hover:border-primary hover:bg-primary/5 hover:text-primary-ink",
 							)}
 							data-testid="import-template-button"
 							onClick={() => setTemplateOpen(true)}

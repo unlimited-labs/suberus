@@ -19,7 +19,7 @@ export function ExtractionOverlay({
 			role="status"
 		>
 			<div className="flex flex-col items-center gap-3">
-				<IconLoader2 className="text-primary size-8 animate-spin" />
+				<IconLoader2 className="text-primary-ink size-8 animate-spin" />
 				<div className="text-center">
 					<p className="text-sm font-medium">Extracting metadata...</p>
 					<p

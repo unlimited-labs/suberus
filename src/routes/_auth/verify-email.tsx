@@ -24,7 +24,7 @@ function VerifyEmailPage() {
 			<div className="flex flex-1 flex-col items-center justify-center space-y-6 text-center">
 				<div className="bg-primary/10 rounded-full p-4">
 					<IconMail
-						className="text-primary size-12"
+						className="text-primary-ink size-12"
 						data-testid="verify-email-icon"
 					/>
 				</div>
@@ -62,7 +62,10 @@ function VerifyEmailPage() {
 			</div>
 
 			<p className="text-muted-foreground mt-4 text-center text-sm">
-				<Link className="text-primary font-medium hover:underline" to="/login">
+				<Link
+					className="text-primary-ink font-medium hover:underline"
+					to="/login"
+				>
 					Back to login
 				</Link>
 			</p>

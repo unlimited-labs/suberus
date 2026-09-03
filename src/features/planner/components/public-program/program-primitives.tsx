@@ -36,7 +36,7 @@ export function EventDetails({
 }) {
 	return (
 		<>
-			<p className="flex items-center gap-2 font-(family-name:--prog-font-meta) text-xs tracking-wide text-(--primary) uppercase">
+			<p className="flex items-center gap-2 font-(family-name:--prog-font-meta) text-xs tracking-wide text-(--primary-ink) uppercase">
 				<IconCalendarEvent className="size-3.5 shrink-0" />
 				{formatClockTime(new Date(item.startAt), tz)} –{" "}
 				{formatClockTime(new Date(item.endAt), tz)}

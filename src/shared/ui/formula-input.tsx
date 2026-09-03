@@ -43,7 +43,7 @@ export function FormulaInput({
 				<Icon
 					className={cn(
 						"size-3.5",
-						formula ? "text-primary" : "text-muted-foreground",
+						formula ? "text-primary-ink" : "text-muted-foreground",
 					)}
 				/>
 			</InputGroupAddon>

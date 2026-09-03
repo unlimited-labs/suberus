@@ -58,7 +58,7 @@ export function RegisterStep1({
 								value="participant"
 							/>
 							<span className="flex items-start gap-2.5">
-								<IconUser className="text-muted-foreground group-has-data-[state=checked]:text-primary mt-0.5 size-5 shrink-0" />
+								<IconUser className="text-muted-foreground group-has-data-[state=checked]:text-primary-ink mt-0.5 size-5 shrink-0" />
 								<span className="flex flex-col gap-0.5">
 									<span className="font-medium">Participant / Author</span>
 									<span className="text-muted-foreground text-xs">
@@ -78,7 +78,7 @@ export function RegisterStep1({
 								value="exhibitor"
 							/>
 							<span className="flex items-start gap-2.5">
-								<IconBuildingStore className="text-muted-foreground group-has-data-[state=checked]:text-primary mt-0.5 size-5 shrink-0" />
+								<IconBuildingStore className="text-muted-foreground group-has-data-[state=checked]:text-primary-ink mt-0.5 size-5 shrink-0" />
 								<span className="flex flex-col gap-0.5">
 									<span className="font-medium">Exhibitor</span>
 									<span className="text-muted-foreground text-xs">
@@ -93,7 +93,7 @@ export function RegisterStep1({
 
 			{invitation && (
 				<Alert className="border-primary/30 bg-primary/5">
-					<IconInfoCircle className="text-primary size-4" />
+					<IconInfoCircle className="text-primary-ink size-4" />
 					<AlertDescription>
 						You&apos;ve been invited as{" "}
 						<span className="font-semibold">

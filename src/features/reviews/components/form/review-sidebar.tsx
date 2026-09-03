@@ -132,7 +132,7 @@ function ProgressItem({
 		return (
 			<div className="flex items-center gap-2">
 				{completed ? (
-					<IconCircleCheck className="text-primary size-4 shrink-0" />
+					<IconCircleCheck className="text-primary-ink size-4 shrink-0" />
 				) : (
 					<IconCircle className="text-muted-foreground size-4 shrink-0" />
 				)}
@@ -157,7 +157,7 @@ function ProgressItem({
 				)}
 			>
 				{completed ? (
-					<IconCircleCheck className="text-primary size-5" />
+					<IconCircleCheck className="text-primary-ink size-5" />
 				) : (
 					<Icon className="text-muted-foreground size-5" />
 				)}

@@ -82,7 +82,7 @@ export function ReviewCard({
 				<div className="border-t pt-3">
 					<p className="mb-1 text-sm font-medium">Attachment</p>
 					<a
-						className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
+						className="text-primary-ink inline-flex items-center gap-2 text-sm hover:underline"
 						href={`/api/files/${review.attachment.id}`}
 					>
 						<IconDownload className="size-4" />

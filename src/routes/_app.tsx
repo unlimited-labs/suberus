@@ -98,7 +98,7 @@ function AppLayoutRoute() {
 	if (isPending) {
 		return (
 			<div
-				className="text-primary flex h-screen items-center justify-center"
+				className="text-primary-ink flex h-screen items-center justify-center"
 				style={cssVars}
 			>
 				<SpinnerSvg size={48} />

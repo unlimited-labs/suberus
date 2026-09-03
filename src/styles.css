@@ -42,7 +42,7 @@
 	);
 	--muted-foreground: oklch(0.551 0.0234 264.3637);
 	--accent: color-mix(in oklab, var(--primary) 8%, var(--background));
-	--accent-foreground: var(--primary);
+	--accent-foreground: var(--primary-ink);
 	--destructive: oklch(0.6368 0.2078 25.3313);
 	--destructive-foreground: oklch(1 0 0);
 	--border: oklch(0.9276 0.0058 264.5313);
@@ -58,7 +58,7 @@
 	--sidebar-primary: oklch(0.6231 0.188 259.8145);
 	--sidebar-primary-foreground: oklch(1 0 0);
 	--sidebar-accent: color-mix(in oklab, var(--primary) 8%, var(--sidebar));
-	--sidebar-accent-foreground: var(--primary);
+	--sidebar-accent-foreground: var(--primary-ink);
 	--sidebar-border: oklch(0.9276 0.0058 264.5313);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
 	--font-sans: Inter, sans-serif;

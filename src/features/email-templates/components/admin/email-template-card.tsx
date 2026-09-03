@@ -24,7 +24,7 @@ export function EmailTemplateCard({
 					}`}
 				>
 					{template.isEnabled ? (
-						<IconMail className="text-primary size-5" />
+						<IconMail className="text-primary-ink size-5" />
 					) : (
 						<IconMailOff className="text-muted-foreground size-5" />
 					)}

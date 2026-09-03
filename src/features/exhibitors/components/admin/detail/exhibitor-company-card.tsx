@@ -83,7 +83,7 @@ export function ExhibitorCompanyCard({
 				<InfoRow label="Website">
 					{exhibitor.website ? (
 						<a
-							className="text-primary underline-offset-4 hover:underline"
+							className="text-primary-ink underline-offset-4 hover:underline"
 							href={exhibitor.website}
 							rel="noopener noreferrer"
 							target="_blank"

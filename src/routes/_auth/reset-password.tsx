@@ -94,7 +94,7 @@ function ResetPasswordPage() {
 			<AuthCard centered>
 				<div className="w-full max-w-sm space-y-4 text-center">
 					<div className="bg-primary/10 mx-auto flex size-14 items-center justify-center rounded-full">
-						<IconCheck className="text-primary size-7" />
+						<IconCheck className="text-primary-ink size-7" />
 					</div>
 					<div>
 						<h1 className="text-xl font-semibold tracking-tight">

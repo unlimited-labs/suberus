@@ -221,7 +221,7 @@ export function InvitedSpeakersInput({
 			})}
 
 			<button
-				className="text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2.5 text-xs font-medium transition-colors"
+				className="text-muted-foreground hover:border-primary hover:text-primary-ink hover:bg-primary/5 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2.5 text-xs font-medium transition-colors"
 				data-testid="invited-talk-add-speaker"
 				onClick={addSpeaker}
 				type="button"

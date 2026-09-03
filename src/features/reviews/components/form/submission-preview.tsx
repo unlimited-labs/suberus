@@ -141,7 +141,7 @@ function AuthorRow({
 						{author.firstName} {author.lastName}
 					</span>
 					{author.isPresenter && (
-						<span className="text-primary inline-flex items-center gap-1 text-xs font-medium">
+						<span className="text-primary-ink inline-flex items-center gap-1 text-xs font-medium">
 							<IconStarFilled className="size-3" />
 							Presenter
 						</span>
@@ -177,7 +177,7 @@ function ContentCard({
 			{file && (
 				<div className="border-border bg-muted/30 flex items-center gap-4 rounded-lg border p-3">
 					<div className="bg-primary/10 shrink-0 rounded-md p-2">
-						<IconFile className="text-primary size-5" />
+						<IconFile className="text-primary-ink size-5" />
 					</div>
 					<div className="min-w-0 flex-1">
 						<p className="text-foreground truncate text-sm font-medium">

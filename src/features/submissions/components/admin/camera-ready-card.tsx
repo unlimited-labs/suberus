@@ -69,7 +69,7 @@ export function CameraReadyCard({ submissionId }: { submissionId: string }) {
 			{data ? (
 				<div className="space-y-3">
 					<a
-						className="text-primary flex items-center gap-2 text-sm hover:underline"
+						className="text-primary-ink flex items-center gap-2 text-sm hover:underline"
 						href={`/api/files/${data.id}`}
 						rel="noreferrer"
 						target="_blank"

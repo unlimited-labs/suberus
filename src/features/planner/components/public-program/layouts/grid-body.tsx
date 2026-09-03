@@ -123,7 +123,7 @@ function GridRow({
 							STICKY_COL,
 						)}
 					>
-						<span className="text-primary block">{start}</span>
+						<span className="text-primary-ink block">{start}</span>
 						<span className="block text-(--prog-faint)">{end}</span>
 					</div>
 					{cols.map((c) => {
@@ -227,7 +227,7 @@ function MobileSwipe({
 				{cols.map((col, ci) => (
 					<section className="w-full shrink-0 snap-center px-5" key={col.id}>
 						<div className="border-primary mb-4 flex items-baseline gap-2 border-b pb-2">
-							<h2 className="text-primary font-(family-name:--prog-font-meta) text-sm font-normal tracking-[0.2em] uppercase">
+							<h2 className="text-primary-ink font-(family-name:--prog-font-meta) text-sm font-normal tracking-[0.2em] uppercase">
 								{col.name}
 							</h2>
 							{cols.length > 1 && (

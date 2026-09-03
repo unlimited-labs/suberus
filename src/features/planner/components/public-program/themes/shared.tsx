@@ -270,7 +270,7 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 			)}
 			{canInstall && (
 				<button
-					className="hover:text-primary inline-flex items-center gap-1.5 text-sm transition-colors"
+					className="hover:text-primary-ink inline-flex items-center gap-1.5 text-sm transition-colors"
 					data-testid="program-install-button"
 					onClick={install}
 					type="button"
