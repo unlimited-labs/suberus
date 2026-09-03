@@ -109,9 +109,13 @@ export function ProgramFrame({
 					{children}
 				</main>
 
-				{framed && <FramedFooter settings={settings} themeId={themeId} />}
-				{settings.footerHtml.trim() && (
-					<CustomFooter html={settings.footerHtml} />
+				{(framed || settings.footerHtml.trim()) && (
+					<footer>
+						{framed && <FramedFooter settings={settings} themeId={themeId} />}
+						{settings.footerHtml.trim() && (
+							<CustomFooter html={settings.footerHtml} />
+						)}
+					</footer>
 				)}
 			</div>
 		</TooltipProvider>
@@ -213,9 +217,9 @@ function ProgramStickyBar({
 	zoneLabel: string | null;
 }) {
 	return (
-		<div
+		<search
 			className={cn(
-				"sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur",
+				"sticky top-0 z-20 block border-b border-border bg-background/90 backdrop-blur",
 				framed && "bg-background/95",
 			)}
 		>
@@ -264,7 +268,7 @@ function ProgramStickyBar({
 					</p>
 				</div>
 			)}
-		</div>
+		</search>
 	);
 }
 
@@ -370,7 +374,7 @@ function FramedFooter({
 	settings: ProgramThemeProps["settings"];
 }) {
 	return (
-		<footer
+		<div
 			className={cn(
 				"border-t text-center",
 				themeId === "academic" ? "py-4" : "py-8",
@@ -380,7 +384,7 @@ function FramedFooter({
 			<div className="font-(family-name:--prog-font-meta) text-[10px] tracking-[0.3em] text-(--prog-faint) uppercase">
 				{themeId === "academic" ? settings.name || "Conference" : "— Fin —"}
 			</div>
-		</footer>
+		</div>
 	);
 }
 
