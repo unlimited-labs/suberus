@@ -33,6 +33,9 @@ test.describe.serial("Public /program accessibility", () => {
 			for (const colorScheme of ["light", "dark"] as const) {
 				await page.emulateMedia({ colorScheme });
 				await publicProgramPage.goto();
+				if (colorScheme === "dark") {
+					await expect(page.locator("html")).toHaveClass(/dark/);
+				}
 				const { violations } = await new AxeBuilder({ page })
 					.withTags(["wcag2a", "wcag2aa", "wcag21aa"])
 					.analyze();
