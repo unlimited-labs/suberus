@@ -37,6 +37,7 @@ export function PresentationBadge({
 						)}
 						data-testid="presentation-badge"
 						style={colors}
+						title={badge.label}
 					>
 						{badge.label}
 					</span>

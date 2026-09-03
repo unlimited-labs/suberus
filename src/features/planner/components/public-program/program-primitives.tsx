@@ -287,6 +287,7 @@ function PresentationRow({
 							aria-label="Favorited"
 							className="mt-0.5 size-3.5 shrink-0 text-amber-500"
 							data-testid="favorited-star"
+							role="img"
 						/>
 					)}
 					{p.cancelled ? (
@@ -300,6 +301,7 @@ function PresentationRow({
 									onClick={open}
 									type="button"
 								>
+									<span className="sr-only">Cancelled: </span>
 									<Highlight
 										markClassName={MARK}
 										query={query}
