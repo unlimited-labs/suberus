@@ -23,7 +23,7 @@ export const MARK =
 	"rounded-[2px] bg-[var(--prog-mark)] font-semibold text-foreground ring-1 ring-primary/30";
 
 const ROW_TITLE =
-	"cursor-pointer text-left after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2";
+	"text-left after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2";
 
 export function EventDetails({
 	item,
@@ -356,7 +356,7 @@ function RowAuthors({
 						{i > 0 && ", "}
 						<button
 							aria-label={`Author info: ${a.firstName} ${a.lastName}`}
-							className="relative z-10 cursor-pointer underline-offset-2 hover:underline focus-visible:underline"
+							className="relative z-10 underline-offset-2 hover:underline focus-visible:underline"
 							data-testid="author-name"
 							onClick={() => onSelect(a.orderIndex)}
 							type="button"
