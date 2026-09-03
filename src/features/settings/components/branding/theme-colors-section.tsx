@@ -84,7 +84,7 @@ function ContrastWarning({ hex }: { hex: string }) {
 	if (light >= 4.5 && dark >= 4.5) return null;
 	return (
 		<p
-			className="mt-3 flex items-start gap-2 text-sm text-amber-600 dark:text-amber-400"
+			className="mt-3 flex items-start gap-2 text-xs text-amber-600 dark:text-amber-400"
 			data-testid="primary-color-contrast-warning"
 		>
 			<IconAlertTriangle className="mt-0.5 size-4 shrink-0" />
