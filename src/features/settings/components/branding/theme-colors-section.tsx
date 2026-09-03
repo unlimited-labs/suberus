@@ -1,10 +1,16 @@
-import { IconLoader2, IconPalette, IconRestore } from "@tabler/icons-react";
+import {
+	IconAlertTriangle,
+	IconLoader2,
+	IconPalette,
+	IconRestore,
+} from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
 import type { BrandingSettings } from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { Form } from "@/shared/components/composable/form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
+import { contrastRatio } from "@/shared/lib/color-contrast";
 import { Button } from "@/shared/ui/button";
 import { FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
@@ -70,6 +76,22 @@ function ColorField({
 	);
 }
 
+function ContrastWarning({ hex }: { hex: string }) {
+	if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return null;
+	const light = contrastRatio(hex, "#ffffff");
+	const dark = contrastRatio(hex, "#262626");
+	if (light >= 4.5 && dark >= 4.5) return null;
+	return (
+		<p
+			className="mt-3 flex items-start gap-2 text-sm text-amber-600 dark:text-amber-400"
+			data-testid="primary-color-contrast-warning"
+		>
+			<IconAlertTriangle className="mt-0.5 size-4 shrink-0" />
+			{`Low contrast as text: ${light.toFixed(1)}:1 on light, ${dark.toFixed(1)}:1 on dark (AA needs 4.5:1). Text in this colour is darkened or lightened automatically; filled buttons keep white text.`}
+		</p>
+	);
+}
+
 export function ThemeColorsSection({ initialData }: ThemeColorsSectionProps) {
 	const form = useBrandingColorsForm(initialData);
 	const submissionAttempts = useSelector(
@@ -112,6 +134,9 @@ export function ThemeColorsSection({ initialData }: ThemeColorsSectionProps) {
 						submissionAttempts={submissionAttempts}
 					/>
 				</div>
+				<form.Subscribe selector={(s) => s.values.primaryColor}>
+					{(hex) => <ContrastWarning hex={hex} />}
+				</form.Subscribe>
 				<form.Subscribe selector={(s) => s.isSubmitting}>
 					{(isSubmitting) => (
 						<div className="mt-6 flex items-center justify-between">

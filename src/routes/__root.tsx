@@ -15,6 +15,7 @@ import {
 	getPrimaryColorFn,
 } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
+import { ensureContrast } from "@/shared/lib/color-contrast";
 import { getThemeFn } from "@/shared/lib/theme";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { SpinnerSvg } from "../shared/components/spinner-svg";
@@ -148,6 +149,9 @@ function RootComponent() {
 	return <Outlet />;
 }
 
+const LIGHT_SURFACE = "#ffffff";
+const DARK_SURFACE = "#262626";
+
 function buildBrandVars(primaryColor: string): CSSProperties | undefined {
 	if (
 		!primaryColor ||
@@ -163,6 +167,8 @@ function buildBrandVars(primaryColor: string): CSSProperties | undefined {
 		"--sidebar-primary": primaryColor,
 		"--sidebar-ring": primaryColor,
 		"--chart-1": primaryColor,
+		"--brand-ink-light": ensureContrast(primaryColor, LIGHT_SURFACE),
+		"--brand-ink-dark": ensureContrast(primaryColor, DARK_SURFACE),
 	} as CSSProperties;
 }
 

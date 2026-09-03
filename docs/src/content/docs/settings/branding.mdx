@@ -61,10 +61,19 @@ The image behind the login and registration pages.
 
 | Field | What it does | What to enter / Notes |
 |---|---|---|
-| **Primary color** | Main accent colour (buttons, links, highlights). | Pick a colour or paste a six-digit hex like `#3b82f6`. Anything else is rejected under the field. |
+| **Primary color** | Main accent colour (buttons, links, highlights). | Pick a colour or paste a six-digit hex like `#3b82f6`. Anything else is rejected under the field. A **low-contrast warning** appears under the fields when the colour is too light or too dark to be readable as text — see below. |
 | **Secondary color** | Supporting accent colour. | Pick a colour or paste a six-digit hex like `#8b5cf6`. Anything else is rejected under the field. |
 
 A small swatch preview shows both colours side by side.
+
+### Low-contrast warning
+
+If the **Primary color** does not reach the **WCAG AA** ratio of 4.5:1 against a
+light or a dark background, an amber warning appears with the measured ratios.
+It never blocks saving. Where the colour is used **as text**, the app
+automatically darkens or lightens it just enough to stay readable; filled
+buttons keep white text on your exact colour. The built-in default `#3b82f6`
+also triggers the warning, so it shows up after **Reset to defaults** too.
 
 ## Footer
 

@@ -28,6 +28,7 @@
 	--popover-foreground: oklch(0.3211 0 0);
 	--primary: oklch(0.6231 0.188 259.8145);
 	--primary-foreground: oklch(1 0 0);
+	--primary-ink: var(--brand-ink-light, oklch(0.5461 0.2152 262.8809));
 	--secondary: color-mix(
 		in oklab,
 		var(--primary) 6%,
@@ -122,6 +123,7 @@
 	--popover-foreground: oklch(0.9219 0 0);
 	--primary: oklch(0.6231 0.188 259.8145);
 	--primary-foreground: oklch(1 0 0);
+	--primary-ink: var(--brand-ink-dark, oklch(0.7137 0.1434 254.624));
 	--secondary: color-mix(in oklab, var(--primary) 12%, oklch(0.2686 0 0));
 	--secondary-foreground: oklch(0.9219 0 0);
 	--muted: color-mix(in oklab, var(--primary) 10%, oklch(0.2393 0 0));
@@ -337,6 +339,10 @@
 	--prog-rule: var(--border);
 }
 
+[data-program-theme]:not([data-program-theme="default"]) {
+	--primary-ink: var(--primary);
+}
+
 @theme inline {
 	/* ORCID brand green, fixed by them. */
 	--color-orcid: #a6ce39;
@@ -348,6 +354,7 @@
 	--color-popover-foreground: var(--popover-foreground);
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-ink: var(--primary-ink);
 	--color-secondary: var(--secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-muted: var(--muted);
