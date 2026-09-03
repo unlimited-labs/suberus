@@ -426,7 +426,7 @@ function MinimalNav({
 						className={cn(
 							"flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm transition-colors",
 							isActive
-								? "border-primary bg-primary text-primary-foreground"
+								? "border-primary-ink bg-primary-ink text-primary-foreground"
 								: "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
 							!isActive &&
 								matches !== undefined &&
