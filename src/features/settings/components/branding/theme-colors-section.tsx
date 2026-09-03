@@ -59,6 +59,7 @@ function ColorField({
 							/>
 							<Input
 								aria-invalid={hasError}
+								aria-label={`${label} hex value`}
 								className="flex-1 font-mono uppercase"
 								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
