@@ -4,7 +4,6 @@ import {
 	IconStarFilled,
 } from "@tabler/icons-react";
 import { addMinutes } from "date-fns";
-import type { KeyboardEvent } from "react";
 import type {
 	PublicProgramBreak,
 	PublicProgramSession,
@@ -22,6 +21,9 @@ import {
 
 export const MARK =
 	"rounded-[2px] bg-[var(--prog-mark)] font-semibold text-foreground ring-1 ring-primary/30";
+
+const ROW_TITLE =
+	"cursor-pointer text-left after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2";
 
 export function EventDetails({
 	item,
@@ -64,20 +66,6 @@ export function EventDetails({
 			)}
 		</>
 	);
-}
-
-function rowActivation(open: () => void) {
-	return {
-		role: "button" as const,
-		tabIndex: 0,
-		onClick: open,
-		onKeyDown: (e: KeyboardEvent) => {
-			if (e.key === "Enter" || e.key === " ") {
-				e.preventDefault();
-				open();
-			}
-		},
-	};
 }
 
 export function SessionHeader({
@@ -259,15 +247,14 @@ function PresentationRow({
 	return (
 		<li
 			className={cn(
-				"grid gap-x-3 border-b border-border py-3 last:border-0",
+				"relative grid gap-x-3 border-b border-border py-3 last:border-0",
 				numbered ? "grid-cols-[2.5rem_1fr]" : "grid-cols-[3.5rem_1fr]",
 				"cursor-pointer transition-colors hover:bg-accent",
 				!numbered && "-mx-2 rounded-md px-2",
 				// min-h is the clip height program-ribbon needs at max-w-22.
-				badge?.style === "ribbon" && "relative min-h-16 overflow-hidden pr-12",
+				badge?.style === "ribbon" && "min-h-16 overflow-hidden pr-12",
 			)}
 			data-testid="presentation-row"
-			{...rowActivation(open)}
 		>
 			<div>
 				{numbered && (
@@ -305,24 +292,31 @@ function PresentationRow({
 					{p.cancelled ? (
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<span className="text-(--prog-faint) line-through decoration-2">
+								<button
+									className={cn(
+										ROW_TITLE,
+										"text-(--prog-faint) line-through decoration-2",
+									)}
+									onClick={open}
+									type="button"
+								>
 									<Highlight
 										markClassName={MARK}
 										query={query}
 										text={p.submissionTitle}
 									/>
-								</span>
+								</button>
 							</TooltipTrigger>
 							<TooltipContent>Cancelled</TooltipContent>
 						</Tooltip>
 					) : (
-						<span>
+						<button className={ROW_TITLE} onClick={open} type="button">
 							<Highlight
 								markClassName={MARK}
 								query={query}
 								text={p.submissionTitle}
 							/>
-						</span>
+						</button>
 					)}
 				</p>
 				{badge?.style === "badge" && (
@@ -360,15 +354,9 @@ function RowAuthors({
 						{i > 0 && ", "}
 						<button
 							aria-label={`Author info: ${a.firstName} ${a.lastName}`}
-							className="cursor-pointer underline-offset-2 hover:underline focus-visible:underline"
+							className="relative z-10 cursor-pointer underline-offset-2 hover:underline focus-visible:underline"
 							data-testid="author-name"
-							onClick={(e) => {
-								e.stopPropagation();
-								onSelect(a.orderIndex);
-							}}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") e.stopPropagation();
-							}}
+							onClick={() => onSelect(a.orderIndex)}
 							type="button"
 						>
 							<Highlight
