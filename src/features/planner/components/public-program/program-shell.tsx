@@ -432,7 +432,7 @@ function MinimalNav({
 								matches !== undefined &&
 								(matches > 0
 									? "border-primary/60 text-foreground"
-									: "opacity-40"),
+									: "border-dashed"),
 						)}
 						key={day.toISOString()}
 						onClick={() => setActiveDay(i)}
@@ -492,7 +492,7 @@ function FramedNav({
 								: "text-(--prog-faint) hover:text-foreground",
 							!isActive &&
 								matches !== undefined &&
-								(matches > 0 ? "text-foreground" : "opacity-40"),
+								(matches > 0 ? "text-foreground" : "italic"),
 						)}
 						key={day.toISOString()}
 						onClick={() => setActiveDay(i)}
@@ -572,7 +572,7 @@ function SearchBox({
 				<button
 					aria-label="Clear search"
 					className={cn(
-						"absolute top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground",
+						"absolute top-1/2 flex size-6 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground",
 						framed ? "right-1" : "right-2",
 					)}
 					onClick={() => setSearch("")}
