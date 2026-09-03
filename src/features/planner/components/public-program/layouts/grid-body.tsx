@@ -70,12 +70,12 @@ export function GridBody({
 						>
 							<div className={STICKY_COL} />
 							{cols.map((c) => (
-								<div
-									className="text-muted-foreground px-3 pb-2 font-(family-name:--prog-font-meta) text-[11px] tracking-[0.2em] uppercase"
+								<h2
+									className="text-muted-foreground px-3 pb-2 font-(family-name:--prog-font-meta) text-[11px] font-normal tracking-[0.2em] uppercase"
 									key={c.id}
 								>
 									{c.name}
-								</div>
+								</h2>
 							))}
 						</div>
 						{groups.map((group, gi) => (
@@ -227,9 +227,9 @@ function MobileSwipe({
 				{cols.map((col, ci) => (
 					<section className="w-full shrink-0 snap-center px-5" key={col.id}>
 						<div className="border-primary mb-4 flex items-baseline gap-2 border-b pb-2">
-							<span className="text-primary font-(family-name:--prog-font-meta) text-sm tracking-[0.2em] uppercase">
+							<h2 className="text-primary font-(family-name:--prog-font-meta) text-sm font-normal tracking-[0.2em] uppercase">
 								{col.name}
-							</span>
+							</h2>
 							{cols.length > 1 && (
 								<span className="ml-auto font-(family-name:--prog-font-meta) text-[10px] text-(--prog-faint) tabular-nums">
 									{ci + 1} / {cols.length}

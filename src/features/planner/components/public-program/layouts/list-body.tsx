@@ -107,9 +107,9 @@ function SlotHeading({
 	if (framed) {
 		return (
 			<div className="border-border mb-6 border-b pb-3">
-				<span className="text-muted-foreground font-(family-name:--prog-font-meta) text-sm tracking-[0.2em] uppercase tabular-nums">
+				<h2 className="text-muted-foreground font-(family-name:--prog-font-meta) text-sm font-normal tracking-[0.2em] uppercase tabular-nums">
 					{start} {dash} {end}
-				</span>
+				</h2>
 			</div>
 		);
 	}
