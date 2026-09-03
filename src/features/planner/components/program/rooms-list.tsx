@@ -69,10 +69,7 @@ export function RoomsList({ rooms, onEdit, onUpdate }: RoomsListProps) {
 	);
 
 	return (
-		<div
-			className="fade-x overflow-x-auto rounded-md border"
-			data-testid="rooms-list"
-		>
+		<div className="overflow-x-auto rounded-md border" data-testid="rooms-list">
 			<Table>
 				<TableHeader>
 					<TableRow>
