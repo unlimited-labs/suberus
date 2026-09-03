@@ -415,6 +415,7 @@ function MinimalNav({
 				const matches = dayMatchCounts[i];
 				return (
 					<button
+						aria-current={isActive || undefined}
 						className={cn(
 							"flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm transition-colors",
 							isActive
@@ -438,6 +439,7 @@ function MinimalNav({
 						</span>
 						{!isActive && !!matches && (
 							<span
+								aria-label={`${matches} matches`}
 								className="bg-primary/15 text-primary rounded-full px-1.5 text-xs font-semibold tabular-nums"
 								data-testid={`day-match-count-${i}`}
 							>
@@ -473,6 +475,7 @@ function FramedNav({
 				const matches = dayMatchCounts[i];
 				return (
 					<button
+						aria-current={isActive || undefined}
 						className={cn(
 							"group relative flex shrink-0 items-baseline gap-2 py-1.5 text-left whitespace-nowrap transition-colors sm:py-2",
 							isActive
@@ -499,6 +502,7 @@ function FramedNav({
 						</span>
 						{!isActive && !!matches && (
 							<span
+								aria-label={`${matches} matches`}
 								className="text-primary flex items-baseline gap-1 font-(family-name:--prog-font-meta) text-[10px] font-semibold tabular-nums"
 								data-testid={`day-match-count-${i}`}
 							>
