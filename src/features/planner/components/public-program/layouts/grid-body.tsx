@@ -62,7 +62,11 @@ export function GridBody({
 			style={{ maxWidth: `max(var(--prog-max-width), ${naturalRem}rem)` }}
 		>
 			<div className="hidden md:block">
-				<div className="overflow-x-auto">
+				<div
+					aria-label="Programme grid"
+					className="overflow-x-auto"
+					role="region"
+				>
 					<div style={{ minWidth }}>
 						<div
 							className="border-primary grid border-b"
@@ -220,8 +224,10 @@ function MobileSwipe({
 				</div>
 			)}
 			<div
+				aria-label="Rooms"
 				className="-mx-5 flex snap-x snap-mandatory overflow-x-auto"
 				onScroll={() => setSwiped(true)}
+				role="region"
 				style={{ scrollbarWidth: "none" }}
 			>
 				{cols.map((col, ci) => (
