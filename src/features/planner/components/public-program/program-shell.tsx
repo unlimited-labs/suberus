@@ -20,6 +20,8 @@ import {
 	ProgramPwaStatus,
 } from "./themes/shared";
 
+const DEFAULT_SEARCH_PLACEHOLDER = "Search talks, authors, tracks…";
+
 const RULE_STYLE: CSSProperties = {
 	borderColor: "var(--prog-rule)",
 	borderTopWidth: "var(--prog-rule-width)",
@@ -158,6 +160,11 @@ export function ProgramShell({
 			settings={settings}
 			themeId={themeId}
 		>
+			{q && (
+				<p className="sr-only" role="status">
+					{activeMatchCount} results
+				</p>
+			)}
 			{q && activeMatchCount === 0 && (
 				<SearchNotice
 					days={days}
@@ -534,6 +541,7 @@ function SearchBox({
 	setSearch: (value: string) => void;
 	placeholder?: string;
 }) {
+	const label = placeholder ?? DEFAULT_SEARCH_PLACEHOLDER;
 	return (
 		<div className="relative w-full sm:w-72 sm:shrink-0">
 			<IconSearch
@@ -544,13 +552,16 @@ function SearchBox({
 				size={framed ? 13 : 15}
 			/>
 			<Input
+				aria-label={label}
 				className={cn(
+					"[&::-webkit-search-cancel-button]:appearance-none",
 					framed
 						? "rounded-none border-0 border-b border-border bg-transparent pr-8 pl-6 text-base shadow-none focus-visible:border-primary focus-visible:ring-0 sm:text-sm"
 						: "px-9",
 				)}
 				onChange={(e) => setSearch(e.target.value)}
-				placeholder={placeholder ?? "Search talks, authors, tracks…"}
+				placeholder={label}
+				type="search"
 				value={search}
 			/>
 			{search && (
