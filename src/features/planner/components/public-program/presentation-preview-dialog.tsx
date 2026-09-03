@@ -319,7 +319,7 @@ function Authors({
 				{authors.map((author, index) => {
 					const cardClass = cn(
 						"flex h-full items-start gap-3 rounded-(--radius) border border-border bg-card p-3",
-						author.isPresenter && "border-primary/40 bg-primary/5",
+						author.isPresenter && "border-primary-ink/40",
 					);
 					const inner = (
 						<>
