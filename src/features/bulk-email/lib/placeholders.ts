@@ -75,7 +75,8 @@ export function unknownTokens(
 	tokens: readonly string[],
 	knownKeys: readonly string[],
 ): string[] {
-	return tokens.filter((t) => !knownKeys.includes(t));
+	const known = new Set(knownKeys);
+	return tokens.filter((t) => !known.has(t));
 }
 
 export function applyPlaceholders(

@@ -203,6 +203,14 @@
         "files": ["src/features/users/server/users.ts"],
         "rules": ["react-doctor/server-sequential-independent-await"],
       },
+      {
+        // The callbacks passed to the local `run` helper are event handlers, not
+        // state updaters — React never re-runs them, so setState inside is fine.
+        "files": [
+          "src/features/bulk-email/components/sheet-wizard/use-sheet-wizard.ts",
+        ],
+        "rules": ["react-doctor/no-impure-state-updater"],
+      },
     ],
   },
   "rules": {

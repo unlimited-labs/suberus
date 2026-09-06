@@ -333,8 +333,9 @@ export async function placeholderIssues(
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
 
 	const known = [...BUILTIN_PLACEHOLDER_KEYS, ...campaign.dataKeys];
+	const knownSet = new Set(known);
 	const unknown = unknownTokens(tokens, known);
-	const used = tokens.filter((t) => known.includes(t));
+	const used = tokens.filter((t) => knownSet.has(t));
 	if (used.length === 0) return { unknown, missing: [] };
 
 	const recipients = await prisma.emailCampaignRecipient.findMany({

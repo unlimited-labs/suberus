@@ -71,11 +71,10 @@ export function PlaceholderHelp({ dataKeys, issues }: PlaceholderHelpProps) {
 					</AlertTitle>
 					<AlertDescription>
 						{issues.unknown
-							.map((token) => {
+							.flatMap((token) => {
 								const near = closestKey(token, known);
-								return near ? `Did you mean {{${near}}}?` : null;
+								return near ? [`Did you mean {{${near}}}?`] : [];
 							})
-							.filter(Boolean)
 							.join(" ") || "Fix the message before sending."}
 					</AlertDescription>
 				</Alert>

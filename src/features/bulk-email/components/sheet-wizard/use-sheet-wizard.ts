@@ -69,15 +69,17 @@ export function useSheetWizard(onCreated: () => void) {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
+	// No `finally`: the statement form defeats the React Compiler's memoization
+	// (see the app-wide removal in the doctor campaign). The catch swallows, so
+	// the trailing setBusy runs on both paths.
 	const run = async (task: () => Promise<void>, fallback: string) => {
 		setBusy(true);
 		try {
 			await task();
 		} catch (error) {
 			toast.error(getErrorMessage(error, fallback));
-		} finally {
-			setBusy(false);
 		}
+		setBusy(false);
 	};
 
 	const payload = createPayload(state);

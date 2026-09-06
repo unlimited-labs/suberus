@@ -211,7 +211,7 @@ export const bulkEmailPlaceholderIssuesQueryOptions = (
 	id: string,
 	tokens: string[],
 ) => {
-	const sorted = [...tokens].sort();
+	const sorted = tokens.toSorted();
 	return queryOptions({
 		queryKey: ["bulk-email", "placeholder-issues", id, sorted] as const,
 		queryFn: () => checkBulkEmailPlaceholders({ data: { id, tokens: sorted } }),
