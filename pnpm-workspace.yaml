@@ -30,6 +30,4 @@ allowBuilds:
   msgpackr-extract: true
   msw: true
   prisma: true
-onlyBuiltDependencies: lefthook
-
 minimumReleaseAge: 2880
