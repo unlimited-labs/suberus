@@ -1,12 +1,15 @@
-import { IconMail } from "@tabler/icons-react";
+import { IconMail, IconTableImport } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { bulkEmailCampaignsQueryOptions } from "@/features/bulk-email/api/bulk-email";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/ui/empty-state";
+import { SheetWizardDialog } from "./sheet-wizard/sheet-wizard-dialog";
 
 function statusVariant(
 	status: string,
@@ -21,15 +24,25 @@ export function CampaignList() {
 		bulkEmailCampaignsQueryOptions(),
 	);
 	const { formatDateTime } = useDateFormat();
+	const [importOpen, setImportOpen] = useState(false);
 
 	return (
 		<div className="flex h-full flex-col">
-			<PageHeader icon={IconMail} title="Email campaigns" />
+			<PageHeader icon={IconMail} title="Email campaigns">
+				<Button
+					data-testid="import-sheet-btn"
+					onClick={() => setImportOpen(true)}
+				>
+					<IconTableImport className="size-4" />
+					Import spreadsheet
+				</Button>
+			</PageHeader>
+			<SheetWizardDialog onOpenChange={setImportOpen} open={importOpen} />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">
 					{campaigns.length === 0 ? (
 						<EmptyState
-							description="Select users in the Users table and choose “Send email” to start a campaign."
+							description="Start a campaign from the Users table, or import a spreadsheet."
 							icon={IconMail}
 							title="No campaigns yet"
 						/>

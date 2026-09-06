@@ -201,7 +201,10 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								title="Placeholders"
 								variant="outlined"
 							>
-								<PlaceholderHelp />
+								<PlaceholderHelp
+									dataKeys={campaign.dataKeys}
+									issues={compose.issues}
+								/>
 							</SectionCard>
 
 							<SectionCard icon={IconSend} title="Actions" variant="outlined">

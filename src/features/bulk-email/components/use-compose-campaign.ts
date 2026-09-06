@@ -9,11 +9,13 @@ import {
 	deleteBulkEmailCampaign,
 	duplicateBulkEmailCampaign,
 	type getBulkEmailCampaign,
+	bulkEmailPlaceholderIssuesQueryOptions,
 	bulkEmailPreviewQueryOptions,
 	saveBulkEmailDraft,
 	sendBulkEmailCampaign,
 	sendBulkEmailTest,
 } from "@/features/bulk-email/api/bulk-email";
+import { extractTokens } from "@/features/bulk-email/lib/placeholders";
 import { campaignDraftInput } from "@/features/bulk-email/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
@@ -53,7 +55,17 @@ export function useComposeCampaign(campaign: Campaign) {
 
 	const format = useSelector(form.store, (s) => s.values.format);
 	const bodySource = useSelector(form.store, (s) => s.values.bodySource);
+	const subject = useSelector(form.store, (s) => s.values.subject);
 	const debouncedBody = useDebounced(bodySource, 400);
+	const debouncedSubject = useDebounced(subject, 400);
+
+	const tokens = extractTokens(`${debouncedSubject}
+${debouncedBody}`);
+	const issuesQuery = useQuery({
+		...bulkEmailPlaceholderIssuesQueryOptions(campaign.id, tokens),
+		enabled: isDraft && tokens.length > 0,
+	});
+	const issues = tokens.length > 0 ? (issuesQuery.data ?? null) : null;
 
 	const previewQuery = useQuery({
 		...bulkEmailPreviewQueryOptions(format, debouncedBody),
@@ -148,17 +160,20 @@ export function useComposeCampaign(campaign: Campaign) {
 		});
 	}, [jobStatus, jobCurrent, jobId, campaign.id, queryClient]);
 
-	const canSend = useSelector(
+	const hasUnknownTokens = (issues?.unknown.length ?? 0) > 0;
+	const formReady = useSelector(
 		form.store,
 		(s) =>
 			s.values.subject.trim() !== "" &&
 			s.values.bodySource.trim() !== "" &&
 			s.isValid,
 	);
+	const canSend = formReady && !hasUnknownTokens;
 
 	return {
 		isDraft,
 		canSend,
+		issues,
 		form,
 		preview,
 		isPreviewLoading: format !== "PLAIN" && previewQuery.isFetching,

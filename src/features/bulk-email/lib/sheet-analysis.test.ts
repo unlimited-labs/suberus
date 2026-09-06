@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeSheetEmails } from "./sheet-analysis";
+import { analyzeSheetEmails, detectEmailColumn } from "./sheet-analysis";
 
 const columns = ["Name", "Mail", "Hotel"];
 
@@ -53,5 +53,23 @@ describe("analyzeSheetEmails", () => {
 			{ column: 0, rows: [1] },
 			{ column: 2, rows: [0, 2] },
 		]);
+	});
+});
+
+describe("detectEmailColumn", () => {
+	it("picks the column holding the most addresses", () => {
+		expect(
+			detectEmailColumn({
+				columns,
+				rows: [
+					["Ann", "ann@x.com", "Willa"],
+					["Bob", "bob@x.com", "Hotel"],
+				],
+			}),
+		).toBe(1);
+	});
+
+	it("falls back to the first column when nothing looks like an address", () => {
+		expect(detectEmailColumn({ columns, rows: [["a", "b", "c"]] })).toBe(0);
 	});
 });

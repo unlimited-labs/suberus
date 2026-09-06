@@ -40,3 +40,14 @@ export function analyzeSheetEmails(
 
 	return { emails, problems, emptyCells };
 }
+
+export function detectEmailColumn(sheet: Sheet): number {
+	const scores = sheet.columns.map(
+		(_, column) =>
+			sheet.rows.filter(
+				(row) => z.email().safeParse(row[column]?.trim()).success,
+			).length,
+	);
+	const best = Math.max(...scores);
+	return best === 0 ? 0 : scores.indexOf(best);
+}
