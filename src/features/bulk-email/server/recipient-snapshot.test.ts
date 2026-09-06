@@ -16,6 +16,7 @@ describe("buildRecipientSnapshot", () => {
 			firstName: "Ann",
 			lastName: "Lee",
 			titles: "First, Second",
+			data: {},
 		});
 	});
 

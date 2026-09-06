@@ -15,5 +15,6 @@ export function buildRecipientSnapshot(user: SnapshotUser): RecipientSnapshot {
 		firstName: user.firstName,
 		lastName: user.lastName,
 		titles: joinTitles(user.submissions.map((s) => s.title)),
+		data: {},
 	};
 }

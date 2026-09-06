@@ -1059,6 +1059,8 @@ model EmailCampaign {
   createdById     String?             @map("created_by_id") @db.Uuid
   createdAt       DateTime            @default(now()) @map("created_at")
   sentAt          DateTime?           @map("sent_at")
+  /// Custom placeholder keys carried by this campaign's recipients (`data`).
+  dataKeys        String[]            @map("data_keys")
 
   recipients EmailCampaignRecipient[]
 
@@ -1075,6 +1077,8 @@ model EmailCampaignRecipient {
   firstName  String?   @map("first_name")
   lastName   String?   @map("last_name")
   titles     String    @default("")
+  /// Custom placeholder values, `Record<string, string>`; see parseRecipientData.
+  data       Json      @default("{}")
   status     String    @default("PENDING")
   error      String?
   sentAt     DateTime? @map("sent_at")

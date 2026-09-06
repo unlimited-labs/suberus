@@ -6,8 +6,10 @@ import { createJobProgress } from "@/shared/server/job-progress";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import {
 	applyPlaceholders,
+	parseRecipientData,
 	pickRandom,
 	recipientValues,
+	type RecipientSnapshot,
 	SAMPLE_VALUES,
 } from "../lib/placeholders";
 import {
@@ -51,9 +53,24 @@ export async function createDraftCampaign(
 	}
 
 	const snapshots = users.map(buildRecipientSnapshot);
+	const campaignId = await insertCampaign(snapshots, createdById, []);
+
+	return { campaignId, totalRecipients: snapshots.length };
+}
+
+export async function insertCampaign(
+	snapshots: RecipientSnapshot[],
+	createdById: string,
+	dataKeys: string[],
+	base?: Pick<SaveDraftInput, "subject" | "format" | "bodySource"> & {
+		replyTo: string | null;
+	},
+): Promise<string> {
 	const campaign = await prisma.emailCampaign.create({
 		data: {
+			...base,
 			createdById,
+			dataKeys,
 			totalRecipients: snapshots.length,
 			recipients: {
 				create: snapshots.map((s) => ({
@@ -62,12 +79,12 @@ export async function createDraftCampaign(
 					firstName: s.firstName,
 					lastName: s.lastName,
 					titles: s.titles,
+					data: s.data,
 				})),
 			},
 		},
 	});
-
-	return { campaignId: campaign.id, totalRecipients: snapshots.length };
+	return campaign.id;
 }
 
 export async function duplicateCampaign(
@@ -84,27 +101,28 @@ export async function duplicateCampaign(
 					firstName: true,
 					lastName: true,
 					titles: true,
+					data: true,
 				},
 			},
 		},
 	});
 	if (!src) throw new Response("Campaign not found", { status: 404 });
 
-	const campaign = await prisma.emailCampaign.create({
-		data: {
-			createdById,
+	const campaignId = await insertCampaign(
+		src.recipients.map((r) => ({ ...r, data: parseRecipientData(r.data) })),
+		createdById,
+		src.dataKeys,
+		{
 			subject: src.subject,
 			format: src.format,
 			bodySource: src.bodySource,
 			replyTo: src.replyTo,
-			totalRecipients: src.recipients.length,
-			recipients: { create: src.recipients },
 		},
-	});
+	);
 
-	await copyCampaignAttachments(id, campaign.id, createdById);
+	await copyCampaignAttachments(id, campaignId, createdById);
 
-	return { campaignId: campaign.id };
+	return { campaignId };
 }
 
 /** Cap on recipient rows hydrated into the composer (the true total lives in
@@ -206,7 +224,12 @@ export async function sendCampaignTest(
 		where: { id },
 		include: {
 			recipients: {
-				select: { firstName: true, lastName: true, titles: true },
+				select: {
+					firstName: true,
+					lastName: true,
+					titles: true,
+					data: true,
+				},
 			},
 		},
 	});
@@ -220,7 +243,9 @@ export async function sendCampaignTest(
 		campaign.bodySource,
 	);
 	const sample = pickRandom(campaign.recipients);
-	const values = sample ? recipientValues(sample) : SAMPLE_VALUES;
+	const values = sample
+		? recipientValues({ ...sample, data: parseRecipientData(sample.data) })
+		: SAMPLE_VALUES;
 
 	const subject = `[TEST] ${applyPlaceholders(campaign.subject, values, false)}`;
 	const body = applyPlaceholders(rendered.body, values, rendered.isHtml);

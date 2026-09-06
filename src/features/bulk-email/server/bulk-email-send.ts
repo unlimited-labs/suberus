@@ -7,6 +7,7 @@ export interface MailRecipientInput {
 	firstName: string | null;
 	lastName: string | null;
 	titles: string;
+	data: Record<string, string>;
 }
 
 export interface CampaignContent {

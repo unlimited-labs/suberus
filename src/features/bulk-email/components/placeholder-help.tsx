@@ -1,19 +1,19 @@
 import { toast } from "sonner";
 import { Badge } from "@/shared/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
-import { PLACEHOLDER_KEYS } from "../lib/placeholders";
+import { BUILTIN_PLACEHOLDER_KEYS } from "../lib/placeholders";
 
 const DESCRIPTIONS = {
 	firstName: "Recipient's first name",
 	lastName: "Recipient's last name",
 	title: "Recipient's submission titles (comma-separated)",
-} satisfies Record<(typeof PLACEHOLDER_KEYS)[number], string>;
+} satisfies Record<(typeof BUILTIN_PLACEHOLDER_KEYS)[number], string>;
 
 export function PlaceholderHelp() {
 	return (
 		<div className="space-y-2" data-testid="placeholder-help">
 			<div className="flex flex-wrap gap-1.5">
-				{PLACEHOLDER_KEYS.map((key) => {
+				{BUILTIN_PLACEHOLDER_KEYS.map((key) => {
 					const token = `{{${key}}}`;
 					return (
 						<Tooltip key={key}>

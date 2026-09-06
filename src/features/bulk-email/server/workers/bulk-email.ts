@@ -9,6 +9,7 @@ import {
 	setJobCurrent,
 	setJobStage,
 } from "@/shared/server/job-progress";
+import { parseRecipientData } from "../../lib/placeholders";
 import { loadAttachmentBuffers } from "../attachments";
 import { buildRecipientMail, type CampaignContent } from "../bulk-email-send";
 import {
@@ -184,7 +185,10 @@ async function processCampaign(campaignId: string): Promise<void> {
 	const delayMs = env.BULK_EMAIL_DELAY_SECONDS * 1000;
 
 	for (const recipient of pending) {
-		await sendToRecipient(campaignId, content, recipient);
+		await sendToRecipient(campaignId, content, {
+			...recipient,
+			data: parseRecipientData(recipient.data),
+		});
 		await reportProgress(campaign.jobProgressId, campaignId);
 		await sleep(delayMs);
 	}

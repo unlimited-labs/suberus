@@ -6,6 +6,7 @@ const recipient = {
 	firstName: "Ann",
 	lastName: "Lee",
 	titles: "Paper A, Paper B",
+	data: {},
 };
 
 describe("buildRecipientMail", () => {
@@ -27,6 +28,14 @@ describe("buildRecipientMail", () => {
 		);
 		expect(mail.text).toBe("Titles: Paper A, Paper B");
 		expect(mail.html).toBeUndefined();
+	});
+
+	it("substitutes a custom placeholder from the recipient's sheet data", () => {
+		const mail = buildRecipientMail(
+			{ subject: "Hi", body: "Room at {{hotel}}.", isHtml: false },
+			{ ...recipient, data: { hotel: "Willa Tatrzańska" } },
+		);
+		expect(mail.text).toBe("Room at Willa Tatrzańska.");
 	});
 
 	it("leaves no {{title}} token when the recipient has no submissions", () => {
