@@ -6,17 +6,18 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+import { StepIndicator } from "@/shared/ui/step-indicator";
 import { MappingStep } from "./mapping-step";
 import { MatchStep } from "./match-step";
 import { StepFooter } from "./step-footer";
 import { UploadStep } from "./upload-step";
 import { useSheetWizard } from "./use-sheet-wizard";
 
-const TITLES = {
-	upload: "Upload spreadsheet",
-	match: "Check recipients",
-	mapping: "Map columns",
-} as const;
+const STEPS = [
+	{ id: 1, title: "Upload spreadsheet" },
+	{ id: 2, title: "Check recipients" },
+	{ id: 3, title: "Map columns" },
+] as const;
 
 const DESCRIPTIONS = {
 	upload: "An .xlsx or .xls file with one recipient per row.",
@@ -46,12 +47,14 @@ export function SheetWizardDialog({
 			open={open}
 		>
 			<DialogContent className="sm:max-w-3xl">
-				<DialogHeader>
-					<DialogTitle>{TITLES[state.step]}</DialogTitle>
+				<DialogHeader className="gap-3">
+					<DialogTitle>Import spreadsheet</DialogTitle>
+					<StepIndicator
+						currentStep={wizard.stepIndex}
+						orientation="horizontal"
+						steps={STEPS}
+					/>
 					<DialogDescription>{DESCRIPTIONS[state.step]}</DialogDescription>
-					<p className="text-muted-foreground text-xs font-medium">
-						Step {wizard.stepIndex} of 3
-					</p>
 				</DialogHeader>
 
 				{state.step === "upload" && (

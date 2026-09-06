@@ -1,10 +1,5 @@
-import { IconCheck } from "@tabler/icons-react";
 import { cn } from "@/shared/lib/utils";
-
-interface Step {
-	id: number;
-	title: string;
-}
+import { type Step, StepIndicator } from "@/shared/ui/step-indicator";
 
 interface AuthSidebarProps {
 	steps?: readonly Step[];
@@ -51,36 +46,12 @@ export function AuthSidebar({
 			</div>
 
 			{steps && steps.length > 0 ? (
-				<div className="relative z-10 space-y-2">
-					{steps.map((step) => (
-						<div
-							className={cn(
-								"flex items-center gap-2 transition-opacity duration-300",
-								step.id === currentStep ? "opacity-100" : "opacity-50",
-							)}
-							key={step.id}
-						>
-							<div
-								className={cn(
-									"flex size-6 items-center justify-center rounded-full border-2 text-xs font-medium transition-all",
-									step.id < currentStep &&
-										"border-primary-foreground bg-primary-foreground text-primary-ink",
-									step.id === currentStep &&
-										"border-primary-foreground bg-transparent",
-									step.id > currentStep &&
-										"border-primary-foreground/50 bg-transparent",
-								)}
-							>
-								{step.id < currentStep ? (
-									<IconCheck className="size-3" />
-								) : (
-									step.id
-								)}
-							</div>
-							<span className="text-xs font-medium">{step.title}</span>
-						</div>
-					))}
-				</div>
+				<StepIndicator
+					className="relative z-10"
+					currentStep={currentStep}
+					steps={steps}
+					tone="onPrimary"
+				/>
 			) : (
 				conferenceSubtitle && (
 					<p className="text-primary-foreground/90 relative z-10 text-sm font-medium wrap-break-word">
