@@ -47,15 +47,15 @@ test.describe("Admin - Bulk Email from a spreadsheet", () => {
 
 		try {
 			await openWizard(page, [
-				["PJMICRO 2026 — Uczestnicy"],
+				["Conference 2026 — participants"],
 				[],
 				["Imię", "Nazwisko", "Mail", "Nazwa hotelu"],
-				["Karol", "Znany", known.email, "Willa Tatrzańska"],
+				["Karol", "Znany", known.email, "Riverside Hotel"],
 				["Nowa", "Osoba", strangerEmail, ""],
 			])
 
 			await expect(page.getByTestId("sheet-preview")).toContainText(
-				"Willa Tatrzańska",
+				"Riverside Hotel",
 			)
 			await expect(page.getByTestId("sheet-email-column")).toContainText("Mail")
 
@@ -125,7 +125,7 @@ test.describe("Admin - Bulk Email from a spreadsheet", () => {
 			const message = await waitForEmail(known.email, runId, 15000)
 			expect(message, "no email delivered to the matched recipient").toBeTruthy()
 			const full = await getMailpitMessage((message as { ID: string }).ID)
-			expect((full as { HTML?: string }).HTML).toContain("Willa Tatrzańska")
+			expect((full as { HTML?: string }).HTML).toContain("Riverside Hotel")
 			expect((full as { HTML?: string }).HTML).toContain("Znany")
 
 			const stranger = await waitForEmail(strangerEmail, runId, 15000)

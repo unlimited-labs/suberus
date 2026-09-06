@@ -33,9 +33,9 @@ describe("buildRecipientMail", () => {
 	it("substitutes a custom placeholder from the recipient's sheet data", () => {
 		const mail = buildRecipientMail(
 			{ subject: "Hi", body: "Room at {{hotel}}.", isHtml: false },
-			{ ...recipient, data: { hotel: "Willa Tatrzańska" } },
+			{ ...recipient, data: { hotel: "Riverside Hotel" } },
 		);
-		expect(mail.text).toBe("Room at Willa Tatrzańska.");
+		expect(mail.text).toBe("Room at Riverside Hotel.");
 	});
 
 	it("leaves no {{title}} token when the recipient has no submissions", () => {

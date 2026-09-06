@@ -12,16 +12,16 @@ describe("parseSheetBuffer", () => {
 	it("finds the header below a title row and keeps dates as text", () => {
 		const sheet = parseSheetBuffer(
 			workbook([
-				["PJMICRO 2026 — Uczestnicy"],
+				["Conference 2026 — participants"],
 				[],
 				[],
 				["Imię", "Mail", "Dni pobytu"],
-				["Robert", "robert@us.edu.pl", "13.09.2026 - 16.09.2026"],
+				["Ada", "ada@example.org", "13.09.2026 - 16.09.2026"],
 			]),
 		);
 		expect(sheet.columns).toEqual(["Imię", "Mail", "Dni pobytu"]);
 		expect(sheet.rows).toEqual([
-			["Robert", "robert@us.edu.pl", "13.09.2026 - 16.09.2026"],
+			["Ada", "ada@example.org", "13.09.2026 - 16.09.2026"],
 		]);
 	});
 

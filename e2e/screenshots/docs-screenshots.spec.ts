@@ -1397,47 +1397,46 @@ test.describe("docs screenshots", () => {
 		await shot(page, "60-managing-mcp-consent.png", { full: false });
 	});
 
-	const DOCS_SHEET_ROWS = [
-		["ICCMS 2026 — participants and their hotels"],
-		[],
-		["First name", "Last name", "Email", "Hotel", "Nights"],
-		[
-			"Sofia",
-			"Rossi",
-			"sofia.rossi@example.org",
-			"Grand Hotel Stalowa",
-			"12.05.2026 - 15.05.2026",
-		],
-		[
-			"Lukas",
-			"Weber",
-			"lukas.weber@example.org",
-			"Hotel Podgórski",
-			"12.05.2026 - 15.05.2026",
-		],
-		[
-			"Kenji",
-			"Tanaka",
-			"kenji.tanaka@example.org",
-			"Grand Hotel Stalowa",
-			"13.05.2026 - 15.05.2026",
-		],
-		[
-			"Amara",
-			"Osei",
-			"amara.osei@example.edu",
-			"",
-			"12.05.2026 - 15.05.2026",
-		],
+	const DOCS_SHEET_HOTELS = [
+		"Grand Hotel Stalowa",
+		"Hotel Podgórski",
+		"Grand Hotel Stalowa",
 	];
 
+	async function docsSheetRows() {
+		const db = getPrisma();
+		const known = await db.user.findMany({
+			where: { role: UserRole.AUTHOR, firstName: { not: null } },
+			select: { firstName: true, lastName: true, email: true },
+			orderBy: { email: "asc" },
+			take: DOCS_SHEET_HOTELS.length,
+		});
+		expect(
+			known.length,
+			"the docs seed no longer has enough authors for this sheet",
+		).toBe(DOCS_SHEET_HOTELS.length);
+		return {
+			matched: known.length,
+			rows: [
+				["ICCMS 2026 — participants and their hotels"],
+				[],
+				["First name", "Last name", "Email", "Hotel", "Nights"],
+				...known.map((u, i) => [
+					u.firstName ?? "",
+					u.lastName ?? "",
+					u.email,
+					DOCS_SHEET_HOTELS[i] ?? "",
+					"12.05.2026 - 15.05.2026",
+				]),
+				["Amara", "Osei", "amara.osei@example.edu", "", "13.05.2026 - 15.05.2026"],
+			],
+		};
+	}
+
 	async function openSheetWizard(page: Page) {
+		const { matched, rows } = await docsSheetRows();
 		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(
-			wb,
-			XLSX.utils.aoa_to_sheet(DOCS_SHEET_ROWS),
-			"Participants",
-		);
+		XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Participants");
 		await page.goto("/admin/bulk-email");
 		await page.getByTestId("import-sheet-btn").click();
 		await page.locator('input[type="file"]').setInputFiles({
@@ -1449,6 +1448,7 @@ test.describe("docs screenshots", () => {
 		await expect(page.getByTestId("sheet-preview")).toBeVisible({
 			timeout: 10000,
 		});
+		return matched;
 	}
 
 	test("62 bulk-email sheet upload", async ({ page }) => {
@@ -1457,11 +1457,13 @@ test.describe("docs screenshots", () => {
 	});
 
 	test("63 bulk-email sheet check", async ({ page }) => {
-		await openSheetWizard(page);
+		const matched = await openSheetWizard(page);
 		await page.getByTestId("sheet-check-btn").click();
-		await expect(page.getByTestId("sheet-counts")).toBeVisible({
-			timeout: 10000,
-		});
+		// The shot is worthless if nobody matched, and that fails silently.
+		await expect(page.getByTestId("sheet-counts")).toContainText(
+			`${matched} have an account`,
+			{ timeout: 10000 },
+		);
 		await shot(page, "63-managing-bulk-email-sheet-check.png", { full: false });
 	});
 
