@@ -8,25 +8,35 @@ import {
 	removeCampaignAttachment,
 } from "@/features/bulk-email/server/attachments";
 import {
+	createCampaignFromSheet,
 	createDraftCampaign,
 	deleteCampaign,
 	duplicateCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
 	listCampaigns,
+	placeholderIssues,
 	previewContent,
 	saveDraft,
 	sendCampaignTest,
 } from "@/features/bulk-email/server/bulk-email";
+import { matchSheetRows } from "@/features/bulk-email/server/sheet-match";
+import { parseSheetBuffer } from "@/features/bulk-email/server/sheet-parse";
 import {
+	campaignCheckInput,
 	campaignCreateInput,
 	campaignDraftInput,
 	type campaignFormatSchema,
 	campaignIdInput,
 	campaignPreviewInput,
+	sheetCampaignCreateInput,
+	sheetMatchInput,
 } from "@/features/bulk-email/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
-import { UploadValidationError } from "@/shared/server/validate-upload";
+import {
+	UploadValidationError,
+	validateUpload,
+} from "@/shared/server/validate-upload";
 
 export const createBulkEmailDraft = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
@@ -141,6 +151,38 @@ export const deleteBulkEmailAttachment = createServerFn({ method: "POST" })
 		}
 	});
 
+const SHEET_EXTENSIONS = ["xlsx", "xls"] as const;
+const MAX_SHEET_BYTES = 5 * 1024 * 1024;
+
+export const parseBulkEmailSheet = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator((data: FormData) => ({ file: getUploadedFile(data) }))
+	.handler(async ({ data }) => {
+		const buffer = await fileToBuffer(data.file);
+		await validateUpload(buffer, {
+			allowedExtensions: SHEET_EXTENSIONS,
+			maxBytes: MAX_SHEET_BYTES,
+		});
+		return parseSheetBuffer(buffer);
+	});
+
+export const matchBulkEmailSheet = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(sheetMatchInput)
+	.handler(({ data }) => matchSheetRows(data));
+
+export const createBulkEmailDraftFromSheet = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(sheetCampaignCreateInput)
+	.handler(({ data, context }) =>
+		createCampaignFromSheet(data, context.user.id),
+	);
+
+export const checkBulkEmailPlaceholders = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(campaignCheckInput)
+	.handler(({ data }) => placeholderIssues(data.id, data.tokens));
+
 export const bulkEmailCampaignQueryOptions = (id: string) =>
 	queryOptions({
 		queryKey: ["admin", "bulk-email", id],
@@ -162,3 +204,15 @@ export const bulkEmailPreviewQueryOptions = (
 		queryFn: () => previewBulkEmail({ data: { format, bodySource } }),
 		staleTime: Number.POSITIVE_INFINITY,
 	});
+
+export const bulkEmailPlaceholderIssuesQueryOptions = (
+	id: string,
+	tokens: string[],
+) => {
+	const sorted = [...tokens].sort();
+	return queryOptions({
+		queryKey: ["bulk-email", "placeholder-issues", id, sorted] as const,
+		queryFn: () => checkBulkEmailPlaceholders({ data: { id, tokens: sorted } }),
+		staleTime: Number.POSITIVE_INFINITY,
+	});
+};

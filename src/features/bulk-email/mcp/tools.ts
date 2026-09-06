@@ -1,16 +1,22 @@
 import { z } from "zod";
 import {
+	createCampaignFromSheet,
 	createDraftCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
 	listCampaigns,
+	placeholderIssues,
 	saveDraft,
 	sendCampaignTest,
 } from "@/features/bulk-email/server/bulk-email";
+import { matchSheetRows } from "@/features/bulk-email/server/sheet-match";
 import {
+	campaignCheckInput,
 	campaignCreateInput,
 	campaignDraftInput,
 	campaignIdInput,
+	sheetCampaignCreateInput,
+	sheetMatchInput,
 } from "@/features/bulk-email/validations";
 import { MCP_SCOPE_EMAIL_SEND } from "@/features/mcp/scopes";
 import {
@@ -36,7 +42,7 @@ const updateDraft = defineTool({
 	name: "email_draft_update",
 	title: "Update email draft",
 	description:
-		"Set subject, body and format of a draft campaign. Format is PLAIN, MARKDOWN or MJML. The body may use the placeholders {{firstName}}, {{lastName}} and {{title}}, filled per recipient. Every field is overwritten, including replyTo when omitted, so send the whole draft. Only works while the campaign is still a draft.",
+		"Set subject, body and format of a draft campaign. Format is PLAIN, MARKDOWN or MJML. The body may use the placeholders {{firstName}}, {{lastName}} and {{title}}, plus any key the campaign carries from an imported spreadsheet (email_campaign_get returns them as dataKeys), filled per recipient. A token that matches no key blocks sending, so check with email_draft_check. Every field is overwritten, including replyTo when omitted, so send the whole draft. Only works while the campaign is still a draft.",
 	input: campaignDraftInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_EMAIL_SEND,
@@ -105,7 +111,51 @@ const listCampaignsTool = defineTool({
 	},
 });
 
+const matchSheet = defineTool({
+	name: "email_sheet_match",
+	title: "Match spreadsheet rows to accounts",
+	description:
+		"Check a spreadsheet of recipients against the accounts in Suberus. Read the file yourself and pass its header row as columns and the data rows as rows, one string per column, plus the index of the column holding the email address. Returns each row as matched or unknown, the problems that block an import (a malformed address, the same address twice) and the columns with empty cells. Nothing is written.",
+	input: sheetMatchInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_EMAIL_SEND,
+	readOnly: true,
+	async handler(input) {
+		return matchSheetRows(input);
+	},
+});
+
+const createDraftFromSheet = defineTool({
+	name: "email_draft_create_from_sheet",
+	title: "Create email draft from a spreadsheet",
+	description:
+		"Start a campaign from spreadsheet rows, mapping columns to placeholders. Pass the same sheet and emailColumn you gave email_sheet_match. Each mapping entry names a column and a target: {kind:'data', key} makes the cell available as {{key}} in the body, {kind:'builtin', field} fills the recipient's first or last name and only applies to people without an account. Unlisted columns are ignored. unmatched decides what happens to addresses with no account: add them or leave them out. Refuses to run while the sheet still has problems.",
+	input: sheetCampaignCreateInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_EMAIL_SEND,
+	async handler(input, actor) {
+		return createCampaignFromSheet(input, actor.id);
+	},
+});
+
+const checkDraft = defineTool({
+	name: "email_draft_check",
+	title: "Check placeholders against recipients",
+	description:
+		"Check the placeholders you intend to use before sending. Pass the campaign id and the token names from your subject and body, without braces. Returns unknown, the tokens that match no key and would block the send, and missing, the known tokens that are empty for some recipients, with a count and a few example addresses.",
+	input: campaignCheckInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_EMAIL_SEND,
+	readOnly: true,
+	async handler(input) {
+		return placeholderIssues(input.id, input.tokens);
+	},
+});
+
 export const bulkEmailMcpTools: readonly McpTool[] = [
+	matchSheet,
+	createDraftFromSheet,
+	checkDraft,
 	createDraft,
 	updateDraft,
 	sendTest,
