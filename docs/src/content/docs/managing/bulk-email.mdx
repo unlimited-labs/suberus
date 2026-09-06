@@ -14,8 +14,9 @@ recipients from the **Users** list, compose the body as plain text, Markdown, or
 MJML, preview the rendered result, send a test to yourself, then queue the send.
 
 <Aside type="note" title="Where to find it">
-**Email campaigns** in the admin sidebar shows the send history. To start a new message,
-go to **Users**, select recipients, and choose **Send email** from the bulk actions.
+**Email campaigns** in the admin sidebar shows the send history and holds the
+**Import spreadsheet** button. To start from the people already in Suberus, go to
+**Users**, select recipients, and choose **Send email** from the bulk actions.
 </Aside>
 
 ## Choosing the recipients
@@ -30,6 +31,40 @@ exactly those users attached.
 
 Each recipient's name and submission titles are captured at that moment, so editing a
 profile afterwards won't change what an already-queued campaign sends.
+
+## Importing recipients from a spreadsheet
+
+When the message has to carry a different value for each person — a hotel, a room
+number, a slot time — start from a spreadsheet instead. On **Email campaigns**, click
+**Import spreadsheet**. The wizard has three steps and ends in the normal composer.
+
+**Step 1 — Upload spreadsheet.** Drop an `.xlsx` or `.xls` file, one recipient per row.
+Suberus reads the first sheet and finds the header row on its own, so a title line
+above the table is fine. It then guesses which column holds the email addresses; change
+it in **Email column** if the guess is wrong. The first five rows are shown with the
+email column highlighted.
+
+![Spreadsheet import, choosing the file and the email column](../../../assets/screenshots/62-managing-bulk-email-sheet-upload.png)
+
+**Step 2 — Check recipients.** Suberus matches every address against the accounts in
+the system and tells you how many were found. Addresses with no account can either be
+added to the campaign or left out — pick one under **Not found in Suberus**. Columns
+with blank cells are listed as a warning; you can continue, but anyone with a blank
+cell will receive an empty value in that spot. Two problems stop the import instead:
+a cell that is not an email address, and the same address twice. Correct the file and
+upload it again.
+
+![Spreadsheet import, checking who has an account](../../../assets/screenshots/63-managing-bulk-email-sheet-check.png)
+
+**Step 3 — Map columns.** Decide what each column becomes. **Placeholder** turns it
+into a token you can write in the message; the key is filled in from the header and you
+can rename it. **First name** and **Last name** fill in the names of people who have no
+account, and are offered only when you chose to add them. Everything else stays on
+**Skip**. The example column shows the value from the first row, so you can see what
+each placeholder will contain. **Create campaign** opens the composer with the
+recipients and their values attached.
+
+![Spreadsheet import, mapping columns to placeholders](../../../assets/screenshots/64-managing-bulk-email-sheet-mapping.png)
 
 ## Composing and sending
 
@@ -68,7 +103,7 @@ same set of files.
 
 | Field | What it does |
 |---|---|
-| **Recipients** | The users you selected in the Users list. Their name and submission titles are captured when the draft is created, so later profile edits don't change what gets sent. |
+| **Recipients** | The users you selected in the Users list, or the rows imported from a spreadsheet. Names and submission titles are captured when the draft is created, so later profile edits don't change what gets sent. |
 | **Subject** | The email subject line. Supports placeholders (plain text — never HTML). |
 | **Reply-To** | Optional. A single email address. If set, replies go here instead of the platform's sending mailbox. Leave blank to fall back to the **Contact Email** from *Settings › Conference*. |
 | **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML), or **MJML** (responsive email markup, compiled to HTML). |
@@ -90,6 +125,11 @@ email is sent:
 | `{{firstName}}` | The recipient's first name. |
 | `{{lastName}}` | The recipient's last name. |
 | `{{title}}` | The recipient's submission titles, comma-separated. Empty for users with no submissions. |
+| your own keys | Anything you mapped from a spreadsheet, for example `{{hotel}}`. The **Placeholders** panel lists the keys this campaign carries; click one to copy it. |
+
+A token that matches no placeholder blocks the send, and the composer says which one it
+is. A token that exists but is empty for some recipients is only a warning, listing how
+many people it affects and a few of their addresses.
 
 ## Delivery & throttling
 

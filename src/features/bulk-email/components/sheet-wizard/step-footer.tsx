@@ -5,6 +5,7 @@ interface StepFooterProps {
 	state: WizardState;
 	busy: boolean;
 	canCreate: boolean;
+	recipientCount: number;
 	onBack: () => void;
 	onNext: () => void;
 	onCreate: () => void;
@@ -14,6 +15,7 @@ export function StepFooter({
 	state,
 	busy,
 	canCreate,
+	recipientCount,
 	onBack,
 	onNext,
 	onCreate,
@@ -38,7 +40,7 @@ export function StepFooter({
 					{state.result.problems.length === 0 && (
 						<Button
 							data-testid="sheet-map-btn"
-							disabled={busy}
+							disabled={busy || recipientCount === 0}
 							onClick={onNext}
 						>
 							Map columns

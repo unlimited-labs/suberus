@@ -19,6 +19,7 @@ interface MatchStepProps {
 	sheet: Sheet;
 	result: SheetMatchResult;
 	unmatched: "add" | "skip";
+	recipientCount: number;
 	onUnmatched: (value: "add" | "skip") => void;
 }
 
@@ -26,6 +27,7 @@ export function MatchStep({
 	sheet,
 	result,
 	unmatched,
+	recipientCount,
 	onUnmatched,
 }: MatchStepProps) {
 	const matched = result.rows.filter((r) => r.kind === "user");
@@ -87,6 +89,13 @@ export function MatchStep({
 				</div>
 			)}
 
+			{recipientCount === 0 && result.problems.length === 0 && (
+				<p className="text-destructive" data-testid="sheet-no-recipients">
+					Nobody would be added. Add the addresses without an account, or import
+					a file whose people are already in Suberus.
+				</p>
+			)}
+
 			{result.emptyCells.length > 0 && (
 				<div
 					className="rounded-md border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-900/40 dark:bg-amber-950/20"
@@ -99,7 +108,8 @@ export function MatchStep({
 					<ul className="space-y-0.5 text-xs">
 						{result.emptyCells.map((warning) => (
 							<li key={warning.column}>
-								{sheet.columns[warning.column]}: data rows{" "}
+								{sheet.columns[warning.column]}:{" "}
+								{warning.rows.length === 1 ? "data row" : "data rows"}{" "}
 								{warning.rows
 									.slice(0, 10)
 									.map((r) => r + 1)
@@ -118,10 +128,14 @@ export function MatchStep({
 					<Label>Spreadsheet → account</Label>
 					<ul className="max-h-40 space-y-0.5 overflow-y-auto text-xs">
 						{matched.slice(0, ROSTER_LIMIT).map((row) => (
-							<li className="flex items-center gap-2" key={row.email}>
-								<span className="text-muted-foreground w-1/2 truncate">
+							<li
+								className="grid max-w-md grid-cols-[1fr_auto_1fr] items-center gap-2"
+								key={row.email}
+							>
+								<span className="text-muted-foreground truncate text-right">
 									{sheet.rows[row.row]?.filter(Boolean).slice(0, 2).join(" ")}
 								</span>
+								<span className="text-muted-foreground">→</span>
 								<span className="truncate">
 									{[row.firstName, row.lastName].filter(Boolean).join(" ") ||
 										row.email}

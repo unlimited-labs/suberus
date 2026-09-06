@@ -23,6 +23,7 @@ export type MappingRow = {
 };
 
 type Matched = {
+	file: File;
 	sheet: Sheet;
 	emailColumn: number;
 	result: SheetMatchResult;
@@ -30,7 +31,10 @@ type Matched = {
 };
 
 export type WizardState =
-	| { step: "upload"; picked: { sheet: Sheet; emailColumn: number } | null }
+	| {
+			step: "upload";
+			picked: { file: File; sheet: Sheet; emailColumn: number } | null;
+	  }
 	| ({ step: "match" } & Matched)
 	| ({ step: "mapping"; mapping: MappingRow[] } & Matched);
 
@@ -78,13 +82,20 @@ export function useSheetWizard(onCreated: () => void) {
 
 	const payload = createPayload(state);
 	const parsed = payload ? sheetCampaignCreateInput.safeParse(payload) : null;
+	const recipientCount =
+		state.step === "upload"
+			? 0
+			: state.result.rows.filter(
+					(row) => row.kind === "user" || state.unmatched === "add",
+				).length;
 
 	return {
 		state,
 		busy,
 		stepIndex: STEP_INDEX[state.step],
+		recipientCount,
 		mappingError: parsed?.error?.issues[0]?.message ?? null,
-		canCreate: Boolean(parsed?.success),
+		canCreate: Boolean(parsed?.success) && recipientCount > 0,
 
 		reset: () => setState({ step: "upload", picked: null }),
 
@@ -99,7 +110,7 @@ export function useSheetWizard(onCreated: () => void) {
 				const sheet = await parseBulkEmailSheet({ data: body });
 				setState({
 					step: "upload",
-					picked: { sheet, emailColumn: detectEmailColumn(sheet) },
+					picked: { file, sheet, emailColumn: detectEmailColumn(sheet) },
 				});
 			}, "Could not read the spreadsheet"),
 
@@ -113,12 +124,13 @@ export function useSheetWizard(onCreated: () => void) {
 		toMatch: () =>
 			run(async () => {
 				if (state.step !== "upload" || !state.picked) return;
-				const { sheet, emailColumn } = state.picked;
+				const { file, sheet, emailColumn } = state.picked;
 				const result = await matchBulkEmailSheet({
 					data: { sheet, emailColumn },
 				});
 				setState({
 					step: "match",
+					file,
 					sheet,
 					emailColumn,
 					result,
@@ -164,7 +176,11 @@ export function useSheetWizard(onCreated: () => void) {
 				if (prev.step === "match") {
 					return {
 						step: "upload",
-						picked: { sheet: prev.sheet, emailColumn: prev.emailColumn },
+						picked: {
+							file: prev.file,
+							sheet: prev.sheet,
+							emailColumn: prev.emailColumn,
+						},
 					};
 				}
 				return prev;

@@ -56,6 +56,11 @@ export function MappingStep({
 	return (
 		<div className="max-h-[60vh] space-y-3 overflow-y-auto py-1">
 			<div className="space-y-2" data-testid="sheet-mapping">
+				<div className="text-muted-foreground hidden gap-2 text-xs sm:grid sm:grid-cols-[1fr_11rem_1fr]">
+					<span>Column</span>
+					<span>Use as</span>
+					<span>Example</span>
+				</div>
 				{mapping.map((row) => {
 					const header = sheet.columns[row.column] ?? "";
 					const example = sheet.rows[0]?.[row.column] ?? "";

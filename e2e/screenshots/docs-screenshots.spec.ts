@@ -40,6 +40,7 @@ import {
 	UserRole,
 } from "../../src/generated/prisma/enums";
 import { randomUUID } from "crypto";
+import * as XLSX from "xlsx";
 import * as path from "path";
 import * as fs from "fs";
 import type { Page } from "@playwright/test";
@@ -1394,5 +1395,89 @@ test.describe("docs screenshots", () => {
 		await expect(page.getByTestId("consent-card")).toBeVisible();
 		await page.waitForTimeout(400);
 		await shot(page, "60-managing-mcp-consent.png", { full: false });
+	});
+
+	const DOCS_SHEET_ROWS = [
+		["ICCMS 2026 — participants and their hotels"],
+		[],
+		["First name", "Last name", "Email", "Hotel", "Nights"],
+		[
+			"Sofia",
+			"Rossi",
+			"sofia.rossi@example.org",
+			"Grand Hotel Stalowa",
+			"12.05.2026 - 15.05.2026",
+		],
+		[
+			"Lukas",
+			"Weber",
+			"lukas.weber@example.org",
+			"Hotel Podgórski",
+			"12.05.2026 - 15.05.2026",
+		],
+		[
+			"Kenji",
+			"Tanaka",
+			"kenji.tanaka@example.org",
+			"Grand Hotel Stalowa",
+			"13.05.2026 - 15.05.2026",
+		],
+		[
+			"Amara",
+			"Osei",
+			"amara.osei@example.edu",
+			"",
+			"12.05.2026 - 15.05.2026",
+		],
+	];
+
+	async function openSheetWizard(page: Page) {
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(
+			wb,
+			XLSX.utils.aoa_to_sheet(DOCS_SHEET_ROWS),
+			"Participants",
+		);
+		await page.goto("/admin/bulk-email");
+		await page.getByTestId("import-sheet-btn").click();
+		await page.locator('input[type="file"]').setInputFiles({
+			name: "participants-hotels.xlsx",
+			mimeType:
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			buffer: XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer,
+		});
+		await expect(page.getByTestId("sheet-preview")).toBeVisible({
+			timeout: 10000,
+		});
+	}
+
+	test("62 bulk-email sheet upload", async ({ page }) => {
+		await openSheetWizard(page);
+		await shot(page, "62-managing-bulk-email-sheet-upload.png", { full: false });
+	});
+
+	test("63 bulk-email sheet check", async ({ page }) => {
+		await openSheetWizard(page);
+		await page.getByTestId("sheet-check-btn").click();
+		await expect(page.getByTestId("sheet-counts")).toBeVisible({
+			timeout: 10000,
+		});
+		await shot(page, "63-managing-bulk-email-sheet-check.png", { full: false });
+	});
+
+	test("64 bulk-email sheet mapping", async ({ page }) => {
+		await openSheetWizard(page);
+		await page.getByTestId("sheet-check-btn").click();
+		await page.getByTestId("sheet-map-btn").click();
+		await page.getByTestId("sheet-target-3").click();
+		await page.getByRole("option", { name: "Placeholder" }).click();
+		await page.getByTestId("sheet-key-3").fill("hotel");
+		await page.getByTestId("sheet-target-4").click();
+		await page.getByRole("option", { name: "Placeholder" }).click();
+		await page.getByTestId("sheet-key-4").fill("nights");
+		await expect(page.getByTestId("sheet-mapping")).toBeVisible();
+		await shot(page, "64-managing-bulk-email-sheet-mapping.png", {
+			full: false,
+		});
 	});
 });

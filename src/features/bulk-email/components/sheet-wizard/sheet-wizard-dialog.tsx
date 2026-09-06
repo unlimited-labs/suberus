@@ -64,6 +64,7 @@ export function SheetWizardDialog({
 				{state.step === "match" && (
 					<MatchStep
 						onUnmatched={wizard.setUnmatched}
+						recipientCount={wizard.recipientCount}
 						result={state.result}
 						sheet={state.sheet}
 						unmatched={state.unmatched}
@@ -89,6 +90,7 @@ export function SheetWizardDialog({
 						onBack={wizard.back}
 						onCreate={wizard.create}
 						onNext={state.step === "upload" ? wizard.toMatch : wizard.toMapping}
+						recipientCount={wizard.recipientCount}
 						state={state}
 					/>
 				</DialogFooter>

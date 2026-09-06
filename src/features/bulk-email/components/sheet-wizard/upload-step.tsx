@@ -21,7 +21,7 @@ import type { Sheet } from "../../validations";
 const PREVIEW_ROWS = 5;
 
 interface UploadStepProps {
-	picked: { sheet: Sheet; emailColumn: number } | null;
+	picked: { file: File; sheet: Sheet; emailColumn: number } | null;
 	onPick: (file: File | null) => void;
 	onEmailColumn: (column: number) => void;
 }
@@ -33,7 +33,7 @@ export function UploadStep({ picked, onPick, onEmailColumn }: UploadStepProps) {
 				accept=".xlsx,.xls"
 				maxSize={5}
 				onChange={onPick}
-				value={null}
+				value={picked?.file ?? null}
 			/>
 
 			{picked && (

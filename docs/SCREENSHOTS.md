@@ -108,6 +108,9 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **59** — `managing/ai-assistant.mdx` — *Connect an AI assistant dialog* (register command with credentials, callback port + Re-issue, authorized applications with revoke) — user menu → **Connect AI assistant**
 - [x] **60** — `managing/ai-assistant.mdx` — *Authorization screen* (application name, verified origin, requested access) — `/consent` during an assistant's OAuth flow
 - [x] **61** — `planner/manual-scheduling.mdx` — *Clear plan confirmation dialog* (typed UNDERSTOOD gate) — planner header → **Clear plan**
+- [x] **62** — `managing/bulk-email.mdx` — *Spreadsheet import, step 1* (dropped file, email column, row preview) — `/admin/bulk-email` → **Import spreadsheet**
+- [x] **63** — `managing/bulk-email.mdx` — *Spreadsheet import, step 2* (matched counts, addresses with no account, empty cells) — same wizard, **Check recipients**
+- [x] **64** — `managing/bulk-email.mdx` — *Spreadsheet import, step 3* (columns mapped to placeholder keys with example values) — same wizard, **Map columns**
 
 ---
 
@@ -121,6 +124,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - **35–38 (exhibitors):** the seed enables the exhibitor feature (`SUBMISSION_TYPE_EXHIBITOR.isActive`) and creates a few applications; **37** opens the Approve dialog but does **not** confirm (the exhibitor stays pending). **38** element-shoots the *Exhibitors* card on the Conference tab.
 - **39 (reviewer compare):** runs in a **reviewer-authenticated** context (`e2e/.auth/reviewer-<worker>.json`), not admin; the seed gives the reviewer an assignment on the two-version paper.
 - **01 (login) & 42 (registration):** guest-only screens — the manual context must pass `storageState: { cookies: [], origins: [] }`, otherwise the project's admin session redirects `/login` and `/register` to the app.
+- **62-64 (spreadsheet import):** the wizard builds its own workbook in the shot test, so no seeding is needed; the third shot depends on the first data row having a hotel and a nights value.
 - **48 (attachments):** the `Attachments` panel only renders interactively while the campaign is `DRAFT`.
 - **49 (program theme):** captures the **Appearance** section only (not the whole tab); doesn't change the selected theme.
 - **50, 51, 53 (public program — preview, notifications, event card):** all toggle `setSchedulePublished(true)` then restore `false` afterwards. **51** needs `VITE_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` set, otherwise the Notifications item is hidden.
