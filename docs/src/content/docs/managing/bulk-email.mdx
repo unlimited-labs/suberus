@@ -47,7 +47,9 @@ email column highlighted.
 ![Spreadsheet import, choosing the file and the email column](../../../assets/screenshots/62-managing-bulk-email-sheet-upload.png)
 
 **Step 2 — Check recipients.** Suberus matches every address against the accounts in
-the system and tells you how many were found. Addresses with no account can either be
+the system and tells you how many were found. Rows where the name in the file does
+not appear on the matched account are listed, so a mismatched address is visible
+before anything is sent. Addresses with no account can either be
 added to the campaign or left out — pick one under **Not found in Suberus**. Columns
 with blank cells are listed as a warning; you can continue, but anyone with a blank
 cell will receive an empty value in that spot. Two problems stop the import instead:
@@ -56,9 +58,9 @@ upload it again.
 
 ![Spreadsheet import, checking who has an account](../../../assets/screenshots/63-managing-bulk-email-sheet-check.png)
 
-**Step 3 — Map columns.** Decide what each column becomes. **Placeholder** turns it
-into a token you can write in the message; the key is filled in from the header and you
-can rename it. **First name** and **Last name** fill in the names of people who have no
+**Step 3 — Map columns.** Decide what each column becomes. **New placeholder** turns
+it into a token you can write in the message; the key is filled in from the heading,
+shown between braces, and you can rename it. **First name** and **Last name** fill in the names of people who have no
 account, and are offered only when you chose to add them. Everything else stays on
 **Skip**. The example column shows the value from the first row, so you can see what
 each placeholder will contain. **Create campaign** opens the composer with the
@@ -72,7 +74,7 @@ recipients and their values attached.
 | **Header row** | Found automatically: the first row with at least two filled cells. A title line and blank rows above the table are ignored. A column with no heading is called *Column 2*, *Column 3* and so on; a repeated heading gets a *(2)* suffix. |
 | **Email column** | Which column holds the addresses. Guessed from the content, changeable. Addresses are compared without regard to case or surrounding spaces. |
 | **Not found in Suberus** | What happens to addresses with no account: **Add them to the campaign anyway** (they receive the email, and can take a name from the mapped columns) or **Leave them out**. |
-| **Use as** | Per column: **Skip**, **Placeholder** (becomes a token in the message), **First name** or **Last name**. The name options appear only when you chose to add the people without an account, and they fill in only those people — an account's own name always wins. |
+| **Use as** | Per column: **Skip**, **New placeholder** (becomes a token in the message), **First name** or **Last name**. The name options appear only when you chose to add the people without an account, and they fill in only those people — an account's own name always wins. |
 | **Placeholder key** | The token name, filled in from the heading. Letters, digits and underscores, starting with a letter. It cannot be `firstName`, `lastName` or `title`, and two columns cannot claim the same key. |
 
 ## Composing and sending

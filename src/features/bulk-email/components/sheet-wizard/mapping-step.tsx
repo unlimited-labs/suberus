@@ -13,7 +13,7 @@ import type { MappingRow } from "./use-sheet-wizard";
 
 const TARGETS = [
 	{ value: "skip", label: "Skip" },
-	{ value: "data", label: "Placeholder" },
+	{ value: "data", label: "New placeholder" },
 	{ value: "firstName", label: "First name" },
 	{ value: "lastName", label: "Last name" },
 ] as const;
@@ -54,8 +54,12 @@ export function MappingStep({
 		: TARGETS.filter((t) => t.value !== "firstName" && t.value !== "lastName");
 
 	return (
-		<div className="max-h-[60vh] space-y-3 overflow-y-auto py-1">
+		<div className="max-h-[60vh] min-w-0 space-y-3 overflow-y-auto py-1">
 			<div className="space-y-2" data-testid="sheet-mapping">
+				<p className="text-muted-foreground text-xs">
+					Pick <span className="font-medium">New placeholder</span> to turn a
+					column into a token you can write in the message.
+				</p>
 				<div className="text-muted-foreground hidden gap-2 text-xs sm:grid sm:grid-cols-[1fr_11rem_1fr]">
 					<span>Column</span>
 					<span>Use as</span>
@@ -96,18 +100,22 @@ export function MappingStep({
 									</SelectContent>
 								</Select>
 								{row.target.kind === "data" && (
-									<Input
-										aria-label={`Placeholder key for ${header}`}
-										className="font-mono text-xs"
-										data-testid={`sheet-key-${row.column}`}
-										onChange={(e) =>
-											onTarget(row.column, {
-												kind: "data",
-												key: e.target.value,
-											})
-										}
-										value={row.target.key}
-									/>
+									<div className="border-input flex items-center rounded-md border px-2 font-mono text-xs">
+										<span className="text-muted-foreground">{"{{"}</span>
+										<Input
+											aria-label={`Placeholder key for ${header}`}
+											className="h-8 border-0 px-1 font-mono text-xs shadow-none focus-visible:ring-0"
+											data-testid={`sheet-key-${row.column}`}
+											onChange={(e) =>
+												onTarget(row.column, {
+													kind: "data",
+													key: e.target.value,
+												})
+											}
+											value={row.target.key}
+										/>
+										<span className="text-muted-foreground">{"}}"}</span>
+									</div>
 								)}
 							</div>
 							<p className="text-muted-foreground truncate text-sm">

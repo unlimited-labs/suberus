@@ -1,5 +1,10 @@
 import { z } from "zod";
-import type { EmptyCellWarning, Sheet, SheetProblem } from "../validations";
+import type {
+	EmptyCellWarning,
+	MatchedRow,
+	Sheet,
+	SheetProblem,
+} from "../validations";
 
 export interface SheetEmailAnalysis {
 	emails: Array<{ row: number; email: string }>;
@@ -56,4 +61,45 @@ export function detectEmailColumn(sheet: Sheet): number {
 /** 1-based line the row sits on in the uploaded file. */
 export function sheetLine(sheet: Sheet, row: number): number {
 	return sheet.headerRow + row + 2;
+}
+
+function fold(text: string): string {
+	return text
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase();
+}
+
+export interface NameDisagreement {
+	row: number;
+	sheetText: string;
+	accountName: string;
+}
+
+/**
+ * Rows matched by email whose cells never mention the account's name — the only
+ * pairs worth an admin's eye, since an identical pair says nothing.
+ */
+export function nameDisagreements(
+	sheet: Sheet,
+	rows: MatchedRow[],
+): NameDisagreement[] {
+	return rows.flatMap((matched) => {
+		if (matched.kind !== "user") return [];
+		const accountName = [matched.firstName, matched.lastName]
+			.filter(Boolean)
+			.join(" ");
+		if (!accountName) return [];
+		const cells = sheet.rows[matched.row] ?? [];
+		const haystack = fold(cells.join(" "));
+		const agrees = accountName
+			.split(" ")
+			.every((part) => haystack.includes(fold(part)));
+		if (agrees) return [];
+		const sheetText = cells
+			.filter((cell, index) => cell.trim() && !cell.includes("@") && index < 4)
+			.slice(0, 2)
+			.join(" ");
+		return [{ row: matched.row, sheetText, accountName }];
+	});
 }

@@ -1461,7 +1461,7 @@ test.describe("docs screenshots", () => {
 		await page.getByTestId("sheet-check-btn").click();
 		// The shot is worthless if nobody matched, and that fails silently.
 		await expect(page.getByTestId("sheet-counts")).toContainText(
-			`${matched} have an account`,
+			`${matched} of ${matched + 1} have an account`,
 			{ timeout: 10000 },
 		);
 		await shot(page, "63-managing-bulk-email-sheet-check.png", { full: false });

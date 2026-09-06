@@ -2,10 +2,10 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import { sheetLine } from "../../lib/sheet-analysis";
+import { nameDisagreements, sheetLine } from "../../lib/sheet-analysis";
 import type { Sheet, SheetMatchResult } from "../../validations";
 
-const ROSTER_LIMIT = 20;
+const LIST_LIMIT = 8;
 
 function problemText(
 	problem: SheetMatchResult["problems"][number],
@@ -17,6 +17,11 @@ function problemText(
 	return `${problem.email} appears in rows ${problem.rows
 		.map((r) => sheetLine(sheet, r))
 		.join(", ")}`;
+}
+
+function More({ hidden }: { hidden: number }) {
+	if (hidden <= 0) return null;
+	return <li className="text-muted-foreground">and {hidden} more</li>;
 }
 
 interface MatchStepProps {
@@ -36,38 +41,45 @@ export function MatchStep({
 }: MatchStepProps) {
 	const matched = result.rows.filter((r) => r.kind === "user");
 	const unknown = result.rows.filter((r) => r.kind === "unknown");
+	const disagreements = nameDisagreements(sheet, result.rows);
+
+	if (result.problems.length > 0) {
+		return (
+			<Alert data-testid="sheet-problems" variant="destructive">
+				<AlertTitle>Correct the file before importing it</AlertTitle>
+				<AlertDescription>
+					<ul className="max-h-40 list-disc space-y-1 overflow-y-auto pl-4">
+						{result.problems.slice(0, LIST_LIMIT).map((problem) => (
+							<li key={problemText(problem, sheet)}>
+								{problemText(problem, sheet)}
+							</li>
+						))}
+						<More hidden={result.problems.length - LIST_LIMIT} />
+					</ul>
+				</AlertDescription>
+			</Alert>
+		);
+	}
 
 	return (
-		<div className="max-h-[60vh] space-y-4 overflow-y-auto py-1 text-sm">
-			{result.problems.length > 0 ? (
-				<Alert data-testid="sheet-problems" variant="destructive">
-					<AlertTitle>
-						The file has to be corrected before it can be imported
-					</AlertTitle>
-					<AlertDescription>
-						<ul className="list-disc space-y-1 pl-4">
-							{result.problems.map((problem) => (
-								<li key={problemText(problem, sheet)}>
-									{problemText(problem, sheet)}
-								</li>
-							))}
-						</ul>
-					</AlertDescription>
-				</Alert>
-			) : (
-				<p data-testid="sheet-counts">
-					<span className="font-medium tabular-nums">{matched.length}</span>{" "}
-					have an account
+		<div className="min-w-0 space-y-5 py-1 text-sm">
+			<p data-testid="sheet-counts">
+				<span className="text-base font-medium tabular-nums">
+					{matched.length}
+				</span>{" "}
+				of <span className="tabular-nums">{result.rows.length}</span> have an
+				account
+				{unknown.length > 0 && (
 					<span className="text-muted-foreground">
 						{" · "}
 						<span className="tabular-nums">{unknown.length}</span> not found
 					</span>
-				</p>
-			)}
+				)}
+			</p>
 
-			{unknown.length > 0 && result.problems.length === 0 && (
+			{unknown.length > 0 && (
 				<div className="space-y-2">
-					<Label>Not found in Suberus</Label>
+					<Label>Addresses with no account</Label>
 					<RadioGroup
 						onValueChange={(value) =>
 							onUnmatched(value === "add" ? "add" : "skip")
@@ -85,21 +97,40 @@ export function MatchStep({
 							<Label htmlFor="unmatched-skip">Leave them out</Label>
 						</div>
 					</RadioGroup>
-					<ul className="text-muted-foreground max-h-32 overflow-y-auto text-xs">
-						{unknown.map((row) => (
+					<ul className="text-muted-foreground max-h-28 overflow-y-auto text-xs">
+						{unknown.slice(0, LIST_LIMIT).map((row) => (
 							<li key={row.email}>
 								{row.email} — row {sheetLine(sheet, row.row)}
 							</li>
 						))}
+						<More hidden={unknown.length - LIST_LIMIT} />
 					</ul>
 				</div>
 			)}
 
-			{recipientCount === 0 && result.problems.length === 0 && (
+			{recipientCount === 0 && (
 				<p className="text-destructive" data-testid="sheet-no-recipients">
 					Nobody would be added. Add the addresses without an account, or import
 					a file whose people are already in Suberus.
 				</p>
+			)}
+
+			{disagreements.length > 0 && (
+				<div className="space-y-1" data-testid="sheet-name-mismatch">
+					<Label>Rows whose name differs from the account</Label>
+					<ul className="max-h-32 space-y-0.5 overflow-y-auto text-xs">
+						{disagreements.slice(0, LIST_LIMIT).map((item) => (
+							<li key={item.row}>
+								<span className="text-muted-foreground">
+									Row {sheetLine(sheet, item.row)}: {item.sheetText || "—"}{" "}
+									→{" "}
+								</span>
+								{item.accountName}
+							</li>
+						))}
+						<More hidden={disagreements.length - LIST_LIMIT} />
+					</ul>
+				</div>
 			)}
 
 			{result.emptyCells.length > 0 && (
@@ -126,34 +157,6 @@ export function MatchStep({
 							</li>
 						))}
 					</ul>
-				</div>
-			)}
-
-			{matched.length > 0 && (
-				<div className="space-y-1">
-					<Label>Spreadsheet → account</Label>
-					<ul className="max-h-40 space-y-0.5 overflow-y-auto text-xs">
-						{matched.slice(0, ROSTER_LIMIT).map((row) => (
-							<li
-								className="grid max-w-md grid-cols-[1fr_auto_1fr] items-center gap-2"
-								key={row.email}
-							>
-								<span className="text-muted-foreground truncate text-right">
-									{sheet.rows[row.row]?.filter(Boolean).slice(0, 2).join(" ")}
-								</span>
-								<span className="text-muted-foreground">→</span>
-								<span className="truncate">
-									{[row.firstName, row.lastName].filter(Boolean).join(" ") ||
-										row.email}
-								</span>
-							</li>
-						))}
-					</ul>
-					{matched.length > ROSTER_LIMIT && (
-						<p className="text-muted-foreground text-xs">
-							and {matched.length - ROSTER_LIMIT} more
-						</p>
-					)}
 				</div>
 			)}
 		</div>

@@ -61,7 +61,7 @@ test.describe("Admin - Bulk Email from a spreadsheet", () => {
 
 			await page.getByTestId("sheet-check-btn").click()
 			await expect(page.getByTestId("sheet-counts")).toContainText(
-				"1 have an account",
+				"1 of 2 have an account",
 			)
 			await expect(page.getByTestId("sheet-counts")).toContainText("1 not found")
 			await expect(page.getByTestId("sheet-empty-cells")).toContainText(
@@ -143,6 +143,44 @@ test.describe("Admin - Bulk Email from a spreadsheet", () => {
 			await deleteTestUser(known.email).catch(() => {})
 			await clearMailpit(runId)
 		}
+	})
+
+	test("keeps a wide sheet inside the dialog", async ({ page, testRun }) => {
+		const runId = testRun.testRunId
+		const wide = [
+			"First name",
+			"Last name",
+			"Email",
+			"Affiliation",
+			"Assigned hotel name",
+			"Nights of stay (from - to)",
+			"Dietary requirements",
+		]
+		await openWizard(page, [
+			["Conference 2026 — participants"],
+			[],
+			wide,
+			[
+				"Aleksandra",
+				"Wiśniewska-Kowalczyk",
+				`wide-${runId}@e2e.local`,
+				"University of Somewhere Very Long Indeed",
+				"Riverside Hotel and Conference Centre",
+				"13.09.2026 - 16.09.2026",
+				"No pork, no shellfish, lactose free",
+			],
+		])
+
+		await expect(page.getByTestId("sheet-preview")).toBeVisible()
+		const overflow = await page
+			.getByRole("dialog")
+			.evaluate((el) => el.scrollWidth - el.clientWidth)
+		expect(overflow, "the dialog scrolls horizontally instead of the table").toBe(
+			0,
+		)
+		await expect(page.getByTestId("sheet-preview")).toContainText(
+			"Riverside Hotel and Conference Centre",
+		)
 	})
 
 	test("blocks the import while the sheet repeats an address", async ({

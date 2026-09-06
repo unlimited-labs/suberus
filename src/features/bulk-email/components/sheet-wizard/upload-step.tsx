@@ -28,7 +28,7 @@ interface UploadStepProps {
 
 export function UploadStep({ picked, onPick, onEmailColumn }: UploadStepProps) {
 	return (
-		<div className="space-y-4 py-1">
+		<div className="min-w-0 space-y-4 py-1">
 			<FileDropzone
 				accept=".xlsx,.xls"
 				maxSize={5}
@@ -64,7 +64,7 @@ export function UploadStep({ picked, onPick, onEmailColumn }: UploadStepProps) {
 						</Select>
 					</div>
 
-					<div className="overflow-x-auto rounded-md border">
+					<div className="min-w-0 overflow-x-auto rounded-md border">
 						<Table data-testid="sheet-preview">
 							<TableHeader>
 								<TableRow>
