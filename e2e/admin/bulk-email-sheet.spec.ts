@@ -89,6 +89,8 @@ test.describe("Admin - Bulk Email from a spreadsheet", () => {
 
 			await expect(page.getByTestId("recipient-count")).toHaveText("2")
 			await expect(page.getByTestId("placeholder-hotel")).toBeVisible()
+			await page.getByTestId("placeholder-hotel").hover()
+			await expect(page.getByRole("tooltip")).toHaveText("Nazwa hotelu")
 
 			await page.getByTestId("campaign-subject").fill(`Hotel ${runId}`)
 			await page

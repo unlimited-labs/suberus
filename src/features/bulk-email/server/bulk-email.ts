@@ -9,6 +9,7 @@ import {
 	applyPlaceholders,
 	BUILTIN_PLACEHOLDER_KEYS,
 	extractTokens,
+	parseDataColumns,
 	parseRecipientData,
 	pickRandom,
 	recipientValues,
@@ -62,7 +63,7 @@ export async function createDraftCampaign(
 	}
 
 	const snapshots = users.map(buildRecipientSnapshot);
-	const campaignId = await insertCampaign(snapshots, createdById, []);
+	const campaignId = await insertCampaign(snapshots, createdById, {});
 
 	return { campaignId, totalRecipients: snapshots.length };
 }
@@ -70,7 +71,7 @@ export async function createDraftCampaign(
 export async function insertCampaign(
 	snapshots: RecipientSnapshot[],
 	createdById: string,
-	dataKeys: string[],
+	dataColumns: Record<string, string>,
 	base?: Pick<SaveDraftInput, "subject" | "format" | "bodySource"> & {
 		replyTo: string | null;
 	},
@@ -79,7 +80,7 @@ export async function insertCampaign(
 		data: {
 			...base,
 			createdById,
-			dataKeys,
+			dataColumns,
 			totalRecipients: snapshots.length,
 			recipients: {
 				create: snapshots.map((s) => ({
@@ -188,7 +189,12 @@ export async function createCampaignFromSheet(
 	const campaignId = await insertCampaign(
 		snapshots,
 		createdById,
-		dataKeys.map((m) => m.key),
+		Object.fromEntries(
+			dataKeys.map(({ column, key }) => [
+				key,
+				input.sheet.columns[column] ?? key,
+			]),
+		),
 	);
 	return { campaignId, totalRecipients: snapshots.length };
 }
@@ -217,7 +223,7 @@ export async function duplicateCampaign(
 	const campaignId = await insertCampaign(
 		src.recipients.map((r) => ({ ...r, data: parseRecipientData(r.data) })),
 		createdById,
-		src.dataKeys,
+		parseDataColumns(src.dataColumns),
 		{
 			subject: src.subject,
 			format: src.format,
@@ -256,7 +262,11 @@ export async function getCampaign(id: string) {
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
 	const attachments = await listCampaignAttachments(id);
-	return { ...campaign, attachments };
+	return {
+		...campaign,
+		dataColumns: parseDataColumns(campaign.dataColumns),
+		attachments,
+	};
 }
 
 export async function deleteCampaign(id: string): Promise<void> {
@@ -328,11 +338,14 @@ export async function placeholderIssues(
 ): Promise<PlaceholderIssues> {
 	const campaign = await prisma.emailCampaign.findUnique({
 		where: { id },
-		select: { dataKeys: true },
+		select: { dataColumns: true },
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
 
-	const known = [...BUILTIN_PLACEHOLDER_KEYS, ...campaign.dataKeys];
+	const known = [
+		...BUILTIN_PLACEHOLDER_KEYS,
+		...Object.keys(parseDataColumns(campaign.dataColumns)),
+	];
 	const knownSet = new Set(known);
 	const unknown = unknownTokens(tokens, known);
 	const used = tokens.filter((t) => knownSet.has(t));
@@ -420,7 +433,12 @@ export async function sendCampaignTest(
 		? recipientValues({ ...sample, data: parseRecipientData(sample.data) })
 		: {
 				...SAMPLE_VALUES,
-				...Object.fromEntries(campaign.dataKeys.map((key) => [key, "sample"])),
+				...Object.fromEntries(
+					Object.keys(parseDataColumns(campaign.dataColumns)).map((key) => [
+						key,
+						"sample",
+					]),
+				),
 			};
 
 	const subject = `[TEST] ${applyPlaceholders(campaign.subject, values, false)}`;

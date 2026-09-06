@@ -23,12 +23,13 @@ function closestKey(token: string, keys: string[]): string | null {
 }
 
 interface PlaceholderHelpProps {
-	dataKeys: string[];
+	/** Placeholder key -> the spreadsheet heading it came from. */
+	dataColumns: Record<string, string>;
 	issues: PlaceholderIssues | null;
 }
 
-export function PlaceholderHelp({ dataKeys, issues }: PlaceholderHelpProps) {
-	const known = [...BUILTIN_PLACEHOLDER_KEYS, ...dataKeys];
+export function PlaceholderHelp({ dataColumns, issues }: PlaceholderHelpProps) {
+	const known = [...BUILTIN_PLACEHOLDER_KEYS, ...Object.keys(dataColumns)];
 
 	return (
 		<div className="space-y-2" data-testid="placeholder-help">
@@ -36,7 +37,7 @@ export function PlaceholderHelp({ dataKeys, issues }: PlaceholderHelpProps) {
 				{known.map((key) => {
 					const token = `{{${key}}}`;
 					const description =
-						lookup(DESCRIPTIONS, key) ?? "From the imported spreadsheet";
+						lookup(DESCRIPTIONS, key) ?? lookup(dataColumns, key) ?? key;
 					return (
 						<Tooltip key={key}>
 							<TooltipTrigger asChild>

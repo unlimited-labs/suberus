@@ -202,7 +202,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								variant="outlined"
 							>
 								<PlaceholderHelp
-									dataKeys={campaign.dataKeys}
+									dataColumns={campaign.dataColumns}
 									issues={compose.issues}
 								/>
 							</SectionCard>

@@ -18,6 +18,13 @@ export const recipientDataSchema = z.record(
 	z.string(),
 );
 
+/** Placeholder key -> the spreadsheet heading it came from. */
+export function parseDataColumns(
+	value: JsonValue | undefined,
+): Record<string, string> {
+	return recipientDataSchema.parse(value ?? {});
+}
+
 /** The only way a recipient's `data` Json leaves Prisma. */
 export function parseRecipientData(
 	value: JsonValue | undefined,

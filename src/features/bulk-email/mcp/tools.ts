@@ -42,7 +42,7 @@ const updateDraft = defineTool({
 	name: "email_draft_update",
 	title: "Update email draft",
 	description:
-		"Set subject, body and format of a draft campaign. Format is PLAIN, MARKDOWN or MJML. The body may use the placeholders {{firstName}}, {{lastName}} and {{title}}, plus any key the campaign carries from an imported spreadsheet (email_campaign_get returns them as dataKeys), filled per recipient. A token that matches no key blocks sending, so check with email_draft_check. Every field is overwritten, including replyTo when omitted, so send the whole draft. Only works while the campaign is still a draft.",
+		"Set subject, body and format of a draft campaign. Format is PLAIN, MARKDOWN or MJML. The body may use the placeholders {{firstName}}, {{lastName}} and {{title}}, plus any key the campaign carries from an imported spreadsheet (email_campaign_get returns dataColumns, mapping each key to the spreadsheet heading it came from), filled per recipient. A token that matches no key blocks sending, so check with email_draft_check. Every field is overwritten, including replyTo when omitted, so send the whole draft. Only works while the campaign is still a draft.",
 	input: campaignDraftInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_EMAIL_SEND,
