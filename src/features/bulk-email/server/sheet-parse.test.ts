@@ -40,6 +40,20 @@ describe("parseSheetBuffer", () => {
 		]);
 	});
 
+	it("keeps an apostrophe that belongs to the name", () => {
+		const sheet = parseSheetBuffer(
+			workbook([
+				["Name", "Mail"],
+				["'t Hooft", "gerard@x.com"],
+			]),
+		);
+		expect(sheet.rows[0]?.[0]).toBe("'t Hooft");
+	});
+
+	it("rejects a file that is not a workbook", () => {
+		expect(() => parseSheetBuffer(Buffer.from("not a spreadsheet"))).toThrow();
+	});
+
 	it("names empty headers and disambiguates duplicates", () => {
 		const sheet = parseSheetBuffer(
 			workbook([

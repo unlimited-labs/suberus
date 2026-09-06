@@ -81,7 +81,10 @@ export function MappingStep({
 									}
 									value={targetValue(row.target)}
 								>
-									<SelectTrigger data-testid={`sheet-target-${row.column}`}>
+									<SelectTrigger
+										aria-label={`Use ${header} as`}
+										data-testid={`sheet-target-${row.column}`}
+									>
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>

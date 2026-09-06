@@ -4,9 +4,10 @@ import { MAX_SHEET_ROWS, type Sheet } from "../validations";
 type SheetCell = string | number | boolean | null | undefined;
 
 function cell(value: SheetCell): string {
-	// Undo the leading-quote guard spreadsheet exports add (see spreadsheet-safe.ts).
+	// Undo the leading-quote guard from spreadsheet-safe.ts, which only ever
+	// prefixes these characters — a name like "'t Hooft" must survive.
 	return String(value ?? "")
-		.replace(/^'/, "")
+		.replace(/^'(?=[=+\-@\t\r])/, "")
 		.trim();
 }
 
@@ -24,8 +25,18 @@ function uniqueColumns(row: string[]): string[] {
 	});
 }
 
+function readWorkbook(buffer: Buffer): XLSX.WorkBook {
+	try {
+		return XLSX.read(buffer, { type: "buffer" });
+	} catch {
+		throw new Response("The file could not be read as a spreadsheet", {
+			status: 400,
+		});
+	}
+}
+
 export function parseSheetBuffer(buffer: Buffer): Sheet {
-	const workbook = XLSX.read(buffer, { type: "buffer" });
+	const workbook = readWorkbook(buffer);
 	const name = workbook.SheetNames[0];
 	const worksheet = name ? workbook.Sheets[name] : undefined;
 	if (!worksheet) {

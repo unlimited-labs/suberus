@@ -151,7 +151,9 @@ export const deleteBulkEmailAttachment = createServerFn({ method: "POST" })
 		}
 	});
 
-const SHEET_EXTENSIONS = ["xlsx", "xls"] as const;
+// A legacy .xls is a CFB container, which is all file-type can tell us; a
+// non-workbook that reaches parseSheetBuffer is rejected there.
+const SHEET_EXTENSIONS = ["xlsx", "cfb"] as const;
 const MAX_SHEET_BYTES = 5 * 1024 * 1024;
 
 export const parseBulkEmailSheet = createServerFn({ method: "POST" })
