@@ -1,7 +1,6 @@
 import { IconFilter, IconFilterFilled } from "@tabler/icons-react";
 import type { RowData } from "@tanstack/react-table";
-import type { AppColumn } from "./table-features";
-import { useState } from "react";
+import { type AppColumn, useTableSelector } from "./table-features";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -23,25 +22,19 @@ export function DataTableColumnFilter<TData extends RowData, TValue>({
 	column,
 	options,
 }: DataTableColumnFilterProps<TData, TValue>) {
-	const facets = column?.getFacetedUniqueValues();
-	const readSelection = () =>
-		new Set((column?.getFilterValue() as string[] | undefined) ?? []);
-
-	// The popover lives in a portal and does not re-render from the table's
-	// filter-state change while open, so the checkboxes would only reflect a
-	// toggle after reopening (and the toggle closure would freeze, blocking
-	// deselect). We keep a local mirror of the selection (drives the checkboxes,
-	// re-renders immediately) and re-sync it from the column whenever the popover
-	// opens (so an external Reset stays consistent). Same pattern as
-	// SubmissionsColumnHeader.
-	const [selectedValues, setSelectedValues] =
-		useState<Set<string>>(readSelection);
+	const facets = useTableSelector(column.table.atoms.columnFilters, () =>
+		column.getFacetedUniqueValues(),
+	);
+	const selectedValues = useTableSelector(
+		column.table.atoms.columnFilters,
+		// SAFETY: this column's filter is set only with string arrays.
+		() => new Set((column.getFilterValue() as string[] | undefined) ?? []),
+	);
 
 	const hasFilters = selectedValues.size > 0;
 
 	const apply = (next: Set<string>) => {
-		setSelectedValues(next);
-		column?.setFilterValue(next.size ? Array.from(next) : undefined);
+		column.setFilterValue(next.size ? Array.from(next) : undefined);
 	};
 
 	const handleSelect = (value: string) => {
@@ -63,11 +56,7 @@ export function DataTableColumnFilter<TData extends RowData, TValue>({
 	};
 
 	return (
-		<Popover
-			onOpenChange={(open) => {
-				if (open) setSelectedValues(readSelection());
-			}}
-		>
+		<Popover>
 			<PopoverTrigger asChild>
 				<Button
 					variant="ghost"

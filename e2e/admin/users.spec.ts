@@ -2,6 +2,14 @@ import { test, expect, ADMIN_USER, TEST_USER, UNVERIFIED_USER, ADMIN_VERIFY_TEST
 import { loginAs } from "../helpers/auth"
 import { SubmissionStatus } from "../../src/generated/prisma/enums"
 import { randomUUID } from "crypto"
+import { createTestUser, deleteTestUser } from "../helpers/test-db"
+
+const openColumnFilter = (page: import("@playwright/test").Page, title: string) =>
+	page
+		.getByRole("columnheader")
+		.filter({ hasText: title })
+		.getByRole("button", { name: "Filter" })
+		.click()
 
 // Desktop tests - skip on mobile since mobile shows cards instead of table
 test.describe("Admin Users Management", () => {
@@ -34,6 +42,7 @@ test.describe("Admin Users Management", () => {
 
 			await adminUsersPage.search("Admin")
 
+			await expect(adminUsersPage.searchInput).toHaveValue("Admin")
 			const adminRow = await adminUsersPage.getRowByEmail(ADMIN_USER)
 			await expect(adminRow).toBeVisible()
 		})
@@ -138,11 +147,7 @@ test.describe("Admin Users Management", () => {
 
 	test.describe("Column Filter (faceted)", () => {
 		const openRoleFilter = (page: import("@playwright/test").Page) =>
-			page
-				.getByRole("columnheader")
-				.filter({ hasText: "Role" })
-				.getByRole("button", { name: "Filter" })
-				.click()
+			openColumnFilter(page, "Role")
 
 		test("Role filter checkbox checks in place, narrows, and unchecks", async ({
 			adminUsersPage,
@@ -195,6 +200,42 @@ test.describe("Admin Users Management", () => {
 					.locator("[data-slot='popover-content']")
 					.getByRole("checkbox", { name: "Administrator" }),
 			).toHaveAttribute("aria-checked", "true")
+		})
+	})
+
+	test.describe("Column Filter (text)", () => {
+		test("Affiliation filter shows typed text, narrows, and clears", async ({
+			adminUsersPage,
+			page,
+		}, testInfo) => {
+			const affiliation = `Affil-${testInfo.workerIndex}-${Date.now()}`
+			const created = await createTestUser({
+				email: `affil-filter-${affiliation.toLowerCase()}@e2e.local`,
+				affiliationName: affiliation,
+			})
+
+			await adminUsersPage.goto()
+			await adminUsersPage.waitForLoad()
+			const visibleRows = page.getByTestId("user-row").filter({ visible: true })
+			const before = await visibleRows.count()
+			expect(before).toBeGreaterThan(1)
+
+			await openColumnFilter(page, "Affiliation")
+			const popover = page.locator("[data-slot='popover-content']")
+			const input = popover.getByPlaceholder("Search...")
+
+			await input.pressSequentially(affiliation)
+
+			await expect(input).toHaveValue(affiliation)
+			await expect(visibleRows).toHaveCount(1)
+			await expect(visibleRows).toContainText(affiliation)
+
+			await popover.getByRole("button", { name: "Clear" }).click()
+
+			await expect(input).toHaveValue("")
+			await expect(visibleRows).toHaveCount(before)
+
+			await deleteTestUser(created.id)
 		})
 	})
 

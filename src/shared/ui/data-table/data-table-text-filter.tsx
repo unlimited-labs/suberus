@@ -1,6 +1,6 @@
 import { IconFilter, IconFilterFilled, IconX } from "@tabler/icons-react";
 import type { RowData } from "@tanstack/react-table";
-import type { AppColumn } from "./table-features";
+import { type AppColumn, useTableSelector } from "./table-features";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -15,15 +15,18 @@ export function DataTableTextFilter<TData extends RowData, TValue>({
 	column,
 	placeholder = "Search...",
 }: DataTableTextFilterProps<TData, TValue>) {
-	const value = (column?.getFilterValue() as string | undefined) ?? "";
+	const value = useTableSelector(column.table.atoms.columnFilters, () => {
+		const current = column.getFilterValue();
+		return typeof current === "string" ? current : "";
+	});
 	const hasFilter = !!value;
 
 	const handleChange = (newValue: string) => {
-		column?.setFilterValue(newValue || undefined);
+		column.setFilterValue(newValue || undefined);
 	};
 
 	const handleClear = () => {
-		column?.setFilterValue(undefined);
+		column.setFilterValue(undefined);
 	};
 
 	return (

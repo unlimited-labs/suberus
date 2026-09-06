@@ -1,3 +1,4 @@
+import { shallow, useSelector } from "@tanstack/react-store";
 import {
 	type CellData,
 	type Column,
@@ -62,3 +63,11 @@ export type AppCoreTable<TData extends RowData> = Table<TableFeatureSet, TData>;
 
 /** The instance DataTable hands to toolbars — carries `.state`, unlike bare `Table`. */
 export type AppTable<TData extends RowData> = ReactTable<TableFeatureSet, TData>;
+
+type TableStateSource<T> = Parameters<typeof useSelector<T>>[0];
+
+/** Subscribes a nested table component to core-table state the React Compiler would otherwise cache on the stable `column`/`table` object. */
+export const useTableSelector = <TSource, TSelected>(
+	source: TableStateSource<TSource>,
+	selector: () => TSelected,
+) => useSelector(source, selector, { compare: shallow });

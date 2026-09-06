@@ -1,7 +1,6 @@
 import { IconSearch, IconX } from "@tabler/icons-react";
 import type { RowData } from "@tanstack/react-table";
 import type { AppTable } from "./table-features";
-import { useState } from "react";
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -25,19 +24,14 @@ export function DataTableToolbar<TData extends RowData>({
 	columnLabels,
 }: DataTableToolbarProps<TData>) {
 	const isFiltered = table.state.columnFilters.length > 0;
-	// Local source of truth for the search input. Reading the value from
-	// `table.getState()` during this child's render can tear (return a stale
-	// slice) when the parent re-renders mid-cycle, freezing the controlled
-	// input at "". See reference_tanstack_table_getstate_tearing.
-	const [searchValue, setSearchValue] = useState(() =>
-		searchKey ? ((table.getColumn(searchKey)?.getFilterValue() as string) ?? "") : "",
-	);
+	const searchColumn = searchKey ? table.getColumn(searchKey) : undefined;
+	const currentSearch = table.state.columnFilters.find(
+		(filter) => filter.id === searchKey,
+	)?.value;
+	const searchValue = typeof currentSearch === "string" ? currentSearch : "";
 
 	const handleSearchChange = (value: string) => {
-		setSearchValue(value);
-		if (searchKey) {
-			table.getColumn(searchKey)?.setFilterValue(value || undefined);
-		}
+		searchColumn?.setFilterValue(value || undefined);
 	};
 
 	return (
@@ -69,10 +63,7 @@ export function DataTableToolbar<TData extends RowData>({
 				{isFiltered && (
 					<Button
 						variant="ghost"
-						onClick={() => {
-							table.resetColumnFilters();
-							setSearchValue("");
-						}}
+						onClick={() => table.resetColumnFilters()}
 						className="h-8 px-2 lg:px-3"
 					>
 						Reset

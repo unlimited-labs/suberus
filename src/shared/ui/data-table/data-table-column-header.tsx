@@ -5,7 +5,7 @@ import {
 	IconSelector,
 } from "@tabler/icons-react";
 import type { RowData } from "@tanstack/react-table";
-import type { AppColumn } from "./table-features";
+import { type AppColumn, useTableSelector } from "./table-features";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -36,6 +36,9 @@ export function DataTableColumnHeader<TData extends RowData, TValue>({
 	filterOptions,
 	textFilter,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+	const sorted = useTableSelector(column.table.atoms.sorting, () =>
+		column.getIsSorted(),
+	);
 	const textFilterPlaceholder =
 		typeof textFilter === "object" ? textFilter.placeholder : undefined;
 
@@ -73,9 +76,9 @@ export function DataTableColumnHeader<TData extends RowData, TValue>({
 						className="-ml-3 h-8 data-open:bg-accent"
 					>
 						<span>{title}</span>
-						{column.getIsSorted() === "desc" ? (
+						{sorted === "desc" ? (
 							<IconArrowDown className="ml-2 size-4" />
-						) : column.getIsSorted() === "asc" ? (
+						) : sorted === "asc" ? (
 							<IconArrowUp className="ml-2 size-4" />
 						) : (
 							<IconSelector className="ml-2 size-4" />

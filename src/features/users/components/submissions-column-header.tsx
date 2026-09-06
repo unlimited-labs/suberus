@@ -6,7 +6,6 @@ import {
 	IconFilterFilled,
 	IconSelector,
 } from "@tabler/icons-react";
-import { useState } from "react";
 import {
 	submissionDraftFilterOptions,
 	submissionRoleFilterOptions,
@@ -17,9 +16,10 @@ import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
-import type {
-	AppColumn,
-	AppCoreTable,
+import {
+	type AppColumn,
+	type AppCoreTable,
+	useTableSelector,
 } from "@/shared/ui/data-table/table-features";
 import {
 	DropdownMenu,
@@ -98,6 +98,8 @@ interface SubmissionsColumnHeaderProps {
 
 type Dimension = "type" | "role" | "draft";
 
+const NONE: string[] = [];
+
 export function SubmissionsColumnHeader({
 	column,
 	table,
@@ -108,18 +110,22 @@ export function SubmissionsColumnHeader({
 		draft: table.getColumn("submissionDraft"),
 	} satisfies Record<Dimension, AppColumn<AdminUser, unknown> | undefined>;
 
-	const readSelection = () => ({
+	const selection = useTableSelector(table.atoms.columnFilters, () => ({
 		// SAFETY: this column's filter is set only with string arrays.
-		type: (columns.type?.getFilterValue() as string[] | undefined) ?? [],
+		type: (columns.type?.getFilterValue() as string[] | undefined) ?? NONE,
 		// SAFETY: this column's filter is set only with string arrays.
-		role: (columns.role?.getFilterValue() as string[] | undefined) ?? [],
+		role: (columns.role?.getFilterValue() as string[] | undefined) ?? NONE,
 		// SAFETY: this column's filter is set only with string arrays.
-		draft: (columns.draft?.getFilterValue() as string[] | undefined) ?? [],
-	});
-
-	// Popover is portaled and won't re-render with the table — mirror selection locally.
-	const [selection, setSelection] =
-		useState<Record<Dimension, string[]>>(readSelection);
+		draft: (columns.draft?.getFilterValue() as string[] | undefined) ?? NONE,
+	}));
+	const facets = useTableSelector(table.atoms.columnFilters, () => ({
+		type: columns.type?.getFacetedUniqueValues(),
+		role: columns.role?.getFacetedUniqueValues(),
+		draft: columns.draft?.getFacetedUniqueValues(),
+	}));
+	const sorted = useTableSelector(table.atoms.sorting, () =>
+		column.getIsSorted(),
+	);
 
 	const activeCount =
 		selection.type.length + selection.role.length + selection.draft.length;
@@ -134,14 +140,12 @@ export function SubmissionsColumnHeader({
 		}
 		const values = Array.from(next);
 		columns[dimension]?.setFilterValue(values.length ? values : undefined);
-		setSelection({ ...selection, [dimension]: values });
 	};
 
 	const clearAll = () => {
 		columns.type?.setFilterValue(undefined);
 		columns.role?.setFilterValue(undefined);
 		columns.draft?.setFilterValue(undefined);
-		setSelection({ type: [], role: [], draft: [] });
 	};
 
 	return (
@@ -154,9 +158,9 @@ export function SubmissionsColumnHeader({
 						variant="ghost"
 					>
 						<span>Submissions</span>
-						{column.getIsSorted() === "desc" ? (
+						{sorted === "desc" ? (
 							<IconArrowDown className="ml-2 size-4" />
-						) : column.getIsSorted() === "asc" ? (
+						) : sorted === "asc" ? (
 							<IconArrowUp className="ml-2 size-4" />
 						) : (
 							<IconSelector className="ml-2 size-4" />
@@ -184,11 +188,7 @@ export function SubmissionsColumnHeader({
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			<Popover
-				onOpenChange={(open) => {
-					if (open) setSelection(readSelection());
-				}}
-			>
+			<Popover>
 				<PopoverTrigger asChild>
 					<Button
 						className={cn("size-6 shrink-0", hasFilters && "text-primary-ink")}
@@ -216,7 +216,7 @@ export function SubmissionsColumnHeader({
 					<Separator />
 					<div className="max-h-80 overflow-auto">
 						<FilterSection
-							facets={columns.type?.getFacetedUniqueValues()}
+							facets={facets.type}
 							onToggle={(v) => toggle("type", v)}
 							options={typeFilterOptions}
 							selected={selection.type}
@@ -224,7 +224,7 @@ export function SubmissionsColumnHeader({
 						/>
 						<Separator />
 						<FilterSection
-							facets={columns.role?.getFacetedUniqueValues()}
+							facets={facets.role}
 							onToggle={(v) => toggle("role", v)}
 							options={submissionRoleFilterOptions}
 							selected={selection.role}
@@ -232,7 +232,7 @@ export function SubmissionsColumnHeader({
 						/>
 						<Separator />
 						<FilterSection
-							facets={columns.draft?.getFacetedUniqueValues()}
+							facets={facets.draft}
 							onToggle={(v) => toggle("draft", v)}
 							options={submissionDraftFilterOptions}
 							selected={selection.draft}
