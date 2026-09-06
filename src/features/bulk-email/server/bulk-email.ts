@@ -1,17 +1,25 @@
 import { env } from "@/env.ts";
 import type { EmailCampaignFormat } from "@/generated/prisma/enums";
+import { lookup } from "@/shared/lib/lookup";
 import { prisma } from "@/shared/server/db.server";
 import { sendRawEmail } from "@/shared/server/email";
 import { createJobProgress } from "@/shared/server/job-progress";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import {
 	applyPlaceholders,
+	BUILTIN_PLACEHOLDER_KEYS,
+	extractTokens,
 	parseRecipientData,
 	pickRandom,
 	recipientValues,
 	type RecipientSnapshot,
 	SAMPLE_VALUES,
+	unknownTokens,
 } from "../lib/placeholders";
+import type {
+	PlaceholderIssues,
+	SheetCampaignCreateInput,
+} from "../validations";
 import {
 	copyCampaignAttachments,
 	deleteCampaignAttachments,
@@ -21,6 +29,7 @@ import {
 import { renderEmailContent } from "./bulk-email-render";
 import { campaignExpireSeconds } from "./bulk-email-status";
 import { buildRecipientSnapshot } from "./recipient-snapshot";
+import { matchSheetRows } from "./sheet-match";
 
 export interface SaveDraftInput {
 	subject: string;
@@ -85,6 +94,103 @@ export async function insertCampaign(
 		},
 	});
 	return campaign.id;
+}
+
+const RECIPIENT_USER_SELECT = {
+	id: true,
+	email: true,
+	firstName: true,
+	lastName: true,
+	submissions: {
+		where: { type: { not: "INVITED" } },
+		select: { title: true },
+	},
+} as const;
+
+interface SheetMapping {
+	dataKeys: Array<{ column: number; key: string }>;
+	builtinColumns: Partial<Record<"firstName" | "lastName", number>>;
+}
+
+function splitMapping(
+	mapping: SheetCampaignCreateInput["mapping"],
+): SheetMapping {
+	const result: SheetMapping = { dataKeys: [], builtinColumns: {} };
+	for (const { column, target } of mapping) {
+		switch (target.kind) {
+			case "data":
+				result.dataKeys.push({ column, key: target.key });
+				break;
+			case "builtin":
+				result.builtinColumns[target.field] = column;
+				break;
+			default: {
+				const _exhaustive: never = target;
+				throw new Error(`Unsupported mapping target: ${_exhaustive}`);
+			}
+		}
+	}
+	return result;
+}
+
+export async function createCampaignFromSheet(
+	input: SheetCampaignCreateInput,
+	createdById: string,
+): Promise<{ campaignId: string; totalRecipients: number }> {
+	const match = await matchSheetRows(input);
+	if (match.problems.length > 0) {
+		throw new Response("Fix the spreadsheet problems before importing", {
+			status: 400,
+		});
+	}
+
+	const { dataKeys, builtinColumns } = splitMapping(input.mapping);
+	const users = await prisma.user.findMany({
+		where: {
+			id: {
+				in: match.rows.flatMap((r) => (r.kind === "user" ? [r.userId] : [])),
+			},
+		},
+		select: RECIPIENT_USER_SELECT,
+	});
+	const byId = new Map(users.map((u) => [u.id, u]));
+
+	const snapshots = match.rows.flatMap((matched): RecipientSnapshot[] => {
+		const row = input.sheet.rows[matched.row] ?? [];
+		const data = Object.fromEntries(
+			dataKeys.map(({ column, key }) => [key, row[column] ?? ""]),
+		);
+		if (matched.kind === "user") {
+			const user = byId.get(matched.userId);
+			return user ? [{ ...buildRecipientSnapshot(user), data }] : [];
+		}
+		if (input.unmatched === "skip") return [];
+		const fromSheet = (field: "firstName" | "lastName") => {
+			const column = builtinColumns[field];
+			return column === undefined ? null : row[column] || null;
+		};
+		return [
+			{
+				userId: null,
+				email: matched.email,
+				firstName: fromSheet("firstName"),
+				lastName: fromSheet("lastName"),
+				titles: "",
+				data,
+			},
+		];
+	});
+
+	if (snapshots.length === 0) {
+		throw new Response("No recipients left to import", { status: 400 });
+	}
+
+	const campaignId = await insertCampaign(
+		snapshots,
+		createdById,
+		dataKeys.map((m) => m.key),
+	);
+	return { campaignId, totalRecipients: snapshots.length };
 }
 
 export async function duplicateCampaign(
@@ -216,6 +322,71 @@ export function previewContent(
 	return renderEmailContent(format, bodySource);
 }
 
+export async function placeholderIssues(
+	id: string,
+	tokens: string[],
+): Promise<PlaceholderIssues> {
+	const campaign = await prisma.emailCampaign.findUnique({
+		where: { id },
+		select: { dataKeys: true },
+	});
+	if (!campaign) throw new Response("Campaign not found", { status: 404 });
+
+	const known = [...BUILTIN_PLACEHOLDER_KEYS, ...campaign.dataKeys];
+	const unknown = unknownTokens(tokens, known);
+	const used = tokens.filter((t) => known.includes(t));
+	if (used.length === 0) return { unknown, missing: [] };
+
+	const recipients = await prisma.emailCampaignRecipient.findMany({
+		where: { campaignId: id },
+		select: {
+			email: true,
+			firstName: true,
+			lastName: true,
+			titles: true,
+			data: true,
+		},
+		orderBy: [{ email: "asc" }],
+	});
+	const values = recipients.map((r) => ({
+		email: r.email,
+		values: recipientValues({ ...r, data: parseRecipientData(r.data) }),
+	}));
+
+	const missing = used.flatMap((key) => {
+		const empty = values.filter((v) => !lookup(v.values, key));
+		return empty.length === 0
+			? []
+			: [
+					{
+						key,
+						count: empty.length,
+						sample: empty.slice(0, 5).map((v) => v.email),
+					},
+				];
+	});
+
+	return { unknown, missing };
+}
+
+async function assertKnownPlaceholders(
+	id: string,
+	subject: string,
+	bodySource: string,
+): Promise<void> {
+	const { unknown } = await placeholderIssues(
+		id,
+		extractTokens(`${subject}
+${bodySource}`),
+	);
+	if (unknown.length > 0) {
+		throw new Response(
+			`Unknown placeholders: ${unknown.map((t) => `{{${t}}}`).join(", ")}`,
+			{ status: 400 },
+		);
+	}
+}
+
 export async function sendCampaignTest(
 	id: string,
 	toEmail: string,
@@ -237,6 +408,7 @@ export async function sendCampaignTest(
 	if (!campaign.subject.trim() || !campaign.bodySource.trim()) {
 		throw new Response("Subject and body are required", { status: 400 });
 	}
+	await assertKnownPlaceholders(id, campaign.subject, campaign.bodySource);
 
 	const rendered = await renderEmailContent(
 		campaign.format,
@@ -275,6 +447,7 @@ export async function finalizeAndEnqueue(
 	if (!campaign.subject.trim() || !campaign.bodySource.trim()) {
 		throw new Response("Subject and body are required", { status: 400 });
 	}
+	await assertKnownPlaceholders(id, campaign.subject, campaign.bodySource);
 
 	const [rendered, jobProgressId] = await Promise.all([
 		renderEmailContent(campaign.format, campaign.bodySource),

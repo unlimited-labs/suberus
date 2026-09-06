@@ -1,0 +1,69 @@
+import * as XLSX from "xlsx";
+import { MAX_SHEET_ROWS, type Sheet } from "../validations";
+
+type SheetCell = string | number | boolean | null | undefined;
+
+function cell(value: SheetCell): string {
+	// Undo the leading-quote guard spreadsheet exports add (see spreadsheet-safe.ts).
+	return String(value ?? "")
+		.replace(/^'/, "")
+		.trim();
+}
+
+function nonEmptyCount(row: string[]): number {
+	return row.filter(Boolean).length;
+}
+
+function uniqueColumns(row: string[]): string[] {
+	const seen = new Map<string, number>();
+	return row.map((name, index) => {
+		const base = name || `Column ${index + 1}`;
+		const count = seen.get(base) ?? 0;
+		seen.set(base, count + 1);
+		return count === 0 ? base : `${base} (${count + 1})`;
+	});
+}
+
+export function parseSheetBuffer(buffer: Buffer): Sheet {
+	const workbook = XLSX.read(buffer, { type: "buffer" });
+	const name = workbook.SheetNames[0];
+	const worksheet = name ? workbook.Sheets[name] : undefined;
+	if (!worksheet) {
+		throw new Response("The file has no sheets", { status: 400 });
+	}
+
+	// raw:false keeps dates as the text the admin sees in Excel.
+	const grid: string[][] = XLSX.utils
+		.sheet_to_json<SheetCell[]>(worksheet, {
+			header: 1,
+			raw: false,
+			defval: "",
+			blankrows: true,
+		})
+		.map((row) => row.map(cell));
+
+	const headerIndex = grid.findIndex((row) => nonEmptyCount(row) >= 2);
+	const header = grid[headerIndex];
+	if (!header) {
+		throw new Response("No header row found in the file", { status: 400 });
+	}
+
+	const columns = uniqueColumns(header);
+	const rows = grid
+		.slice(headerIndex + 1)
+		.map((row) =>
+			Array.from({ length: columns.length }, (_, i) => row[i] ?? ""),
+		)
+		.filter((row) => nonEmptyCount(row) > 0);
+
+	if (rows.length === 0) {
+		throw new Response("The file has a header but no rows", { status: 400 });
+	}
+	if (rows.length > MAX_SHEET_ROWS) {
+		throw new Response(`The file has more than ${MAX_SHEET_ROWS} rows`, {
+			status: 400,
+		});
+	}
+
+	return { columns, rows };
+}
