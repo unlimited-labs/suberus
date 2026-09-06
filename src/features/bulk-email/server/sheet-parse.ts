@@ -53,21 +53,30 @@ export function parseSheetBuffer(buffer: Buffer): Sheet {
 		})
 		.map((row) => row.map(cell));
 
-	const headerIndex = grid.findIndex((row) => nonEmptyCount(row) >= 2);
+	// Two filled cells, so a title line above the table is not mistaken for the
+	// header; a genuinely single-column file has no such line to confuse us.
+	const multiColumn = grid.findIndex((row) => nonEmptyCount(row) >= 2);
+	const headerIndex =
+		multiColumn === -1
+			? grid.findIndex((row) => nonEmptyCount(row) > 0)
+			: multiColumn;
 	const header = grid[headerIndex];
 	if (!header) {
 		throw new Response("No header row found in the file", { status: 400 });
 	}
 
 	const columns = uniqueColumns(header);
-	const rows = grid
-		.slice(headerIndex + 1)
-		.map((row) =>
-			Array.from({ length: columns.length }, (_, i) => row[i] ?? ""),
-		)
-		.filter((row) => nonEmptyCount(row) > 0);
+	const body = grid.slice(headerIndex + 1);
+	// Interior blanks are kept so a row number still counts to the same line the
+	// admin sees; analyzeSheetEmails ignores them.
+	while (body.length > 0 && nonEmptyCount(body[body.length - 1] ?? []) === 0) {
+		body.pop();
+	}
+	const rows = body.map((row) =>
+		Array.from({ length: columns.length }, (_, i) => row[i] ?? ""),
+	);
 
-	if (rows.length === 0) {
+	if (rows.every((row) => nonEmptyCount(row) === 0)) {
 		throw new Response("The file has a header but no rows", { status: 400 });
 	}
 	if (rows.length > MAX_SHEET_ROWS) {
@@ -76,5 +85,5 @@ export function parseSheetBuffer(buffer: Buffer): Sheet {
 		});
 	}
 
-	return { columns, rows };
+	return { columns, rows, headerRow: headerIndex };
 }

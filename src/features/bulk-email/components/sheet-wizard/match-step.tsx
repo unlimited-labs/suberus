@@ -2,16 +2,20 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import { sheetLine } from "../../lib/sheet-analysis";
 import type { Sheet, SheetMatchResult } from "../../validations";
 
 const ROSTER_LIMIT = 20;
 
-function problemText(problem: SheetMatchResult["problems"][number]): string {
+function problemText(
+	problem: SheetMatchResult["problems"][number],
+	sheet: Sheet,
+): string {
 	if (problem.kind === "invalidEmail") {
-		return `Data row ${problem.row + 1}: “${problem.value}” is not an email address`;
+		return `Row ${sheetLine(sheet, problem.row)}: “${problem.value}” is not an email address`;
 	}
-	return `${problem.email} appears in data rows ${problem.rows
-		.map((r) => r + 1)
+	return `${problem.email} appears in rows ${problem.rows
+		.map((r) => sheetLine(sheet, r))
 		.join(", ")}`;
 }
 
@@ -43,7 +47,9 @@ export function MatchStep({
 					<AlertDescription>
 						<ul className="list-disc space-y-1 pl-4">
 							{result.problems.map((problem) => (
-								<li key={problemText(problem)}>{problemText(problem)}</li>
+								<li key={problemText(problem, sheet)}>
+									{problemText(problem, sheet)}
+								</li>
 							))}
 						</ul>
 					</AlertDescription>
@@ -82,7 +88,7 @@ export function MatchStep({
 					<ul className="text-muted-foreground max-h-32 overflow-y-auto text-xs">
 						{unknown.map((row) => (
 							<li key={row.email}>
-								{row.email} — data row {row.row + 1}
+								{row.email} — row {sheetLine(sheet, row.row)}
 							</li>
 						))}
 					</ul>
@@ -109,10 +115,10 @@ export function MatchStep({
 						{result.emptyCells.map((warning) => (
 							<li key={warning.column}>
 								{sheet.columns[warning.column]}:{" "}
-								{warning.rows.length === 1 ? "data row" : "data rows"}{" "}
+								{warning.rows.length === 1 ? "row" : "rows"}{" "}
 								{warning.rows
 									.slice(0, 10)
-									.map((r) => r + 1)
+									.map((r) => sheetLine(sheet, r))
 									.join(", ")}
 								{warning.rows.length > 10
 									? ` and ${warning.rows.length - 10} more`

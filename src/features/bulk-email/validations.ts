@@ -35,6 +35,8 @@ export const sheetSchema = z
 	.object({
 		columns: z.array(z.string().min(1)).min(1).max(64),
 		rows: z.array(z.array(z.string())).min(1).max(MAX_SHEET_ROWS),
+		/** 0-based line the header sits on, so row numbers can name the real file row. */
+		headerRow: z.number().int().min(0).default(0),
 	})
 	.superRefine((sheet, ctx) => {
 		if (new Set(sheet.columns).size !== sheet.columns.length) {

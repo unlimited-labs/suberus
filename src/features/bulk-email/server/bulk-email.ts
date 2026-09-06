@@ -417,7 +417,10 @@ export async function sendCampaignTest(
 	const sample = pickRandom(campaign.recipients);
 	const values = sample
 		? recipientValues({ ...sample, data: parseRecipientData(sample.data) })
-		: SAMPLE_VALUES;
+		: {
+				...SAMPLE_VALUES,
+				...Object.fromEntries(campaign.dataKeys.map((key) => [key, "sample"])),
+			};
 
 	const subject = `[TEST] ${applyPlaceholders(campaign.subject, values, false)}`;
 	const body = applyPlaceholders(rendered.body, values, rendered.isHtml);

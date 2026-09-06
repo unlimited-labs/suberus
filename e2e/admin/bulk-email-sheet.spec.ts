@@ -158,7 +158,7 @@ test.describe("Admin - Bulk Email from a spreadsheet", () => {
 
 		await page.getByTestId("sheet-check-btn").click()
 		await expect(page.getByTestId("sheet-problems")).toContainText(
-			"appears in data rows 1, 2",
+			"appears in rows 2, 3",
 		)
 		await expect(page.getByTestId("sheet-map-btn")).toHaveCount(0)
 	})

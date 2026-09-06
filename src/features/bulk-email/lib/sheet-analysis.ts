@@ -16,6 +16,7 @@ export function analyzeSheetEmails(
 	const rowsByEmail = new Map<string, number[]>();
 
 	sheet.rows.forEach((row, index) => {
+		if (row.every((cell) => !cell.trim())) return;
 		const raw = row[emailColumn] ?? "";
 		const email = raw.trim().toLowerCase();
 		if (!z.email().safeParse(email).success) {
@@ -33,7 +34,7 @@ export function analyzeSheetEmails(
 	const emptyCells = sheet.columns.flatMap((_, column) => {
 		if (column === emailColumn) return [];
 		const rows = sheet.rows.flatMap((row, index) =>
-			row[column]?.trim() ? [] : [index],
+			row.every((cell) => !cell.trim()) || row[column]?.trim() ? [] : [index],
 		);
 		return rows.length > 0 ? [{ column, rows }] : [];
 	});
@@ -50,4 +51,9 @@ export function detectEmailColumn(sheet: Sheet): number {
 	);
 	const best = Math.max(...scores);
 	return best === 0 ? 0 : scores.indexOf(best);
+}
+
+/** 1-based line the row sits on in the uploaded file. */
+export function sheetLine(sheet: Sheet, row: number): number {
+	return sheet.headerRow + row + 2;
 }

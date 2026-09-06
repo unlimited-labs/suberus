@@ -11,8 +11,15 @@ export async function matchSheetRows(input: {
 		input.emailColumn,
 	);
 
+	// Insensitive, not exact: an account stored with any uppercase would silently
+	// import as a stranger. Sheets are capped at MAX_SHEET_ROWS, so the scan is bounded.
 	const users = await prisma.user.findMany({
-		where: { email: { in: [...new Set(emails.map((e) => e.email))] } },
+		where: {
+			email: {
+				in: [...new Set(emails.map((e) => e.email))],
+				mode: "insensitive",
+			},
+		},
 		select: { id: true, email: true, firstName: true, lastName: true },
 	});
 	const byEmail = new Map(users.map((u) => [u.email.toLowerCase(), u]));
