@@ -5,6 +5,7 @@ import { env } from "@/env";
 import type { ProgramQrSettings } from "@/features/settings/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/shared/server/db.server";
+import { escapeCsvField } from "@/shared/server/spreadsheet-safe";
 
 function normalizeBase(baseUrl: string): string {
 	return baseUrl.trim().replace(/\/+$/, "");
@@ -90,6 +91,26 @@ export async function renderQr(
 	return { body: svg, contentType: "image/svg+xml" };
 }
 
+interface QrCsvRow {
+	sequentialNumber: number;
+	title: string;
+	url: string;
+	filename: string;
+}
+
+function buildQrCsv(rows: QrCsvRow[]): string {
+	const header = "sequentialNumber,title,url,filename";
+	const lines = rows.map((r) =>
+		[
+			String(r.sequentialNumber),
+			escapeCsvField(r.title),
+			escapeCsvField(r.url),
+			escapeCsvField(r.filename),
+		].join(","),
+	);
+	return [header, ...lines].join("\n");
+}
+
 export async function createProgramQrZipStream(
 	settings: ProgramQrSettings,
 ): Promise<Readable> {
@@ -103,20 +124,20 @@ export async function createProgramQrZipStream(
 
 	const submissions = await prisma.submission.findMany({
 		where,
-		select: { sequentialNumber: true },
+		select: { sequentialNumber: true, title: true },
 		orderBy: { sequentialNumber: "asc" },
 	});
 
 	const archive = new ZipArchive({ store: true });
-	for (const { sequentialNumber } of submissions) {
-		const qr = await renderQr(
-			submissionQrUrl(settings.baseUrl, sequentialNumber),
-			settings,
-		);
-		archive.append(Buffer.from(qr.body), {
-			name: `${sequentialNumber}.${settings.format}`,
-		});
+	const csvRows: QrCsvRow[] = [];
+	for (const { sequentialNumber, title } of submissions) {
+		const url = submissionQrUrl(settings.baseUrl, sequentialNumber);
+		const qr = await renderQr(url, settings);
+		const filename = `${sequentialNumber}.${settings.format}`;
+		archive.append(Buffer.from(qr.body), { name: filename });
+		csvRows.push({ sequentialNumber, title, url, filename });
 	}
+	archive.append(buildQrCsv(csvRows), { name: "qr-codes.csv" });
 	archive.on("error", (cause) => archive.destroy(cause));
 	void archive.finalize().catch(() => {});
 

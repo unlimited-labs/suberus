@@ -5,7 +5,7 @@ import {
 	type GetSubmissionsFilters,
 } from "@/features/submissions/server/admin-submissions";
 import { prisma } from "@/shared/server/db.server";
-import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
+import { escapeCsvField } from "@/shared/server/spreadsheet-safe";
 import { getFileBuffer } from "@/shared/server/storage";
 
 export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
@@ -48,14 +48,6 @@ export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
 type ExportSubmission = Awaited<
 	ReturnType<typeof getSubmissionsForExport>
 >[number];
-
-function escapeCsvField(value: string): string {
-	const safe = neutralizeFormula(value);
-	if (safe.includes('"') || safe.includes(",") || safe.includes("\n")) {
-		return `"${safe.replace(/"/g, '""')}"`;
-	}
-	return safe;
-}
 
 function getFileExtension(originalName: string): string {
 	const lastDot = originalName.lastIndexOf(".");

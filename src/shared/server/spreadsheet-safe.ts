@@ -16,3 +16,11 @@ export function neutralizeFormula(value: string): string {
 	}
 	return value;
 }
+
+export function escapeCsvField(value: string): string {
+	const safe = neutralizeFormula(value);
+	if (safe.includes('"') || safe.includes(",") || safe.includes("\n")) {
+		return `"${safe.replace(/"/g, '""')}"`;
+	}
+	return safe;
+}
