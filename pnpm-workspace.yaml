@@ -22,6 +22,7 @@ overrides:
   postcss: 8.5.23
   svgo: 4.0.2
   valibot: 1.4.2
+  playwright-core: 1.61.1
 
 allowBuilds:
   "@prisma/engines": true
