@@ -1,11 +1,12 @@
 import { IconProgressCheck } from "@tabler/icons-react";
+import type { EmailCampaignStatus } from "@/generated/prisma/enums";
 import type { JobSSEState } from "@/shared/hooks/use-job-sse";
 import { Progress } from "@/shared/ui/progress";
 import { SectionCard } from "@/shared/ui/section-card";
 
 interface CampaignProgressCardProps {
 	campaign: {
-		status: string;
+		status: EmailCampaignStatus;
 		sentCount: number;
 		failedCount: number;
 		totalRecipients: number;

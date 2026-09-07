@@ -9,6 +9,7 @@ import {
 	parseBulkEmailSheet,
 } from "@/features/bulk-email/api/bulk-email";
 import { sheetCampaignCreateInput } from "@/features/bulk-email/validations";
+import type { EmailCampaignStatus } from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { SheetWizardDialog } from "@/shared/components/sheet-wizard/sheet-wizard-dialog";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
@@ -18,7 +19,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/ui/empty-state";
 
 function statusVariant(
-	status: string,
+	status: EmailCampaignStatus,
 ): "default" | "secondary" | "destructive" {
 	if (status === "SENT") return "default";
 	if (status === "FAILED") return "destructive";

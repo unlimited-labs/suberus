@@ -1,7 +1,10 @@
 import { env } from "@/env.ts";
 import { createCampaignAnnouncement } from "@/features/announcements/server/from-campaign";
 import { campaignAnnouncementBody } from "@/features/announcements/server/sanitize";
-import type { EmailCampaignFormat } from "@/generated/prisma/enums";
+import type {
+	EmailCampaignFormat,
+	EmailCampaignRecipientStatus,
+} from "@/generated/prisma/enums";
 import { lookup } from "@/shared/lib/lookup";
 import {
 	applyPlaceholders,
@@ -219,6 +222,35 @@ export async function duplicateCampaign(
  * `totalRecipients`); keeps the payload + DOM bounded for huge campaigns. */
 export const RECIPIENT_PREVIEW_LIMIT = 200;
 
+/**
+ * The three states a row can actually be in. Replaces the loose
+ * `{ status, error, hasRendered }` trio, which let a PENDING recipient carry an
+ * archive and a SENT one carry an error.
+ */
+export type RecipientDelivery =
+	| { kind: "PENDING" }
+	| { kind: "SENT"; hasArchive: boolean }
+	| { kind: "FAILED"; error: string };
+
+function toDelivery(row: {
+	status: EmailCampaignRecipientStatus;
+	error: string | null;
+	renderedSubject: string | null;
+}): RecipientDelivery {
+	switch (row.status) {
+		case "PENDING":
+			return { kind: "PENDING" };
+		case "SENT":
+			return { kind: "SENT", hasArchive: row.renderedSubject !== null };
+		case "FAILED":
+			return { kind: "FAILED", error: row.error ?? "Send failed" };
+		default: {
+			const _exhaustive: never = row.status;
+			throw new Error(`Unsupported recipient status: ${_exhaustive}`);
+		}
+	}
+}
+
 export async function getCampaign(id: string) {
 	const campaign = await prisma.emailCampaign.findUnique({
 		where: { id },
@@ -250,9 +282,9 @@ export async function getCampaign(id: string) {
 		...campaign,
 		recipientsWithoutAccount,
 		recipients: campaign.recipients.map(
-			({ renderedSubject, ...recipient }) => ({
+			({ status, error, renderedSubject, ...recipient }) => ({
 				...recipient,
-				hasRendered: renderedSubject !== null,
+				delivery: toDelivery({ status, error, renderedSubject }),
 			}),
 		),
 		dataColumns: parseDataColumns(campaign.dataColumns),

@@ -13,7 +13,10 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-email";
-import type { EmailCampaignFormat } from "@/generated/prisma/enums";
+import type {
+	EmailCampaignFormat,
+	EmailCampaignStatus,
+} from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PlaceholderHelp } from "@/shared/components/placeholder-help";
 import type { CodeLang } from "@/shared/lib/code-highlighter";
@@ -49,7 +52,7 @@ interface ComposePageProps {
 }
 
 function statusVariant(
-	status: string,
+	status: EmailCampaignStatus,
 ): "default" | "secondary" | "destructive" {
 	if (status === "FAILED") return "destructive";
 	if (status === "DRAFT") return "secondary";

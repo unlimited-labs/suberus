@@ -1037,6 +1037,12 @@ enum EmailCampaignFormat {
   MJML
 }
 
+enum EmailCampaignRecipientStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 enum EmailCampaignStatus {
   DRAFT
   QUEUED
@@ -1082,7 +1088,7 @@ model EmailCampaignRecipient {
   titles     String    @default("")
   /// Custom placeholder values, `Record<string, string>`; see parseRecipientData.
   data       Json      @default("{}")
-  status     String    @default("PENDING")
+  status          EmailCampaignRecipientStatus @default(PENDING)
   error      String?
   sentAt     DateTime? @map("sent_at")
   /// Exactly what left the SMTP transport for this recipient; null for anything
