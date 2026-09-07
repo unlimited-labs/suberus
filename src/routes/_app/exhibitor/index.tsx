@@ -2,6 +2,7 @@ import { IconAlertTriangle, IconBuildingStore } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { myAnnouncementsQueryOptions } from "@/features/announcements/api/announcements";
 import { AnnouncementInboxCard } from "@/features/announcements/components/announcement-inbox-card";
 import { exhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import {
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/_app/exhibitor/")({
 		await Promise.all([
 			context.queryClient.ensureQueryData(myExhibitorQueryOptions()),
 			context.queryClient.ensureQueryData(exhibitorPanelConfigQueryOptions()),
+			context.queryClient.ensureQueryData(myAnnouncementsQueryOptions()),
 		]);
 	},
 	component: ExhibitorPage,

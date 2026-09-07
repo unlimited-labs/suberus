@@ -43,8 +43,6 @@ function checkEmailColumn(
 
 export const sheetMatchInput = sheetMatchShape.superRefine(checkEmailColumn);
 
-export type SheetMatchInput = z.infer<typeof sheetMatchInput>;
-
 export const mappingTargetSchema = z.discriminatedUnion("kind", [
 	z.object({
 		kind: z.literal("data"),

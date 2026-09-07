@@ -62,7 +62,10 @@ export async function insertCampaign(
 	snapshots: RecipientSnapshot[],
 	createdById: string,
 	dataColumns: Record<string, string>,
-	base?: Pick<SaveDraftInput, "subject" | "format" | "bodySource"> & {
+	base?: Pick<
+		SaveDraftInput,
+		"subject" | "format" | "bodySource" | "saveToProfile"
+	> & {
 		replyTo: string | null;
 	},
 ): Promise<string> {
@@ -203,6 +206,7 @@ export async function duplicateCampaign(
 			format: src.format,
 			bodySource: src.bodySource,
 			replyTo: src.replyTo,
+			saveToProfile: src.saveToProfile,
 		},
 	);
 
@@ -490,15 +494,8 @@ export async function finalizeAndEnqueue(
 		createJobProgress("bulk-email", createdById),
 	]);
 
-	await prisma.emailCampaign.update({
-		where: { id },
-		data: {
-			status: "QUEUED",
-			renderedHtml: rendered.body,
-			jobProgressId,
-		},
-	});
-
+	// Before the status flip: a throw here would otherwise strand the campaign in
+	// QUEUED with no job, which the DRAFT guard makes unrecoverable.
 	if (campaign.saveToProfile) {
 		const withAccount = await prisma.emailCampaignRecipient.findMany({
 			where: { campaignId: id, userId: { not: null } },
@@ -519,6 +516,15 @@ export async function finalizeAndEnqueue(
 			userIds: withAccount.flatMap((r) => (r.userId ? [r.userId] : [])),
 		});
 	}
+
+	await prisma.emailCampaign.update({
+		where: { id },
+		data: {
+			status: "QUEUED",
+			renderedHtml: rendered.body,
+			jobProgressId,
+		},
+	});
 
 	await ensureQueueAndSend(
 		"bulk-email",

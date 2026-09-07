@@ -7,7 +7,6 @@ export const BUILTIN_PLACEHOLDER_KEYS = [
 	"lastName",
 	"title",
 ] as const;
-export type BuiltinPlaceholderKey = (typeof BUILTIN_PLACEHOLDER_KEYS)[number];
 
 export const PLACEHOLDER_KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 

@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { myAnnouncementsQueryOptions } from "@/features/announcements/api/announcements";
 import { AnnouncementInboxCard } from "@/features/announcements/components/announcement-inbox-card";
 import { redirectExhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import { userDashboardQueryOptions } from "@/features/dashboard/api/user-dashboard";
@@ -25,7 +26,10 @@ export const Route = createFileRoute("/_app/")({
 		middleware: [redirectExhibitorRouteMiddleware],
 	},
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(userDashboardQueryOptions());
+		await Promise.all([
+			context.queryClient.ensureQueryData(userDashboardQueryOptions()),
+			context.queryClient.ensureQueryData(myAnnouncementsQueryOptions()),
+		]);
 	},
 	component: DashboardPage,
 });
