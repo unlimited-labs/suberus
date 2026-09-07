@@ -123,6 +123,7 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 								variant="outlined"
 							>
 								<RecipientSummary
+									readCount={announcement.readCount}
 									recipients={announcement.recipients}
 									totalRecipients={announcement.totalRecipients}
 								/>

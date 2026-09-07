@@ -41,11 +41,12 @@ export function RecipientEditDialog({
 	const [subject, setSubject] = useState("");
 	const [bodySource, setBodySource] = useState("");
 
+	// Keyed on the id, not just `data`: while the next recipient's query resolves,
+	// `data` is undefined and the previous person's text would still be saveable.
 	useEffect(() => {
-		if (!data) return;
-		setSubject(data.subject);
-		setBodySource(data.bodySource);
-	}, [data]);
+		setSubject(data?.recipientId === recipientId ? data.subject : "");
+		setBodySource(data?.recipientId === recipientId ? data.bodySource : "");
+	}, [data, recipientId]);
 
 	const save = useMutation({
 		mutationFn: () =>
@@ -125,7 +126,12 @@ export function RecipientEditDialog({
 					</Button>
 					<Button
 						data-testid="save-recipient-btn"
-						disabled={save.isPending || !subject.trim() || !bodySource.trim()}
+						disabled={
+							save.isPending ||
+							data?.recipientId !== recipientId ||
+							!subject.trim() ||
+							!bodySource.trim()
+						}
 						onClick={() => save.mutate()}
 						type="button"
 					>

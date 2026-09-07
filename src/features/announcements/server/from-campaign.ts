@@ -15,6 +15,12 @@ export async function createCampaignAnnouncement(input: {
 	userIds: string[];
 }): Promise<string | null> {
 	if (input.userIds.length === 0) return null;
+	// A retried finalize must not hit the unique sourceCampaignId and strand the campaign.
+	const existing = await prisma.announcement.findUnique({
+		where: { sourceCampaignId: input.campaignId },
+		select: { id: true },
+	});
+	if (existing) return existing.id;
 	const announcement = await prisma.announcement.create({
 		data: {
 			sourceCampaignId: input.campaignId,

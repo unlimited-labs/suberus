@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+	dataMappingTargetSchema,
 	refineSheetCreate,
 	sheetCreateShape,
 } from "@/shared/lib/sheet-mapping";
@@ -30,8 +31,18 @@ export const recipientUpdateInput = z.object({
 	bodySource: z.string().min(1, "Body is required"),
 });
 
+// No firstName/lastName targets: every recipient already has an account and the
+// account's own name wins, so a builtin mapping would be silently dropped.
 export const sheetAnnouncementCreateInput = sheetCreateShape
-	.omit({ unmatched: true })
+	.omit({ unmatched: true, mapping: true })
+	.extend({
+		mapping: z.array(
+			z.object({
+				column: z.number().int().min(0),
+				target: dataMappingTargetSchema,
+			}),
+		),
+	})
 	.superRefine(refineSheetCreate);
 
 export type SheetAnnouncementCreateInput = z.infer<

@@ -75,6 +75,35 @@ async function recordResult(
 	]);
 }
 
+/**
+ * Outside the send's try/catch on purpose: the mail is already out and counted,
+ * so a failure here must not turn a delivered recipient into FAILED (which would
+ * double-count and offer a "sent" preview on a failed row).
+ */
+async function deliverCopy(
+	announcement: AnnouncementCopy | null,
+	recipient: Parameters<typeof buildRecipientMail>[1] & {
+		id: string;
+		userId: string | null;
+	},
+	subject: string,
+): Promise<void> {
+	if (!announcement || !recipient.userId) return;
+	try {
+		await deliverCampaignAnnouncement({
+			announcementId: announcement.id,
+			userId: recipient.userId,
+			subject,
+			bodyTemplate: announcement.bodyTemplate,
+			values: recipientValues(recipient),
+		});
+	} catch (error) {
+		logger.error(
+			`[bulk-email] profile copy for ${recipient.email}: ${error instanceof Error ? error.message : "unknown error"}`,
+		);
+	}
+}
+
 async function sendToRecipient(
 	campaignId: string,
 	content: CampaignContent,
@@ -92,15 +121,7 @@ async function sendToRecipient(
 			subject: mail.subject,
 			body: mail.html ?? mail.text ?? "",
 		});
-		if (announcement && recipient.userId) {
-			await deliverCampaignAnnouncement({
-				announcementId: announcement.id,
-				userId: recipient.userId,
-				subject: mail.subject,
-				bodyTemplate: announcement.bodyTemplate,
-				values: recipientValues(recipient),
-			});
-		}
+		await deliverCopy(announcement, recipient, mail.subject);
 	} catch (error) {
 		const message =
 			error instanceof Error ? error.message : "Unknown send error";

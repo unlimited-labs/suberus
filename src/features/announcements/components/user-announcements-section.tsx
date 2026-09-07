@@ -49,6 +49,9 @@ export function UserAnnouncementsSection({
 								{a.publishedAt ? formatDateTime(a.publishedAt) : ""}
 							</p>
 						</div>
+						{a.fromCampaign ? (
+							<Badge variant="outline">Email copy</Badge>
+						) : null}
 						<Badge variant={a.readAt ? "default" : "secondary"}>
 							{a.readAt ? "Read" : "Unread"}
 						</Badge>
@@ -60,15 +63,17 @@ export function UserAnnouncementsSection({
 						>
 							<IconEye className="size-4" />
 						</Button>
-						<Button
-							aria-label="Edit announcement"
-							data-testid="edit-announcement-btn"
-							onClick={() => setEditingId(a.id)}
-							size="icon"
-							variant="ghost"
-						>
-							<IconPencil className="size-4" />
-						</Button>
+						{a.fromCampaign ? null : (
+							<Button
+								aria-label="Edit announcement"
+								data-testid="edit-announcement-btn"
+								onClick={() => setEditingId(a.id)}
+								size="icon"
+								variant="ghost"
+							>
+								<IconPencil className="size-4" />
+							</Button>
+						)}
 					</li>
 				))}
 			</ul>

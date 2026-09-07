@@ -45,6 +45,11 @@ export function AnnouncementDialog({
 			});
 			onClose();
 		},
+		onSettled: () => {
+			void queryClient.invalidateQueries({
+				queryKey: myAnnouncementQueryOptions(recipientId ?? "").queryKey,
+			});
+		},
 		onError: (e) => toast.error(getErrorMessage(e, "Could not mark as read")),
 	});
 

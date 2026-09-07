@@ -25,6 +25,14 @@ describe("sheetAnnouncementCreateInput", () => {
 		expect(parsed.data).not.toHaveProperty("unmatched");
 	});
 
+	it("rejects a first-name mapping, which announcements cannot use", () => {
+		const parsed = sheetAnnouncementCreateInput.safeParse({
+			...base,
+			mapping: [{ column: 0, target: { kind: "builtin", field: "firstName" } }],
+		});
+		expect(parsed.success).toBe(false);
+	});
+
 	it("still rejects mapping the email column as a placeholder", () => {
 		const parsed = sheetAnnouncementCreateInput.safeParse({
 			...base,

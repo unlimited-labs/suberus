@@ -148,8 +148,13 @@ export async function getAnnouncement(id: string) {
 	});
 	if (!announcement)
 		throw new Response("Announcement not found", { status: 404 });
+	// Counted, not derived from `recipients`: that list stops at RECIPIENT_PREVIEW_LIMIT.
+	const readCount = await prisma.announcementRecipient.count({
+		where: { announcementId: id, readAt: { not: null } },
+	});
 	return {
 		...announcement,
+		readCount,
 		recipients: announcement.recipients.map(({ user, ...recipient }) => ({
 			...recipient,
 			email: user.email,
@@ -196,10 +201,14 @@ export async function saveAnnouncementDraft(
 export async function deleteAnnouncement(id: string): Promise<void> {
 	const announcement = await prisma.announcement.findUnique({
 		where: { id },
-		select: { id: true },
+		select: { status: true },
 	});
 	if (!announcement)
 		throw new Response("Announcement not found", { status: 404 });
+	// Deleting a published one would empty every recipient's inbox behind their back.
+	if (announcement.status !== "DRAFT") {
+		throw new Response("Announcement already published", { status: 409 });
+	}
 	await prisma.announcement.delete({ where: { id } });
 }
 

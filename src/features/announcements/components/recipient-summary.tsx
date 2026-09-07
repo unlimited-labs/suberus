@@ -12,6 +12,7 @@ interface RecipientSummaryProps {
 	/** Capped preview list (see RECIPIENT_PREVIEW_LIMIT), not necessarily all. */
 	recipients: RecipientRow[];
 	totalRecipients: number;
+	readCount: number;
 }
 
 function initials(r: RecipientRow): string {
@@ -26,9 +27,9 @@ function displayName(r: RecipientRow): string {
 export function RecipientSummary({
 	recipients,
 	totalRecipients,
+	readCount,
 }: RecipientSummaryProps) {
 	const hiddenCount = totalRecipients - recipients.length;
-	const readCount = recipients.filter((r) => r.readAt !== null).length;
 
 	return (
 		<div className="space-y-3 text-sm" data-testid="recipient-summary">

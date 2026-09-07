@@ -43,20 +43,22 @@ function checkEmailColumn(
 
 export const sheetMatchInput = sheetMatchShape.superRefine(checkEmailColumn);
 
+export const dataMappingTargetSchema = z.object({
+	kind: z.literal("data"),
+	key: z
+		.string()
+		.regex(
+			PLACEHOLDER_KEY_RE,
+			"Use letters, digits and _ , starting with a letter",
+		)
+		.refine(
+			(key) => !BUILTIN_PLACEHOLDER_KEYS.some((k) => k === key),
+			"That key is reserved",
+		),
+});
+
 export const mappingTargetSchema = z.discriminatedUnion("kind", [
-	z.object({
-		kind: z.literal("data"),
-		key: z
-			.string()
-			.regex(
-				PLACEHOLDER_KEY_RE,
-				"Use letters, digits and _ , starting with a letter",
-			)
-			.refine(
-				(key) => !BUILTIN_PLACEHOLDER_KEYS.some((k) => k === key),
-				"That key is reserved",
-			),
-	}),
+	dataMappingTargetSchema,
 	z.object({
 		kind: z.literal("builtin"),
 		field: z.enum(["firstName", "lastName"]),
