@@ -113,6 +113,13 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **64** — `managing/bulk-email.mdx` — *Spreadsheet import, step 3* (columns mapped to placeholder keys with example values) — same wizard, **Map columns**
 - [ ] **65** — `managing/bulk-email.mdx` — *Delivered message dialog* (final subject, recipient, body with placeholders filled) — sent campaign → recipient's **SENT** badge
 
+- [ ] **66** — `managing/announcements.mdx` — *Selecting recipients* (Users list, rows ticked, **Send announcement** in bulk actions) — `/admin/users`
+- [ ] **67** — `managing/announcements.mdx` — *Spreadsheet import, check step* (an address with no account listed as a blocking problem) — **Announcements** → **Import spreadsheet**
+- [ ] **68** — `managing/announcements.mdx` — *Announcement composer* (subject, markdown body, Placeholders + Recipients panels) — `/admin/announcements/<id>`
+- [ ] **69** — `managing/announcements.mdx` — *Announcements card on the participant dashboard* (one unread, one read) — `/` as a recipient
+- [ ] **70** — `managing/announcements.mdx` — *Announcements section on a user profile* (Read/Unread badge, Preview + Edit) — `/admin/users/<id>`
+- [ ] **71** — `managing/bulk-email.mdx` — *In-app copy panel* (**Save in user profile** turned on) — `/admin/bulk-email/<id>` while DRAFT
+
 ---
 
 ## Notes on the tricky ones
@@ -131,3 +138,4 @@ Settings tabs deep-link via `?tab=<id>`.
 - **50, 51, 53 (public program — preview, notifications, event card):** all toggle `setSchedulePublished(true)` then restore `false` afterwards. **51** needs `VITE_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` set, otherwise the Notifications item is hidden.
 - **55 (bulk camera-ready report):** the skip report is a toast, not an in-dialog panel — the dialog auto-closes on success; the shot captures the page right after the toast appears.
 - **59, 60 (AI assistant):** need the server started with `MCP_ENABLED=true`; **60** requires an `oauthClient` row and a signed authorize redirect, so capture it from the flow `e2e/admin/mcp.spec.ts` drives rather than by visiting `/consent` directly.
+- **66-71 (announcements):** 69 needs a recipient-authenticated context, not admin; 67 needs a workbook row whose address has no account, built in the shot test; 71 only renders while the campaign is `DRAFT`.

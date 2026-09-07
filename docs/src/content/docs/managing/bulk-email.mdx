@@ -92,6 +92,16 @@ recipients and their values attached.
    campaign is queued and delivered one recipient at a time, with a progress bar showing
    how many have been processed. You can close the browser; delivery continues on the server.
 
+## Saving the message in the profile too
+
+While the campaign is a draft, **Save in user profile** in the **In-app copy** panel
+makes Suberus keep a second copy of the message on each recipient's dashboard, where it
+behaves exactly like an [announcement](/managing/announcements/) — the same reading and
+**Mark as read**. Each copy is written as that person's email is accepted, so a failed
+send leaves nothing behind.
+
+![The In-app copy panel with Save in user profile turned on](../../../assets/screenshots/71-managing-bulk-email-save-to-profile.png)
+
 ## Attachments
 
 While a campaign is still a **draft**, the **Attachments** panel lets you attach files
@@ -120,6 +130,7 @@ same set of files.
 | **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML), or **MJML** (responsive email markup, compiled to HTML). |
 | **Body** | The message source, in the chosen format. Syntax-highlighted for Markdown and MJML. Supports placeholders. |
 | **Attachments** | Files sent with every email (draft only). Max 10 MB/file, 25 MB total; PDF, Office docs, images, or ZIP. Validated by content. |
+| **Save in user profile** | Also leaves the message on each recipient's dashboard as an [announcement](/managing/announcements/), written as their email is accepted. Markdown campaigns keep their formatting; **MJML campaigns are saved as plain text**, because an email layout cannot render inside the app. Recipients imported from a spreadsheet who have no Suberus account get the email only — the panel tells you how many that is. |
 | **Preview** | The rendered email. HTML formats render in a sandboxed frame; plain text shows verbatim. |
 | **Save draft** | Stores your edits without sending. You can return to the draft later. |
 | **Send test** | Sends one copy to your own address with sample placeholder values. |
