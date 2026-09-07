@@ -104,6 +104,12 @@ export class AdminUsersPage {
 		return this.page.url().split("/").pop() as string
 	}
 
+	async openAnnouncementComposer(): Promise<string> {
+		await this.selectBulkAction("Send announcement")
+		await this.page.waitForURL(/\/admin\/announcements\/[0-9a-f-]+$/, { timeout: 15000 })
+		return this.page.url().split("/").pop() as string
+	}
+
 	async openUserDetail(user: { email: string; firstName: string; lastName: string }) {
 		// Search by full name for precise match (firstName "Test" alone matches too many e2e users)
 		await this.search(`${user.firstName} ${user.lastName}`)

@@ -1483,3 +1483,171 @@ test.describe("docs screenshots", () => {
 		});
 	});
 });
+
+test.describe("announcements", () => {
+	async function seedAnnouncement(publish: boolean, overrides?: {
+		subject?: string;
+		read?: boolean;
+		daysAgo?: number;
+	}) {
+		const db = getPrisma();
+		const users = await db.user.findMany({
+			where: { role: UserRole.AUTHOR, firstName: { not: null } },
+			select: { id: true, firstName: true, lastName: true },
+			orderBy: { email: "asc" },
+			take: 3,
+		});
+		expect(users.length, "the docs seed has no authors to announce to").toBeGreaterThan(0);
+		const subject =
+			overrides?.subject ?? "Room change for the Tuesday poster session";
+		const bodySource =
+			"Dear **{{firstName}}**,\n\n" +
+			"Your poster _{{title}}_ moves to **Room {{room}}** on Tuesday. " +
+			"Boards open at 09:00 and the session starts at 10:30.\n\n" +
+			"The ICCMS 2026 Organising Committee";
+		const renderedBody =
+			"<p>Dear <strong>Ada</strong>,</p><p>Your poster <em>Digital Twin of an " +
+			"Industrial Heat-Treatment Line</em> moves to <strong>Room B-14</strong> on " +
+			"Tuesday. Boards open at 09:00 and the session starts at 10:30.</p>";
+		const publishedAt = publish
+			? new Date(Date.now() - (overrides?.daysAgo ?? 0) * 24 * 60 * 60 * 1000)
+			: null;
+		const announcement = await db.announcement.create({
+			data: {
+				subject,
+				bodySource,
+				status: publish ? "PUBLISHED" : "DRAFT",
+				publishedAt,
+				dataColumns: { room: "Room" },
+				totalRecipients: users.length,
+				recipients: {
+					create: users.map((u, i) => ({
+						userId: u.id,
+						firstName: u.firstName,
+						lastName: u.lastName,
+						titles: "Digital Twin of an Industrial Heat-Treatment Line",
+						data: { room: "B-14" },
+						publishedAt,
+						readAt: publish && (overrides?.read || i > 0) ? new Date() : null,
+						renderedSubject: publish ? subject : null,
+						renderedBody: publish ? renderedBody : null,
+					})),
+				},
+			},
+		});
+		return { announcementId: announcement.id, userId: users[0]?.id as string };
+	}
+
+	test("66 announcement recipient selection", async ({ page }) => {
+		await page.goto("/admin/users");
+		await page.getByText(/Page \d+ of [1-9]/).first().waitFor({ timeout: 15000 }).catch(() => {});
+		const rows = page.getByTestId("user-row");
+		for (const i of [0, 1, 2]) await rows.nth(i).getByRole("checkbox").check();
+		await page.getByRole("combobox").filter({ hasText: "Bulk actions" }).click();
+		await page.getByRole("option", { name: "Send announcement" }).waitFor({ timeout: 5000 }).catch(() => {});
+		await page.waitForTimeout(300);
+		await shot(page, "66-managing-announcements-recipients.png", { full: false });
+	});
+
+	test("67 announcement sheet check", async ({ page }) => {
+		const db = getPrisma();
+		const known = await db.user.findMany({
+			where: { role: UserRole.AUTHOR, firstName: { not: null } },
+			select: { firstName: true, lastName: true, email: true },
+			orderBy: { email: "asc" },
+			take: 2,
+		});
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(
+			wb,
+			XLSX.utils.aoa_to_sheet([
+				["First name", "Email", "Room"],
+				...known.map((u) => [u.firstName ?? "", u.email, "B-14"]),
+				["Amara", "amara.osei@example.edu", "B-15"],
+			]),
+			"Participants",
+		);
+		await page.goto("/admin/announcements");
+		await page.getByTestId("import-sheet-btn").click();
+		await page.locator('input[type="file"]').setInputFiles({
+			name: "poster-rooms.xlsx",
+			mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			buffer: XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer,
+		});
+		await expect(page.getByTestId("sheet-preview")).toBeVisible({ timeout: 10000 });
+		await page.getByTestId("sheet-check-btn").click();
+		await expect(page.getByTestId("sheet-problems")).toBeVisible({ timeout: 10000 });
+		await shot(page, "67-managing-announcements-sheet-check.png", { full: false });
+	});
+
+	test("68 announcement composer", async ({ page }) => {
+		const { announcementId } = await seedAnnouncement(false);
+		await page.goto(`/admin/announcements/${announcementId}`);
+		await page.setViewportSize({ width: 1440, height: 960 });
+		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+		await page.waitForTimeout(600);
+		await page.screenshot({
+			path: path.join(SHOTS_DIR, "68-managing-announcements-composer.png"),
+			clip: { x: 0, y: 0, width: 1440, height: 960 },
+		});
+	});
+
+	test("69 announcement on the dashboard", async ({ page, baseURL }, testInfo) => {
+		test.skip(!baseURL, "needs a baseURL");
+		await seedAnnouncement(true, {
+			subject: "Conference dinner — seating list is online",
+			read: true,
+			daysAgo: 9,
+		});
+		const { userId } = await seedAnnouncement(true);
+		const db = getPrisma();
+		const user = await db.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: { email: true },
+		});
+		const context = await page.context().browser()?.newContext({
+			storageState: { cookies: [], origins: [] },
+			baseURL,
+			viewport: { width: 1440, height: 900 },
+		});
+		if (!context) throw new Error("no browser for the reader context");
+		const readerPage = await context.newPage();
+		const { suppressPasskeyNudge } = await import("../helpers/page-setup");
+		await suppressPasskeyNudge(readerPage);
+		const { loginAs } = await import("../helpers/auth");
+		const { DEFAULT_PASSWORD } = await import("../helpers/test-users");
+		await loginAs(readerPage, { email: user.email, password: DEFAULT_PASSWORD });
+		await readerPage.goto("/");
+		await expect(readerPage.getByTestId("announcement-inbox")).toBeVisible({ timeout: 15000 });
+		await shot(readerPage, "69-managing-announcements-dashboard.png", { full: false });
+		await context.close();
+		expect(testInfo.status).not.toBe("failed");
+	});
+
+	test("70 announcements on a user profile", async ({ page }) => {
+		const { userId } = await seedAnnouncement(true);
+		await page.goto(`/admin/users/${userId}`);
+		await expect(page.getByTestId("user-announcements")).toBeVisible({ timeout: 15000 });
+		await page.getByTestId("user-announcements").scrollIntoViewIfNeeded();
+		await page.waitForTimeout(400);
+		await shot(page, "70-managing-announcements-user-panel.png", { full: false });
+	});
+
+	test("71 bulk-email save in user profile", async ({ page }) => {
+		const db = getPrisma();
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: "ICCMS 2026 — registration fee reminder",
+				format: "MARKDOWN",
+				bodySource: "Dear **{{firstName}}**, the fee is due on 30 April.",
+				status: "DRAFT",
+				saveToProfile: true,
+			},
+		});
+		await page.goto(`/admin/bulk-email/${campaign.id}`);
+		await expect(page.getByTestId("save-to-profile")).toBeVisible({ timeout: 15000 });
+		await page.getByTestId("save-to-profile").scrollIntoViewIfNeeded();
+		await page.waitForTimeout(400);
+		await shot(page, "71-managing-bulk-email-save-to-profile.png", { full: false });
+	});
+});
