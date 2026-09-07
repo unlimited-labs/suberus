@@ -66,13 +66,13 @@ function DashboardPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Dashboard" />
 			<div className="flex-1 space-y-6 p-6">
-				<AnnouncementInboxCard />
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<StatCard title="Total Submissions" value={data.mySubmissions} />
 					<StatCard title="Under Review" value={data.underReview} />
 					<StatCard title="Pending Reviews" value={data.pendingReviews} />
 					<StatCard title="Accepted" value={data.accepted} />
 				</div>
+				<AnnouncementInboxCard />
 			</div>
 		</div>
 	);
