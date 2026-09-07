@@ -1,6 +1,6 @@
+import { analyzeSheetEmails } from "@/shared/lib/sheet-analysis";
+import type { Sheet, SheetMatchResult } from "@/shared/lib/sheet-mapping";
 import { prisma } from "@/shared/server/db.server";
-import { analyzeSheetEmails } from "../lib/sheet-analysis";
-import type { Sheet, SheetMatchResult } from "../validations";
 
 export async function matchSheetRows(input: {
 	sheet: Sheet;

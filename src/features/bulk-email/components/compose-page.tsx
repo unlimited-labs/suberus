@@ -6,6 +6,7 @@ import {
 	IconMailForward,
 	IconPaperclip,
 	IconSend,
+	IconSpeakerphone,
 	IconTrash,
 	IconUsers,
 } from "@tabler/icons-react";
@@ -14,6 +15,7 @@ import { useState } from "react";
 import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-email";
 import type { EmailCampaignFormat } from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { PlaceholderHelp } from "@/shared/components/placeholder-help";
 import type { CodeLang } from "@/shared/lib/code-highlighter";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -32,7 +34,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { AttachmentDropzone } from "./attachment-dropzone";
 import { CampaignProgressCard } from "./campaign-progress-card";
 import { FormatSelector } from "./format-selector";
-import { PlaceholderHelp } from "./placeholder-help";
 import { PreviewIframe } from "./preview-iframe";
 import { RecipientSummary } from "./recipient-summary";
 import { useComposeCampaign } from "./use-compose-campaign";
@@ -194,6 +195,28 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 									campaignId={campaign.id}
 									disabled={!compose.isDraft}
 								/>
+							</SectionCard>
+
+							<SectionCard
+								icon={IconSpeakerphone}
+								title="In-app copy"
+								variant="outlined"
+							>
+								<compose.form.AppField name="saveToProfile">
+									{(field) => (
+										<field.SwitchField
+											label="Save in user profile"
+											testId="save-to-profile"
+										/>
+									)}
+								</compose.form.AppField>
+								<p className="text-muted-foreground mt-2 text-xs">
+									Leaves the same message on each recipient's dashboard. MJML
+									campaigns are saved as plain text.
+									{campaign.recipientsWithoutAccount > 0
+										? ` ${campaign.recipientsWithoutAccount} of ${campaign.totalRecipients} recipients have no account and get the email only.`
+										: ""}
+								</p>
 							</SectionCard>
 
 							<SectionCard

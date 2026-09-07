@@ -69,6 +69,7 @@ model User {
   oauthRefreshTokens    OauthRefreshToken[]
   oauthAccessTokens     OauthAccessToken[]
   oauthConsents         OauthConsent[]
+  announcementsReceived AnnouncementRecipient[]
 
   @@index([email])
   @@index([role])
@@ -1061,6 +1062,8 @@ model EmailCampaign {
   sentAt          DateTime?           @map("sent_at")
   /// Custom placeholder key -> the spreadsheet heading it came from.
   dataColumns     Json                @default("{}") @map("data_columns")
+  /// Leave the delivered mail in each recipient's in-app inbox as well.
+  saveToProfile   Boolean             @default(false) @map("save_to_profile")
 
   recipients EmailCampaignRecipient[]
 
@@ -1342,4 +1345,58 @@ model OauthClientAssertion {
   expiresAt DateTime
 
   @@map("oauth_client_assertions")
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Announcement {
+  id               String             @id @default(uuid()) @db.Uuid
+  subject          String             @default("")
+  /// Markdown source, placeholders intact. Announcements are markdown-only.
+  bodySource       String             @default("") @map("body_source")
+  /// Markdown rendered and sanitised once at publish; placeholders still intact.
+  renderedHtml     String?            @map("rendered_html")
+  status           AnnouncementStatus @default(DRAFT)
+  totalRecipients  Int                @default(0) @map("total_recipients")
+  /// Custom placeholder key -> the spreadsheet heading it came from.
+  dataColumns      Json               @default("{}") @map("data_columns")
+  /// Set when this announcement is the in-app copy of an email campaign.
+  sourceCampaignId String?            @unique @map("source_campaign_id") @db.Uuid
+  createdById      String?            @map("created_by_id") @db.Uuid
+  createdAt        DateTime           @default(now()) @map("created_at")
+  publishedAt      DateTime?          @map("published_at")
+
+  recipients AnnouncementRecipient[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("announcement")
+}
+
+model AnnouncementRecipient {
+  id                 String    @id @default(uuid()) @db.Uuid
+  announcementId     String    @map("announcement_id") @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  firstName          String?   @map("first_name")
+  lastName           String?   @map("last_name")
+  titles             String    @default("")
+  data               Json      @default("{}")
+  /// Exactly what this user sees: sanitised HTML with placeholders applied.
+  renderedSubject    String?   @map("rendered_subject")
+  renderedBody       String?   @map("rendered_body")
+  /// Markdown an admin hand-edited for this recipient alone; null = the announcement's own body.
+  bodySourceOverride String?   @map("body_source_override")
+  /// Mirrors Announcement.publishedAt so the dashboard never joins.
+  publishedAt        DateTime? @map("published_at")
+  readAt             DateTime? @map("read_at")
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId, publishedAt])
+  @@map("announcement_recipient")
 }

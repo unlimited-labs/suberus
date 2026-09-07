@@ -6,6 +6,8 @@ interface StepFooterProps {
 	busy: boolean;
 	canCreate: boolean;
 	recipientCount: number;
+	problemCount: number;
+	createLabel: string;
 	onBack: () => void;
 	onNext: () => void;
 	onCreate: () => void;
@@ -16,6 +18,8 @@ export function StepFooter({
 	busy,
 	canCreate,
 	recipientCount,
+	problemCount,
+	createLabel,
 	onBack,
 	onNext,
 	onCreate,
@@ -37,7 +41,7 @@ export function StepFooter({
 					<Button disabled={busy} onClick={onBack} variant="outline">
 						Back
 					</Button>
-					{state.result.problems.length === 0 && (
+					{problemCount === 0 && (
 						<Button
 							data-testid="sheet-map-btn"
 							disabled={busy || recipientCount === 0}
@@ -59,7 +63,7 @@ export function StepFooter({
 						disabled={busy || !canCreate}
 						onClick={onCreate}
 					>
-						Create campaign
+						{createLabel}
 					</Button>
 				</>
 			);

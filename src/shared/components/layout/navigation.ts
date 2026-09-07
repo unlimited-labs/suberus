@@ -12,6 +12,7 @@ import {
 	IconMailForward,
 	IconMailPlus,
 	IconUser,
+	IconSpeakerphone,
 	IconUsers,
 } from "@tabler/icons-react";
 import type { ComponentType } from "react";
@@ -97,6 +98,11 @@ export const navigationSections: NavSection[] = [
 				name: "Email campaigns",
 				href: "/admin/bulk-email",
 				icon: IconMailForward,
+			},
+			{
+				name: "Announcements",
+				href: "/admin/announcements",
+				icon: IconSpeakerphone,
 			},
 			{
 				name: "Documents",

@@ -11,7 +11,7 @@ import { MappingStep } from "./mapping-step";
 import { MatchStep } from "./match-step";
 import { StepFooter } from "./step-footer";
 import { UploadStep } from "./upload-step";
-import { useSheetWizard } from "./use-sheet-wizard";
+import { type SheetWizardOptions, useSheetWizard } from "./use-sheet-wizard";
 
 const STEPS = [
 	{ id: 1, title: "Upload spreadsheet" },
@@ -25,16 +25,17 @@ const DESCRIPTIONS = {
 	mapping: "Which columns become placeholders in the message.",
 } as const;
 
-interface SheetWizardDialogProps {
+interface SheetWizardDialogProps<Payload> extends SheetWizardOptions<Payload> {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }
 
-export function SheetWizardDialog({
+export function SheetWizardDialog<Payload>({
 	open,
 	onOpenChange,
-}: SheetWizardDialogProps) {
-	const wizard = useSheetWizard(() => onOpenChange(false));
+	...options
+}: SheetWizardDialogProps<Payload>) {
+	const wizard = useSheetWizard(options);
 	const { state } = wizard;
 
 	return (
@@ -66,7 +67,9 @@ export function SheetWizardDialog({
 				)}
 				{state.step === "match" && (
 					<MatchStep
+						allowUnmatched={wizard.allowUnmatched}
 						onUnmatched={wizard.setUnmatched}
+						problems={wizard.problems}
 						recipientCount={wizard.recipientCount}
 						result={state.result}
 						sheet={state.sheet}
@@ -76,6 +79,7 @@ export function SheetWizardDialog({
 				{state.step === "mapping" && (
 					<MappingStep
 						allowNames={
+							wizard.allowUnmatched &&
 							state.unmatched === "add" &&
 							state.result.rows.some((r) => r.kind === "unknown")
 						}
@@ -90,9 +94,11 @@ export function SheetWizardDialog({
 					<StepFooter
 						busy={wizard.busy}
 						canCreate={wizard.canCreate}
+						createLabel={wizard.createLabel}
 						onBack={wizard.back}
 						onCreate={wizard.create}
 						onNext={state.step === "upload" ? wizard.toMatch : wizard.toMapping}
+						problemCount={wizard.problems.length}
 						recipientCount={wizard.recipientCount}
 						state={state}
 					/>

@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AnnouncementInboxCard } from "@/features/announcements/components/announcement-inbox-card";
 import { redirectExhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import { userDashboardQueryOptions } from "@/features/dashboard/api/user-dashboard";
 import { PageHeader } from "@/shared/components/layout/page-header";
@@ -61,6 +62,7 @@ function DashboardPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Dashboard" />
 			<div className="flex-1 space-y-6 p-6">
+				<AnnouncementInboxCard />
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<StatCard title="Total Submissions" value={data.mySubmissions} />
 					<StatCard title="Under Review" value={data.underReview} />

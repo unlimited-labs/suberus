@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { MAX_SHEET_ROWS, type Sheet } from "../validations";
+import { MAX_SHEET_ROWS, type Sheet } from "@/shared/lib/sheet-mapping";
 
 type SheetCell = string | number | boolean | null | undefined;
 

@@ -9,21 +9,21 @@ import {
 	saveDraft,
 	sendCampaignTest,
 } from "@/features/bulk-email/server/bulk-email";
-import { matchSheetRows } from "@/features/bulk-email/server/sheet-match";
 import {
 	campaignCheckInput,
 	campaignCreateInput,
 	campaignDraftInput,
 	campaignIdInput,
 	sheetCampaignCreateInput,
-	sheetMatchInput,
 } from "@/features/bulk-email/validations";
 import { MCP_SCOPE_EMAIL_SEND } from "@/features/mcp/scopes";
+import { sheetMatchInput } from "@/shared/lib/sheet-mapping";
 import {
 	ADMIN_AND_EDITOR,
 	defineTool,
 	type McpTool,
 } from "@/shared/server/mcp/define-tool";
+import { matchSheetRows } from "@/shared/server/sheet-match";
 
 const createDraft = defineTool({
 	name: "email_draft_create",
@@ -42,7 +42,7 @@ const updateDraft = defineTool({
 	name: "email_draft_update",
 	title: "Update email draft",
 	description:
-		"Set subject, body and format of a draft campaign. Format is PLAIN, MARKDOWN or MJML. The body may use the placeholders {{firstName}}, {{lastName}} and {{title}}, plus any key the campaign carries from an imported spreadsheet (email_campaign_get returns dataColumns, mapping each key to the spreadsheet heading it came from), filled per recipient. A token that matches no key blocks sending, so check with email_draft_check. Every field is overwritten, including replyTo when omitted, so send the whole draft. Only works while the campaign is still a draft.",
+		"Set subject, body and format of a draft campaign. Format is PLAIN, MARKDOWN or MJML. The body may use the placeholders {{firstName}}, {{lastName}} and {{title}}, plus any key the campaign carries from an imported spreadsheet (email_campaign_get returns dataColumns, mapping each key to the spreadsheet heading it came from), filled per recipient. A token that matches no key blocks sending, so check with email_draft_check. Set saveToProfile to also leave the message on each recipient's dashboard as an announcement (MJML degrades to plain text there). Every field is overwritten, including replyTo and saveToProfile when omitted, so send the whole draft. Only works while the campaign is still a draft.",
 	input: campaignDraftInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_EMAIL_SEND,

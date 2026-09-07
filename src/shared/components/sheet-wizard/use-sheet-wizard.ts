@@ -1,21 +1,14 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-	bulkEmailCampaignsQueryOptions,
-	createBulkEmailDraftFromSheet,
-	matchBulkEmailSheet,
-	parseBulkEmailSheet,
-} from "@/features/bulk-email/api/bulk-email";
+import type { z } from "zod";
 import { getErrorMessage } from "@/shared/lib/error-message";
-import { detectEmailColumn } from "../../lib/sheet-analysis";
-import {
-	type MappingTarget,
-	type Sheet,
-	sheetCampaignCreateInput,
-	type SheetMatchResult,
-} from "../../validations";
+import { detectEmailColumn } from "@/shared/lib/sheet-analysis";
+import type {
+	MappingTarget,
+	Sheet,
+	SheetMatchResult,
+	SheetProblem,
+} from "@/shared/lib/sheet-mapping";
 
 export type MappingRow = {
 	column: number;
@@ -46,6 +39,21 @@ const STEP_INDEX = {
 	mapping: 3,
 } satisfies Record<WizardStep, number>;
 
+export interface SheetWizardOptions<Payload> {
+	parseSheet: (body: FormData) => Promise<Sheet>;
+	matchSheet: (input: {
+		sheet: Sheet;
+		emailColumn: number;
+	}) => Promise<SheetMatchResult>;
+	createSchema: z.ZodType<Payload>;
+	createFromSheet: (payload: Payload) => Promise<string>;
+	onCreated: (id: string) => Promise<void> | void;
+	/** false: an address with no account blocks the import instead of joining it. */
+	allowUnmatched?: boolean;
+	createLabel: string;
+	createErrorMessage: string;
+}
+
 function createPayload(state: WizardState) {
 	if (state.step !== "mapping") return null;
 	return {
@@ -60,14 +68,21 @@ function createPayload(state: WizardState) {
 	};
 }
 
-export function useSheetWizard(onCreated: () => void) {
+function noAccountProblems(result: SheetMatchResult): SheetProblem[] {
+	return result.rows.flatMap((row) =>
+		row.kind === "unknown"
+			? [{ kind: "noAccount" as const, row: row.row, email: row.email }]
+			: [],
+	);
+}
+
+export function useSheetWizard<Payload>(options: SheetWizardOptions<Payload>) {
+	const allowUnmatched = options.allowUnmatched ?? true;
 	const [state, setState] = useState<WizardState>({
 		step: "upload",
 		picked: null,
 	});
 	const [busy, setBusy] = useState(false);
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
 
 	// No `finally`: the statement form defeats the React Compiler's memoization
 	// (see the app-wide removal in the doctor campaign). The catch swallows, so
@@ -83,19 +98,31 @@ export function useSheetWizard(onCreated: () => void) {
 	};
 
 	const payload = createPayload(state);
-	const parsed = payload ? sheetCampaignCreateInput.safeParse(payload) : null;
+	const parsed = payload ? options.createSchema.safeParse(payload) : null;
+	const problems =
+		state.step === "upload"
+			? []
+			: [
+					...state.result.problems,
+					...(allowUnmatched ? [] : noAccountProblems(state.result)),
+				];
 	const recipientCount =
 		state.step === "upload"
 			? 0
 			: state.result.rows.filter(
-					(row) => row.kind === "user" || state.unmatched === "add",
+					(row) =>
+						row.kind === "user" ||
+						(allowUnmatched && state.unmatched === "add"),
 				).length;
 
 	return {
 		state,
 		busy,
+		allowUnmatched,
+		problems,
 		stepIndex: STEP_INDEX[state.step],
 		recipientCount,
+		createLabel: options.createLabel,
 		mappingError: parsed?.error?.issues[0]?.message ?? null,
 		canCreate: Boolean(parsed?.success) && recipientCount > 0,
 
@@ -109,7 +136,7 @@ export function useSheetWizard(onCreated: () => void) {
 				}
 				const body = new FormData();
 				body.append("file", file);
-				const sheet = await parseBulkEmailSheet({ data: body });
+				const sheet = await options.parseSheet(body);
 				setState({
 					step: "upload",
 					picked: { file, sheet, emailColumn: detectEmailColumn(sheet) },
@@ -127,9 +154,7 @@ export function useSheetWizard(onCreated: () => void) {
 			run(async () => {
 				if (state.step !== "upload" || !state.picked) return;
 				const { file, sheet, emailColumn } = state.picked;
-				const result = await matchBulkEmailSheet({
-					data: { sheet, emailColumn },
-				});
+				const result = await options.matchSheet({ sheet, emailColumn });
 				setState({
 					step: "match",
 					file,
@@ -191,17 +216,8 @@ export function useSheetWizard(onCreated: () => void) {
 		create: () =>
 			run(async () => {
 				if (!parsed?.success) return;
-				const { campaignId } = await createBulkEmailDraftFromSheet({
-					data: parsed.data,
-				});
-				await queryClient.invalidateQueries({
-					queryKey: bulkEmailCampaignsQueryOptions().queryKey,
-				});
-				onCreated();
-				await navigate({
-					to: "/admin/bulk-email/$id",
-					params: { id: campaignId },
-				});
-			}, "Could not create the campaign"),
+				const id = await options.createFromSheet(parsed.data);
+				await options.onCreated(id);
+			}, options.createErrorMessage),
 	};
 }

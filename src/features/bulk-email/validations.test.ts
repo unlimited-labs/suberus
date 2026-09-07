@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { sheetCampaignCreateInput, sheetSchema } from "./validations";
+import { sheetSchema } from "@/shared/lib/sheet-mapping";
+import { sheetCampaignCreateInput } from "./validations";
 
 const sheet = {
 	columns: ["Name", "Mail", "Hotel"],

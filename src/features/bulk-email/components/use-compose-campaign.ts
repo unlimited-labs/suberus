@@ -15,26 +15,18 @@ import {
 	sendBulkEmailCampaign,
 	sendBulkEmailTest,
 } from "@/features/bulk-email/api/bulk-email";
-import { extractTokens } from "@/features/bulk-email/lib/placeholders";
 import { campaignDraftInput } from "@/features/bulk-email/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { extractTokens } from "@/shared/lib/placeholders";
 
 const composeSchema = campaignDraftInput
 	.omit({ id: true })
-	.required({ replyTo: true });
+	.required({ replyTo: true, saveToProfile: true });
 
 type Campaign = Awaited<ReturnType<typeof getBulkEmailCampaign>>;
-
-function useDebounced<T>(value: T, delayMs: number): T {
-	const [debounced, setDebounced] = useState(value);
-	useEffect(() => {
-		const t = setTimeout(() => setDebounced(value), delayMs);
-		return () => clearTimeout(t);
-	}, [value, delayMs]);
-	return debounced;
-}
 
 export function useComposeCampaign(campaign: Campaign) {
 	const queryClient = useQueryClient();
@@ -47,6 +39,7 @@ export function useComposeCampaign(campaign: Campaign) {
 			format: campaign.format,
 			bodySource: campaign.bodySource,
 			replyTo: campaign.replyTo ?? "",
+			saveToProfile: campaign.saveToProfile,
 		},
 		validators: { onChange: composeSchema },
 	});
@@ -56,8 +49,8 @@ export function useComposeCampaign(campaign: Campaign) {
 	const format = useSelector(form.store, (s) => s.values.format);
 	const bodySource = useSelector(form.store, (s) => s.values.bodySource);
 	const subject = useSelector(form.store, (s) => s.values.subject);
-	const debouncedBody = useDebounced(bodySource, 400);
-	const debouncedSubject = useDebounced(subject, 400);
+	const debouncedBody = useDebounce(bodySource, 400);
+	const debouncedSubject = useDebounce(subject, 400);
 
 	const tokens = extractTokens(`${debouncedSubject}
 ${debouncedBody}`);
@@ -77,12 +70,10 @@ ${debouncedBody}`);
 			? { body: bodySource, isHtml: false }
 			: (previewQuery.data ?? { body: "", isHtml: true });
 
-	const persist = () => {
-		const { subject, format, bodySource, replyTo } = form.state.values;
-		return saveBulkEmailDraft({
-			data: { id: campaign.id, subject, format, bodySource, replyTo },
+	const persist = () =>
+		saveBulkEmailDraft({
+			data: { id: campaign.id, ...form.state.values },
 		});
-	};
 
 	const saveMutation = useMutation({
 		mutationFn: persist,

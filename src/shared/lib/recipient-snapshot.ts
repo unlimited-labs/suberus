@@ -1,4 +1,4 @@
-import { joinTitles, type RecipientSnapshot } from "../lib/placeholders";
+import { joinTitles, type RecipientSnapshot } from "@/shared/lib/placeholders";
 
 export interface SnapshotUser {
 	id: string;

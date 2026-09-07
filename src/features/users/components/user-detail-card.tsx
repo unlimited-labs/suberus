@@ -8,6 +8,7 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { UserAnnouncementsSection } from "@/features/announcements/components/user-announcements-section";
 import { UserDocumentsSection } from "@/features/documents/components/user-documents-section";
 import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import { assignableRoleOptions } from "@/features/users/labels";
@@ -147,6 +148,8 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 					userId={user.id}
 					userName={userName}
 				/>
+
+				<UserAnnouncementsSection userId={user.id} />
 
 				<SectionCard
 					action={

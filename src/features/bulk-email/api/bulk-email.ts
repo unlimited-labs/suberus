@@ -21,8 +21,6 @@ import {
 	saveDraft,
 	sendCampaignTest,
 } from "@/features/bulk-email/server/bulk-email";
-import { matchSheetRows } from "@/features/bulk-email/server/sheet-match";
-import { parseSheetBuffer } from "@/features/bulk-email/server/sheet-parse";
 import {
 	campaignCheckInput,
 	campaignCreateInput,
@@ -32,9 +30,11 @@ import {
 	campaignPreviewInput,
 	recipientIdInput,
 	sheetCampaignCreateInput,
-	sheetMatchInput,
 } from "@/features/bulk-email/validations";
+import { sheetMatchInput } from "@/shared/lib/sheet-mapping";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
+import { matchSheetRows } from "@/shared/server/sheet-match";
+import { parseSheetBuffer } from "@/shared/server/sheet-parse";
 import {
 	UploadValidationError,
 	validateUpload,

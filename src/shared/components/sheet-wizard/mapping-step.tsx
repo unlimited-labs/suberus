@@ -1,3 +1,5 @@
+import { suggestPlaceholderKey } from "@/shared/lib/placeholders";
+import type { Sheet } from "@/shared/lib/sheet-mapping";
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import {
@@ -7,8 +9,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-import { suggestPlaceholderKey } from "../../lib/placeholders";
-import type { Sheet } from "../../validations";
 import type { MappingRow } from "./use-sheet-wizard";
 
 const TARGETS = [

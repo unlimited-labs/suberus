@@ -1,6 +1,11 @@
 import type { Job, PgBoss } from "pg-boss";
 import { env } from "@/env.ts";
+import {
+	deliverCampaignAnnouncement,
+	findCampaignAnnouncement,
+} from "@/features/announcements/server/campaign-delivery";
 import { logger } from "@/logger.ts";
+import { parseRecipientData, recipientValues } from "@/shared/lib/placeholders";
 import { prisma } from "@/shared/server/db.server";
 import { sendRawEmail } from "@/shared/server/email";
 import {
@@ -9,7 +14,6 @@ import {
 	setJobCurrent,
 	setJobStage,
 } from "@/shared/server/job-progress";
-import { parseRecipientData } from "../../lib/placeholders";
 import { loadAttachmentBuffers } from "../attachments";
 import { buildRecipientMail, type CampaignContent } from "../bulk-email-send";
 import {
@@ -37,6 +41,11 @@ async function handleBulkEmail(jobs: Job<BulkEmailJobData>[]): Promise<void> {
 type SendOutcome =
 	| { status: "SENT"; subject: string; body: string }
 	| { status: "FAILED"; error: string };
+
+interface AnnouncementCopy {
+	id: string;
+	bodyTemplate: string;
+}
 
 async function recordResult(
 	campaignId: string,
@@ -69,7 +78,11 @@ async function recordResult(
 async function sendToRecipient(
 	campaignId: string,
 	content: CampaignContent,
-	recipient: Parameters<typeof buildRecipientMail>[1] & { id: string },
+	recipient: Parameters<typeof buildRecipientMail>[1] & {
+		id: string;
+		userId: string | null;
+	},
+	announcement: AnnouncementCopy | null,
 ): Promise<void> {
 	try {
 		const mail = buildRecipientMail(content, recipient);
@@ -79,6 +92,15 @@ async function sendToRecipient(
 			subject: mail.subject,
 			body: mail.html ?? mail.text ?? "",
 		});
+		if (announcement && recipient.userId) {
+			await deliverCampaignAnnouncement({
+				announcementId: announcement.id,
+				userId: recipient.userId,
+				subject: mail.subject,
+				bodyTemplate: announcement.bodyTemplate,
+				values: recipientValues(recipient),
+			});
+		}
 	} catch (error) {
 		const message =
 			error instanceof Error ? error.message : "Unknown send error";
@@ -186,13 +208,18 @@ async function processCampaign(campaignId: string): Promise<void> {
 
 	// ponytail: attachment bytes held in memory once for the whole run (capped at
 	// MAX_CAMPAIGN_ATTACHMENTS_BYTES=25MB); stream from S3 per-recipient if that grows.
-	const [pending, attachments] = await Promise.all([
+	const [pending, attachments, copy] = await Promise.all([
 		prisma.emailCampaignRecipient.findMany({
 			where: { campaignId, status: "PENDING" },
 			orderBy: [{ email: "asc" }, { id: "asc" }],
 		}),
 		loadAttachmentBuffers(campaignId),
+		campaign.saveToProfile ? findCampaignAnnouncement(campaignId) : null,
 	]);
+	const announcement: AnnouncementCopy | null =
+		copy?.renderedHtml == null
+			? null
+			: { id: copy.id, bodyTemplate: copy.renderedHtml };
 	const content: CampaignContent = {
 		subject: campaign.subject,
 		body: campaign.renderedHtml,
@@ -203,10 +230,12 @@ async function processCampaign(campaignId: string): Promise<void> {
 	const delayMs = env.BULK_EMAIL_DELAY_SECONDS * 1000;
 
 	for (const recipient of pending) {
-		await sendToRecipient(campaignId, content, {
-			...recipient,
-			data: parseRecipientData(recipient.data),
-		});
+		await sendToRecipient(
+			campaignId,
+			content,
+			{ ...recipient, data: parseRecipientData(recipient.data) },
+			announcement,
+		);
 		await reportProgress(campaign.jobProgressId, campaignId);
 		await sleep(delayMs);
 	}

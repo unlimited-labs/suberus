@@ -1,4 +1,5 @@
 import { FileDropzone } from "@/shared/components/file-dropzone";
+import type { Sheet } from "@/shared/lib/sheet-mapping";
 import { cn } from "@/shared/lib/utils";
 import { Label } from "@/shared/ui/label";
 import {
@@ -16,7 +17,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/table";
-import type { Sheet } from "../../validations";
 
 const PREVIEW_ROWS = 5;
 

@@ -19,6 +19,8 @@ const SCOPE_LABELS = {
 		"Build and publish the programme, including automatic planning",
 	"email:send":
 		"Compose and send emails to participants you select, and read past campaigns with their recipients",
+	"announcements:write":
+		"Write and publish announcements that participants you select read on their dashboard",
 } satisfies Record<string, string> satisfies Record<McpScope, string>;
 
 export function scopeLabel(scope: string): string {

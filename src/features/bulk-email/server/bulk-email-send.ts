@@ -1,5 +1,5 @@
+import { applyPlaceholders, recipientValues } from "@/shared/lib/placeholders";
 import type { RawEmail } from "@/shared/server/email";
-import { applyPlaceholders, recipientValues } from "../lib/placeholders";
 import type { MailAttachment } from "./attachments";
 
 export interface MailRecipientInput {

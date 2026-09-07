@@ -1,10 +1,12 @@
 import { toast } from "sonner";
 import { lookup } from "@/shared/lib/lookup";
+import {
+	BUILTIN_PLACEHOLDER_KEYS,
+	type PlaceholderIssues,
+} from "@/shared/lib/placeholders";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Badge } from "@/shared/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
-import { BUILTIN_PLACEHOLDER_KEYS } from "../lib/placeholders";
-import type { PlaceholderIssues } from "../validations";
 
 const DESCRIPTIONS = {
 	firstName: "Recipient's first name",

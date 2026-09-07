@@ -4,6 +4,10 @@ import type { RowSelectionState } from "@tanstack/react-table";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+	announcementsQueryOptions,
+	createAnnouncementDraft,
+} from "@/features/announcements/api/announcements";
+import {
 	bulkEmailCampaignsQueryOptions,
 	createBulkEmailDraft,
 } from "@/features/bulk-email/api/bulk-email";
@@ -97,6 +101,22 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			toast.error(getErrorMessage(e, "Failed to start bulk email")),
 	});
 
+	const announcementDraftMutation = useMutation({
+		mutationFn: (userIds: string[]) =>
+			createAnnouncementDraft({ data: { userIds } }),
+		onSuccess: ({ announcementId }) => {
+			queryClient.invalidateQueries({
+				queryKey: announcementsQueryOptions().queryKey,
+			});
+			navigate({
+				to: "/admin/announcements/$id",
+				params: { id: announcementId },
+			});
+		},
+		onError: (e) =>
+			toast.error(getErrorMessage(e, "Failed to start announcement")),
+	});
+
 	if (selectedCount === 0) return null;
 
 	const handleSelectAction = (value: string) => {
@@ -106,6 +126,10 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 			setRoleDialogOpen(true);
 		} else if (value === "send_email") {
 			emailDraftMutation.mutate(selectedRows.map((row) => row.original.id));
+		} else if (value === "send_announcement") {
+			announcementDraftMutation.mutate(
+				selectedRows.map((row) => row.original.id),
+			);
 		} else if (value === "generate_document") {
 			setGenerateDocsOpen(true);
 		}
@@ -140,6 +164,7 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 		{ value: "mark_fee", label: "Mark fee paid" },
 		...(canChangeRoles ? [{ value: "change_role", label: "Change role" }] : []),
 		{ value: "send_email", label: "Send email" },
+		{ value: "send_announcement", label: "Send announcement" },
 		{ value: "generate_document", label: "Generate document" },
 	];
 

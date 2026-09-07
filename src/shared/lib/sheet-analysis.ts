@@ -4,7 +4,7 @@ import type {
 	MatchedRow,
 	Sheet,
 	SheetProblem,
-} from "../validations";
+} from "@/shared/lib/sheet-mapping";
 
 export interface SheetEmailAnalysis {
 	emails: Array<{ row: number; email: string }>;

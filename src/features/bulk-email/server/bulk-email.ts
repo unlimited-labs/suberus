@@ -1,10 +1,8 @@
 import { env } from "@/env.ts";
+import { createCampaignAnnouncement } from "@/features/announcements/server/from-campaign";
+import { campaignAnnouncementBody } from "@/features/announcements/server/sanitize";
 import type { EmailCampaignFormat } from "@/generated/prisma/enums";
 import { lookup } from "@/shared/lib/lookup";
-import { prisma } from "@/shared/server/db.server";
-import { sendRawEmail } from "@/shared/server/email";
-import { createJobProgress } from "@/shared/server/job-progress";
-import { ensureQueueAndSend } from "@/shared/server/queue";
 import {
 	applyPlaceholders,
 	BUILTIN_PLACEHOLDER_KEYS,
@@ -16,11 +14,19 @@ import {
 	type RecipientSnapshot,
 	SAMPLE_VALUES,
 	unknownTokens,
-} from "../lib/placeholders";
-import type {
-	PlaceholderIssues,
-	SheetCampaignCreateInput,
-} from "../validations";
+	type PlaceholderIssues,
+} from "@/shared/lib/placeholders";
+import { buildRecipientSnapshot } from "@/shared/lib/recipient-snapshot";
+import { prisma } from "@/shared/server/db.server";
+import { sendRawEmail } from "@/shared/server/email";
+import { createJobProgress } from "@/shared/server/job-progress";
+import { ensureQueueAndSend } from "@/shared/server/queue";
+import {
+	loadRecipientSnapshots,
+	loadSnapshotUsers,
+} from "@/shared/server/recipient-snapshot";
+import { matchSheetRows } from "@/shared/server/sheet-match";
+import type { SheetCampaignCreateInput } from "../validations";
 import {
 	copyCampaignAttachments,
 	deleteCampaignAttachments,
@@ -29,40 +35,24 @@ import {
 } from "./attachments";
 import { renderEmailContent } from "./bulk-email-render";
 import { campaignExpireSeconds } from "./bulk-email-status";
-import { buildRecipientSnapshot } from "./recipient-snapshot";
-import { matchSheetRows } from "./sheet-match";
 
 export interface SaveDraftInput {
 	subject: string;
 	format: EmailCampaignFormat;
 	bodySource: string;
 	replyTo?: string | null;
+	saveToProfile?: boolean;
 }
 
 export async function createDraftCampaign(
 	userIds: string[],
 	createdById: string,
 ): Promise<{ campaignId: string; totalRecipients: number }> {
-	const uniqueIds = [...new Set(userIds)];
-	const users = await prisma.user.findMany({
-		where: { id: { in: uniqueIds } },
-		select: {
-			id: true,
-			email: true,
-			firstName: true,
-			lastName: true,
-			submissions: {
-				where: { type: { not: "INVITED" } },
-				select: { title: true },
-			},
-		},
-	});
-
-	if (users.length === 0) {
+	const snapshots = await loadRecipientSnapshots(userIds);
+	if (snapshots.length === 0) {
 		throw new Response("No valid recipients selected", { status: 400 });
 	}
 
-	const snapshots = users.map(buildRecipientSnapshot);
 	const campaignId = await insertCampaign(snapshots, createdById, {});
 
 	return { campaignId, totalRecipients: snapshots.length };
@@ -96,17 +86,6 @@ export async function insertCampaign(
 	});
 	return campaign.id;
 }
-
-const RECIPIENT_USER_SELECT = {
-	id: true,
-	email: true,
-	firstName: true,
-	lastName: true,
-	submissions: {
-		where: { type: { not: "INVITED" } },
-		select: { title: true },
-	},
-} as const;
 
 interface SheetMapping {
 	dataKeys: Array<{ column: number; key: string }>;
@@ -146,14 +125,9 @@ export async function createCampaignFromSheet(
 	}
 
 	const { dataKeys, builtinColumns } = splitMapping(input.mapping);
-	const users = await prisma.user.findMany({
-		where: {
-			id: {
-				in: match.rows.flatMap((r) => (r.kind === "user" ? [r.userId] : [])),
-			},
-		},
-		select: RECIPIENT_USER_SELECT,
-	});
+	const users = await loadSnapshotUsers(
+		match.rows.flatMap((r) => (r.kind === "user" ? [r.userId] : [])),
+	);
 	const byId = new Map(users.map((u) => [u.id, u]));
 
 	const snapshots = match.rows.flatMap((matched): RecipientSnapshot[] => {
@@ -262,9 +236,15 @@ export async function getCampaign(id: string) {
 		},
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
-	const attachments = await listCampaignAttachments(id);
+	const [attachments, recipientsWithoutAccount] = await Promise.all([
+		listCampaignAttachments(id),
+		prisma.emailCampaignRecipient.count({
+			where: { campaignId: id, userId: null },
+		}),
+	]);
 	return {
 		...campaign,
+		recipientsWithoutAccount,
 		recipients: campaign.recipients.map(
 			({ renderedSubject, ...recipient }) => ({
 				...recipient,
@@ -349,6 +329,7 @@ export async function saveDraft(
 			format: data.format,
 			bodySource: data.bodySource,
 			replyTo: data.replyTo || null,
+			saveToProfile: data.saveToProfile ?? false,
 		},
 	});
 }
@@ -517,6 +498,27 @@ export async function finalizeAndEnqueue(
 			jobProgressId,
 		},
 	});
+
+	if (campaign.saveToProfile) {
+		const withAccount = await prisma.emailCampaignRecipient.findMany({
+			where: { campaignId: id, userId: { not: null } },
+			select: { userId: true },
+			distinct: ["userId"],
+		});
+		await createCampaignAnnouncement({
+			campaignId: id,
+			createdById,
+			subject: campaign.subject,
+			bodySource: campaign.bodySource,
+			renderedBodyTemplate: campaignAnnouncementBody(
+				campaign.format,
+				campaign.bodySource,
+				rendered.body,
+			),
+			dataColumns: parseDataColumns(campaign.dataColumns),
+			userIds: withAccount.flatMap((r) => (r.userId ? [r.userId] : [])),
+		});
+	}
 
 	await ensureQueueAndSend(
 		"bulk-email",

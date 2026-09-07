@@ -1,18 +1,22 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
+import { nameDisagreements, sheetLine } from "@/shared/lib/sheet-analysis";
+import type {
+	Sheet,
+	SheetMatchResult,
+	SheetProblem,
+} from "@/shared/lib/sheet-mapping";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import { nameDisagreements, sheetLine } from "../../lib/sheet-analysis";
-import type { Sheet, SheetMatchResult } from "../../validations";
 
 const LIST_LIMIT = 8;
 
-function problemText(
-	problem: SheetMatchResult["problems"][number],
-	sheet: Sheet,
-): string {
+function problemText(problem: SheetProblem, sheet: Sheet): string {
 	if (problem.kind === "invalidEmail") {
 		return `Row ${sheetLine(sheet, problem.row)}: “${problem.value}” is not an email address`;
+	}
+	if (problem.kind === "noAccount") {
+		return `Row ${sheetLine(sheet, problem.row)}: ${problem.email} has no account in Suberus`;
 	}
 	return `${problem.email} appears in rows ${problem.rows
 		.map((r) => sheetLine(sheet, r))
@@ -27,6 +31,8 @@ function More({ hidden }: { hidden: number }) {
 interface MatchStepProps {
 	sheet: Sheet;
 	result: SheetMatchResult;
+	problems: SheetProblem[];
+	allowUnmatched: boolean;
 	unmatched: "add" | "skip";
 	recipientCount: number;
 	onUnmatched: (value: "add" | "skip") => void;
@@ -35,6 +41,8 @@ interface MatchStepProps {
 export function MatchStep({
 	sheet,
 	result,
+	problems,
+	allowUnmatched,
 	unmatched,
 	recipientCount,
 	onUnmatched,
@@ -43,18 +51,18 @@ export function MatchStep({
 	const unknown = result.rows.filter((r) => r.kind === "unknown");
 	const disagreements = nameDisagreements(sheet, result.rows);
 
-	if (result.problems.length > 0) {
+	if (problems.length > 0) {
 		return (
 			<Alert data-testid="sheet-problems" variant="destructive">
 				<AlertTitle>Correct the file before importing it</AlertTitle>
 				<AlertDescription>
 					<ul className="max-h-40 list-disc space-y-1 overflow-y-auto pl-4">
-						{result.problems.slice(0, LIST_LIMIT).map((problem) => (
+						{problems.slice(0, LIST_LIMIT).map((problem) => (
 							<li key={problemText(problem, sheet)}>
 								{problemText(problem, sheet)}
 							</li>
 						))}
-						<More hidden={result.problems.length - LIST_LIMIT} />
+						<More hidden={problems.length - LIST_LIMIT} />
 					</ul>
 				</AlertDescription>
 			</Alert>
@@ -77,7 +85,7 @@ export function MatchStep({
 				)}
 			</p>
 
-			{unknown.length > 0 && (
+			{allowUnmatched && unknown.length > 0 && (
 				<div className="space-y-2">
 					<Label>Addresses with no account</Label>
 					<RadioGroup

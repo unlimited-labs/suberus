@@ -2,6 +2,7 @@ import { IconAlertTriangle, IconBuildingStore } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { AnnouncementInboxCard } from "@/features/announcements/components/announcement-inbox-card";
 import { exhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import {
 	exhibitorPanelConfigQueryOptions,
@@ -49,6 +50,7 @@ function ExhibitorPage() {
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-3xl space-y-6">
+					<AnnouncementInboxCard />
 					{exhibitor ? (
 						<>
 							<ExhibitorStatusCard

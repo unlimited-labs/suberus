@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { env } from "@/env";
 import { activityLogMcpTools } from "@/features/activity-log/mcp/tools";
+import { announcementMcpTools } from "@/features/announcements/mcp/tools";
 import { auth, MCP_RESOURCE } from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
 import { bulkEmailMcpTools } from "@/features/bulk-email/mcp/tools";
@@ -26,6 +27,7 @@ const handler = createSuberusMcpHandler({
 		...activityLogMcpTools,
 		...plannerMcpTools,
 		...bulkEmailMcpTools,
+		...announcementMcpTools,
 	],
 	allowedHostnames: [baseUrl.hostname],
 });

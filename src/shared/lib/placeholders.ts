@@ -42,7 +42,7 @@ export interface RecipientSnapshot {
 	data: Record<string, string>;
 }
 
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
 	return str
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
@@ -125,3 +125,8 @@ export const SAMPLE_VALUES = {
 	lastName: "Lovelace",
 	title: "On the Analytical Engine",
 } satisfies PlaceholderValues;
+
+export interface PlaceholderIssues {
+	unknown: string[];
+	missing: Array<{ key: string; count: number; sample: string[] }>;
+}
