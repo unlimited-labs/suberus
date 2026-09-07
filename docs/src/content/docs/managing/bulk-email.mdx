@@ -124,6 +124,7 @@ same set of files.
 | **Save draft** | Stores your edits without sending. You can return to the draft later. |
 | **Send test** | Sends one copy to your own address with sample placeholder values. |
 | **Send campaign** | Asks for confirmation (the send cannot be stopped once started), then renders the final body, queues the campaign, and starts delivery. |
+| **SENT badge** | Shown next to a recipient once their message went out. Hover it for an envelope icon, click to read the delivered copy — final subject, delivery time, and the body with that person's placeholder values already filled in. Campaigns sent before this archive existed show a plain badge that does not open. |
 | **Copy to new draft** | Shown once a campaign has been sent: clones the subject, body, format, Reply-To, attachments, and the exact recipient list into a fresh draft you can edit and resend. |
 
 ## Placeholders
@@ -161,6 +162,20 @@ The **Email campaigns** page lists past campaigns with their status, sent/total 
 and date. Open one to see its content and the per-recipient delivery result
 (sent / failed). A sent campaign is read-only, but **Copy to new draft** clones it
 (content + recipients) into an editable draft — handy for recurring announcements.
+
+## Reading a delivered message
+
+Every message Suberus sends is archived exactly as it left the server, with all
+placeholders already filled in for that one person. In the **Recipients** panel of a
+sent campaign, hover the green **SENT** badge next to someone's name — it turns into
+an envelope — and click it to open the delivered copy, with the final subject, the
+delivery time, and the body in a preview frame.
+
+🖼️ [Screenshot placeholder: the sent-message dialog opened from a recipient's SENT badge]
+
+The archive starts with campaigns sent after this feature was added; older campaigns
+show a plain **SENT** badge with nothing to open. Failed recipients have no archived
+copy either — the message never left.
 
 ## Preparing a campaign with an AI assistant
 

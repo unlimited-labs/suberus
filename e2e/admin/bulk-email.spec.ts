@@ -108,6 +108,23 @@ test.describe("Admin - Bulk Email", () => {
 			expect(bobHtml).toContain("Bob")
 			expect(bobHtml).not.toContain("{{title}}")
 
+			const previewBadge = page.getByTestId("recipient-preview-trigger").first()
+			await expect(previewBadge).toContainText("SENT")
+			await previewBadge.hover()
+			await expect(previewBadge.locator("svg")).toBeVisible()
+			await expect(previewBadge.getByText("SENT")).toBeHidden()
+			await previewBadge.click()
+			const archived = page
+				.getByTestId("sent-email-dialog")
+				.getByTestId("email-preview")
+			await expect(archived).toBeVisible()
+			const archivedBody = archived.frameLocator("iframe").locator("body")
+			await expect(archivedBody).toContainText("Alice")
+			await expect(archivedBody).toContainText("Quantum Posters")
+			await expect(archivedBody).not.toContainText("{{firstName}}")
+			await page.keyboard.press("Escape")
+			await expect(page.getByTestId("sent-email-dialog")).toBeHidden()
+
 			await page.getByTestId("copy-campaign-btn").click()
 			await page.waitForURL(
 				(url) =>

@@ -8,6 +8,8 @@ export const campaignFormatSchema = z.enum(["PLAIN", "MARKDOWN", "MJML"]);
 
 export const campaignIdInput = z.object({ id: z.uuid() });
 
+export const recipientIdInput = z.object({ recipientId: z.uuid() });
+
 export const campaignCreateInput = z.object({
 	userIds: z.array(z.uuid()).min(1, "No recipients selected"),
 });

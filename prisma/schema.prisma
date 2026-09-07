@@ -1082,6 +1082,10 @@ model EmailCampaignRecipient {
   status     String    @default("PENDING")
   error      String?
   sentAt     DateTime? @map("sent_at")
+  /// Exactly what left the SMTP transport for this recipient; null for anything
+  /// not yet sent and for campaigns sent before the archive existed.
+  renderedSubject String? @map("rendered_subject")
+  renderedBody    String? @map("rendered_body")
 
   campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 

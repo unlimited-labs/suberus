@@ -254,6 +254,7 @@ export async function getCampaign(id: string) {
 					titles: true,
 					status: true,
 					error: true,
+					renderedSubject: true,
 				},
 				orderBy: [{ email: "asc" }, { id: "asc" }],
 				take: RECIPIENT_PREVIEW_LIMIT,
@@ -264,8 +265,40 @@ export async function getCampaign(id: string) {
 	const attachments = await listCampaignAttachments(id);
 	return {
 		...campaign,
+		recipients: campaign.recipients.map(
+			({ renderedSubject, ...recipient }) => ({
+				...recipient,
+				hasRendered: renderedSubject !== null,
+			}),
+		),
 		dataColumns: parseDataColumns(campaign.dataColumns),
 		attachments,
+	};
+}
+
+/** The archived copy of one delivered mail; null while the recipient is still
+ * pending, failed, or predates the archive. */
+export async function getSentMessage(recipientId: string) {
+	const recipient = await prisma.emailCampaignRecipient.findUnique({
+		where: { id: recipientId },
+		select: {
+			email: true,
+			sentAt: true,
+			renderedSubject: true,
+			renderedBody: true,
+			campaign: { select: { format: true } },
+		},
+	});
+	if (!recipient) throw new Response("Recipient not found", { status: 404 });
+	if (recipient.renderedSubject === null || recipient.renderedBody === null) {
+		return null;
+	}
+	return {
+		email: recipient.email,
+		sentAt: recipient.sentAt,
+		subject: recipient.renderedSubject,
+		body: recipient.renderedBody,
+		isHtml: recipient.campaign.format !== "PLAIN",
 	};
 }
 

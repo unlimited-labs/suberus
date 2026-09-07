@@ -111,6 +111,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **62** — `managing/bulk-email.mdx` — *Spreadsheet import, step 1* (dropped file, email column, row preview) — `/admin/bulk-email` → **Import spreadsheet**
 - [x] **63** — `managing/bulk-email.mdx` — *Spreadsheet import, step 2* (matched counts, addresses with no account, empty cells) — same wizard, **Check recipients**
 - [x] **64** — `managing/bulk-email.mdx` — *Spreadsheet import, step 3* (columns mapped to placeholder keys with example values) — same wizard, **Map columns**
+- [ ] **65** — `managing/bulk-email.mdx` — *Delivered message dialog* (final subject, recipient, body with placeholders filled) — sent campaign → recipient's **SENT** badge
 
 ---
 

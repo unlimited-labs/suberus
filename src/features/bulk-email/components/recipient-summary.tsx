@@ -1,5 +1,8 @@
+import { IconMail } from "@tabler/icons-react";
+import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Badge } from "@/shared/ui/badge";
+import { SentEmailDialog } from "./sent-email-dialog";
 
 export interface RecipientRow {
 	id: string;
@@ -8,6 +11,7 @@ export interface RecipientRow {
 	lastName: string | null;
 	status: string;
 	error: string | null;
+	hasRendered: boolean;
 }
 
 interface RecipientSummaryProps {
@@ -41,6 +45,7 @@ export function RecipientSummary({
 	failedCount,
 }: RecipientSummaryProps) {
 	const hiddenCount = totalRecipients - recipients.length;
+	const [previewId, setPreviewId] = useState<string | null>(null);
 
 	return (
 		<div className="space-y-3 text-sm" data-testid="recipient-summary">
@@ -81,7 +86,23 @@ export function RecipientSummary({
 									{r.email}
 								</p>
 							</div>
-							{variant ? (
+							{variant && r.hasRendered ? (
+								<Badge
+									asChild
+									className="shrink-0 text-[10px]"
+									variant={variant}
+								>
+									<button
+										aria-label={`Preview the email sent to ${r.email}`}
+										data-testid="recipient-preview-trigger"
+										onClick={() => setPreviewId(r.id)}
+										type="button"
+									>
+										<span className="group-hover/badge:hidden">{r.status}</span>
+										<IconMail className="hidden group-hover/badge:block" />
+									</button>
+								</Badge>
+							) : variant ? (
 								<Badge className="shrink-0 text-[10px]" variant={variant}>
 									{r.status}
 								</Badge>
@@ -95,6 +116,11 @@ export function RecipientSummary({
 					</li>
 				) : null}
 			</ul>
+
+			<SentEmailDialog
+				onClose={() => setPreviewId(null)}
+				recipientId={previewId}
+			/>
 		</div>
 	);
 }

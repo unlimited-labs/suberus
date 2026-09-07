@@ -14,6 +14,7 @@ import {
 	duplicateCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
+	getSentMessage,
 	listCampaigns,
 	placeholderIssues,
 	previewContent,
@@ -29,6 +30,7 @@ import {
 	type campaignFormatSchema,
 	campaignIdInput,
 	campaignPreviewInput,
+	recipientIdInput,
 	sheetCampaignCreateInput,
 	sheetMatchInput,
 } from "@/features/bulk-email/validations";
@@ -50,6 +52,13 @@ export const getBulkEmailCampaign = createServerFn({ method: "GET" })
 	.validator(campaignIdInput)
 	.handler(async ({ data }) => {
 		return getCampaign(data.id);
+	});
+
+export const getBulkEmailSentMessage = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.validator(recipientIdInput)
+	.handler(async ({ data }) => {
+		return getSentMessage(data.recipientId);
 	});
 
 export const listBulkEmailCampaigns = createServerFn({ method: "GET" })
@@ -189,6 +198,14 @@ export const bulkEmailCampaignQueryOptions = (id: string) =>
 	queryOptions({
 		queryKey: ["admin", "bulk-email", id],
 		queryFn: () => getBulkEmailCampaign({ data: { id } }),
+	});
+
+/** Archived snapshot, immutable once written. */
+export const bulkEmailSentMessageQueryOptions = (recipientId: string) =>
+	queryOptions({
+		queryKey: ["admin", "bulk-email", "sent-message", recipientId] as const,
+		queryFn: () => getBulkEmailSentMessage({ data: { recipientId } }),
+		staleTime: Number.POSITIVE_INFINITY,
 	});
 
 export const bulkEmailCampaignsQueryOptions = () =>

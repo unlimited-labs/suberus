@@ -34,22 +34,32 @@ async function handleBulkEmail(jobs: Job<BulkEmailJobData>[]): Promise<void> {
 	}
 }
 
+type SendOutcome =
+	| { status: "SENT"; subject: string; body: string }
+	| { status: "FAILED"; error: string };
+
 async function recordResult(
 	campaignId: string,
 	recipientId: string,
-	status: "SENT" | "FAILED",
-	error?: string,
+	outcome: SendOutcome,
 ): Promise<void> {
 	await prisma.$transaction([
 		prisma.emailCampaignRecipient.update({
 			where: { id: recipientId },
 			data:
-				status === "SENT" ? { status, sentAt: new Date() } : { status, error },
+				outcome.status === "SENT"
+					? {
+							status: outcome.status,
+							sentAt: new Date(),
+							renderedSubject: outcome.subject,
+							renderedBody: outcome.body,
+						}
+					: { status: outcome.status, error: outcome.error },
 		}),
 		prisma.emailCampaign.update({
 			where: { id: campaignId },
 			data:
-				status === "SENT"
+				outcome.status === "SENT"
 					? { sentCount: { increment: 1 } }
 					: { failedCount: { increment: 1 } },
 		}),
@@ -62,15 +72,23 @@ async function sendToRecipient(
 	recipient: Parameters<typeof buildRecipientMail>[1] & { id: string },
 ): Promise<void> {
 	try {
-		await sendRawEmail(buildRecipientMail(content, recipient));
-		await recordResult(campaignId, recipient.id, "SENT");
+		const mail = buildRecipientMail(content, recipient);
+		await sendRawEmail(mail);
+		await recordResult(campaignId, recipient.id, {
+			status: "SENT",
+			subject: mail.subject,
+			body: mail.html ?? mail.text ?? "",
+		});
 	} catch (error) {
 		const message =
 			error instanceof Error ? error.message : "Unknown send error";
 		logger.error(
 			`[bulk-email] ${campaignId} -> ${recipient.email}: ${message}`,
 		);
-		await recordResult(campaignId, recipient.id, "FAILED", message);
+		await recordResult(campaignId, recipient.id, {
+			status: "FAILED",
+			error: message,
+		});
 	}
 }
 
