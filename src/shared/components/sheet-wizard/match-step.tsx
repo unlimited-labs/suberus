@@ -8,6 +8,7 @@ import type {
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import type { UnmatchedChoice } from "./use-sheet-wizard";
 
 const LIST_LIMIT = 8;
 
@@ -15,12 +16,29 @@ function problemText(problem: SheetProblem, sheet: Sheet): string {
 	if (problem.kind === "invalidEmail") {
 		return `Row ${sheetLine(sheet, problem.row)}: “${problem.value}” is not an email address`;
 	}
-	if (problem.kind === "noAccount") {
-		return `Row ${sheetLine(sheet, problem.row)}: ${problem.email} has no account in Suberus`;
-	}
 	return `${problem.email} appears in rows ${problem.rows
 		.map((r) => sheetLine(sheet, r))
 		.join(", ")}`;
+}
+
+const CHOICES = {
+	choose: [
+		{ value: "add", label: "Add them to the campaign anyway" },
+		{ value: "skip", label: "Leave them out" },
+	],
+	confirm: [
+		{ value: "block", label: "Stop, I will fix the file" },
+		{ value: "skip", label: "Ignore them and carry on" },
+	],
+} satisfies Record<
+	"choose" | "confirm",
+	Array<{ value: UnmatchedChoice; label: string }>
+>;
+
+function toChoice(value: string | null, fallback: UnmatchedChoice) {
+	return value === "add" || value === "skip" || value === "block"
+		? value
+		: fallback;
 }
 
 function More({ hidden }: { hidden: number }) {
@@ -32,17 +50,17 @@ interface MatchStepProps {
 	sheet: Sheet;
 	result: SheetMatchResult;
 	problems: SheetProblem[];
-	allowUnmatched: boolean;
-	unmatched: "add" | "skip";
+	unmatchedMode: "choose" | "confirm";
+	unmatched: UnmatchedChoice;
 	recipientCount: number;
-	onUnmatched: (value: "add" | "skip") => void;
+	onUnmatched: (value: UnmatchedChoice) => void;
 }
 
 export function MatchStep({
 	sheet,
 	result,
 	problems,
-	allowUnmatched,
+	unmatchedMode,
 	unmatched,
 	recipientCount,
 	onUnmatched,
@@ -85,25 +103,24 @@ export function MatchStep({
 				)}
 			</p>
 
-			{allowUnmatched && unknown.length > 0 && (
+			{unknown.length > 0 && (
 				<div className="space-y-2">
 					<Label>Addresses with no account</Label>
 					<RadioGroup
-						onValueChange={(value) =>
-							onUnmatched(value === "add" ? "add" : "skip")
-						}
+						onValueChange={(value) => onUnmatched(toChoice(value, unmatched))}
 						value={unmatched}
 					>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem id="unmatched-add" value="add" />
-							<Label htmlFor="unmatched-add">
-								Add them to the campaign anyway
-							</Label>
-						</div>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem id="unmatched-skip" value="skip" />
-							<Label htmlFor="unmatched-skip">Leave them out</Label>
-						</div>
+						{CHOICES[unmatchedMode].map((choice) => (
+							<div className="flex items-center gap-2" key={choice.value}>
+								<RadioGroupItem
+									id={`unmatched-${choice.value}`}
+									value={choice.value}
+								/>
+								<Label htmlFor={`unmatched-${choice.value}`}>
+									{choice.label}
+								</Label>
+							</div>
+						))}
 					</RadioGroup>
 					<ul className="text-muted-foreground max-h-28 overflow-y-auto text-xs">
 						{unknown.slice(0, LIST_LIMIT).map((row) => (

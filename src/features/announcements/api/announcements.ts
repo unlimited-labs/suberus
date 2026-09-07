@@ -18,6 +18,7 @@ import {
 } from "@/features/announcements/server/inbox";
 import {
 	getRecipientDraft,
+	getRecipientMessage,
 	listUserAnnouncements,
 	updateAnnouncementRecipient,
 } from "@/features/announcements/server/recipient";
@@ -124,6 +125,11 @@ export const getAnnouncementRecipientDraft = createServerFn({ method: "GET" })
 	.validator(announcementRecipientIdInput)
 	.handler(async ({ data }) => getRecipientDraft(data.recipientId));
 
+export const getAnnouncementRecipientMessage = createServerFn({ method: "GET" })
+	.middleware([adminMiddleware])
+	.validator(announcementRecipientIdInput)
+	.handler(async ({ data }) => getRecipientMessage(data.recipientId));
+
 export const updateAnnouncementRecipientFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(recipientUpdateInput)
@@ -191,6 +197,12 @@ export const userAnnouncementsQueryOptions = (userId: string) =>
 	queryOptions({
 		queryKey: ["announcements", "user", userId],
 		queryFn: () => listUserAnnouncementsFn({ data: { userId } }),
+	});
+
+export const announcementRecipientMessageQueryOptions = (recipientId: string) =>
+	queryOptions({
+		queryKey: ["announcements", "recipient-message", recipientId],
+		queryFn: () => getAnnouncementRecipientMessage({ data: { recipientId } }),
 	});
 
 export const announcementRecipientDraftQueryOptions = (recipientId: string) =>

@@ -1,5 +1,9 @@
+import { IconMail } from "@tabler/icons-react";
+import { useState } from "react";
 import type { getAnnouncementById } from "@/features/announcements/api/announcements";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Badge } from "@/shared/ui/badge";
+import { DeliveredAnnouncementDialog } from "./delivered-announcement-dialog";
 
 type Announcement = Awaited<ReturnType<typeof getAnnouncementById>>;
 type RecipientRow = Announcement["recipients"][number];
@@ -26,6 +30,7 @@ export function RecipientSummary({
 	readCount,
 }: RecipientSummaryProps) {
 	const hiddenCount = totalRecipients - recipients.length;
+	const [previewId, setPreviewId] = useState<string | null>(null);
 
 	return (
 		<div className="space-y-3 text-sm" data-testid="recipient-summary">
@@ -56,6 +61,25 @@ export function RecipientSummary({
 								{r.email}
 							</p>
 						</div>
+						{r.hasArchive ? (
+							<Badge
+								asChild
+								className="shrink-0 text-[10px]"
+								variant={r.readAt ? "default" : "secondary"}
+							>
+								<button
+									aria-label={`Preview what ${r.email} sees`}
+									data-testid="recipient-preview-trigger"
+									onClick={() => setPreviewId(r.id)}
+									type="button"
+								>
+									<span className="group-hover/badge:hidden">
+										{r.readAt ? "READ" : "UNREAD"}
+									</span>
+									<IconMail className="hidden group-hover/badge:block" />
+								</button>
+							</Badge>
+						) : null}
 					</li>
 				))}
 				{hiddenCount > 0 ? (
@@ -64,6 +88,11 @@ export function RecipientSummary({
 					</li>
 				) : null}
 			</ul>
+
+			<DeliveredAnnouncementDialog
+				onClose={() => setPreviewId(null)}
+				recipientId={previewId}
+			/>
 		</div>
 	);
 }

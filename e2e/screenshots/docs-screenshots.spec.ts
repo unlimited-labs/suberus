@@ -1576,7 +1576,9 @@ test.describe("announcements", () => {
 		});
 		await expect(page.getByTestId("sheet-preview")).toBeVisible({ timeout: 10000 });
 		await page.getByTestId("sheet-check-btn").click();
-		await expect(page.getByTestId("sheet-problems")).toBeVisible({ timeout: 10000 });
+		await expect(
+			page.getByRole("radio", { name: "Ignore them and carry on" }),
+		).toBeVisible({ timeout: 10000 });
 		await shot(page, "67-managing-announcements-sheet-check.png", { full: false });
 	});
 

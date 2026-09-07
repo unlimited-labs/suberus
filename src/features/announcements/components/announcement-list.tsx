@@ -36,7 +36,6 @@ export function AnnouncementList() {
 				</Button>
 			</PageHeader>
 			<SheetWizardDialog
-				allowUnmatched={false}
 				createErrorMessage="Could not create the announcement"
 				createFromSheet={async (data) => {
 					const { announcementId } = await createAnnouncementDraftFromSheet({
@@ -57,6 +56,7 @@ export function AnnouncementList() {
 				onOpenChange={setImportOpen}
 				open={importOpen}
 				parseSheet={(body) => parseAnnouncementSheet({ data: body })}
+				unmatchedMode="confirm"
 			/>
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl">

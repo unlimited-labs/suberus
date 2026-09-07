@@ -162,7 +162,7 @@ test.describe("Admin - Announcements", () => {
 		}
 	})
 
-	test("blocks a spreadsheet row whose address has no account", async ({
+	test("waits for the admin to ignore rows with no account", async ({
 		page,
 		testRun,
 	}) => {
@@ -189,22 +189,14 @@ test.describe("Admin - Announcements", () => {
 			)
 			await page.getByTestId("sheet-check-btn").click()
 
-			await expect(page.getByTestId("sheet-problems")).toContainText(strangerEmail)
+			await expect(page.getByTestId("sheet-counts")).toContainText(
+				"1 of 2 have an account",
+			)
+			await expect(page.getByText(strangerEmail)).toBeVisible()
+			// Blocked until the admin says the strangers may be dropped.
 			await expect(page.getByTestId("sheet-map-btn")).toHaveCount(0)
 
-			// Same file without the stranger goes through.
-			await page.getByRole("button", { name: "Back" }).click()
-			await page.getByRole("button", { name: "Remove file" }).click()
-			await page.locator('input[type="file"]').setInputFiles(
-				sheetFile([
-					["Imię", "Mail", "Pokój"],
-					["Karol", known.email, "A-12"],
-				]),
-			)
-			await page.getByTestId("sheet-check-btn").click()
-			await expect(page.getByTestId("sheet-counts")).toContainText(
-				"1 of 1 have an account",
-			)
+			await page.getByRole("radio", { name: "Ignore them and carry on" }).click()
 			await page.getByTestId("sheet-map-btn").click()
 
 			await page.getByTestId("sheet-target-2").click()
@@ -219,10 +211,20 @@ test.describe("Admin - Announcements", () => {
 			await page.getByTestId("announcement-body").fill("You are in {{room}}.")
 			await publish(page)
 
-			const row = await db.announcementRecipient.findFirst({
+			const rows = await db.announcementRecipient.findMany({
 				where: { announcementId },
 			})
-			expect(row?.renderedBody).toContain("A-12")
+			expect(
+				rows,
+				"the ignored address must not become a recipient",
+			).toHaveLength(1)
+			expect(rows[0]?.renderedBody).toContain("A-12")
+
+			// The composer offers the same per-recipient preview as a sent email.
+			await page.getByTestId("recipient-preview-trigger").click()
+			await expect(
+				page.getByTestId("delivered-announcement-dialog"),
+			).toContainText("A-12")
 		} finally {
 			if (announcementId) {
 				await db.announcement.delete({ where: { id: announcementId } }).catch(() => {})

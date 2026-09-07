@@ -44,6 +44,29 @@ export async function listUserAnnouncements(
 	);
 }
 
+/** What one recipient actually got; null while the announcement is a draft. */
+export async function getRecipientMessage(recipientId: string) {
+	const row = await prisma.announcementRecipient.findUnique({
+		where: { id: recipientId },
+		select: {
+			renderedSubject: true,
+			renderedBody: true,
+			publishedAt: true,
+			readAt: true,
+			user: { select: { email: true } },
+		},
+	});
+	if (!row) throw new Response("Recipient not found", { status: 404 });
+	if (row.renderedSubject === null || row.renderedBody === null) return null;
+	return {
+		email: row.user.email,
+		subject: row.renderedSubject,
+		body: row.renderedBody,
+		publishedAt: row.publishedAt,
+		readAt: row.readAt,
+	};
+}
+
 /** The markdown to seed the per-recipient editor with: their override, or the
  * announcement's own body with this recipient's placeholders already resolved. */
 export async function getRecipientDraft(recipientId: string) {

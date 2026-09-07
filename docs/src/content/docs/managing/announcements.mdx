@@ -44,8 +44,9 @@ profile afterwards won't change what an already-published announcement says.
 When the message has to carry a different value for each person — a room number, a slot
 time — start from a spreadsheet instead. On **Announcements**, click **Import
 spreadsheet**. The wizard is the same three steps as the email one, with one difference:
-an address with no Suberus account stops the import instead of offering to add the
-person anyway. Remove those rows from the file and upload it again.
+an address with no Suberus account cannot be added, only dropped. When the file has any,
+the import stops and asks: **Stop, I will fix the file** (the default) or **Ignore them
+and carry on**, which leaves those people out and continues with the rest.
 
 ![Spreadsheet import, checking who has an account](../../../assets/screenshots/67-managing-announcements-sheet-check.png)
 
@@ -54,11 +55,12 @@ person anyway. Remove those rows from the file and upload it again.
 | **File** | One `.xlsx` or `.xls` file, up to **5 MB** and 5000 rows. Only the first sheet is read. The file is checked by its actual content, so a renamed file is rejected. |
 | **Header row** | Found automatically: the first row with at least two filled cells. A title line and blank rows above the table are ignored. |
 | **Email column** | Which column holds the addresses. Guessed from the content, changeable. Addresses are compared without regard to case or surrounding spaces. |
+| **Addresses with no account** | **Stop, I will fix the file** (default) or **Ignore them and carry on**, which drops those rows and imports the rest. There is no option to add them: an announcement is read inside Suberus. |
 | **Use as** | Per column: **Skip** or **New placeholder** (becomes a token in the message). The first name and last name options do not appear here — every recipient already has an account, and the account's own name wins. |
 | **Placeholder key** | The token name, filled in from the heading. Letters, digits and underscores, starting with a letter. It cannot be `firstName`, `lastName` or `title`, and two columns cannot claim the same key. |
 
-Three things stop the import: a cell that is not an email address, the same address
-twice, and an address with no Suberus account.
+Two things stop the import outright: a cell that is not an email address, and the same
+address twice. Correct the file and upload it again.
 
 ## Writing and publishing
 
@@ -101,7 +103,7 @@ reset their read mark.
 |---|---|
 | **Read / Unread** | Whether that person has marked the announcement as read. |
 | **Email copy** | Marks a message that arrived through an email campaign with **Save in user profile**. |
-| **Preview** | Shows the announcement exactly as that person sees it. |
+| **Preview** | Shows the announcement exactly as that person sees it. The **Recipients** panel on the announcement page offers the same preview, from the badge next to each name. |
 | **Edit** | Rewrites the subject and body for this recipient only. Markdown, with a live preview. Not offered on an **Email copy** — its body is email markup, which this editor would mangle. |
 
 ## Placeholders

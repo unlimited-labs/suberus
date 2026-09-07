@@ -6,7 +6,7 @@ interface StepFooterProps {
 	busy: boolean;
 	canCreate: boolean;
 	recipientCount: number;
-	problemCount: number;
+	blocked: boolean;
 	createLabel: string;
 	onBack: () => void;
 	onNext: () => void;
@@ -18,7 +18,7 @@ export function StepFooter({
 	busy,
 	canCreate,
 	recipientCount,
-	problemCount,
+	blocked,
 	createLabel,
 	onBack,
 	onNext,
@@ -41,7 +41,7 @@ export function StepFooter({
 					<Button disabled={busy} onClick={onBack} variant="outline">
 						Back
 					</Button>
-					{problemCount === 0 && (
+					{!blocked && (
 						<Button
 							data-testid="sheet-map-btn"
 							disabled={busy || recipientCount === 0}

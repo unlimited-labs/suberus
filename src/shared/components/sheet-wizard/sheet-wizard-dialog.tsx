@@ -67,19 +67,18 @@ export function SheetWizardDialog<Payload>({
 				)}
 				{state.step === "match" && (
 					<MatchStep
-						allowUnmatched={wizard.allowUnmatched}
 						onUnmatched={wizard.setUnmatched}
 						problems={wizard.problems}
 						recipientCount={wizard.recipientCount}
 						result={state.result}
 						sheet={state.sheet}
 						unmatched={state.unmatched}
+						unmatchedMode={wizard.unmatchedMode}
 					/>
 				)}
 				{state.step === "mapping" && (
 					<MappingStep
 						allowNames={
-							wizard.allowUnmatched &&
 							state.unmatched === "add" &&
 							state.result.rows.some((r) => r.kind === "unknown")
 						}
@@ -92,13 +91,13 @@ export function SheetWizardDialog<Payload>({
 
 				<DialogFooter>
 					<StepFooter
+						blocked={wizard.problems.length > 0 || wizard.unresolvedUnmatched}
 						busy={wizard.busy}
 						canCreate={wizard.canCreate}
 						createLabel={wizard.createLabel}
 						onBack={wizard.back}
 						onCreate={wizard.create}
 						onNext={state.step === "upload" ? wizard.toMatch : wizard.toMapping}
-						problemCount={wizard.problems.length}
 						recipientCount={wizard.recipientCount}
 						state={state}
 					/>

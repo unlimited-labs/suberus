@@ -135,9 +135,7 @@ export type MatchedRow =
 
 export type SheetProblem =
 	| { kind: "invalidEmail"; row: number; value: string }
-	| { kind: "duplicateEmail"; email: string; rows: number[] }
-	/** Raised only by importers that cannot take an address without an account. */
-	| { kind: "noAccount"; row: number; email: string };
+	| { kind: "duplicateEmail"; email: string; rows: number[] };
 
 export interface EmptyCellWarning {
 	column: number;

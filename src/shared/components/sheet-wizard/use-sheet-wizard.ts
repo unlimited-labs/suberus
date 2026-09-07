@@ -7,8 +7,14 @@ import type {
 	MappingTarget,
 	Sheet,
 	SheetMatchResult,
-	SheetProblem,
 } from "@/shared/lib/sheet-mapping";
+
+/**
+ * What to do with an address that has no Suberus account. "block" is the
+ * unresolved state an importer that cannot take strangers starts in, so the
+ * admin has to say out loud that those people are dropped.
+ */
+export type UnmatchedChoice = "add" | "skip" | "block";
 
 export type MappingRow = {
 	column: number;
@@ -20,7 +26,7 @@ type Matched = {
 	sheet: Sheet;
 	emailColumn: number;
 	result: SheetMatchResult;
-	unmatched: "add" | "skip";
+	unmatched: UnmatchedChoice;
 };
 
 export type WizardState =
@@ -48,8 +54,9 @@ export interface SheetWizardOptions<Payload> {
 	createSchema: z.ZodType<Payload>;
 	createFromSheet: (payload: Payload) => Promise<string>;
 	onCreated: (id: string) => Promise<void> | void;
-	/** false: an address with no account blocks the import instead of joining it. */
-	allowUnmatched?: boolean;
+	/** "choose": add them or leave them out. "confirm": they can only be ignored,
+	 * and the import waits until the admin says so. */
+	unmatchedMode?: "choose" | "confirm";
 	createLabel: string;
 	createErrorMessage: string;
 }
@@ -60,6 +67,7 @@ function createPayload(state: WizardState) {
 		sheet: state.sheet,
 		emailColumn: state.emailColumn,
 		unmatched: state.unmatched,
+		ignoreUnmatched: state.unmatched === "skip",
 		mapping: state.mapping.flatMap((row) =>
 			row.target.kind === "skip"
 				? []
@@ -68,16 +76,8 @@ function createPayload(state: WizardState) {
 	};
 }
 
-function noAccountProblems(result: SheetMatchResult): SheetProblem[] {
-	return result.rows.flatMap((row) =>
-		row.kind === "unknown"
-			? [{ kind: "noAccount" as const, row: row.row, email: row.email }]
-			: [],
-	);
-}
-
 export function useSheetWizard<Payload>(options: SheetWizardOptions<Payload>) {
-	const allowUnmatched = options.allowUnmatched ?? true;
+	const unmatchedMode = options.unmatchedMode ?? "choose";
 	const [state, setState] = useState<WizardState>({
 		step: "upload",
 		picked: null,
@@ -99,32 +99,30 @@ export function useSheetWizard<Payload>(options: SheetWizardOptions<Payload>) {
 
 	const payload = createPayload(state);
 	const parsed = payload ? options.createSchema.safeParse(payload) : null;
-	const problems =
-		state.step === "upload"
-			? []
-			: [
-					...state.result.problems,
-					...(allowUnmatched ? [] : noAccountProblems(state.result)),
-				];
+	const problems = state.step === "upload" ? [] : state.result.problems;
+	const unresolvedUnmatched =
+		state.step !== "upload" &&
+		state.unmatched === "block" &&
+		state.result.rows.some((row) => row.kind === "unknown");
 	const recipientCount =
 		state.step === "upload"
 			? 0
 			: state.result.rows.filter(
-					(row) =>
-						row.kind === "user" ||
-						(allowUnmatched && state.unmatched === "add"),
+					(row) => row.kind === "user" || state.unmatched === "add",
 				).length;
 
 	return {
 		state,
 		busy,
-		allowUnmatched,
+		unmatchedMode,
 		problems,
+		unresolvedUnmatched,
 		stepIndex: STEP_INDEX[state.step],
 		recipientCount,
 		createLabel: options.createLabel,
 		mappingError: parsed?.error?.issues[0]?.message ?? null,
-		canCreate: Boolean(parsed?.success) && recipientCount > 0,
+		canCreate:
+			Boolean(parsed?.success) && recipientCount > 0 && !unresolvedUnmatched,
 
 		reset: () => setState({ step: "upload", picked: null }),
 
@@ -161,11 +159,11 @@ export function useSheetWizard<Payload>(options: SheetWizardOptions<Payload>) {
 					sheet,
 					emailColumn,
 					result,
-					unmatched: "skip",
+					unmatched: unmatchedMode === "confirm" ? "block" : "skip",
 				});
 			}, "Could not check the recipients"),
 
-		setUnmatched: (unmatched: "add" | "skip") =>
+		setUnmatched: (unmatched: UnmatchedChoice) =>
 			setState((prev) =>
 				prev.step === "upload" ? prev : { ...prev, unmatched },
 			),

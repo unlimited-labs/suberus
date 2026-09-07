@@ -71,7 +71,7 @@ const matchSheet = defineTool({
 	name: "announcement_sheet_match",
 	title: "Match spreadsheet rows to accounts",
 	description:
-		"Given the columns and rows of a spreadsheet and which column holds the email address, report which rows belong to a Suberus account. Announcements need an account, so any row reported as kind 'unknown' must be removed from the file before announcement_draft_create_from_sheet will accept it.",
+		"Given the columns and rows of a spreadsheet and which column holds the email address, report which rows belong to a Suberus account. Announcements need an account, so a row reported as kind 'unknown' is either removed from the file or dropped by passing ignoreUnmatched to announcement_draft_create_from_sheet.",
 	input: sheetMatchInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_ANNOUNCEMENTS,
@@ -85,7 +85,7 @@ const createFromSheet = defineTool({
 	name: "announcement_draft_create_from_sheet",
 	title: "Create announcement from a spreadsheet",
 	description:
-		"Create a draft from spreadsheet rows, turning the columns you map to 'data' into per-recipient placeholders. Every address must already have a Suberus account — unlike an email campaign, an announcement cannot reach a stranger. Check first with announcement_sheet_match.",
+		"Create a draft from spreadsheet rows, turning the columns you map to 'data' into per-recipient placeholders. Only addresses that already have a Suberus account become recipients — unlike an email campaign, an announcement cannot reach a stranger. Rows without an account are refused unless you pass ignoreUnmatched: true, which drops them. Check first with announcement_sheet_match.",
 	input: sheetAnnouncementCreateInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_ANNOUNCEMENTS,

@@ -36,6 +36,8 @@ export const recipientUpdateInput = z.object({
 export const sheetAnnouncementCreateInput = sheetCreateShape
 	.omit({ unmatched: true, mapping: true })
 	.extend({
+		/** Addresses with no Suberus account are dropped; must be said explicitly. */
+		ignoreUnmatched: z.boolean().default(false),
 		mapping: z.array(
 			z.object({
 				column: z.number().int().min(0),

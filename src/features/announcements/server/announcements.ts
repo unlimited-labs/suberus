@@ -78,12 +78,15 @@ export async function createAnnouncementFromSheet(
 	createdById: string,
 ): Promise<{ announcementId: string; totalRecipients: number }> {
 	const match = await matchSheetRows(input);
+	if (match.problems.length > 0) {
+		throw new Response("Fix the spreadsheet problems before importing", {
+			status: 400,
+		});
+	}
 	const strangers = match.rows.filter((r) => r.kind === "unknown");
-	if (match.problems.length > 0 || strangers.length > 0) {
+	if (strangers.length > 0 && !input.ignoreUnmatched) {
 		throw new Response(
-			strangers.length > 0
-				? "Every address must belong to a Suberus account"
-				: "Fix the spreadsheet problems before importing",
+			`${strangers.length} address(es) have no Suberus account; set ignoreUnmatched to drop them`,
 			{ status: 400 },
 		);
 	}
@@ -139,6 +142,7 @@ export async function getAnnouncement(id: string) {
 					lastName: true,
 					titles: true,
 					readAt: true,
+					renderedSubject: true,
 					user: { select: { email: true } },
 				},
 				orderBy: [{ id: "asc" }],
@@ -155,10 +159,13 @@ export async function getAnnouncement(id: string) {
 	return {
 		...announcement,
 		readCount,
-		recipients: announcement.recipients.map(({ user, ...recipient }) => ({
-			...recipient,
-			email: user.email,
-		})),
+		recipients: announcement.recipients.map(
+			({ user, renderedSubject, ...recipient }) => ({
+				...recipient,
+				email: user.email,
+				hasArchive: renderedSubject !== null,
+			}),
+		),
 		dataColumns: parseDataColumns(announcement.dataColumns),
 	};
 }
