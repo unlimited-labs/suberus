@@ -140,14 +140,20 @@ export const getMyAnnouncementFn = createServerFn({ method: "GET" })
 	.middleware([authMiddleware])
 	.validator(announcementRecipientIdInput)
 	.handler(async ({ data, context }) =>
-		getMyAnnouncement(context.user.id, data.recipientId),
+		getMyAnnouncement({
+			userId: context.user.id,
+			recipientId: data.recipientId,
+		}),
 	);
 
 export const markMyAnnouncementRead = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(announcementRecipientIdInput)
 	.handler(async ({ data, context }) => {
-		await markAnnouncementRead(context.user.id, data.recipientId);
+		await markAnnouncementRead({
+			userId: context.user.id,
+			recipientId: data.recipientId,
+		});
 		return { ok: true as const };
 	});
 

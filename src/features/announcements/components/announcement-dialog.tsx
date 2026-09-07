@@ -63,9 +63,9 @@ export function AnnouncementDialog({
 			<DialogContent className="sm:max-w-2xl" data-testid="announcement-dialog">
 				<DialogHeader>
 					<DialogTitle data-testid="announcement-dialog-subject">
-						{data?.renderedSubject ?? "Announcement"}
+						{data ? data.subject : "Announcement"}
 					</DialogTitle>
-					{data?.publishedAt ? (
+					{data ? (
 						<DialogDescription>
 							{formatDateTime(data.publishedAt)}
 						</DialogDescription>
@@ -82,9 +82,9 @@ export function AnnouncementDialog({
 							<Skeleton className="h-4 w-5/6" />
 							<Skeleton className="h-4 w-2/3" />
 						</div>
-					) : (
-						<div className={PROSE_CLASS}>{parse(data?.renderedBody ?? "")}</div>
-					)}
+					) : data ? (
+						<div className={PROSE_CLASS}>{parse(data.body)}</div>
+					) : null}
 				</div>
 
 				<DialogFooter>

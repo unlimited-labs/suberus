@@ -49,7 +49,6 @@ export function AnnouncementInboxCard() {
 				<ul className="-my-1 divide-y" data-testid="announcement-inbox">
 					{data.map((a) => {
 						const isUnread = a.readAt === null;
-						const published = a.publishedAt ? new Date(a.publishedAt) : null;
 						return (
 							<li key={a.id}>
 								<button
@@ -70,13 +69,12 @@ export function AnnouncementInboxCard() {
 											isUnread && "text-foreground font-medium",
 										)}
 									>
-										{a.renderedSubject}
+										{a.subject}
 									</span>
-									{published ? (
-										<span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-											{relativeDays(published, now) ?? formatDate(published)}
-										</span>
-									) : null}
+									<span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+										{relativeDays(a.publishedAt, now) ??
+											formatDate(a.publishedAt)}
+									</span>
 								</button>
 							</li>
 						);

@@ -4,9 +4,16 @@ import {
 	recipientValues,
 } from "@/shared/lib/placeholders";
 import { prisma } from "@/shared/server/db.server";
+import type { PublishedAnnouncementBody } from "./inbox";
 import { markdownToAnnouncementHtml } from "./sanitize";
 
-export async function listUserAnnouncements(userId: string) {
+export interface UserAnnouncement extends PublishedAnnouncementBody {
+	fromCampaign: boolean;
+}
+
+export async function listUserAnnouncements(
+	userId: string,
+): Promise<UserAnnouncement[]> {
 	const rows = await prisma.announcementRecipient.findMany({
 		where: { userId, publishedAt: { not: null } },
 		select: {
@@ -19,10 +26,22 @@ export async function listUserAnnouncements(userId: string) {
 		},
 		orderBy: { publishedAt: "desc" },
 	});
-	return rows.map(({ announcement, ...row }) => ({
-		...row,
-		fromCampaign: announcement.sourceCampaignId !== null,
-	}));
+	return rows.flatMap((row) =>
+		row.publishedAt === null ||
+		row.renderedSubject === null ||
+		row.renderedBody === null
+			? []
+			: [
+					{
+						id: row.id,
+						subject: row.renderedSubject,
+						body: row.renderedBody,
+						publishedAt: row.publishedAt,
+						readAt: row.readAt,
+						fromCampaign: row.announcement.sourceCampaignId !== null,
+					},
+				],
+	);
 }
 
 /** The markdown to seed the per-recipient editor with: their override, or the

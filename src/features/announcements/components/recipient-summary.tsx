@@ -1,12 +1,8 @@
+import type { getAnnouncementById } from "@/features/announcements/api/announcements";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 
-export interface RecipientRow {
-	id: string;
-	email: string;
-	firstName: string | null;
-	lastName: string | null;
-	readAt: Date | null;
-}
+type Announcement = Awaited<ReturnType<typeof getAnnouncementById>>;
+type RecipientRow = Announcement["recipients"][number];
 
 interface RecipientSummaryProps {
 	/** Capped preview list (see RECIPIENT_PREVIEW_LIMIT), not necessarily all. */

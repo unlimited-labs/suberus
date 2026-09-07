@@ -42,11 +42,9 @@ export function UserAnnouncementsSection({
 						key={a.id}
 					>
 						<div className="min-w-0 flex-1">
-							<p className="truncate text-sm font-medium">
-								{a.renderedSubject}
-							</p>
+							<p className="truncate text-sm font-medium">{a.subject}</p>
 							<p className="text-muted-foreground text-xs">
-								{a.publishedAt ? formatDateTime(a.publishedAt) : ""}
+								{formatDateTime(a.publishedAt)}
 							</p>
 						</div>
 						{a.fromCampaign ? (
@@ -86,11 +84,11 @@ export function UserAnnouncementsSection({
 			>
 				<DialogContent className="sm:max-w-2xl">
 					<DialogHeader>
-						<DialogTitle>{previewed?.renderedSubject ?? ""}</DialogTitle>
+						<DialogTitle>{previewed?.subject ?? ""}</DialogTitle>
 					</DialogHeader>
 					<div className="max-h-[60vh] overflow-y-auto">
 						<div className={PROSE_CLASS}>
-							{parse(previewed?.renderedBody ?? "")}
+							{previewed ? parse(previewed.body) : null}
 						</div>
 					</div>
 				</DialogContent>
