@@ -22,7 +22,9 @@ export function AnnouncementInboxCard() {
 	const { data } = useQuery(myAnnouncementsQueryOptions());
 	const { formatDate } = useDateFormat();
 	const [openId, setOpenId] = useState<string | null>(null);
-	const now = Date.now();
+	// Read once at mount, not on every render: Date.now() during render is impure
+	// and blocks the compiler. "Today" not ageing mid-session is the right trade.
+	const [now] = useState(() => Date.now());
 
 	if (!data || data.length === 0) return null;
 
