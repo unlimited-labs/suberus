@@ -78,6 +78,8 @@ Settings tabs deep-link via `?tab=<id>`.
 - [x] **45** — `managing/documents.mdx` — *Generated documents tab* (status filters + table) — `/admin/documents?tab=generated`
 - [x] **46** — `managing/documents.mdx` — *Bulk generate dialog* (review: resolvable vs skipped) — `/admin/users` → Bulk actions → Generate document
 - [x] **47** — `managing/documents.mdx` — *Participant My Documents* — `/documents` *(user-authenticated context)*
+- [ ] **72** — `managing/documents.mdx` — *Add-document dialog, Upload a PDF tab* (file, title, sign/notify) — `/admin/users/:id` → **Add document** → **Upload a PDF**
+- [ ] **73** — `managing/documents.mdx` — *Import ZIP dialog* (archive, shared title, imported/skipped summary) — `/admin/documents?tab=generated` → **Import ZIP**
 
 ---
 

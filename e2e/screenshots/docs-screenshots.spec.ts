@@ -1184,6 +1184,29 @@ test.describe("docs screenshots", () => {
 		await shot(page, "44-managing-documents-generate.png", { full: false });
 	});
 
+	test("72 documents upload a pdf", async ({ page }) => {
+		const db = getPrisma();
+		const maria = await db.user.findUniqueOrThrow({
+			where: { email: "maria.kowalska@example.org" },
+		});
+		await page.goto(`/admin/users/${maria.id}`);
+		await page.getByTestId("add-document-button").click();
+		await page.getByTestId("document-mode-upload").click();
+		await page.getByTestId("document-title-input").fill("Invoice FV-2026-014");
+		await page.waitForTimeout(300);
+		await shot(page, "72-managing-documents-upload.png", { full: false });
+	});
+
+	test("73 documents import zip", async ({ page }) => {
+		await page.goto("/admin/documents?tab=generated");
+		await page.getByTestId("import-documents-open").click();
+		await page
+			.getByTestId("import-title-input")
+			.fill("Certificate of attendance");
+		await page.waitForTimeout(300);
+		await shot(page, "73-managing-documents-import-zip.png", { full: false });
+	});
+
 	test("45 documents generated list", async ({ page }) => {
 		await page.goto("/admin/documents?tab=generated");
 		await page.waitForTimeout(500);

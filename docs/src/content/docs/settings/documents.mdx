@@ -1,6 +1,6 @@
 ---
 title: Documents
-description: Digitally sign generated PDF documents with the conference's identity.
+description: Digitally sign the PDF documents issued to participants with the conference's identity.
 sidebar:
   order: 16
 ---
@@ -90,12 +90,16 @@ Because verification is bound to your **current** certificate, replacing it
 read as **“Not issued by this conference”** — including copies recipients have
 already downloaded, which can't be recalled. You'll be asked to confirm; on
 confirm, documents still stored here are **re-signed with the new certificate**
-and the recipients re-notified. Re-share those re-issued copies.
+and the recipients re-notified. This covers **uploaded** documents as well as
+generated ones — Suberus keeps the PDF exactly as you supplied it and re-signs
+from that original, so a document imported with its notification switched off will
+still e-mail its owner when the certificate is replaced. Re-share those re-issued
+copies.
 </Aside>
 
 ## Related
 
 <CardGrid>
-	<LinkCard title="Documents (managing)" href="/managing/documents/" description="Templates, single and bulk document generation." />
+	<LinkCard title="Documents (managing)" href="/managing/documents/" description="Templates, generation, and uploading ready-made PDFs." />
 	<LinkCard title="Branding" href="/settings/branding/" description="Logo, colors and login-page branding." />
 </CardGrid>
