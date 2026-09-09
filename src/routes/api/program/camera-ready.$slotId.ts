@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { isScheduleVisible } from "@/features/planner/server/schedule";
+import { isFileContentFormat } from "@/features/settings/server/settings";
 import { cameraReadyFileResponse } from "@/features/submissions/server/camera-ready";
 import { isUuid } from "@/shared/lib/uuid";
 import { prisma } from "@/shared/server/db.server";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/api/program/camera-ready/$slotId")({
 					select: {
 						submission: {
 							select: {
+								type: true,
 								cameraReadyFile: {
 									select: { storageKey: true, originalName: true },
 								},
@@ -29,7 +31,11 @@ export const Route = createFileRoute("/api/program/camera-ready/$slotId")({
 					},
 				});
 
-				return cameraReadyFileResponse(slot?.submission.cameraReadyFile);
+				if (!slot || !(await isFileContentFormat(slot.submission.type))) {
+					return new Response("Not found", { status: 404 });
+				}
+
+				return cameraReadyFileResponse(slot.submission.cameraReadyFile);
 			},
 		},
 	},

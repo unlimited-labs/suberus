@@ -13,9 +13,11 @@ import {
 import {
 	type AppSettingsMap,
 	SUBMISSION_TYPE_KEYS,
+	SUBMISSION_TYPE_TO_KEY,
 	type SubmissionTypeConfig,
 	type SubmissionTypeKey,
 } from "@/features/settings/types";
+import type { SubmissionType } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 
 const legacyScoringCriteria = z.array(z.string()).min(1);
@@ -157,6 +159,15 @@ export async function getSubmissionTypeConfigs(): Promise<{
 			...settings.SUBMISSION_TYPE_EXHIBITOR,
 		}),
 	};
+}
+
+/// INVITED placeholders have no type config and never publish a file.
+export async function isFileContentFormat(
+	type: SubmissionType,
+): Promise<boolean> {
+	if (type === "INVITED") return false;
+	const config = await getSetting(SUBMISSION_TYPE_TO_KEY[type]);
+	return config.contentFormat === "FILE";
 }
 
 export async function getActiveSubmissionTypes(): Promise<

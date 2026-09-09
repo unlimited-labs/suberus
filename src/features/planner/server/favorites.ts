@@ -1,5 +1,7 @@
-import { getSetting } from "@/features/settings/server/settings";
-import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
+import {
+	getSetting,
+	isFileContentFormat,
+} from "@/features/settings/server/settings";
 import { prisma } from "@/shared/server/db.server";
 import { isScheduleVisible } from "./schedule";
 
@@ -105,10 +107,7 @@ export async function getPresentationDetail(
 
 	const includeAuthorInfo = showAuthorInfo && viewerIsParticipant;
 	const { submission } = slot;
-	const isFileFormat =
-		submission.type !== "INVITED" &&
-		(await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]))
-			.contentFormat === "FILE";
+	const isFileFormat = await isFileContentFormat(submission.type);
 	return {
 		content: submission.content,
 		acknowledgment: submission.acknowledgment,

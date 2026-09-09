@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { isScheduleVisible } from "@/features/planner/server/schedule";
+import { isFileContentFormat } from "@/features/settings/server/settings";
 import { cameraReadyFileResponse } from "@/features/submissions/server/camera-ready";
 import { prisma } from "@/shared/server/db.server";
 
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/s/$n")({
 				const submission = await prisma.submission.findUnique({
 					where: { sequentialNumber: Number(match[1]) },
 					select: {
+						type: true,
 						presentationSlot: { select: { id: true } },
 						cameraReadyFile: {
 							select: { storageKey: true, originalName: true },
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/s/$n")({
 					},
 				});
 				if (!submission?.presentationSlot) return notFound();
+				if (!(await isFileContentFormat(submission.type))) return notFound();
 
 				return cameraReadyFileResponse(submission.cameraReadyFile);
 			},

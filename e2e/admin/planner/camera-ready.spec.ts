@@ -98,7 +98,7 @@ test.describe.serial("Camera-ready", () => {
 		publicProgramPage,
 		testRun,
 	}) => {
-		const { submission } = await seedPresentation(testRun.testRunId);
+		const { submission, slotId } = await seedPresentation(testRun.testRunId);
 
 		await page.goto(`/admin/submissions/${submission.id}`);
 		await page.getByTestId("camera-ready-input").setInputFiles({
@@ -108,6 +108,8 @@ test.describe.serial("Camera-ready", () => {
 		});
 		await expect(page.getByText("document.pdf")).toBeVisible({ timeout: 15000 });
 		await setOralContentFormat("TEXT");
+
+		expect((await page.request.get(crUrl(slotId))).status()).toBe(404);
 
 		await publicProgramPage.goto();
 		await publicProgramPage.openFirstPresentation();
