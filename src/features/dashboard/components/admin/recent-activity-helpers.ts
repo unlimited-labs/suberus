@@ -171,6 +171,7 @@ const descriptionRenderers = {
 	USER_DELETED: emailOf,
 	EXHIBITOR_APPLIED: (e) => str(e.detail?.companyName) ?? null,
 	DOCUMENT_GENERATED: documentOf,
+	DOCUMENT_UPLOADED: documentOf,
 	DOCUMENT_DELETED: documentOf,
 	FEE_MARKED_PAID: (e) =>
 		e.detail?.amount != null

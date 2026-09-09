@@ -68,6 +68,7 @@ type DetailShapes = AssertExhaustive<{
 	EXHIBITOR_REJECTED: { reason: string };
 	EXHIBITOR_WITHDRAWN: NoDetail;
 	DOCUMENT_GENERATED: { documentName: string; templateName: string | null };
+	DOCUMENT_UPLOADED: { documentName: string };
 	DOCUMENT_DELETED: { documentName: string };
 	MCP_CLIENT_REGISTERED: McpClientAudit;
 	MCP_CLIENT_UPDATED: McpClientAudit & { changedFields: string[] };

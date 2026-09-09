@@ -37,6 +37,7 @@ const labels = {
 	EXHIBITOR_REJECTED: "Exhibitor rejected",
 	EXHIBITOR_WITHDRAWN: "Exhibitor withdrawn",
 	DOCUMENT_GENERATED: "Document generated",
+	DOCUMENT_UPLOADED: "Document uploaded",
 	DOCUMENT_DELETED: "Document deleted",
 	MCP_CLIENT_REGISTERED: "MCP client registered",
 	MCP_CLIENT_UPDATED: "MCP client metadata changed",

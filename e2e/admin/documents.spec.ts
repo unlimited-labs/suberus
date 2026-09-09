@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import AdmZip from "adm-zip";
 import type { Page } from "@playwright/test";
 import { loginAs } from "../helpers/auth";
 import { expect, test } from "../helpers/base-fixtures";
@@ -9,6 +11,13 @@ import { TEST_USER } from "../helpers/test-users";
 import { AdminUsersPage } from "./fixtures";
 
 const FIXTURES = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures");
+const PDF = path.join(
+	path.dirname(fileURLToPath(import.meta.url)),
+	"..",
+	"submissions",
+	"fixtures",
+	"document.pdf",
+);
 
 /** The render path needs the docx-api sidecar (LibreOffice); skip READY checks when down. */
 async function docxApiHealthy(): Promise<boolean> {
@@ -125,6 +134,61 @@ test.describe("Admin - Document generator", () => {
 			await expect(myRow).toBeVisible({ timeout: 15000 });
 			await expect(myRow.getByTestId("download-my-document")).toBeVisible();
 		}
+	});
+
+	test("upload a ready PDF for one participant", async ({ page, testRun }) => {
+		const title = testRun.prefix("Invoice");
+		const { testUserId } = await getTestUserIds();
+
+		await page.goto(`/admin/users/${testUserId}`);
+		await page.getByTestId("add-document-button").click();
+		await page.getByTestId("document-mode-upload").click();
+		await page.getByTestId("document-file-input").setInputFiles(PDF);
+		await page.getByTestId("document-title-input").fill(title);
+		await page.getByTestId("upload-document-button").click();
+
+		const row = page.getByTestId("user-document-row").filter({ hasText: title });
+		await expect(row).toBeVisible({ timeout: 15000 });
+		await expect(row.getByTestId("doc-status-READY")).toBeVisible({
+			timeout: 30000,
+		});
+
+		await loginAs(page, TEST_USER, { clearCookies: true });
+		await page.goto("/documents");
+		const myRow = page
+			.getByTestId("my-document-row")
+			.filter({ hasText: title });
+		await expect(myRow).toBeVisible({ timeout: 15000 });
+		await expect(myRow.getByTestId("download-my-document")).toBeVisible();
+	});
+
+	test("ZIP import files by participant id and reports what it skipped", async ({
+		page,
+		testRun,
+	}) => {
+		const title = testRun.prefix("Certificate");
+		const { testUserId } = await getTestUserIds();
+		const pdf = readFileSync(PDF);
+
+		const zip = new AdmZip();
+		zip.addFile(`${testUserId}.pdf`, pdf);
+		zip.addFile("not-a-participant.pdf", pdf);
+
+		await page.goto("/admin/documents?tab=generated");
+		await page.getByTestId("import-documents-open").click();
+		await page.getByTestId("import-zip-input").setInputFiles({
+			name: "documents.zip",
+			mimeType: "application/zip",
+			buffer: zip.toBuffer(),
+		});
+		await page.getByTestId("import-title-input").fill(title);
+		await page.getByTestId("import-documents-button").click();
+
+		const result = page.getByTestId("import-result");
+		await expect(result).toContainText("1 imported, 1 skipped", {
+			timeout: 15000,
+		});
+		await expect(result).toContainText("not-a-participant.pdf");
 	});
 
 	test("admin can delete a generated document", async ({ page, testRun }) => {

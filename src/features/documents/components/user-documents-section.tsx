@@ -71,7 +71,7 @@ export function UserDocumentsSection({
 		>
 			{documents.length === 0 ? (
 				<EmptyState
-					description="Generate a document for this participant from one of your templates."
+					description="Generate one from a template, or attach a PDF made elsewhere."
 					icon={IconFileCertificate}
 					title="No documents yet"
 				/>

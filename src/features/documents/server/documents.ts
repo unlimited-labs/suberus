@@ -1,4 +1,5 @@
 import { activityDetail } from "@/features/activity-log/types";
+import { uploadedDocumentKey } from "@/features/documents/server/generate";
 import { displayName } from "@/features/documents/server/resolve";
 import type { DocumentStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
@@ -139,6 +140,7 @@ export async function deleteDocument(
 	if (doc.storageKey) {
 		await deleteFile(doc.storageKey).catch(() => {});
 	}
+	await deleteFile(uploadedDocumentKey(id)).catch(() => {});
 	await prisma.generatedDocument.delete({ where: { id } });
 
 	await prisma.activityLog.create({

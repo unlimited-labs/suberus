@@ -53,7 +53,7 @@ function SigningBanner() {
 		<div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">
 			<div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-400">
 				<IconShieldCheck className="size-5" />
-				Generated documents are digitally signed
+				Issued documents are digitally signed
 			</div>
 			<p className="text-muted-foreground mt-1">
 				Any PDF reader (Adobe, Foxit…) verifies the signature automatically. A

@@ -10,6 +10,7 @@ import {
 	previewBulk,
 	startBulk,
 } from "@/features/documents/server/bulk";
+import { importDocumentsZip } from "@/features/documents/server/bulk-upload";
 import {
 	adminListDocuments,
 	adminListUserDocuments,
@@ -26,6 +27,9 @@ import {
 	deleteTemplate,
 	listTemplates,
 } from "@/features/documents/server/templates";
+import { attachUploadedDocument } from "@/features/documents/server/upload";
+import { issueDocumentUploadLink } from "@/features/documents/server/upload-link";
+import { uploadedDocumentMetaSchema } from "@/features/documents/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 const documentStatus = z.enum(["PENDING", "READY", "FAILED"]);
@@ -102,6 +106,54 @@ export const generateDocumentFn = createServerFn({ method: "POST" })
 			name: data.name,
 			generatedById: context.user.id,
 		}),
+	);
+
+const flag = (data: FormData, field: string) => data.get(field) === "true";
+
+export const uploadDocumentFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator((data: FormData) => ({
+		file: getUploadedFile(data),
+		meta: uploadedDocumentMetaSchema.parse({
+			userId: String(data.get("userId") ?? ""),
+			title: String(data.get("title") ?? ""),
+			sign: flag(data, "sign"),
+			notify: flag(data, "notify"),
+		}),
+	}))
+	.handler(async ({ data, context }) =>
+		attachUploadedDocument({
+			...data.meta,
+			buffer: await fileToBuffer(data.file),
+			createdById: context.user.id,
+		}),
+	);
+
+export const importDocumentsZipFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator((data: FormData) => ({
+		file: getUploadedFile(data),
+		title: uploadedDocumentMetaSchema.shape.title.parse(
+			String(data.get("title") ?? ""),
+		),
+		sign: flag(data, "sign"),
+		notify: flag(data, "notify"),
+	}))
+	.handler(async ({ data, context }) =>
+		importDocumentsZip({
+			zipBuffer: await fileToBuffer(data.file),
+			title: data.title,
+			sign: data.sign,
+			notify: data.notify,
+			createdById: context.user.id,
+		}),
+	);
+
+export const documentUploadLinkFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(uploadedDocumentMetaSchema)
+	.handler(({ data, context }) =>
+		issueDocumentUploadLink({ ...data, by: context.user.id }),
 	);
 
 export const previewBulkFn = createServerFn({ method: "POST" })

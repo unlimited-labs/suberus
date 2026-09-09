@@ -1,4 +1,4 @@
-import { IconFiles } from "@tabler/icons-react";
+import { IconFiles, IconFileZip } from "@tabler/icons-react";
 import {
 	useQuery,
 	useQueryClient,
@@ -19,7 +19,9 @@ import {
 } from "@/features/documents/components/document-filters";
 import { DocumentsEmptyState } from "@/features/documents/components/documents-empty-state";
 import { GeneratedDocumentsList } from "@/features/documents/components/generated-documents-list";
+import { ImportDocumentsDialog } from "@/features/documents/components/import-documents-dialog";
 import { getErrorMessage } from "@/shared/lib/error-message";
+import { Button } from "@/shared/ui/button";
 import { SectionCard } from "@/shared/ui/section-card";
 import { Skeleton } from "@/shared/ui/skeleton";
 
@@ -29,6 +31,7 @@ export function GeneratedDocumentsTab() {
 	const [status, setStatus] = useState<StatusFilter>("ALL");
 	const [templateId, setTemplateId] = useState<string>("ALL");
 	const [deletingId, setDeletingId] = useState<string | null>(null);
+	const [importOpen, setImportOpen] = useState(false);
 	const [busy, setBusy] = useState(false);
 
 	const { data: templates } = useSuspenseQuery(documentTemplatesQueryOptions());
@@ -70,6 +73,17 @@ export function GeneratedDocumentsTab() {
 
 	return (
 		<SectionCard
+			action={
+				<Button
+					data-testid="import-documents-open"
+					onClick={() => setImportOpen(true)}
+					size="sm"
+					variant="outline"
+				>
+					<IconFileZip className="mr-2 size-4" />
+					Import ZIP
+				</Button>
+			}
 			contentClassName="space-y-4"
 			description="Every document issued to participants, across the conference."
 			icon={IconFiles}
@@ -99,6 +113,8 @@ export function GeneratedDocumentsTab() {
 					onDelete={setDeletingId}
 				/>
 			)}
+
+			<ImportDocumentsDialog onOpenChange={setImportOpen} open={importOpen} />
 
 			<ConfirmDeleteDialog
 				busy={busy}

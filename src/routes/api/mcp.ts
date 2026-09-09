@@ -7,6 +7,7 @@ import { announcementMcpTools } from "@/features/announcements/mcp/tools";
 import { auth, MCP_RESOURCE } from "@/features/auth/server/auth.server";
 import { hasAdminRole } from "@/features/auth/server/middleware";
 import { bulkEmailMcpTools } from "@/features/bulk-email/mcp/tools";
+import { documentsMcpTools } from "@/features/documents/mcp/tools";
 import { MCP_CAPABILITY_SCOPES } from "@/features/mcp/scopes";
 import { plannerMcpTools } from "@/features/planner/mcp/tools";
 import { settingsMcpTools } from "@/features/settings/mcp/tools";
@@ -28,6 +29,7 @@ const handler = createSuberusMcpHandler({
 		...plannerMcpTools,
 		...bulkEmailMcpTools,
 		...announcementMcpTools,
+		...documentsMcpTools,
 	],
 	allowedHostnames: [baseUrl.hostname],
 });

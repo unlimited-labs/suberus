@@ -5,6 +5,10 @@ import { expect, test } from "../helpers/base-fixtures";
 import { getPrisma, getTestUserIds } from "../helpers/test-db";
 
 const FIXTURES = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures");
+const PDF = path.join(
+	path.dirname(fileURLToPath(import.meta.url)),
+	"../submissions/fixtures/document.pdf",
+);
 
 /** Signing needs the docx-api sidecar (pyHanko); skip when it is unavailable. */
 async function docxApiHealthy(): Promise<boolean> {
@@ -32,6 +36,7 @@ test.describe("Admin - Document signing", () => {
 	test.describe.configure({ mode: "serial" });
 
 	let signedPdf: Buffer | null = null;
+	let uploadedDocId: string | null = null;
 
 	test.beforeAll(async ({}, testInfo) => {
 		test.skip(!(await docxApiHealthy()), "docx-api sidecar (pyHanko) unavailable");
@@ -122,6 +127,47 @@ test.describe("Admin - Document signing", () => {
 		await expect(page.getByTestId("verify-matches-cert")).toBeVisible();
 	});
 
+	test("an uploaded PDF is signed with the same certificate", async ({
+		page,
+		testRun,
+	}, testInfo) => {
+		const title = testRun.prefix("SignedUpload");
+		const { testUserId } = await getTestUserIds();
+
+		await page.goto(`/admin/users/${testUserId}`);
+		await page.getByTestId("add-document-button").click();
+		await page.getByTestId("document-mode-upload").click();
+		await page.getByTestId("document-file-input").setInputFiles(PDF);
+		await page.getByTestId("document-title-input").fill(title);
+		await expect(page.getByTestId("document-sign-checkbox")).toBeVisible();
+		await page.getByTestId("upload-document-button").click();
+
+		const row = page.getByTestId("user-document-row").filter({ hasText: title });
+		await expect(row.getByTestId("doc-status-READY")).toBeVisible({
+			timeout: 40000,
+		});
+		await expect(row.getByTestId("document-signed-badge")).toBeVisible();
+
+		const doc = await getPrisma(testInfo.parallelIndex)
+			.generatedDocument.findFirstOrThrow({
+				where: { name: title },
+				select: { id: true, templateId: true },
+			});
+		expect(doc.templateId).toBeNull();
+		uploadedDocId = doc.id;
+
+		await page.goto("/verify-document");
+		await page.getByTestId("verify-file-input").setInputFiles({
+			name: "uploaded-signed.pdf",
+			mimeType: "application/pdf",
+			buffer: await (await page.request.get(`/api/documents/${doc.id}`)).body(),
+		});
+		await page.getByTestId("verify-submit").click();
+		await expect(page.getByTestId("verify-verdict")).toHaveText("Authentic", {
+			timeout: 30000,
+		});
+	});
+
 	test("uploading an own .p12 switches the source to Uploaded", async ({
 		page,
 	}) => {
@@ -158,5 +204,47 @@ test.describe("Admin - Document signing", () => {
 		);
 		await expect(page.getByTestId("verify-foreign")).toBeVisible();
 		await expect(page.getByTestId("verify-matches-cert")).toBeHidden();
+	});
+
+	// Rotation re-renders from the source; an uploaded document has no template,
+	// so it has to come back from its retained original.
+	test("rotation re-signs the uploaded document too", async ({
+		page,
+	}, testInfo) => {
+		expect(uploadedDocId).not.toBeNull();
+		const db = getPrisma(testInfo.parallelIndex);
+
+		await expect
+			.poll(
+				async () =>
+					(
+						await db.generatedDocument.findUniqueOrThrow({
+							where: { id: uploadedDocId as string },
+							select: { status: true, signed: true },
+						})
+					).status === "READY",
+				{ timeout: 60000 },
+			)
+			.toBe(true);
+
+		const stored = await db.generatedDocument.findUniqueOrThrow({
+			where: { id: uploadedDocId as string },
+			select: { signed: true, error: true },
+		});
+		expect(stored.error).toBeNull();
+		expect(stored.signed).toBe(true);
+
+		await page.goto("/verify-document");
+		await page.getByTestId("verify-file-input").setInputFiles({
+			name: "resigned.pdf",
+			mimeType: "application/pdf",
+			buffer: await (
+				await page.request.get(`/api/documents/${uploadedDocId}`)
+			).body(),
+		});
+		await page.getByTestId("verify-submit").click();
+		await expect(page.getByTestId("verify-verdict")).toHaveText("Authentic", {
+			timeout: 30000,
+		});
 	});
 });

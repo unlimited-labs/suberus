@@ -1,4 +1,4 @@
-import { IconCheck, IconFilePlus } from "@tabler/icons-react";
+import { IconCheck, IconFilePlus, IconUpload } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -7,8 +7,10 @@ import {
 	documentTemplatesQueryOptions,
 	generateDocumentFn,
 	previewResolutionQueryOptions,
+	uploadDocumentFn,
 } from "@/features/documents/api/documents";
 import { NoTemplatesHint } from "@/features/documents/components/document-bits";
+import { DocumentDeliveryFields } from "@/features/documents/components/document-delivery-fields";
 import { ResolutionPreviewCard } from "@/features/documents/components/resolution-preview-card";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
@@ -20,6 +22,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import {
 	Select,
@@ -28,6 +31,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 interface UserDocumentDialogProps {
 	open: boolean;
@@ -36,6 +40,8 @@ interface UserDocumentDialogProps {
 	userName: string;
 }
 
+const titleFromFileName = (name: string) => name.replace(/\.pdf$/i, "").trim();
+
 export function UserDocumentDialog({
 	open,
 	onOpenChange,
@@ -43,7 +49,12 @@ export function UserDocumentDialog({
 	userName,
 }: UserDocumentDialogProps) {
 	const queryClient = useQueryClient();
+	const [mode, setMode] = useState("template");
 	const [templateId, setTemplateId] = useState<string | null>(null);
+	const [file, setFile] = useState<File | null>(null);
+	const [title, setTitle] = useState("");
+	const [sign, setSign] = useState(true);
+	const [notify, setNotify] = useState(true);
 	const [busy, setBusy] = useState(false);
 
 	const { data: templates = [] } = useQuery(documentTemplatesQueryOptions());
@@ -54,20 +65,51 @@ export function UserDocumentDialog({
 	const missing = preview?.missing ?? [];
 	const canGenerate =
 		Boolean(templateId) && !previewLoading && missing.length === 0;
+	const canUpload = Boolean(file) && title.trim() !== "";
+
+	const reset = () => {
+		setTemplateId(null);
+		setFile(null);
+		setTitle("");
+		setSign(true);
+		setNotify(true);
+	};
+
+	const finish = async (message: string) => {
+		await queryClient.invalidateQueries({
+			queryKey: adminUserDocumentsQueryOptions(userId).queryKey,
+		});
+		toast.success(message);
+		reset();
+		onOpenChange(false);
+	};
 
 	const handleGenerate = async () => {
 		if (!templateId) return;
 		setBusy(true);
 		try {
 			await generateDocumentFn({ data: { userId, templateId } });
-			await queryClient.invalidateQueries({
-				queryKey: adminUserDocumentsQueryOptions(userId).queryKey,
-			});
-			toast.success("Document is being generated");
-			setTemplateId(null);
-			onOpenChange(false);
+			await finish("Document is being generated");
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to generate document"));
+		}
+		setBusy(false);
+	};
+
+	const handleUpload = async () => {
+		if (!file || !title.trim()) return;
+		setBusy(true);
+		try {
+			const form = new FormData();
+			form.set("file", file);
+			form.set("userId", userId);
+			form.set("title", title.trim());
+			form.set("sign", String(sign));
+			form.set("notify", String(notify));
+			await uploadDocumentFn({ data: form });
+			await finish("Document uploaded");
+		} catch (error) {
+			toast.error(getErrorMessage(error, "Failed to upload document"));
 		}
 		setBusy(false);
 	};
@@ -76,7 +118,7 @@ export function UserDocumentDialog({
 		<Dialog
 			onOpenChange={(o) => {
 				if (busy) return;
-				if (!o) setTemplateId(null);
+				if (!o) reset();
 				onOpenChange(o);
 			}}
 			open={open}
@@ -85,34 +127,85 @@ export function UserDocumentDialog({
 				<DialogHeader>
 					<DialogTitle>Add document for {userName}</DialogTitle>
 					<DialogDescription>
-						Pick a template; the participant's data fills its placeholders.
+						Generate one from a template, or attach a PDF made elsewhere.
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4 py-2">
-					<div className="space-y-1.5">
-						<Label>Template</Label>
-						<Select
-							items={templates.map((t) => ({ value: t.id, label: t.name }))}
-							onValueChange={setTemplateId}
-							value={templateId ?? ""}
-						>
-							<SelectTrigger data-testid="document-template-select">
-								<SelectValue placeholder="Select a template…" />
-							</SelectTrigger>
-							<SelectContent>
-								{templates.map((t) => (
-									<SelectItem key={t.id} value={t.id}>
-										{t.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{templates.length === 0 && <NoTemplatesHint />}
-					</div>
+				<Tabs onValueChange={setMode} value={mode}>
+					<TabsList className="w-full justify-start" variant="line">
+						<TabsTrigger data-testid="document-mode-template" value="template">
+							From template
+						</TabsTrigger>
+						<TabsTrigger data-testid="document-mode-upload" value="upload">
+							Upload a PDF
+						</TabsTrigger>
+					</TabsList>
 
-					{templateId && preview && <ResolutionPreviewCard preview={preview} />}
-				</div>
+					<TabsContent className="space-y-4 py-2" value="template">
+						<div className="space-y-1.5">
+							<Label>Template</Label>
+							<Select
+								items={templates.map((t) => ({ value: t.id, label: t.name }))}
+								onValueChange={setTemplateId}
+								value={templateId ?? ""}
+							>
+								<SelectTrigger data-testid="document-template-select">
+									<SelectValue placeholder="Select a template…" />
+								</SelectTrigger>
+								<SelectContent>
+									{templates.map((t) => (
+										<SelectItem key={t.id} value={t.id}>
+											{t.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							{templates.length === 0 && <NoTemplatesHint />}
+						</div>
+
+						{templateId && preview && (
+							<ResolutionPreviewCard preview={preview} />
+						)}
+					</TabsContent>
+
+					<TabsContent className="space-y-4 py-2" value="upload">
+						<div className="space-y-1.5">
+							<Label htmlFor="doc-file">PDF file</Label>
+							<Input
+								accept="application/pdf,.pdf"
+								data-testid="document-file-input"
+								id="doc-file"
+								onChange={(e) => {
+									const picked = e.target.files?.[0] ?? null;
+									setFile(picked);
+									if (picked && !title.trim()) {
+										setTitle(titleFromFileName(picked.name));
+									}
+								}}
+								type="file"
+							/>
+						</div>
+
+						<div className="space-y-1.5">
+							<Label htmlFor="doc-title">Title</Label>
+							<Input
+								data-testid="document-title-input"
+								id="doc-title"
+								onChange={(e) => setTitle(e.target.value)}
+								placeholder="e.g. Invoice FV-2026-014"
+								value={title}
+							/>
+						</div>
+
+						<DocumentDeliveryFields
+							idPrefix="doc"
+							notify={notify}
+							onNotifyChange={setNotify}
+							onSignChange={setSign}
+							sign={sign}
+						/>
+					</TabsContent>
+				</Tabs>
 
 				<DialogFooter>
 					<Button
@@ -122,18 +215,29 @@ export function UserDocumentDialog({
 					>
 						Cancel
 					</Button>
-					<Button
-						data-testid="generate-document-button"
-						disabled={!canGenerate || busy}
-						onClick={handleGenerate}
-					>
-						{canGenerate ? (
-							<IconCheck className="mr-2 size-4" />
-						) : (
-							<IconFilePlus className="mr-2 size-4" />
-						)}
-						{busy ? "Generating…" : "Generate"}
-					</Button>
+					{mode === "template" ? (
+						<Button
+							data-testid="generate-document-button"
+							disabled={!canGenerate || busy}
+							onClick={handleGenerate}
+						>
+							{canGenerate ? (
+								<IconCheck className="mr-2 size-4" />
+							) : (
+								<IconFilePlus className="mr-2 size-4" />
+							)}
+							{busy ? "Generating…" : "Generate"}
+						</Button>
+					) : (
+						<Button
+							data-testid="upload-document-button"
+							disabled={!canUpload || busy}
+							onClick={handleUpload}
+						>
+							<IconUpload className="mr-2 size-4" />
+							{busy ? "Uploading…" : "Upload"}
+						</Button>
+					)}
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

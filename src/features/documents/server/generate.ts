@@ -11,9 +11,14 @@ import { sendEmail } from "@/shared/server/email";
 import { sanitizeFileName } from "@/shared/server/file-names";
 import { signPdf } from "@/shared/server/pdf-signing-client";
 import { ensureQueueAndSend } from "@/shared/server/queue";
-import { getFileBuffer, uploadFile } from "@/shared/server/storage";
+import { fileExists, getFileBuffer, uploadFile } from "@/shared/server/storage";
 
 export const DOCUMENT_GENERATE_QUEUE = "document-generate";
+
+/** The as-received PDF of an uploaded document, kept so a certificate rotation can re-sign from it. */
+export function uploadedDocumentKey(documentId: string): string {
+	return `documents/uploaded/${documentId}.pdf`;
+}
 
 export const ENQUEUE_OPTS = {
 	retryLimit: 2,
@@ -108,8 +113,36 @@ export async function previewResolution(
 	};
 }
 
+async function renderFromTemplate(
+	doc: { id: string; userId: string; name: string },
+	template: { storageKey: string; placeholders: string[] },
+): Promise<Buffer> {
+	const [{ values }, blocked] = await Promise.all([
+		resolvePlaceholders(doc.userId),
+		unresolvableFor(doc.userId, template.placeholders),
+	]);
+	if (blocked.length > 0) {
+		throw new Error(`Missing data for ${blocked.join(", ")}`);
+	}
+
+	const filledDocx = await new TemplateHandler().process(
+		await getFileBuffer(template.storageKey),
+		values,
+	);
+	return renderDocxToPdf(
+		filledDocx,
+		`${sanitizeFileName(doc.name) || "document"}.docx`,
+	);
+}
+
+export interface DocumentGenerateOptions {
+	sign?: boolean;
+	notify?: boolean;
+}
+
 export async function processDocumentGeneration(
 	documentId: string,
+	opts: DocumentGenerateOptions = {},
 ): Promise<void> {
 	const doc = await prisma.generatedDocument.findUnique({
 		where: { id: documentId },
@@ -124,31 +157,18 @@ export async function processDocumentGeneration(
 		);
 		return;
 	}
-	if (!doc.template) throw new Error("Template was deleted before generation");
-
-	const [{ values }, blocked] = await Promise.all([
-		resolvePlaceholders(doc.userId),
-		unresolvableFor(doc.userId, doc.template.placeholders),
-	]);
-	if (blocked.length > 0) {
-		throw new Error(`Missing data for ${blocked.join(", ")}`);
+	const uploadedKey = uploadedDocumentKey(doc.id);
+	if (!doc.template && !(await fileExists(uploadedKey))) {
+		throw new Error("Template was deleted before generation");
 	}
 
-	const [templateBuffer, signing] = await Promise.all([
-		getFileBuffer(doc.template.storageKey),
-		loadSigningMaterial(),
-	]);
-	const filledDocx = await new TemplateHandler().process(
-		templateBuffer,
-		values,
-	);
-	let pdf = await renderDocxToPdf(
-		filledDocx,
-		`${sanitizeFileName(doc.name) || "document"}.docx`,
-	);
+	const signing = await loadSigningMaterial();
+	let pdf = doc.template
+		? await renderFromTemplate(doc, doc.template)
+		: await getFileBuffer(uploadedKey);
 
 	let signed = false;
-	if (signing) {
+	if (signing && opts.sign !== false) {
 		const { cfg } = signing;
 		pdf = await signPdf(pdf, {
 			p12: signing.p12,
@@ -180,6 +200,8 @@ export async function processDocumentGeneration(
 		},
 	});
 	logger.info(`[document-generate] ${doc.id} ready (${pdf.length} bytes)`);
+
+	if (opts.notify === false) return;
 
 	const documentsUrl = `${new URL(env.APP_BASE_URL).origin}/documents`;
 	await sendEmail("DOCUMENT_GENERATED", doc.user.email, {
