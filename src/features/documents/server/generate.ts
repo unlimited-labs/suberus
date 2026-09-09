@@ -137,7 +137,6 @@ async function renderFromTemplate(
 
 export interface DocumentGenerateOptions {
 	sign?: boolean;
-	notify?: boolean;
 }
 
 export async function processDocumentGeneration(
@@ -159,7 +158,11 @@ export async function processDocumentGeneration(
 	}
 	const uploadedKey = uploadedDocumentKey(doc.id);
 	if (!doc.template && !(await fileExists(uploadedKey))) {
-		throw new Error("Template was deleted before generation");
+		throw new Error(
+			doc.templateId
+				? "Template was deleted before generation"
+				: "The uploaded file is no longer stored",
+		);
 	}
 
 	const signing = await loadSigningMaterial();
@@ -201,7 +204,7 @@ export async function processDocumentGeneration(
 	});
 	logger.info(`[document-generate] ${doc.id} ready (${pdf.length} bytes)`);
 
-	if (opts.notify === false) return;
+	if (!doc.notify) return;
 
 	const documentsUrl = `${new URL(env.APP_BASE_URL).origin}/documents`;
 	await sendEmail("DOCUMENT_GENERATED", doc.user.email, {

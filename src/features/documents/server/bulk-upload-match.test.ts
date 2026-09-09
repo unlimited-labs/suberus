@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	baseNameOf,
 	documentUserIdFromEntry,
 	isIgnoredZipEntry,
 } from "@/features/documents/server/bulk-upload-match";
@@ -34,5 +35,12 @@ describe("isIgnoredZipEntry", () => {
 		expect(isIgnoredZipEntry("__MACOSX")).toBe(true);
 		expect(isIgnoredZipEntry(".DS_Store")).toBe(true);
 		expect(isIgnoredZipEntry(`${ID}.pdf`)).toBe(false);
+	});
+
+	// It matches on a base name, so a nested dot-file only gets caught when the
+	// caller strips the path first.
+	it("catches noise nested in a folder", () => {
+		expect(isIgnoredZipEntry(baseNameOf("invoices/.DS_Store"))).toBe(true);
+		expect(isIgnoredZipEntry(baseNameOf(`invoices/${ID}.pdf`))).toBe(false);
 	});
 });

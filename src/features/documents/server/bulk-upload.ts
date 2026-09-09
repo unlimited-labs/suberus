@@ -1,16 +1,25 @@
 import AdmZip from "adm-zip";
 import {
+	baseNameOf,
 	documentUserIdFromEntry,
 	isIgnoredZipEntry,
 } from "@/features/documents/server/bulk-upload-match";
-import { attachUploadedDocument } from "@/features/documents/server/upload";
+import {
+	attachUploadedDocument,
+	MAX_DOCUMENT_BYTES,
+} from "@/features/documents/server/upload";
 import { prisma } from "@/shared/server/db.server";
 import { UploadValidationError } from "@/shared/server/validate-upload";
 
 /** adm-zip parses the whole archive in memory, so an unbounded upload is a DoS. */
 export const MAX_IMPORT_ZIP_BYTES = 200 * 1024 * 1024;
 
-export type ImportSkipReason = "no-user-id" | "unknown-user" | "invalid-file";
+export type ImportSkipReason =
+	| "no-user-id"
+	| "unknown-user"
+	| "invalid-file"
+	| "too-large"
+	| "failed";
 
 export interface ImportDocumentsResult {
 	batchId: string;
@@ -35,7 +44,9 @@ export async function importDocumentsZip(opts: {
 
 	const entries = new AdmZip(opts.zipBuffer)
 		.getEntries()
-		.filter((e) => !e.isDirectory && !isIgnoredZipEntry(e.entryName));
+		.filter(
+			(e) => !e.isDirectory && !isIgnoredZipEntry(baseNameOf(e.entryName)),
+		);
 
 	const batch = await prisma.documentBatch.create({
 		data: {
@@ -72,6 +83,11 @@ export async function importDocumentsZip(opts: {
 			skipped.push({ name, reason: "unknown-user" });
 			continue;
 		}
+		// Decompressing first would let one crafted entry exhaust memory.
+		if (entry.header.size > MAX_DOCUMENT_BYTES) {
+			skipped.push({ name, reason: "too-large" });
+			continue;
+		}
 		try {
 			await attachUploadedDocument({
 				userId,
@@ -88,7 +104,13 @@ export async function importDocumentsZip(opts: {
 				skipped.push({ name, reason: "invalid-file", error: error.message });
 				continue;
 			}
-			throw error;
+			// One unlucky entry must not abandon the batch half-imported and
+			// unreported — the operator needs the list to retry from.
+			skipped.push({
+				name,
+				reason: "failed",
+				error: error instanceof Error ? error.message : String(error),
+			});
 		}
 	}
 

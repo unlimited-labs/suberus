@@ -28,6 +28,8 @@ const SKIP_REASONS = {
 	"no-user-id": "name is not a participant ID",
 	"unknown-user": "no such participant",
 	"invalid-file": "not a valid PDF",
+	"too-large": "file is too large",
+	failed: "could not be stored",
 } satisfies Record<ImportSkipReason, string>;
 
 interface ImportDocumentsDialogProps {
@@ -67,6 +69,8 @@ export function ImportDocumentsDialog({
 			const imported = await importDocumentsZipFn({ data: form });
 			await queryClient.invalidateQueries({ queryKey: documentKeys.all });
 			setResult(imported);
+			setFile(null);
+			setTitle("");
 			toast.success(`${imported.uploaded} document(s) imported`);
 		} catch (error) {
 			toast.error(getErrorMessage(error, "Failed to import documents"));

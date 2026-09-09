@@ -1,10 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-	createCapabilityToken,
-	UPLOAD_LINK_TTL_MS,
-} from "@/shared/server/capability-token";
+import { DOCUMENT_UPLOAD_LINK_TTL_MS } from "@/features/documents/server/upload-link";
+import { createCapabilityToken } from "@/shared/server/capability-token";
 import { expect, test } from "../helpers/base-fixtures";
 import { getPrisma, getTestUserIds } from "../helpers/test-db";
 
@@ -25,7 +23,8 @@ function tokenFor(meta: {
 	const subject = Buffer.from(
 		JSON.stringify({ sign: false, notify: false, ...meta }),
 	).toString("base64url");
-	return createCapabilityToken("dup", subject, secret, UPLOAD_LINK_TTL_MS).token;
+	return createCapabilityToken("dup", subject, secret, DOCUMENT_UPLOAD_LINK_TTL_MS)
+		.token;
 }
 
 function multipart(bytes: Buffer) {
@@ -85,7 +84,7 @@ test.describe("Document upload link endpoint", () => {
 			"up",
 			"11111111-2222-3333-4444-555555555555",
 			secret,
-			UPLOAD_LINK_TTL_MS,
+			DOCUMENT_UPLOAD_LINK_TTL_MS,
 		).token;
 
 		const response = await request.post(

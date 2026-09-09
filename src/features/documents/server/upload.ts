@@ -49,17 +49,27 @@ export async function attachUploadedDocument(
 			templateId: null,
 			batchId: input.batchId,
 			name: title,
+			notify: input.notify,
 			generatedById: input.createdById,
 			status: "PENDING",
 		},
 		select: { id: true },
 	});
 
-	await uploadFile(
-		input.buffer,
-		uploadedDocumentKey(doc.id),
-		"application/pdf",
-	);
+	try {
+		await uploadFile(
+			input.buffer,
+			uploadedDocumentKey(doc.id),
+			"application/pdf",
+		);
+	} catch (error) {
+		// Nothing will ever enqueue this row, so it would sit PENDING forever.
+		await prisma.generatedDocument.update({
+			where: { id: doc.id },
+			data: { status: "FAILED", error: "Could not store the uploaded file." },
+		});
+		throw error;
+	}
 
 	await prisma.activityLog.create({
 		data: {
@@ -72,7 +82,7 @@ export async function attachUploadedDocument(
 
 	await ensureQueueAndSend(
 		DOCUMENT_GENERATE_QUEUE,
-		{ documentId: doc.id, sign: input.sign, notify: input.notify },
+		{ documentId: doc.id, sign: input.sign },
 		ENQUEUE_OPTS,
 	);
 	return doc;
