@@ -1,4 +1,4 @@
-const IGNORED_BULK_NAMES = new Set(["submissions.csv"]);
+const IGNORED_BULK_NAMES = new Set(["submissions.xlsx", "submissions.csv"]);
 
 export function isIgnoredBulkEntry(baseName: string): boolean {
 	return (

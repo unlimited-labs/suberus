@@ -22,6 +22,7 @@ describe("cameraReadyNumberFromFilename", () => {
 
 describe("isIgnoredBulkEntry", () => {
 	it("ignores the export manifest and dotfiles", () => {
+		expect(isIgnoredBulkEntry("submissions.xlsx")).toBe(true);
 		expect(isIgnoredBulkEntry("submissions.csv")).toBe(true);
 		expect(isIgnoredBulkEntry("SUBMISSIONS.CSV")).toBe(true);
 		expect(isIgnoredBulkEntry(".DS_Store")).toBe(true);

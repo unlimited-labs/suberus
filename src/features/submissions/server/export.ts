@@ -1,11 +1,12 @@
 import type { Readable } from "node:stream";
 import { ZipArchive } from "archiver";
+import * as XLSX from "xlsx";
 import {
 	buildSubmissionWhereClause,
 	type GetSubmissionsFilters,
 } from "@/features/submissions/server/admin-submissions";
 import { prisma } from "@/shared/server/db.server";
-import { escapeCsvField } from "@/shared/server/spreadsheet-safe";
+import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
 import { getFileBuffer } from "@/shared/server/storage";
 
 export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
@@ -78,30 +79,34 @@ function getCoAuthors(
 	);
 }
 
-function buildCsv(submissions: ExportSubmission[]): string {
-	const header =
-		"sequentialNumber,title,mainAuthor,coAuthors,keywords,track,acknowledgment";
+function buildXlsx(submissions: ExportSubmission[]): Buffer {
 	const rows = submissions.map((s) => {
 		const main = getMainAuthor(s.authors);
 		const mainName = main ? `${main.firstName} ${main.lastName}` : "";
 		const coAuthors = getCoAuthors(s.authors)
 			.map((a) => `${a.firstName} ${a.lastName}`)
 			.join(", ");
-		const keywords = s.keywords.map((k) => k.keyword.name).join(", ");
-		const track = s.track?.name ?? "";
 
-		return [
-			String(s.sequentialNumber),
-			escapeCsvField(s.title),
-			escapeCsvField(mainName),
-			escapeCsvField(coAuthors),
-			escapeCsvField(keywords),
-			escapeCsvField(track),
-			escapeCsvField(s.acknowledgment ?? ""),
-		].join(",");
+		return {
+			Number: s.sequentialNumber,
+			Title: neutralizeFormula(s.title),
+			"Main author": neutralizeFormula(mainName),
+			"Co-authors": neutralizeFormula(coAuthors),
+			Keywords: neutralizeFormula(
+				s.keywords.map((k) => k.keyword.name).join(", "),
+			),
+			Track: neutralizeFormula(s.track?.name ?? ""),
+			Acknowledgment: neutralizeFormula(s.acknowledgment ?? ""),
+		};
 	});
 
-	return [header, ...rows].join("\n");
+	const wb = XLSX.utils.book_new();
+	XLSX.utils.book_append_sheet(
+		wb,
+		XLSX.utils.json_to_sheet(rows),
+		"Submissions",
+	);
+	return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 }
 
 export async function createSubmissionsZipStream(
@@ -133,7 +138,7 @@ export async function createSubmissionsZipStream(
 		archive.append(entry.data, { name: entry.name });
 	}
 
-	archive.append(buildCsv(submissions), { name: "submissions.csv" });
+	archive.append(buildXlsx(submissions), { name: "submissions.xlsx" });
 
 	void archive.finalize();
 

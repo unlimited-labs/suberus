@@ -40,7 +40,7 @@ export function SubmissionExportButton({ table }: SubmissionExportButtonProps) {
 		<Button asChild size="sm" variant="outline">
 			<a href={href} rel="noreferrer" target="_blank">
 				<IconDownload className="mr-2 size-4" />
-				Export ZIP
+				Export
 			</a>
 		</Button>
 	);
