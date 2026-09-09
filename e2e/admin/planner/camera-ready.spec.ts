@@ -6,8 +6,11 @@ import {
 	createRoom,
 	createSubmission,
 	getPrisma,
+	setAppSetting,
 	setSchedulePublished,
 } from "../../helpers/test-db";
+import { getDefaultSetting } from "@/features/settings/defaults";
+import type { SubmissionTypeConfig } from "@/features/settings/types";
 import { expect, isoDay, resetPlannerProgramDefaults, test } from "./fixtures";
 
 const PDF = Buffer.from("%PDF-1.4\n% camera-ready\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
@@ -24,7 +27,22 @@ async function streamToBuffer(stream: Readable): Promise<Buffer> {
 
 const crUrl = (slotId: string) => `/api/program/camera-ready/${slotId}`;
 
+async function setOralContentFormat(contentFormat: "TEXT" | "FILE") {
+	const row = await getPrisma().appSetting.findUnique({
+		where: { key: "SUBMISSION_TYPE_ORAL_PRESENTATION" },
+	});
+	// SAFETY: the seed writes a SubmissionTypeConfig under this key.
+	const current =
+		(row?.value as SubmissionTypeConfig | undefined) ??
+		getDefaultSetting("SUBMISSION_TYPE_ORAL_PRESENTATION");
+	await setAppSetting("SUBMISSION_TYPE_ORAL_PRESENTATION", {
+		...current,
+		contentFormat,
+	});
+}
+
 async function seedPresentation(testRunId: string) {
+	await setOralContentFormat("FILE");
 	const roomId = await createRoom(testRunId, "CR Room");
 	const sessionId = await createProgramSession({
 		testRunId,
@@ -47,6 +65,7 @@ async function seedPresentation(testRunId: string) {
 
 test.describe.serial("Camera-ready", () => {
 	test.beforeEach(resetPlannerProgramDefaults);
+	test.afterAll(() => setOralContentFormat("TEXT"));
 
 	test("admin upload surfaces a public download on the program", async ({
 		page,
@@ -72,6 +91,30 @@ test.describe.serial("Camera-ready", () => {
 		const response = await page.request.get(crUrl(slotId));
 		expect(response.status()).toBe(200);
 		expect(response.headers()["content-type"]).toContain("application/pdf");
+	});
+
+	test("a text-format type keeps its abstract and hides the download", async ({
+		page,
+		publicProgramPage,
+		testRun,
+	}) => {
+		const { submission } = await seedPresentation(testRun.testRunId);
+
+		await page.goto(`/admin/submissions/${submission.id}`);
+		await page.getByTestId("camera-ready-input").setInputFiles({
+			name: "document.pdf",
+			mimeType: "application/pdf",
+			buffer: PDF,
+		});
+		await expect(page.getByText("document.pdf")).toBeVisible({ timeout: 15000 });
+		await setOralContentFormat("TEXT");
+
+		await publicProgramPage.goto();
+		await publicProgramPage.openFirstPresentation();
+		await expect(
+			page.getByText("Abstract body for the camera-ready talk."),
+		).toBeVisible();
+		await expect(page.getByTestId("camera-ready-download")).toHaveCount(0);
 	});
 
 	test("re-upload replaces the previous file (no stale content)", async ({

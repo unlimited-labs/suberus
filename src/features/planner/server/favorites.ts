@@ -1,4 +1,5 @@
 import { getSetting } from "@/features/settings/server/settings";
+import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import { prisma } from "@/shared/server/db.server";
 import { isScheduleVisible } from "./schedule";
 
@@ -69,6 +70,7 @@ export async function getPresentationDetail(
 			select: {
 				submission: {
 					select: {
+						type: true,
 						content: true,
 						acknowledgment: true,
 						cameraReadyFileId: true,
@@ -103,12 +105,17 @@ export async function getPresentationDetail(
 
 	const includeAuthorInfo = showAuthorInfo && viewerIsParticipant;
 	const { submission } = slot;
+	const isFileFormat =
+		submission.type !== "INVITED" &&
+		(await getSetting(SUBMISSION_TYPE_TO_KEY[submission.type]))
+			.contentFormat === "FILE";
 	return {
 		content: submission.content,
 		acknowledgment: submission.acknowledgment,
-		cameraReadyUrl: submission.cameraReadyFileId
-			? `/api/program/camera-ready/${slotId}`
-			: null,
+		cameraReadyUrl:
+			isFileFormat && submission.cameraReadyFileId
+				? `/api/program/camera-ready/${slotId}`
+				: null,
 		keywords: submission.keywords.map((k) => k.keyword.name),
 		authors: submission.authors.map((a) => {
 			const consented = includeAuthorInfo && a.user?.contactConsent === true;
