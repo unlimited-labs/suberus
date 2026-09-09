@@ -235,7 +235,7 @@ function PreviewFooter({
 					href={cameraReadyUrl}
 				>
 					<IconDownload />
-					Download camera-ready
+					Abstract
 				</a>
 			)}
 		</DialogFooter>

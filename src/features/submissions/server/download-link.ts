@@ -3,7 +3,7 @@ import {
 	createCapabilityToken,
 	DOWNLOAD_LINK_TTL_MS,
 	verifyCapabilityToken,
-} from "@/features/submissions/server/capability-token";
+} from "@/shared/server/capability-token";
 import { prisma } from "@/shared/server/db.server";
 
 async function currentVersionFile(submissionId: string) {
@@ -65,5 +65,5 @@ export async function resolveDownload(token: string) {
 			? new Response("This download link has expired", { status: 410 })
 			: new Response("This download link is not valid", { status: 403 });
 	}
-	return currentVersionFile(parsed.submissionId);
+	return currentVersionFile(parsed.subjectId);
 }

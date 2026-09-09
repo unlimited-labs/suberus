@@ -3,7 +3,7 @@ import {
 	createCapabilityToken,
 	UPLOAD_LINK_TTL_MS,
 	verifyCapabilityToken,
-} from "@/features/submissions/server/capability-token";
+} from "@/shared/server/capability-token";
 
 export function issueUploadLink(submissionId: string) {
 	const { token, expiresAt } = createCapabilityToken(

@@ -5,7 +5,7 @@ import {
 	createCapabilityToken,
 	DOWNLOAD_LINK_TTL_MS,
 	UPLOAD_LINK_TTL_MS,
-} from "@/features/submissions/server/capability-token";
+} from "@/shared/server/capability-token";
 import { expect, test } from "../helpers/base-fixtures";
 import {
 	createSubmission,

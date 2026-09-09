@@ -42,7 +42,7 @@ export async function acceptUpload(token: string, file: File): Promise<void> {
 			: new Response("This upload link is not valid", { status: 403 });
 	}
 
-	const submission = await assertAcceptsFile(parsed.submissionId);
+	const submission = await assertAcceptsFile(parsed.subjectId);
 
 	const attached = await attachFileToVersion({
 		submissionId: submission.id,

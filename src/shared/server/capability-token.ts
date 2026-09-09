@@ -3,8 +3,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export const UPLOAD_LINK_TTL_MS = 24 * 60 * 60 * 1000;
 export const DOWNLOAD_LINK_TTL_MS = 15 * 60 * 1000;
 
-/** `up` attaches a file, `dl` reads one. Never interchangeable. */
-export type CapabilityPurpose = "up" | "dl";
+/**
+ * `up` attaches a file to a submission, `dl` reads one, `dup` attaches a
+ * document to a participant. Never interchangeable.
+ */
+export type CapabilityPurpose = "up" | "dl" | "dup";
 
 export type CapabilityTokenError =
 	| "malformed"
@@ -18,9 +21,10 @@ function sign(payload: string, secret: string): string {
 
 /**
  * Capability token, like a password-reset link: it carries its own authority, so
- * the holder acts without signing in. Scoped to one submission and to one
- * purpose — an upload link grants no reads and a download link grants no writes.
- * An upload lands on whatever version is current: a draft has exactly one.
+ * the holder acts without signing in. Scoped to one subject and to one purpose —
+ * an upload link grants no reads and a download link grants no writes. The
+ * subject is opaque here: an id, or whatever the caller encoded (base64url, so
+ * it never collides with the `.` separator).
  *
  * ponytail: valid until it expires, and a re-upload replaces the file, because
  * single-use needs stored state. Add a consumedAt column if a leaked link ever
@@ -31,12 +35,12 @@ function sign(payload: string, secret: string): string {
  */
 export function createCapabilityToken(
 	purpose: CapabilityPurpose,
-	submissionId: string,
+	subjectId: string,
 	secret: string,
 	ttlMs: number,
 ) {
 	const expiresAt = new Date(Date.now() + ttlMs);
-	const payload = `${purpose}.${submissionId}.${expiresAt.getTime()}`;
+	const payload = `${purpose}.${subjectId}.${expiresAt.getTime()}`;
 	const encoded = Buffer.from(payload).toString("base64url");
 	return { token: `${encoded}.${sign(payload, secret)}`, expiresAt };
 }
@@ -46,7 +50,7 @@ export function verifyCapabilityToken(
 	purpose: CapabilityPurpose,
 	secret: string,
 ):
-	| { ok: true; submissionId: string }
+	| { ok: true; subjectId: string }
 	| { ok: false; error: CapabilityTokenError } {
 	const [encoded, signature] = token.split(".");
 	if (!encoded || !signature) return { ok: false, error: "malformed" };
@@ -64,14 +68,14 @@ export function verifyCapabilityToken(
 	const parts = payload.split(".");
 	// Upload tokens minted before the purpose segment carry `submissionId.expiresAt`.
 	// Drop this branch once UPLOAD_LINK_TTL_MS has passed since the deploy.
-	const [tokenPurpose, submissionId, expiresAt] =
+	const [tokenPurpose, subjectId, expiresAt] =
 		parts.length === 2 ? ["up", ...parts] : parts;
 	const expiry = Number(expiresAt);
-	if (!tokenPurpose || !submissionId || !Number.isFinite(expiry)) {
+	if (!tokenPurpose || !subjectId || !Number.isFinite(expiry)) {
 		return { ok: false, error: "malformed" };
 	}
 	if (tokenPurpose !== purpose) return { ok: false, error: "purpose" };
 	if (Date.now() > expiry) return { ok: false, error: "expired" };
 
-	return { ok: true, submissionId };
+	return { ok: true, subjectId };
 }

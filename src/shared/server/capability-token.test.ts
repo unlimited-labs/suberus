@@ -5,19 +5,19 @@ import {
 	DOWNLOAD_LINK_TTL_MS,
 	UPLOAD_LINK_TTL_MS,
 	verifyCapabilityToken,
-} from "@/features/submissions/server/capability-token";
+} from "@/shared/server/capability-token";
 
 const SECRET = "test-secret-at-least-32-characters-long";
-const submissionId = "11111111-2222-3333-4444-555555555555";
+const subjectId = "11111111-2222-3333-4444-555555555555";
 
 const upload = (ttl = UPLOAD_LINK_TTL_MS) =>
-	createCapabilityToken("up", submissionId, SECRET, ttl);
+	createCapabilityToken("up", subjectId, SECRET, ttl);
 
 describe("capability token", () => {
-	it("round-trips the submission id", () => {
+	it("round-trips the subject id", () => {
 		expect(verifyCapabilityToken(upload().token, "up", SECRET)).toEqual({
 			ok: true,
-			submissionId,
+			subjectId,
 		});
 	});
 
@@ -27,7 +27,7 @@ describe("capability token", () => {
 		const up = upload().token;
 		const down = createCapabilityToken(
 			"dl",
-			submissionId,
+			subjectId,
 			SECRET,
 			DOWNLOAD_LINK_TTL_MS,
 		).token;
@@ -42,13 +42,33 @@ describe("capability token", () => {
 		});
 	});
 
-	// The submission id is visible in the URL, so re-pointing the link at
-	// somebody else's submission has to fail.
+	// A submission upload link must not become a way to file a document against
+	// an arbitrary participant.
+	it("keeps document uploads apart from submission uploads", () => {
+		const document = createCapabilityToken(
+			"dup",
+			subjectId,
+			SECRET,
+			UPLOAD_LINK_TTL_MS,
+		).token;
+
+		expect(verifyCapabilityToken(document, "up", SECRET)).toEqual({
+			ok: false,
+			error: "purpose",
+		});
+		expect(verifyCapabilityToken(upload().token, "dup", SECRET)).toEqual({
+			ok: false,
+			error: "purpose",
+		});
+	});
+
+	// The subject is visible in the URL, so re-pointing the link at somebody
+	// else's submission has to fail.
 	it("rejects a tampered payload", () => {
 		const [encoded, signature] = upload().token.split(".");
 		const payload = Buffer.from(encoded, "base64url").toString("utf8");
 		const swapped = payload.replace(
-			submissionId,
+			subjectId,
 			"99999999-2222-3333-4444-555555555555",
 		);
 		const forged = `${Buffer.from(swapped).toString("base64url")}.${signature}`;
@@ -62,7 +82,7 @@ describe("capability token", () => {
 	it("rejects a token signed with another secret", () => {
 		const { token } = createCapabilityToken(
 			"up",
-			submissionId,
+			subjectId,
 			"a-different-secret-value",
 			UPLOAD_LINK_TTL_MS,
 		);
@@ -80,7 +100,7 @@ describe("capability token", () => {
 	});
 
 	it("accepts a legacy upload token with no purpose segment", () => {
-		const legacyPayload = `${submissionId}.${Date.now() + UPLOAD_LINK_TTL_MS}`;
+		const legacyPayload = `${subjectId}.${Date.now() + UPLOAD_LINK_TTL_MS}`;
 		const token = `${Buffer.from(legacyPayload).toString("base64url")}.${createHmac(
 			"sha256",
 			SECRET,
@@ -90,7 +110,7 @@ describe("capability token", () => {
 
 		expect(verifyCapabilityToken(token, "up", SECRET)).toEqual({
 			ok: true,
-			submissionId,
+			subjectId,
 		});
 		expect(verifyCapabilityToken(token, "dl", SECRET)).toEqual({
 			ok: false,
