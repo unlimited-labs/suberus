@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
-import * as XLSX from "xlsx";
 import { adminRequestMiddleware } from "@/features/auth/server/middleware";
 import { getSetting } from "@/features/settings/server/settings";
 import { getSurveyQuestions } from "@/features/survey/server/survey";
@@ -8,6 +7,7 @@ import { buildUserExportRow } from "@/features/users/server/user-export-row";
 import { getUsers } from "@/features/users/server/users";
 import type { UserRole } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/shared/lib/format-date";
+import { writeXlsxBuffer } from "@/shared/server/xlsx-write";
 
 export const Route = createFileRoute("/api/admin/users/export")({
 	server: {
@@ -46,14 +46,11 @@ export const Route = createFileRoute("/api/admin/users/export")({
 					buildUserExportRow(u, questions, fmtDate),
 				);
 
-				const ws = XLSX.utils.json_to_sheet(rows);
-				const wb = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(wb, ws, "Users");
-				const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+				const buffer = writeXlsxBuffer(rows, "Users");
 
 				const filename = `users-export-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
-				return new Response(buffer, {
+				return new Response(new Uint8Array(buffer), {
 					headers: {
 						"Content-Type":
 							"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

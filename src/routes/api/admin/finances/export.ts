@@ -1,13 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
-import * as XLSX from "xlsx";
 import { adminRequestMiddleware } from "@/features/auth/server/middleware";
 import { grossAmount, netAmount } from "@/features/finances/calc";
 import {
 	getFeeSummary,
 	listFinanceEntries,
 } from "@/features/finances/server/finances";
-import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
+import { writeXlsxBuffer } from "@/shared/server/xlsx-write";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -44,8 +43,8 @@ export const Route = createFileRoute("/api/admin/finances/export")({
 					due: string = "",
 				) => ({
 					Type: type,
-					Item: neutralizeFormula(item),
-					Contractor: neutralizeFormula(contractor),
+					Item: item,
+					Contractor: contractor,
 					Net: round2(net),
 					"VAT %": vatRate ?? "",
 					VAT: round2(gross - net),
@@ -110,14 +109,11 @@ export const Route = createFileRoute("/api/admin/finances/export")({
 					},
 				];
 
-				const ws = XLSX.utils.json_to_sheet(rows);
-				const wb = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(wb, ws, "Finances");
-				const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+				const buffer = writeXlsxBuffer(rows, "Finances");
 
 				const filename = `finances-export-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
 
-				return new Response(buffer, {
+				return new Response(new Uint8Array(buffer), {
 					headers: {
 						"Content-Type":
 							"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

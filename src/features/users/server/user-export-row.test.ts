@@ -94,12 +94,12 @@ describe("buildUserExportRow", () => {
 		expect(lookup(row, "Notes")).toBe("");
 	});
 
-	it("neutralizes formula-injection in text fields and survey answers", () => {
+	it("leaves a formula-looking value intact for the xlsx writer", () => {
 		const row = buildUserExportRow(
 			{ ...baseUser, firstName: "=cmd()" },
 			[{ id: "q1", fieldName: "x", label: "X", type: "TEXT" }],
 			fmtDate,
 		);
-		expect(row["First Name"]).toBe("'=cmd()");
+		expect(row["First Name"]).toBe("=cmd()");
 	});
 });

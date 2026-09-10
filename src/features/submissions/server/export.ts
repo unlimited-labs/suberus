@@ -1,13 +1,12 @@
 import type { Readable } from "node:stream";
 import { ZipArchive } from "archiver";
-import * as XLSX from "xlsx";
 import {
 	buildSubmissionWhereClause,
 	type GetSubmissionsFilters,
 } from "@/features/submissions/server/admin-submissions";
 import { prisma } from "@/shared/server/db.server";
-import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
 import { getFileBuffer } from "@/shared/server/storage";
+import { writeXlsxBuffer } from "@/shared/server/xlsx-write";
 
 export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
 	const where = buildSubmissionWhereClause(filters);
@@ -89,24 +88,16 @@ function buildXlsx(submissions: ExportSubmission[]): Buffer {
 
 		return {
 			Number: s.sequentialNumber,
-			Title: neutralizeFormula(s.title),
-			"Main author": neutralizeFormula(mainName),
-			"Co-authors": neutralizeFormula(coAuthors),
-			Keywords: neutralizeFormula(
-				s.keywords.map((k) => k.keyword.name).join(", "),
-			),
-			Track: neutralizeFormula(s.track?.name ?? ""),
-			Acknowledgment: neutralizeFormula(s.acknowledgment ?? ""),
+			Title: s.title,
+			"Main author": mainName,
+			"Co-authors": coAuthors,
+			Keywords: s.keywords.map((k) => k.keyword.name).join(", "),
+			Track: s.track?.name ?? "",
+			Acknowledgment: s.acknowledgment ?? "",
 		};
 	});
 
-	const wb = XLSX.utils.book_new();
-	XLSX.utils.book_append_sheet(
-		wb,
-		XLSX.utils.json_to_sheet(rows),
-		"Submissions",
-	);
-	return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+	return writeXlsxBuffer(rows, "Submissions");
 }
 
 export async function createSubmissionsZipStream(

@@ -1,7 +1,6 @@
 import { formatSurveyAnswerValue } from "@/features/survey/labels";
 import { formatSubmissionRoles } from "@/features/users/labels";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
-import { neutralizeFormula } from "@/shared/server/spreadsheet-safe";
 import type { AdminUser } from "./users";
 
 export type ExportUser = Pick<
@@ -40,8 +39,9 @@ function buildSurveyColumns(
 	);
 	const columns: Record<string, string> = {};
 	for (const q of questions) {
-		columns[q.fieldName ?? q.label] = neutralizeFormula(
-			formatSurveyAnswerValue(q.type, answerByQuestion.get(q.id) ?? ""),
+		columns[q.fieldName ?? q.label] = formatSurveyAnswerValue(
+			q.type,
+			answerByQuestion.get(q.id) ?? "",
 		);
 	}
 	// oxlint-disable-next-line anti-slop/no-known-value-widening -- survey questions name these columns at runtime
@@ -54,11 +54,11 @@ export function buildUserExportRow(
 	fmtDate: FormatExportDate,
 ) {
 	return {
-		"First Name": neutralizeFormula(user.firstName ?? ""),
-		"Last Name": neutralizeFormula(user.lastName ?? ""),
-		Email: neutralizeFormula(user.email),
-		Title: neutralizeFormula(user.title ?? ""),
-		Affiliation: neutralizeFormula(user.affiliation ?? ""),
+		"First Name": user.firstName ?? "",
+		"Last Name": user.lastName ?? "",
+		Email: user.email,
+		Title: user.title ?? "",
+		Affiliation: user.affiliation ?? "",
 		Role: user.role,
 		Submissions: formatSubmissionRoles(user.submissionRoles),
 		Status: user.isActive ? "Active" : "Inactive",
@@ -66,7 +66,7 @@ export function buildUserExportRow(
 		"Fee Type": user.fee?.type ?? "",
 		"Fee Paid At": fmtDate(user.fee?.paidAt),
 		"Need Invoice": user.needInvoice ? "True" : "False",
-		"Invoice details": neutralizeFormula(user.address ?? ""),
+		"Invoice details": user.address ?? "",
 		"Registration Date": fmtDate(user.createdAt),
 		"Last Login": fmtDate(user.lastLoginAt),
 		...buildSurveyColumns(user.surveyAnswers, questions),

@@ -171,7 +171,7 @@ test.describe("Finances", () => {
 		await expect(page.getByTestId("finances-netto")).toBeVisible();
 	});
 
-	test("XLSX export has correct columns, VAT math, formula eval and neutralizes injection", async ({
+	test("XLSX export has correct columns, VAT math, formula eval and exports formula-looking text verbatim", async ({
 		page,
 	}) => {
 		await page.getByTestId("expense-add").click();
@@ -202,8 +202,8 @@ test.describe("Finances", () => {
 
 		const expenseRow = rows.find((r) => r.Type === "Expense");
 		expect(expenseRow).toBeDefined();
-		expect(expenseRow?.Item).toBe("'=1+2 Venue E2E");
-		expect(expenseRow?.Contractor).toBe("'@Acme E2E");
+		expect(expenseRow?.Item).toBe("=1+2 Venue E2E");
+		expect(expenseRow?.Contractor).toBe("@Acme E2E");
 		expect(expenseRow?.Net).toBe(1000);
 		expect(expenseRow?.["VAT %"]).toBe(23);
 		expect(expenseRow?.VAT).toBe(230);
