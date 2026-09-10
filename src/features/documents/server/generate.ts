@@ -15,7 +15,6 @@ import { fileExists, getFileBuffer, uploadFile } from "@/shared/server/storage";
 
 export const DOCUMENT_GENERATE_QUEUE = "document-generate";
 
-/** The as-received PDF of an uploaded document, kept so a certificate rotation can re-sign from it. */
 export function uploadedDocumentKey(documentId: string): string {
 	return `documents/uploaded/${documentId}.pdf`;
 }
@@ -165,13 +164,16 @@ export async function processDocumentGeneration(
 		);
 	}
 
-	const signing = await loadSigningMaterial();
-	let pdf = doc.template
-		? await renderFromTemplate(doc, doc.template)
-		: await getFileBuffer(uploadedKey);
+	const [rendered, signing] = await Promise.all([
+		doc.template
+			? renderFromTemplate(doc, doc.template)
+			: getFileBuffer(uploadedKey),
+		opts.sign === false ? null : loadSigningMaterial(),
+	]);
+	let pdf = rendered;
 
 	let signed = false;
-	if (signing && opts.sign !== false) {
+	if (signing) {
 		const { cfg } = signing;
 		pdf = await signPdf(pdf, {
 			p12: signing.p12,
