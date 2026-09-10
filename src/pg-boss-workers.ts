@@ -1,4 +1,5 @@
 import type { PgBoss } from "pg-boss";
+import { registerAnnouncementPublishWorker } from "@/features/announcements/server/workers/publish";
 import { registerBulkEmailWorker } from "@/features/bulk-email/server/workers/bulk-email";
 import { registerDocumentGenerateWorker } from "@/features/documents/server/workers/generate";
 import { registerExtractionWorker } from "@/features/extraction/server/workers/extraction";
@@ -9,6 +10,7 @@ export async function registerAllWorkers(boss: PgBoss): Promise<void> {
 	await registerExtractionWorker(boss);
 	await registerAutoplanWorker(boss);
 	await registerBulkEmailWorker(boss);
+	await registerAnnouncementPublishWorker(boss);
 	await registerSubmissionDiffWorker(boss);
 	await registerDocumentGenerateWorker(boss);
 }

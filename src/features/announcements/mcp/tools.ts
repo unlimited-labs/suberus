@@ -5,6 +5,7 @@ import {
 	getAnnouncement,
 	listAnnouncements,
 	placeholderIssues,
+	cancelScheduledPublish,
 	publishAnnouncement,
 	saveAnnouncementDraft,
 } from "@/features/announcements/server/announcements";
@@ -13,6 +14,7 @@ import {
 	announcementCreateInput,
 	announcementDraftInput,
 	announcementIdInput,
+	announcementPublishInput,
 	sheetAnnouncementCreateInput,
 } from "@/features/announcements/validations";
 import { MCP_SCOPE_ANNOUNCEMENTS } from "@/features/mcp/scopes";
@@ -98,13 +100,27 @@ const publish = defineTool({
 	name: "announcement_publish",
 	title: "Publish announcement",
 	description:
-		"Render the announcement for every recipient and put it on their dashboard. Irreversible: it cannot be unpublished, and after this only one person's copy can be edited at a time. Confirm the recipient count with announcement_get first.",
-	input: announcementIdInput,
+		"Render the announcement for every recipient and put it on their dashboard. Irreversible once published: it cannot be unpublished, and after this only one person's copy can be edited at a time. Confirm the recipient count with announcement_get first. Pass scheduledAt (an ISO instant in the future) to delay it; a scheduled announcement stays cancellable with announcement_publish_cancel until it fires.",
+	input: announcementPublishInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_ANNOUNCEMENTS,
 	destructive: true,
 	async handler(input) {
-		return publishAnnouncement(input.id);
+		return publishAnnouncement(input.id, input.scheduledAt);
+	},
+});
+
+const cancelSchedule = defineTool({
+	name: "announcement_publish_cancel",
+	title: "Cancel scheduled publish",
+	description:
+		"Call off an announcement that is SCHEDULED but has not published yet, returning it to an editable draft. Fails with 409 once publishing has started.",
+	input: announcementIdInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_ANNOUNCEMENTS,
+	async handler(input) {
+		await cancelScheduledPublish(input.id);
+		return { success: true };
 	},
 });
 
@@ -143,6 +159,7 @@ export const announcementMcpTools: readonly McpTool[] = [
 	matchSheet,
 	createFromSheet,
 	publish,
+	cancelSchedule,
 	get,
 	list,
 ];

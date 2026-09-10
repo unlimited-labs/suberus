@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { scheduledAtInput } from "@/shared/lib/schedule";
 import {
 	dataMappingTargetSchema,
 	refineSheetCreate,
@@ -19,6 +20,10 @@ export const announcementDraftInput = z.object({
 	id: z.uuid(),
 	subject: z.string(),
 	bodySource: z.string(),
+});
+
+export const announcementPublishInput = announcementIdInput.extend({
+	scheduledAt: scheduledAtInput,
 });
 
 export const announcementCheckInput = announcementIdInput.extend({

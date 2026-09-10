@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useContext } from "react";
 import {
 	formatDate as fmtDate,
 	formatDateTime as fmtDateTime,
+	formatDateTimeWithZone as fmtDateTimeWithZone,
 	formatTime as fmtTime,
 } from "@/shared/lib/format-date";
 
@@ -36,6 +37,8 @@ export function useDateFormat() {
 		formatDate: (date: Date | string) => fmtDate(date, dateFormat),
 		formatDateTime: (date: Date | string) =>
 			fmtDateTime(date, dateFormat, timeFormat),
+		formatDateTimeWithZone: (date: Date | string) =>
+			fmtDateTimeWithZone(date, dateFormat, timeFormat),
 		formatTime: (date: Date | string) => fmtTime(date, timeFormat),
 	};
 }

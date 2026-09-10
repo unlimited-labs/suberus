@@ -92,6 +92,27 @@ recipients and their values attached.
    campaign is queued and delivered one recipient at a time, with a progress bar showing
    how many have been processed. You can close the browser; delivery continues on the server.
 
+## Scheduling the send
+
+Turn on **Schedule for later** in the **Actions** panel and pick a date and time. The
+button changes to **Schedule send**, and the confirmation dialog names the exact moment
+the campaign will go out.
+
+🖼️ [Screenshot placeholder: the Actions panel with Schedule for later turned on]
+
+The time you pick is read in **your browser's timezone** — the line under the picker
+spells out the resolved date, time, and zone, so check it if you are travelling or
+working from a different country to the conference.
+
+A scheduled campaign gets a **SCHEDULED** badge and its send time on the campaign list.
+Its content is frozen: the composer is read-only, exactly as it is for a sent campaign.
+To change anything, click **Cancel schedule** — the campaign returns to an editable
+draft and you can schedule it again afterwards. **Send test** stays available the whole
+time.
+
+Cancelling is only possible while the campaign is still waiting. Once the send starts
+the button is gone and the campaign behaves like any other send in progress.
+
 ## Saving the message in the profile too
 
 While the campaign is a draft, **Save in user profile** in the **In-app copy** panel
@@ -134,7 +155,10 @@ same set of files.
 | **Preview** | The rendered email. HTML formats render in a sandboxed frame; plain text shows verbatim. |
 | **Save draft** | Stores your edits without sending. You can return to the draft later. |
 | **Send test** | Sends one copy to your own address with sample placeholder values. |
-| **Send campaign** | Asks for confirmation (the send cannot be stopped once started), then renders the final body, queues the campaign, and starts delivery. |
+| **Schedule for later** | Turns the send into a scheduled one and reveals the date/time picker. The time is read in your browser's timezone, shown in full underneath. |
+| **Send time** | When the campaign goes out. Must be in the future. Leave **Schedule for later** off to send immediately. |
+| **Send campaign** / **Schedule send** | Asks for confirmation (the send cannot be stopped once started), then renders the final body and either starts delivery or holds the campaign until the chosen time. |
+| **Cancel schedule** | Shown on a SCHEDULED campaign: calls off the pending send and returns the campaign to an editable draft. Unavailable once the send has begun. |
 | **SENT badge** | Shown next to a recipient once their message went out. Hover it for an envelope icon, click to read the delivered copy — final subject, delivery time, and the body with that person's placeholder values already filled in. Campaigns sent before this archive existed show a plain badge that does not open. |
 | **Copy to new draft** | Shown once a campaign has been sent: clones the subject, body, format, Reply-To, attachments, and the exact recipient list into a fresh draft you can edit and resend. |
 
@@ -163,8 +187,9 @@ mid-campaign, it continues with the recipients that haven't been sent yet rather
 than starting over.
 
 <Aside type="caution">
-There is no "unsend". Always use **Send test** first, and double-check the
-recipient count before clicking **Send campaign**.
+There is no "unsend" once delivery starts. A **scheduled** campaign is the one exception
+— **Cancel schedule** calls it off while it is still waiting. Either way, use **Send
+test** first and double-check the recipient count.
 </Aside>
 
 ## History

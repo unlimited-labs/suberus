@@ -8,6 +8,7 @@ import {
 	getAnnouncement,
 	listAnnouncements,
 	placeholderIssues,
+	cancelScheduledPublish,
 	publishAnnouncement,
 	saveAnnouncementDraft,
 } from "@/features/announcements/server/announcements";
@@ -27,6 +28,7 @@ import {
 	announcementCreateInput,
 	announcementDraftInput,
 	announcementIdInput,
+	announcementPublishInput,
 	announcementRecipientIdInput,
 	recipientUpdateInput,
 	sheetAnnouncementCreateInput,
@@ -66,10 +68,18 @@ export const saveAnnouncementDraftFn = createServerFn({ method: "POST" })
 		return { ok: true as const };
 	});
 
-export const publishAnnouncementFn = createServerFn({ method: "POST" })
+export const cancelScheduledAnnouncementFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(announcementIdInput)
-	.handler(async ({ data }) => publishAnnouncement(data.id));
+	.handler(async ({ data }) => {
+		await cancelScheduledPublish(data.id);
+		return { success: true };
+	});
+
+export const publishAnnouncementFn = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(announcementPublishInput)
+	.handler(async ({ data }) => publishAnnouncement(data.id, data.scheduledAt));
 
 export const deleteAnnouncementFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])

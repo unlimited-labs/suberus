@@ -21,9 +21,13 @@ function sheetFile(rows: unknown[][]) {
 	}
 }
 
-async function publish(page: Page) {
+async function confirmPublish(page: Page) {
 	await page.getByTestId("publish-announcement-btn").click()
 	await page.getByTestId("confirm-publish-btn").click()
+}
+
+async function publish(page: Page) {
+	await confirmPublish(page)
 	await expect(page.getByTestId("announcement-status")).toHaveText("PUBLISHED", {
 		timeout: 15000,
 	})
@@ -288,6 +292,70 @@ test.describe("Admin - Announcements", () => {
 				await db.emailCampaign.delete({ where: { id: campaignId } }).catch(() => {})
 			}
 			await deleteTestUser(user.id)
+		}
+	})
+	test("schedules a publish and cancels it back to a draft", async ({
+		page,
+		testRun,
+	}) => {
+		const runId = testRun.testRunId
+		const db = getPrisma()
+		const reader = await createTestUser({
+			email: `sched-${runId}@e2e.local`,
+			firstName: "Sched",
+			lastName: "Reader",
+			role: "AUTHOR",
+		})
+		const publishAt = `${new Date().getFullYear() + 1}-06-01T09:00`
+		const announcement = await db.announcement.create({
+			data: {
+				subject: `Scheduled ${runId}`,
+				bodySource: "Hi {{firstName}}",
+				status: "DRAFT",
+				totalRecipients: 1,
+				recipients: { create: [{ userId: reader.id, firstName: "Sched" }] },
+			},
+		})
+
+		try {
+			await page.goto(`/admin/announcements/${announcement.id}`)
+			await expect(page.getByTestId("announcement-status")).toHaveText("DRAFT")
+
+			await page.getByTestId("announcement-schedule-switch").click()
+			await page.getByTestId("announcement-schedule-input").fill(publishAt)
+			await confirmPublish(page)
+
+			await expect(page.getByTestId("announcement-status")).toHaveText(
+				"SCHEDULED",
+				{ timeout: 15000 },
+			)
+			await expect(
+				page.getByTestId("announcement-scheduled-for"),
+			).toContainText("Publishes")
+
+			expect(
+				await db.announcementRecipient.count({
+					where: { announcementId: announcement.id, publishedAt: { not: null } },
+				}),
+			).toBe(0)
+
+			await page.getByTestId("cancel-schedule-btn").click()
+
+			await expect(page.getByTestId("announcement-status")).toHaveText("DRAFT")
+			await expect
+				.poll(async () => {
+					const a = await db.announcement.findUnique({
+						where: { id: announcement.id },
+						select: { status: true, scheduledAt: true },
+					})
+					return `${a?.status}|${a?.scheduledAt === null}`
+				})
+				.toBe("DRAFT|true")
+		} finally {
+			await db.announcement
+				.delete({ where: { id: announcement.id } })
+				.catch(() => {})
+			await deleteTestUser(reader.id)
 		}
 	})
 })

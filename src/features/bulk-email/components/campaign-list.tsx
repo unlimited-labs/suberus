@@ -30,7 +30,7 @@ export function CampaignList() {
 	const { data: campaigns } = useSuspenseQuery(
 		bulkEmailCampaignsQueryOptions(),
 	);
-	const { formatDateTime } = useDateFormat();
+	const { formatDateTime, formatDateTimeWithZone } = useDateFormat();
 	const [importOpen, setImportOpen] = useState(false);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -89,7 +89,10 @@ export function CampaignList() {
 												{c.subject || "(no subject)"}
 											</p>
 											<p className="text-muted-foreground text-xs">
-												{formatDateTime(c.createdAt)} · {c.format}
+												{c.status === "SCHEDULED" && c.scheduledAt
+													? `Sends ${formatDateTimeWithZone(c.scheduledAt)}`
+													: formatDateTime(c.createdAt)}{" "}
+												· {c.format}
 											</p>
 										</div>
 										<div className="flex shrink-0 items-center gap-3 text-sm">

@@ -11,6 +11,7 @@ import {
 	createCampaignFromSheet,
 	createDraftCampaign,
 	deleteCampaign,
+	cancelScheduledSend,
 	duplicateCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
@@ -28,6 +29,7 @@ import {
 	type campaignFormatSchema,
 	campaignIdInput,
 	campaignPreviewInput,
+	campaignSendInput,
 	recipientIdInput,
 	sheetCampaignCreateInput,
 } from "@/features/bulk-email/validations";
@@ -93,9 +95,17 @@ export const sendBulkEmailTest = createServerFn({ method: "POST" })
 
 export const sendBulkEmailCampaign = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(campaignIdInput)
+	.validator(campaignSendInput)
 	.handler(async ({ data, context }) => {
-		return finalizeAndEnqueue(data.id, context.user.id);
+		return finalizeAndEnqueue(data.id, context.user.id, data.scheduledAt);
+	});
+
+export const cancelScheduledBulkEmail = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(campaignIdInput)
+	.handler(async ({ data }) => {
+		await cancelScheduledSend(data.id);
+		return { success: true };
 	});
 
 export const deleteBulkEmailCampaign = createServerFn({ method: "POST" })

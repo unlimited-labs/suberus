@@ -673,6 +673,128 @@ test.describe("Admin - Bulk Email", () => {
 		}
 	})
 
+	test("schedules a campaign and cancels it back to a draft", async ({
+		page,
+		testRun,
+	}) => {
+		const runId = testRun.testRunId
+		const db = getPrisma()
+		const sendAt = `${new Date().getFullYear() + 1}-06-01T09:00`
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: `Scheduled ${runId}`,
+				format: "MARKDOWN",
+				bodySource: "Hi {{firstName}}",
+				status: "DRAFT",
+				totalRecipients: 1,
+				recipients: {
+					create: [
+						{
+							email: `ivy-${runId}@e2e.local`,
+							firstName: "Ivy",
+							status: "PENDING",
+						},
+					],
+				},
+			},
+		})
+
+		try {
+			await page.goto(`/admin/bulk-email/${campaign.id}`)
+			await expect(page.getByTestId("campaign-status")).toHaveText("DRAFT")
+
+			await expect(
+				page.getByRole("switch", { name: "Schedule for later" }),
+			).toBeVisible()
+			await page.getByTestId("campaign-schedule-switch").click()
+			await page.getByTestId("campaign-schedule-input").fill(sendAt)
+			await expect(page.getByTestId("send-campaign-btn")).toContainText(
+				"Schedule send",
+			)
+			await sendCampaign(page)
+
+			await expect(page.getByTestId("campaign-status")).toHaveText("SCHEDULED")
+			await expect(page.getByTestId("campaign-subject")).toBeDisabled()
+			await expect(page.getByTestId("campaign-scheduled-for")).toContainText(
+				"Sends",
+			)
+
+			await expect
+				.poll(async () => {
+					const c = await db.emailCampaign.findUnique({
+						where: { id: campaign.id },
+						select: { status: true, scheduledAt: true },
+					})
+					return `${c?.status}|${c?.scheduledAt !== null}`
+				})
+				.toBe("SCHEDULED|true")
+
+			await page.getByTestId("cancel-schedule-btn").click()
+
+			await expect(page.getByTestId("campaign-status")).toHaveText("DRAFT")
+			await expect(page.getByTestId("campaign-subject")).toBeEnabled()
+			await expect(page.getByTestId("send-campaign-btn")).toBeVisible()
+			await expect
+				.poll(async () => {
+					const c = await db.emailCampaign.findUnique({
+						where: { id: campaign.id },
+						select: { status: true, scheduledAt: true },
+					})
+					return `${c?.status}|${c?.scheduledAt === null}`
+				})
+				.toBe("DRAFT|true")
+		} finally {
+			await db.emailCampaign.delete({ where: { id: campaign.id } }).catch(() => {})
+			await clearMailpit(runId)
+		}
+	})
+
+	test("scheduled state survives a cold reload without hydration errors", async ({
+		page,
+		testRun,
+	}) => {
+		const runId = testRun.testRunId
+		const db = getPrisma()
+		const campaign = await db.emailCampaign.create({
+			data: {
+				subject: `Cold ${runId}`,
+				format: "MARKDOWN",
+				bodySource: "Hi {{firstName}}",
+				renderedHtml: "<p>Hi</p>",
+				status: "SCHEDULED",
+				scheduledAt: new Date(`${new Date().getFullYear() + 1}-06-01T09:00:00Z`),
+				totalRecipients: 1,
+				recipients: {
+					create: [
+						{
+							email: `jo-${runId}@e2e.local`,
+							firstName: "Jo",
+							status: "PENDING",
+						},
+					],
+				},
+			},
+		})
+
+		const hydrationErrors: string[] = []
+		page.on("console", (msg) => {
+			if (/hydrat/i.test(msg.text())) hydrationErrors.push(msg.text())
+		})
+
+		try {
+			await page.goto(`/admin/bulk-email/${campaign.id}`)
+
+			await expect(page.getByTestId("campaign-status")).toHaveText("SCHEDULED")
+			await expect(page.getByTestId("campaign-scheduled-for")).toContainText(
+				"Sends",
+			)
+			await expect(page.getByTestId("cancel-schedule-btn")).toBeVisible()
+			expect(hydrationErrors).toEqual([])
+		} finally {
+			await db.emailCampaign.delete({ where: { id: campaign.id } }).catch(() => {})
+		}
+	})
+
 	test("non-admin cannot reach the bulk-email page", async ({ page }) => {
 		await loginAs(page, TEST_USER, { clearCookies: true })
 		await page.goto("/admin/bulk-email")

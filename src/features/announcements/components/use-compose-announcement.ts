@@ -6,6 +6,7 @@ import {
 	announcementIssuesQueryOptions,
 	announcementQueryOptions,
 	announcementsQueryOptions,
+	cancelScheduledAnnouncementFn,
 	deleteAnnouncementFn,
 	type getAnnouncementById,
 	publishAnnouncementFn,
@@ -14,6 +15,7 @@ import {
 import { announcementDraftInput } from "@/features/announcements/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useDebounce } from "@/shared/hooks/use-debounce";
+import { useSchedule } from "@/shared/hooks/use-schedule";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { extractTokens } from "@/shared/lib/placeholders";
 
@@ -25,6 +27,9 @@ export function useComposeAnnouncement(announcement: Announcement) {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const isDraft = announcement.status === "DRAFT";
+	const isScheduled = announcement.status === "SCHEDULED";
+	const schedule = useSchedule();
+	const scheduledIso = schedule.iso;
 
 	const form = useAppForm({
 		defaultValues: {
@@ -69,15 +74,31 @@ ${debouncedBody}`);
 	const publishMutation = useMutation({
 		mutationFn: async () => {
 			await persist();
-			return publishAnnouncementFn({ data: { id: announcement.id } });
+			return publishAnnouncementFn({
+				data: { id: announcement.id, scheduledAt: scheduledIso ?? undefined },
+			});
 		},
 		onSuccess: (r) => {
 			toast.success(
-				`Published to ${r.totalRecipients} ${r.totalRecipients === 1 ? "person" : "people"}`,
+				scheduledIso
+					? "Announcement scheduled"
+					: `Published to ${r.totalRecipients} ${r.totalRecipients === 1 ? "person" : "people"}`,
 			);
 			void invalidate();
 		},
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to publish")),
+	});
+
+	const cancelScheduleMutation = useMutation({
+		mutationFn: () =>
+			cancelScheduledAnnouncementFn({ data: { id: announcement.id } }),
+		onSuccess: () => {
+			schedule.setEnabled(false);
+			toast.success("Schedule cancelled");
+			void invalidate();
+		},
+		onError: (e) =>
+			toast.error(getErrorMessage(e, "Failed to cancel the schedule")),
 	});
 
 	const removeMutation = useMutation({
@@ -102,14 +123,20 @@ ${debouncedBody}`);
 
 	return {
 		isDraft,
+		isScheduled,
+		schedule,
+		scheduledIso,
+		cancelSchedule: cancelScheduleMutation.mutate,
+		isCancellingSchedule: cancelScheduleMutation.isPending,
 		issues,
 		form,
 		bodySource,
-		canPublish: formReady && (issues?.unknown.length ?? 0) === 0,
+		canPublish:
+			formReady && (issues?.unknown.length ?? 0) === 0 && schedule.ready,
 		save: saveMutation.mutate,
 		isSaving: saveMutation.isPending,
 		publish: publishMutation.mutate,
-		isPublishing: publishMutation.isPending,
+		isPublishPending: publishMutation.isPending,
 		remove: removeMutation.mutate,
 		isRemoving: removeMutation.isPending,
 	};

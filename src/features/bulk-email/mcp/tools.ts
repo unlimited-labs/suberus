@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
 	createCampaignFromSheet,
+	cancelScheduledSend,
 	createDraftCampaign,
 	finalizeAndEnqueue,
 	getCampaign,
@@ -14,6 +15,7 @@ import {
 	campaignCreateInput,
 	campaignDraftInput,
 	campaignIdInput,
+	campaignSendInput,
 	sheetCampaignCreateInput,
 } from "@/features/bulk-email/validations";
 import { MCP_SCOPE_EMAIL_SEND } from "@/features/mcp/scopes";
@@ -72,13 +74,27 @@ const sendCampaign = defineTool({
 	name: "email_send",
 	title: "Send email campaign",
 	description:
-		"Queue the campaign for delivery to every recipient. Irreversible — the emails go out. Confirm the recipient count with email_campaign_get and preview with email_draft_test first.",
-	input: campaignIdInput,
+		"Queue the campaign for delivery to every recipient. Irreversible once it goes out — confirm the recipient count with email_campaign_get and preview with email_draft_test first. Pass scheduledAt (an ISO instant in the future) to delay the send; a scheduled campaign stays cancellable with email_send_cancel until it fires.",
+	input: campaignSendInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_EMAIL_SEND,
 	destructive: true,
 	async handler(input, actor) {
-		return finalizeAndEnqueue(input.id, actor.id);
+		return finalizeAndEnqueue(input.id, actor.id, input.scheduledAt);
+	},
+});
+
+const cancelSchedule = defineTool({
+	name: "email_send_cancel",
+	title: "Cancel scheduled send",
+	description:
+		"Call off a campaign that is SCHEDULED but has not fired yet, returning it to an editable draft. Fails with 409 once the send has started.",
+	input: campaignIdInput,
+	roles: ADMIN_AND_EDITOR,
+	scope: MCP_SCOPE_EMAIL_SEND,
+	async handler(input) {
+		await cancelScheduledSend(input.id);
+		return { success: true };
 	},
 });
 
@@ -160,6 +176,7 @@ export const bulkEmailMcpTools: readonly McpTool[] = [
 	updateDraft,
 	sendTest,
 	sendCampaign,
+	cancelSchedule,
 	getCampaignTool,
 	listCampaignsTool,
 ];

@@ -1,6 +1,6 @@
+import type { AnnouncementStatus } from "@/generated/prisma/enums";
 import { lookup } from "@/shared/lib/lookup";
 import {
-	applyPlaceholders,
 	BUILTIN_PLACEHOLDER_KEYS,
 	extractTokens,
 	parseDataColumns,
@@ -11,13 +11,16 @@ import {
 	unknownTokens,
 } from "@/shared/lib/placeholders";
 import { buildRecipientSnapshot } from "@/shared/lib/recipient-snapshot";
+import { FUTURE_INSTANT_MESSAGE, isFutureInstant } from "@/shared/lib/schedule";
 import { prisma } from "@/shared/server/db.server";
+import { ensureQueueAndSend } from "@/shared/server/queue";
 import {
 	loadRecipientSnapshots,
 	loadSnapshotUsers,
 } from "@/shared/server/recipient-snapshot";
 import { matchSheetRows } from "@/shared/server/sheet-match";
 import type { SheetAnnouncementCreateInput } from "../validations";
+import { deliverAnnouncement } from "./deliver";
 import { markdownToAnnouncementHtml } from "./sanitize";
 
 export interface SaveAnnouncementDraftInput {
@@ -27,9 +30,6 @@ export interface SaveAnnouncementDraftInput {
 
 /** Cap on recipient rows hydrated into the composer; `totalRecipients` holds the truth. */
 export const RECIPIENT_PREVIEW_LIMIT = 200;
-
-/** Rows updated per transaction at publish. */
-const PUBLISH_CHUNK = 500;
 
 export async function insertAnnouncement(
 	snapshots: RecipientSnapshot[],
@@ -180,6 +180,7 @@ export async function listAnnouncements() {
 			totalRecipients: true,
 			createdAt: true,
 			publishedAt: true,
+			scheduledAt: true,
 		},
 		orderBy: { createdAt: "desc" },
 		take: 100,
@@ -290,7 +291,11 @@ ${bodySource}`),
 
 export async function publishAnnouncement(
 	id: string,
+	scheduledAt?: string,
 ): Promise<{ totalRecipients: number }> {
+	if (scheduledAt !== undefined && !isFutureInstant(scheduledAt)) {
+		throw new Response(FUTURE_INSTANT_MESSAGE, { status: 400 });
+	}
 	const announcement = await prisma.announcement.findUnique({ where: { id } });
 	if (!announcement)
 		throw new Response("Announcement not found", { status: 404 });
@@ -310,48 +315,60 @@ export async function publishAnnouncement(
 	);
 
 	const renderedHtml = markdownToAnnouncementHtml(announcement.bodySource);
-	const recipients = await prisma.announcementRecipient.findMany({
-		where: { announcementId: id },
-		select: {
-			id: true,
-			firstName: true,
-			lastName: true,
-			titles: true,
-			data: true,
-		},
-	});
-	const publishedAt = new Date();
 
-	// ponytail: 500-row chunks; a batch update via unnest if an announcement ever
-	// outgrows MAX_SHEET_ROWS.
-	for (let i = 0; i < recipients.length; i += PUBLISH_CHUNK) {
-		const chunk = recipients.slice(i, i + PUBLISH_CHUNK);
-		await prisma.$transaction(
-			chunk.map((recipient) => {
-				const values = recipientValues({
-					...recipient,
-					data: parseRecipientData(recipient.data),
-				});
-				return prisma.announcementRecipient.update({
-					where: { id: recipient.id },
-					data: {
-						renderedSubject: applyPlaceholders(
-							announcement.subject,
-							values,
-							false,
-						),
-						renderedBody: applyPlaceholders(renderedHtml, values, true),
-						publishedAt,
-					},
-				});
-			}),
-		);
+	if (scheduledAt) {
+		await prisma.announcement.update({
+			where: { id },
+			data: {
+				status: "SCHEDULED",
+				scheduledAt: new Date(scheduledAt),
+				renderedHtml,
+			},
+		});
+		try {
+			await ensureQueueAndSend(
+				"announcement-publish",
+				{ announcementId: id, scheduledAt },
+				{ retryLimit: 3, retryDelay: 10, startAfter: new Date(scheduledAt) },
+			);
+		} catch (error) {
+			await releaseAnnouncementToDraft(id, ["SCHEDULED"]);
+			throw error;
+		}
+		return { totalRecipients: announcement.totalRecipients };
 	}
 
-	await prisma.announcement.update({
-		where: { id },
-		data: { status: "PUBLISHED", renderedHtml, publishedAt },
+	const claimed = await prisma.announcement.updateMany({
+		where: { id, status: "DRAFT" },
+		data: { status: "PUBLISHING", renderedHtml },
 	});
+	if (claimed.count === 0) {
+		throw new Response("Announcement already published", { status: 409 });
+	}
+	try {
+		return await deliverAnnouncement(id, {
+			subject: announcement.subject,
+			renderedHtml,
+		});
+	} catch (error) {
+		await releaseAnnouncementToDraft(id, ["PUBLISHING"]);
+		throw error;
+	}
+}
 
-	return { totalRecipients: recipients.length };
+export async function releaseAnnouncementToDraft(
+	id: string,
+	from: AnnouncementStatus[],
+): Promise<number> {
+	const released = await prisma.announcement.updateMany({
+		where: { id, status: { in: from } },
+		data: { status: "DRAFT", scheduledAt: null, renderedHtml: null },
+	});
+	return released.count;
+}
+
+export async function cancelScheduledPublish(id: string): Promise<void> {
+	if ((await releaseAnnouncementToDraft(id, ["SCHEDULED"])) === 0) {
+		throw new Response("Announcement is no longer scheduled", { status: 409 });
+	}
 }

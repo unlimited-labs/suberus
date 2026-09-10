@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
 	bulkEmailCampaignQueryOptions,
 	bulkEmailCampaignsQueryOptions,
+	cancelScheduledBulkEmail,
 	deleteBulkEmailCampaign,
 	duplicateBulkEmailCampaign,
 	type getBulkEmailCampaign,
@@ -15,10 +16,12 @@ import {
 	sendBulkEmailCampaign,
 	sendBulkEmailTest,
 } from "@/features/bulk-email/api/bulk-email";
+import { hasLiveJob } from "@/features/bulk-email/server/bulk-email-status";
 import { campaignDraftInput } from "@/features/bulk-email/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useDebounce } from "@/shared/hooks/use-debounce";
 import { useJobSSE } from "@/shared/hooks/use-job-sse";
+import { useSchedule } from "@/shared/hooks/use-schedule";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { extractTokens } from "@/shared/lib/placeholders";
 
@@ -32,6 +35,7 @@ export function useComposeCampaign(campaign: Campaign) {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const isDraft = campaign.status === "DRAFT";
+	const isScheduled = campaign.status === "SCHEDULED";
 
 	const form = useAppForm({
 		defaultValues: {
@@ -44,7 +48,11 @@ export function useComposeCampaign(campaign: Campaign) {
 		validators: { onChange: composeSchema },
 	});
 
-	const [jobId, setJobId] = useState<string | null>(campaign.jobProgressId);
+	const [jobId, setJobId] = useState<string | null>(
+		hasLiveJob(campaign.status) ? campaign.jobProgressId : null,
+	);
+	const schedule = useSchedule();
+	const scheduledIso = schedule.iso;
 
 	const format = useSelector(form.store, (s) => s.values.format);
 	const bodySource = useSelector(form.store, (s) => s.values.bodySource);
@@ -98,16 +106,31 @@ ${debouncedBody}`);
 	const sendMutation = useMutation({
 		mutationFn: async () => {
 			await persist();
-			return sendBulkEmailCampaign({ data: { id: campaign.id } });
+			return sendBulkEmailCampaign({
+				data: { id: campaign.id, scheduledAt: scheduledIso ?? undefined },
+			});
 		},
 		onSuccess: (r) => {
-			setJobId(r.jobProgressId);
-			toast.success("Campaign queued");
+			setJobId(scheduledIso ? null : r.jobProgressId);
+			toast.success(scheduledIso ? "Campaign scheduled" : "Campaign queued");
 			queryClient.invalidateQueries({
 				queryKey: bulkEmailCampaignQueryOptions(campaign.id).queryKey,
 			});
 		},
 		onError: (e) => toast.error(getErrorMessage(e, "Failed to send campaign")),
+	});
+
+	const cancelScheduleMutation = useMutation({
+		mutationFn: () => cancelScheduledBulkEmail({ data: { id: campaign.id } }),
+		onSuccess: () => {
+			schedule.setEnabled(false);
+			toast.success("Schedule cancelled");
+			queryClient.invalidateQueries({
+				queryKey: bulkEmailCampaignQueryOptions(campaign.id).queryKey,
+			});
+		},
+		onError: (e) =>
+			toast.error(getErrorMessage(e, "Failed to cancel the schedule")),
 	});
 
 	const removeMutation = useMutation({
@@ -159,11 +182,16 @@ ${debouncedBody}`);
 			s.values.bodySource.trim() !== "" &&
 			s.isValid,
 	);
-	const canSend = formReady && !hasUnknownTokens;
+	const canSend = formReady && !hasUnknownTokens && schedule.ready;
 
 	return {
 		isDraft,
+		isScheduled,
 		canSend,
+		schedule,
+		scheduledIso,
+		cancelSchedule: cancelScheduleMutation.mutate,
+		isCancellingSchedule: cancelScheduleMutation.isPending,
 		issues,
 		form,
 		preview,

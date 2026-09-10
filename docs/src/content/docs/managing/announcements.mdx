@@ -71,11 +71,30 @@ address twice. Correct the file and upload it again.
 2. **Save draft** stores your edits. **Publish** stays disabled until both the subject
    and the body are filled in and every `{{token}}` you wrote is a real placeholder.
 3. **Publish** asks for confirmation, then renders the message once per recipient with
-   their own values and puts it on their dashboard straight away. There is no queue and
-   no waiting.
+   their own values and puts it on their dashboard straight away.
 
 Publishing cannot be undone, and a published announcement cannot be rewritten for
 everyone at once. What you can still change is one person's copy — see below.
+
+## Scheduling the publish
+
+Turn on **Schedule for later** in the **Actions** panel and pick a date and time; the
+button becomes **Schedule publish**, and the confirmation dialog names the exact moment.
+
+🖼️ [Screenshot placeholder: the Actions panel with Schedule for later turned on]
+
+The time is read in **your browser's timezone** — the line under the picker spells out
+the resolved date, time and zone.
+
+| Field | What it does |
+|---|---|
+| **Schedule for later** | Turns the publish into a scheduled one and reveals the date/time picker. |
+| **Publish time** | When the announcement lands on the dashboards. Must be in the future. |
+| **Cancel schedule** | Shown on a SCHEDULED announcement: calls off the pending publish and returns it to an editable draft. Unavailable once publishing has begun. |
+
+A scheduled announcement carries a **SCHEDULED** badge and its publish time on the list,
+and is read-only until it fires. Nobody can see it in the meantime — recipients only get
+the announcement at the moment it publishes. Use **Cancel schedule** to edit it again.
 
 ## What the recipient sees
 

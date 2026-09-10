@@ -15,23 +15,30 @@ export async function createCampaignAnnouncement(input: {
 	userIds: string[];
 }): Promise<string | null> {
 	if (input.userIds.length === 0) return null;
-	// A retried finalize must not hit the unique sourceCampaignId and strand the campaign.
-	const existing = await prisma.announcement.findUnique({
+	const content = {
+		subject: input.subject,
+		bodySource: input.bodySource,
+		renderedHtml: input.renderedBodyTemplate,
+		dataColumns: input.dataColumns,
+		totalRecipients: input.userIds.length,
+	};
+	// Upserted, not created: a retried or re-scheduled finalize must neither hit
+	// the unique sourceCampaignId nor deliver the content of the abandoned run.
+	const announcement = await prisma.announcement.upsert({
 		where: { sourceCampaignId: input.campaignId },
-		select: { id: true },
-	});
-	if (existing) return existing.id;
-	const announcement = await prisma.announcement.create({
-		data: {
+		update: {
+			...content,
+			recipients: {
+				deleteMany: {},
+				create: input.userIds.map((userId) => ({ userId })),
+			},
+		},
+		create: {
+			...content,
 			sourceCampaignId: input.campaignId,
 			createdById: input.createdById,
-			subject: input.subject,
-			bodySource: input.bodySource,
-			renderedHtml: input.renderedBodyTemplate,
-			dataColumns: input.dataColumns,
 			status: "PUBLISHED",
 			publishedAt: new Date(),
-			totalRecipients: input.userIds.length,
 			recipients: { create: input.userIds.map((userId) => ({ userId })) },
 		},
 	});

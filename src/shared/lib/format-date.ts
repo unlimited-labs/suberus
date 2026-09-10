@@ -72,6 +72,23 @@ export function formatDateTime(
 	return `${datePart}, ${timePart}`;
 }
 
+const zoneFormatter = new Intl.DateTimeFormat(undefined, {
+	timeZoneName: "short",
+});
+
+export function formatDateTimeWithZone(
+	date: Date | string,
+	dateFormat: string,
+	timeFormat: string,
+): string {
+	const stamp = formatDateTime(date, dateFormat, timeFormat);
+	if (!stamp) return "";
+	const zone = zoneFormatter
+		.formatToParts(toDate(date))
+		.find((part) => part.type === "timeZoneName")?.value;
+	return zone ? `${stamp} ${zone}` : stamp;
+}
+
 export function formatRelativeTime(date: Date | string): string {
 	const d = toDate(date);
 	if (!isValid(d)) return "";

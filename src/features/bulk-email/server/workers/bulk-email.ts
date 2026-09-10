@@ -18,11 +18,12 @@ import { loadAttachmentBuffers } from "../attachments";
 import { buildRecipientMail, type CampaignContent } from "../bulk-email-send";
 import {
 	finalCampaignStatus,
-	isResumableCampaignStatus,
+	RESUMABLE_CAMPAIGN_STATUSES,
 } from "../bulk-email-status";
 
 export interface BulkEmailJobData {
 	campaignId: string;
+	scheduledAt?: string | null;
 }
 
 const sleep = (ms: number): Promise<void> =>
@@ -34,7 +35,7 @@ type Campaign = NonNullable<
 
 async function handleBulkEmail(jobs: Job<BulkEmailJobData>[]): Promise<void> {
 	for (const job of jobs) {
-		await processCampaign(job.data.campaignId);
+		await processCampaign(job.data.campaignId, job.data.scheduledAt ?? null);
 	}
 }
 
@@ -149,11 +150,28 @@ async function reportProgress(
 	}
 }
 
-async function beginSending(campaign: Campaign): Promise<void> {
-	await prisma.emailCampaign.update({
-		where: { id: campaign.id },
+async function claimCampaign(
+	campaign: Campaign,
+	scheduledAt: string | null,
+): Promise<boolean> {
+	const claimed = await prisma.emailCampaign.updateMany({
+		where: {
+			id: campaign.id,
+			status: { in: RESUMABLE_CAMPAIGN_STATUSES },
+			scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+		},
 		data: { status: "SENDING" },
 	});
+	if (claimed.count === 0) {
+		logger.info(
+			`[bulk-email] campaign ${campaign.id} not claimable (status ${campaign.status}), skipping`,
+		);
+		return false;
+	}
+	return true;
+}
+
+async function beginSending(campaign: Campaign): Promise<void> {
 	if (!campaign.jobProgressId) return;
 	await setJobStage(
 		campaign.jobProgressId,
@@ -187,24 +205,14 @@ async function finishCampaign(
 	);
 }
 
-async function canSend(campaign: Campaign): Promise<boolean> {
-	if (!isResumableCampaignStatus(campaign.status)) {
-		logger.info(
-			`[bulk-email] campaign ${campaign.id} status ${campaign.status}, skipping`,
-		);
-		return false;
-	}
-	if (campaign.renderedHtml === null) {
-		const msg = "campaign has no rendered body";
-		logger.error(`[bulk-email] ${campaign.id}: ${msg}`);
-		await prisma.emailCampaign.update({
-			where: { id: campaign.id },
-			data: { status: "FAILED" },
-		});
-		if (campaign.jobProgressId) await failJob(campaign.jobProgressId, msg);
-		return false;
-	}
-	return true;
+async function failMissingBody(campaign: Campaign): Promise<void> {
+	const msg = "campaign has no rendered body";
+	logger.error(`[bulk-email] ${campaign.id}: ${msg}`);
+	await prisma.emailCampaign.update({
+		where: { id: campaign.id },
+		data: { status: "FAILED" },
+	});
+	if (campaign.jobProgressId) await failJob(campaign.jobProgressId, msg);
 }
 
 /**
@@ -215,7 +223,10 @@ async function canSend(campaign: Campaign): Promise<boolean> {
  * re-sending. At-least-once: a crash in the tiny window between SMTP accept and
  * the status write may resend that one recipient.
  */
-async function processCampaign(campaignId: string): Promise<void> {
+async function processCampaign(
+	campaignId: string,
+	scheduledAt: string | null,
+): Promise<void> {
 	const campaign = await prisma.emailCampaign.findUnique({
 		where: { id: campaignId },
 	});
@@ -223,7 +234,11 @@ async function processCampaign(campaignId: string): Promise<void> {
 		logger.warn(`[bulk-email] campaign ${campaignId} not found`);
 		return;
 	}
-	if (!(await canSend(campaign)) || campaign.renderedHtml === null) return;
+	if (!(await claimCampaign(campaign, scheduledAt))) return;
+	if (campaign.renderedHtml === null) {
+		await failMissingBody(campaign);
+		return;
+	}
 
 	await beginSending(campaign);
 

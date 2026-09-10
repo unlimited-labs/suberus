@@ -1,5 +1,6 @@
 import {
 	IconBraces,
+	IconCalendarClock,
 	IconCopy,
 	IconDeviceFloppy,
 	IconFlask,
@@ -8,6 +9,7 @@ import {
 	IconSend,
 	IconSpeakerphone,
 	IconTrash,
+	IconX,
 	IconUsers,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -19,6 +21,8 @@ import type {
 } from "@/generated/prisma/enums";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PlaceholderHelp } from "@/shared/components/placeholder-help";
+import { ScheduleField } from "@/shared/components/schedule-field";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import type { CodeLang } from "@/shared/lib/code-highlighter";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -55,7 +59,7 @@ function statusVariant(
 	status: EmailCampaignStatus,
 ): "default" | "secondary" | "destructive" {
 	if (status === "FAILED") return "destructive";
-	if (status === "DRAFT") return "secondary";
+	if (status === "DRAFT" || status === "SCHEDULED") return "secondary";
 	return "default";
 }
 
@@ -64,6 +68,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 		bulkEmailCampaignQueryOptions(campaignId),
 	);
 	const compose = useComposeCampaign(campaign);
+	const { formatDateTimeWithZone } = useDateFormat();
 	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	return (
@@ -237,14 +242,25 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 								<div className="space-y-3 text-sm">
 									{compose.isDraft ? (
 										<>
+											<ScheduleField
+												control={compose.schedule}
+												label="Schedule for later"
+												testId="campaign-schedule"
+											/>
 											<Button
 												className="w-full"
 												data-testid="send-campaign-btn"
 												disabled={compose.isSending || !compose.canSend}
 												onClick={() => setConfirmOpen(true)}
 											>
-												<IconSend className="mr-2 size-4" />
-												Send campaign
+												{compose.scheduledIso ? (
+													<IconCalendarClock className="mr-2 size-4" />
+												) : (
+													<IconSend className="mr-2 size-4" />
+												)}
+												{compose.scheduledIso
+													? "Schedule send"
+													: "Send campaign"}
 											</Button>
 											<div className="grid grid-cols-2 gap-2">
 												<Button
@@ -276,6 +292,37 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 											>
 												<IconTrash className="mr-2 size-4" />
 												Delete draft
+											</Button>
+										</>
+									) : compose.isScheduled ? (
+										<>
+											<p
+												className="text-muted-foreground text-xs"
+												data-testid="campaign-scheduled-for"
+											>
+												{campaign.scheduledAt
+													? `Sends ${formatDateTimeWithZone(campaign.scheduledAt)}. Cancel to edit it again.`
+													: "Scheduled."}
+											</p>
+											<Button
+												className="w-full"
+												data-testid="cancel-schedule-btn"
+												disabled={compose.isCancellingSchedule}
+												onClick={() => compose.cancelSchedule()}
+												variant="outline"
+											>
+												<IconX className="mr-2 size-4" />
+												Cancel schedule
+											</Button>
+											<Button
+												className="w-full"
+												data-testid="test-send-btn"
+												disabled={compose.isTesting}
+												onClick={() => compose.sendTest()}
+												variant="secondary"
+											>
+												<IconFlask className="mr-2 size-4" />
+												Send test
 											</Button>
 										</>
 									) : (
@@ -311,12 +358,16 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 			<Dialog onOpenChange={setConfirmOpen} open={confirmOpen}>
 				<DialogContent data-testid="confirm-send-campaign-dialog">
 					<DialogHeader>
-						<DialogTitle>Send campaign?</DialogTitle>
+						<DialogTitle>
+							{compose.scheduledIso ? "Schedule campaign?" : "Send campaign?"}
+						</DialogTitle>
 						<DialogDescription>
 							This will send the message to {campaign.totalRecipients}{" "}
-							{campaign.totalRecipients === 1 ? "recipient" : "recipients"}.
-							Once started, the send cannot be stopped. You can close this
-							browser — delivery continues on the server.
+							{campaign.totalRecipients === 1 ? "recipient" : "recipients"}
+							{compose.scheduledIso
+								? ` on ${formatDateTimeWithZone(compose.scheduledIso)}. You can cancel the schedule until then; once the send starts it cannot be stopped.`
+								: ". Once started, the send cannot be stopped."}{" "}
+							You can close this browser — delivery continues on the server.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
@@ -337,7 +388,7 @@ export function ComposePage({ campaignId }: ComposePageProps) {
 							type="button"
 						>
 							<IconSend className="mr-2 size-4" />
-							Send campaign
+							{compose.scheduledIso ? "Schedule send" : "Send campaign"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

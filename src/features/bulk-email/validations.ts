@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { scheduledAtInput } from "@/shared/lib/schedule";
 import {
 	refineSheetCreate,
 	sheetCreateShape,
@@ -21,6 +22,10 @@ export const campaignDraftInput = z.object({
 	bodySource: z.string(),
 	replyTo: z.union([z.email(), z.literal("")]).optional(),
 	saveToProfile: z.boolean().optional(),
+});
+
+export const campaignSendInput = campaignIdInput.extend({
+	scheduledAt: scheduledAtInput,
 });
 
 export const campaignPreviewInput = z.object({

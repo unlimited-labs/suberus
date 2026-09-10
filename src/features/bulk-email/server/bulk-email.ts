@@ -4,6 +4,7 @@ import { campaignAnnouncementBody } from "@/features/announcements/server/saniti
 import type {
 	EmailCampaignFormat,
 	EmailCampaignRecipientStatus,
+	EmailCampaignStatus,
 } from "@/generated/prisma/enums";
 import { lookup } from "@/shared/lib/lookup";
 import {
@@ -20,9 +21,10 @@ import {
 	type PlaceholderIssues,
 } from "@/shared/lib/placeholders";
 import { buildRecipientSnapshot } from "@/shared/lib/recipient-snapshot";
+import { FUTURE_INSTANT_MESSAGE, isFutureInstant } from "@/shared/lib/schedule";
 import { prisma } from "@/shared/server/db.server";
 import { sendRawEmail } from "@/shared/server/email";
-import { createJobProgress } from "@/shared/server/job-progress";
+import { createJobProgress, failJob } from "@/shared/server/job-progress";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import {
 	loadRecipientSnapshots,
@@ -340,6 +342,7 @@ export async function listCampaigns() {
 			failedCount: true,
 			createdAt: true,
 			sentAt: true,
+			scheduledAt: true,
 		},
 		orderBy: { createdAt: "desc" },
 		take: 100,
@@ -507,7 +510,11 @@ export async function sendCampaignTest(
 export async function finalizeAndEnqueue(
 	id: string,
 	createdById: string,
+	scheduledAt?: string,
 ): Promise<{ jobProgressId: string }> {
+	if (scheduledAt !== undefined && !isFutureInstant(scheduledAt)) {
+		throw new Response(FUTURE_INSTANT_MESSAGE, { status: 400 });
+	}
 	const campaign = await prisma.emailCampaign.findUnique({ where: { id } });
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
 	if (campaign.status !== "DRAFT") {
@@ -549,27 +556,68 @@ export async function finalizeAndEnqueue(
 		});
 	}
 
+	const startAfter = scheduledAt ? new Date(scheduledAt) : undefined;
+
 	await prisma.emailCampaign.update({
 		where: { id },
 		data: {
-			status: "QUEUED",
+			status: startAfter ? "SCHEDULED" : "QUEUED",
+			scheduledAt: startAfter ?? null,
 			renderedHtml: rendered.body,
 			jobProgressId,
 		},
 	});
 
-	await ensureQueueAndSend(
-		"bulk-email",
-		{ campaignId: id },
-		{
-			retryLimit: 3,
-			retryDelay: 10,
-			expireInSeconds: campaignExpireSeconds(
-				campaign.totalRecipients,
-				env.BULK_EMAIL_DELAY_SECONDS,
-			),
-		},
-	);
+	try {
+		await ensureQueueAndSend(
+			"bulk-email",
+			{ campaignId: id, scheduledAt: scheduledAt ?? null },
+			{
+				retryLimit: 3,
+				retryDelay: 10,
+				expireInSeconds: campaignExpireSeconds(
+					campaign.totalRecipients,
+					env.BULK_EMAIL_DELAY_SECONDS,
+				),
+				startAfter,
+			},
+		);
+	} catch (error) {
+		await releaseToDraft(id, ["SCHEDULED", "QUEUED"]);
+		await failJob(jobProgressId, "Could not queue the campaign");
+		throw error;
+	}
 
 	return { jobProgressId };
+}
+
+async function releaseToDraft(
+	id: string,
+	from: EmailCampaignStatus[],
+): Promise<number> {
+	const released = await prisma.emailCampaign.updateMany({
+		where: { id, status: { in: from } },
+		data: {
+			status: "DRAFT",
+			scheduledAt: null,
+			renderedHtml: null,
+			jobProgressId: null,
+		},
+	});
+	return released.count;
+}
+
+export async function cancelScheduledSend(id: string): Promise<void> {
+	const campaign = await prisma.emailCampaign.findUnique({
+		where: { id },
+		select: { jobProgressId: true },
+	});
+	if (!campaign) throw new Response("Campaign not found", { status: 404 });
+
+	if ((await releaseToDraft(id, ["SCHEDULED"])) === 0) {
+		throw new Response("Campaign is no longer scheduled", { status: 409 });
+	}
+	if (campaign.jobProgressId) {
+		await failJob(campaign.jobProgressId, "Schedule cancelled");
+	}
 }

@@ -19,7 +19,7 @@ import { EmptyState } from "@/shared/ui/empty-state";
 
 export function AnnouncementList() {
 	const { data: announcements } = useSuspenseQuery(announcementsQueryOptions());
-	const { formatDateTime } = useDateFormat();
+	const { formatDateTime, formatDateTimeWithZone } = useDateFormat();
 	const [importOpen, setImportOpen] = useState(false);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -84,7 +84,9 @@ export function AnnouncementList() {
 												{a.subject || "(no subject)"}
 											</p>
 											<p className="text-muted-foreground text-xs">
-												{formatDateTime(a.publishedAt ?? a.createdAt)}
+												{a.status === "SCHEDULED" && a.scheduledAt
+													? `Publishes ${formatDateTimeWithZone(a.scheduledAt)}`
+													: formatDateTime(a.publishedAt ?? a.createdAt)}
 											</p>
 										</div>
 										<div className="flex shrink-0 items-center gap-3 text-sm">

@@ -2,19 +2,35 @@ import { describe, expect, it } from "vitest";
 import {
 	campaignExpireSeconds,
 	finalCampaignStatus,
-	isResumableCampaignStatus,
+	hasLiveJob,
+	RESUMABLE_CAMPAIGN_STATUSES,
 } from "./bulk-email-status";
 
-describe("isResumableCampaignStatus", () => {
-	it("allows QUEUED and SENDING (resume)", () => {
-		expect(isResumableCampaignStatus("QUEUED")).toBe(true);
-		expect(isResumableCampaignStatus("SENDING")).toBe(true);
+describe("RESUMABLE_CAMPAIGN_STATUSES", () => {
+	it("lets the worker claim a scheduled, queued or in-flight campaign", () => {
+		expect(RESUMABLE_CAMPAIGN_STATUSES).toEqual([
+			"SCHEDULED",
+			"QUEUED",
+			"SENDING",
+		]);
 	});
 
-	it("blocks DRAFT, SENT and FAILED (no re-send)", () => {
-		expect(isResumableCampaignStatus("DRAFT")).toBe(false);
-		expect(isResumableCampaignStatus("SENT")).toBe(false);
-		expect(isResumableCampaignStatus("FAILED")).toBe(false);
+	it("never re-sends a DRAFT, SENT or FAILED campaign", () => {
+		for (const status of ["DRAFT", "SENT", "FAILED"] as const) {
+			expect(RESUMABLE_CAMPAIGN_STATUSES).not.toContain(status);
+		}
+	});
+});
+
+describe("hasLiveJob", () => {
+	it("is false before the job can run", () => {
+		expect(hasLiveJob("DRAFT")).toBe(false);
+		expect(hasLiveJob("SCHEDULED")).toBe(false);
+	});
+
+	it("is true once it is queued", () => {
+		expect(hasLiveJob("QUEUED")).toBe(true);
+		expect(hasLiveJob("SENDING")).toBe(true);
 	});
 });
 

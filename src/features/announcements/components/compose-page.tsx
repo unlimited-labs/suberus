@@ -1,16 +1,20 @@
 import {
 	IconBraces,
+	IconCalendarClock,
 	IconDeviceFloppy,
 	IconSend,
 	IconSpeakerphone,
 	IconTrash,
 	IconUsers,
+	IconX,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { announcementQueryOptions } from "@/features/announcements/api/announcements";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { PlaceholderHelp } from "@/shared/components/placeholder-help";
+import { ScheduleField } from "@/shared/components/schedule-field";
+import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { CodeArea } from "@/shared/ui/code-area";
@@ -38,6 +42,7 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 		announcementQueryOptions(announcementId),
 	);
 	const compose = useComposeAnnouncement(announcement);
+	const { formatDateTimeWithZone } = useDateFormat();
 	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	return (
@@ -45,7 +50,9 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 			<PageHeader icon={IconSpeakerphone} title="Announcements">
 				<Badge
 					data-testid="announcement-status"
-					variant={compose.isDraft ? "secondary" : "default"}
+					variant={
+						compose.isDraft || compose.isScheduled ? "secondary" : "default"
+					}
 				>
 					{announcement.status}
 				</Badge>
@@ -143,14 +150,23 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 							<SectionCard icon={IconSend} title="Actions" variant="outlined">
 								{compose.isDraft ? (
 									<div className="space-y-3 text-sm">
+										<ScheduleField
+											control={compose.schedule}
+											label="Schedule for later"
+											testId="announcement-schedule"
+										/>
 										<Button
 											className="w-full"
 											data-testid="publish-announcement-btn"
-											disabled={compose.isPublishing || !compose.canPublish}
+											disabled={compose.isPublishPending || !compose.canPublish}
 											onClick={() => setConfirmOpen(true)}
 										>
-											<IconSend className="mr-2 size-4" />
-											Publish
+											{compose.scheduledIso ? (
+												<IconCalendarClock className="mr-2 size-4" />
+											) : (
+												<IconSend className="mr-2 size-4" />
+											)}
+											{compose.scheduledIso ? "Schedule publish" : "Publish"}
 										</Button>
 										<Button
 											className="w-full"
@@ -174,6 +190,27 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 											Delete draft
 										</Button>
 									</div>
+								) : compose.isScheduled ? (
+									<div className="space-y-3 text-sm">
+										<p
+											className="text-muted-foreground text-xs"
+											data-testid="announcement-scheduled-for"
+										>
+											{announcement.scheduledAt
+												? `Publishes ${formatDateTimeWithZone(announcement.scheduledAt)}. Cancel to edit it again.`
+												: "Scheduled."}
+										</p>
+										<Button
+											className="w-full"
+											data-testid="cancel-schedule-btn"
+											disabled={compose.isCancellingSchedule}
+											onClick={() => compose.cancelSchedule()}
+											variant="outline"
+										>
+											<IconX className="mr-2 size-4" />
+											Cancel schedule
+										</Button>
+									</div>
 								) : (
 									<p className="text-muted-foreground text-sm">
 										Published. Edit what one person sees from their profile in
@@ -189,12 +226,18 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 			<Dialog onOpenChange={setConfirmOpen} open={confirmOpen}>
 				<DialogContent data-testid="confirm-publish-dialog">
 					<DialogHeader>
-						<DialogTitle>Publish announcement?</DialogTitle>
+						<DialogTitle>
+							{compose.scheduledIso
+								? "Schedule announcement?"
+								: "Publish announcement?"}
+						</DialogTitle>
 						<DialogDescription>
 							{announcement.totalRecipients}{" "}
 							{announcement.totalRecipients === 1 ? "person" : "people"} will
-							see it on their dashboard straight away. Publishing cannot be
-							undone.
+							see it on their dashboard{" "}
+							{compose.scheduledIso
+								? `on ${formatDateTimeWithZone(compose.scheduledIso)}. You can cancel the schedule until then; once published it cannot be undone.`
+								: "straight away. Publishing cannot be undone."}
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
@@ -207,7 +250,7 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 						</Button>
 						<Button
 							data-testid="confirm-publish-btn"
-							disabled={compose.isPublishing}
+							disabled={compose.isPublishPending}
 							onClick={() => {
 								setConfirmOpen(false);
 								compose.publish();
@@ -215,7 +258,7 @@ export function AnnouncementComposePage({ announcementId }: ComposePageProps) {
 							type="button"
 						>
 							<IconSend className="mr-2 size-4" />
-							Publish
+							{compose.scheduledIso ? "Schedule publish" : "Publish"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

@@ -1046,6 +1046,7 @@ enum EmailCampaignRecipientStatus {
 
 enum EmailCampaignStatus {
   DRAFT
+  SCHEDULED
   QUEUED
   SENDING
   SENT
@@ -1067,6 +1068,7 @@ model EmailCampaign {
   createdById     String?             @map("created_by_id") @db.Uuid
   createdAt       DateTime            @default(now()) @map("created_at")
   sentAt          DateTime?           @map("sent_at")
+  scheduledAt     DateTime?           @map("scheduled_at")
   /// Custom placeholder key -> the spreadsheet heading it came from.
   dataColumns     Json                @default("{}") @map("data_columns")
   /// Leave the delivered mail in each recipient's in-app inbox as well.
@@ -1357,6 +1359,8 @@ model OauthClientAssertion {
 
 enum AnnouncementStatus {
   DRAFT
+  SCHEDULED
+  PUBLISHING
   PUBLISHED
 }
 
@@ -1376,6 +1380,7 @@ model Announcement {
   createdById      String?            @map("created_by_id") @db.Uuid
   createdAt        DateTime           @default(now()) @map("created_at")
   publishedAt      DateTime?          @map("published_at")
+  scheduledAt      DateTime?          @map("scheduled_at")
 
   recipients AnnouncementRecipient[]
 

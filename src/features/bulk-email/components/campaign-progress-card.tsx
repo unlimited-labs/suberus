@@ -1,4 +1,5 @@
 import { IconProgressCheck } from "@tabler/icons-react";
+import { hasLiveJob } from "@/features/bulk-email/server/bulk-email-status";
 import type { EmailCampaignStatus } from "@/generated/prisma/enums";
 import type { JobSSEState } from "@/shared/hooks/use-job-sse";
 import { Progress } from "@/shared/ui/progress";
@@ -25,7 +26,7 @@ export function CampaignProgressCard({
 	jobId,
 	job,
 }: CampaignProgressCardProps) {
-	if (!jobId || campaign.status === "DRAFT") return null;
+	if (!jobId || !hasLiveJob(campaign.status)) return null;
 
 	const useLive = job.status === "running" && job.total > 0;
 	const processed = useLive

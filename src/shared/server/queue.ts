@@ -6,6 +6,7 @@ const QUEUES = [
 	"extraction",
 	"autoplan",
 	"bulk-email",
+	"announcement-publish",
 	"submission-diff",
 	"document-generate",
 ] as const;
@@ -56,6 +57,8 @@ export interface QueueSendOptions {
 	retryLimit?: number;
 	retryDelay?: number;
 	expireInSeconds?: number;
+	/** Compared against the DB clock, not ours. */
+	startAfter?: Date;
 }
 
 export async function ensureQueueAndSend<Data extends object>(

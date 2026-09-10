@@ -1,14 +1,20 @@
 import type { EmailCampaignStatus } from "@/generated/prisma/enums";
 
-/**
- * Statuses from which the worker may (re)process a campaign. Restricting to
- * these makes the job idempotent: a DRAFT is not ready and an already-SENT
- * campaign is never re-sent on a pg-boss retry.
- */
-export function isResumableCampaignStatus(
-	status: EmailCampaignStatus,
-): boolean {
-	return status === "QUEUED" || status === "SENDING";
+export const RESUMABLE_CAMPAIGN_STATUSES: EmailCampaignStatus[] = [
+	"SCHEDULED",
+	"QUEUED",
+	"SENDING",
+];
+
+const JOB_BACKED_STATUSES: EmailCampaignStatus[] = [
+	"QUEUED",
+	"SENDING",
+	"SENT",
+	"FAILED",
+];
+
+export function hasLiveJob(status: EmailCampaignStatus): boolean {
+	return JOB_BACKED_STATUSES.includes(status);
 }
 
 export function finalCampaignStatus(
