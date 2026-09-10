@@ -21,8 +21,6 @@ describe("capability token", () => {
 		});
 	});
 
-	// The whole point of the purpose segment: an upload link must never become a
-	// way to read the file, nor a download link a way to replace it.
 	it("refuses a token minted for the other purpose", () => {
 		const up = upload().token;
 		const down = createCapabilityToken(
@@ -42,8 +40,6 @@ describe("capability token", () => {
 		});
 	});
 
-	// A submission upload link must not become a way to file a document against
-	// an arbitrary participant.
 	it("keeps document uploads apart from submission uploads", () => {
 		const document = createCapabilityToken(
 			"dup",
@@ -62,8 +58,6 @@ describe("capability token", () => {
 		});
 	});
 
-	// The subject is visible in the URL, so re-pointing the link at somebody
-	// else's submission has to fail.
 	it("rejects a tampered payload", () => {
 		const [encoded, signature] = upload().token.split(".");
 		const payload = Buffer.from(encoded, "base64url").toString("utf8");

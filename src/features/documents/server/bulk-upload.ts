@@ -11,7 +11,6 @@ import {
 import { prisma } from "@/shared/server/db.server";
 import { UploadValidationError } from "@/shared/server/validate-upload";
 
-/** adm-zip parses the whole archive in memory, so an unbounded upload is a DoS. */
 export const MAX_IMPORT_ZIP_BYTES = 200 * 1024 * 1024;
 
 export type ImportSkipReason =
@@ -104,7 +103,6 @@ export async function importDocumentsZip(opts: {
 				skipped.push({ name, reason: "invalid-file", error: error.message });
 				continue;
 			}
-			// One unlucky entry must not abandon the batch half-imported and
 			// unreported — the operator needs the list to retry from.
 			skipped.push({
 				name,

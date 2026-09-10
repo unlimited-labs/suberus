@@ -161,7 +161,6 @@ export async function getSubmissionTypeConfigs(): Promise<{
 	};
 }
 
-/// INVITED placeholders have no type config and never publish a file.
 export async function isFileContentFormat(
 	type: SubmissionType,
 ): Promise<boolean> {

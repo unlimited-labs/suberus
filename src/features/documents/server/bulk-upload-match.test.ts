@@ -37,8 +37,6 @@ describe("isIgnoredZipEntry", () => {
 		expect(isIgnoredZipEntry(`${ID}.pdf`)).toBe(false);
 	});
 
-	// It matches on a base name, so a nested dot-file only gets caught when the
-	// caller strips the path first.
 	it("catches noise nested in a folder", () => {
 		expect(isIgnoredZipEntry(baseNameOf("invoices/.DS_Store"))).toBe(true);
 		expect(isIgnoredZipEntry(baseNameOf(`invoices/${ID}.pdf`))).toBe(false);

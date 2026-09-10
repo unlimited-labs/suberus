@@ -21,10 +21,6 @@ export interface AttachUploadedDocumentInput {
 	batchId?: string;
 }
 
-/**
- * An externally-produced PDF filed against a participant: a `GeneratedDocument`
- * with no template, so it lists, downloads and deletes like a generated one.
- */
 export async function attachUploadedDocument(
 	input: AttachUploadedDocumentInput,
 ): Promise<{ id: string }> {
@@ -63,7 +59,6 @@ export async function attachUploadedDocument(
 			"application/pdf",
 		);
 	} catch (error) {
-		// Nothing will ever enqueue this row, so it would sit PENDING forever.
 		await prisma.generatedDocument.update({
 			where: { id: doc.id },
 			data: { status: "FAILED", error: "Could not store the uploaded file." },

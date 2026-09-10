@@ -206,8 +206,6 @@ test.describe("Admin - Document signing", () => {
 		await expect(page.getByTestId("verify-matches-cert")).toBeHidden();
 	});
 
-	// Rotation re-renders from the source; an uploaded document has no template,
-	// so it has to come back from its retained original.
 	test("rotation re-signs the uploaded document too", async ({
 		page,
 	}, testInfo) => {

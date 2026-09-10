@@ -3,10 +3,6 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export const UPLOAD_LINK_TTL_MS = 24 * 60 * 60 * 1000;
 export const DOWNLOAD_LINK_TTL_MS = 15 * 60 * 1000;
 
-/**
- * `up` attaches a file to a submission, `dl` reads one, `dup` attaches a
- * document to a participant. Never interchangeable.
- */
 export type CapabilityPurpose = "up" | "dl" | "dup";
 
 export type CapabilityTokenError =
@@ -19,20 +15,7 @@ function sign(payload: string, secret: string): string {
 	return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
-/**
- * Capability token, like a password-reset link: it carries its own authority, so
- * the holder acts without signing in. Scoped to one subject and to one purpose —
- * an upload link grants no reads and a download link grants no writes. The
- * subject is opaque here: an id, or whatever the caller encoded (base64url, so
- * it never collides with the `.` separator).
- *
- * ponytail: valid until it expires, and a re-upload replaces the file, because
- * single-use needs stored state. Add a consumedAt column if a leaked link ever
- * matters more than letting someone fix a wrong upload.
- *
- * The secret is a parameter, not an env import: this module is unit-tested and
- * loading @/env would fail outside a configured runtime.
- */
+/** The subject must be base64url so it never collides with the `.` separator. */
 export function createCapabilityToken(
 	purpose: CapabilityPurpose,
 	subjectId: string,
