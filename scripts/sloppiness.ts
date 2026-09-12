@@ -111,19 +111,36 @@ console.log(`erosion      ${pct(e.value)}  (CC>10 mass ${current.hotMass} of ${e
 
 if (!existsSync(BASELINE_PATH)) process.exit(0);
 
-// SAFETY: repo-owned file written by this script; shape re-checked below per key.
-const baseline = JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as Baseline;
+// SAFETY: every key is checked to be a number below; a bad file exits non-zero.
+const baseline = JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as Partial<
+	Record<keyof Baseline, unknown>
+>;
+
+// Only the two sloppiness numerators gate. locNonTest is reported, never enforced:
+// a codebase that grows is not a codebase that got sloppy, and a gate that fires
+// on every feature branch gets switched off.
+const GATED = ["hotMass", "cloneLines"] as const;
+
 let regressed = false;
 console.log("");
 for (const key of ["hotMass", "cloneLines", "locNonTest"] as const) {
-	const delta = current[key] - baseline[key];
+	const previous = baseline[key];
+	if (typeof previous !== "number") {
+		console.error(`${BASELINE_PATH} is missing a numeric \`${key}\`.`);
+		process.exit(1);
+	}
+	const delta = current[key] - previous;
 	const sign = delta > 0 ? "+" : "";
-	console.log(`${key.padEnd(12)} ${current[key]}  (${sign}${delta} vs baseline ${baseline[key]})`);
-	if (delta > 0) regressed = true;
+	const gated = GATED.some((k) => k === key);
+	console.log(
+		`${key.padEnd(12)} ${current[key]}  (${sign}${delta} vs baseline ${previous})${gated ? "" : "  [reported only]"}`,
+	);
+	if (gated && delta > 0) regressed = true;
 }
 if (regressed) {
 	console.error(
-		`\nAbove baseline. Cut the numerator, or re-baseline in ${BASELINE_PATH} and say why there.`,
+		`
+Above baseline. Cut the numerator, or re-baseline in ${BASELINE_PATH} and say why there.`,
 	);
 	process.exit(1);
 }
