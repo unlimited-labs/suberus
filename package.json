@@ -26,7 +26,8 @@
     "seed:diff-demo": "dotenv -e .env -- tsx scripts/seed-diff-demo.ts",
     "vapid:generate": "tsx scripts/generate-vapid-keys.ts",
     "rand": "openssl rand -base64 32",
-    "doctor": "npx react-doctor@latest"
+    "doctor": "npx react-doctor@latest",
+    "sloppiness": "tsx scripts/sloppiness.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1121.0",

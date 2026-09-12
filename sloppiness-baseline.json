@@ -1,0 +1,6 @@
+{
+  "$comment": "Ceiling for `pnpm sloppiness`. Absolute counts, not the ratios: both ratios shrink when you add code, so only the numerators are gateable. locNonTest excludes *.test.*/*.spec.* — test lines are cost we want to grow. Lower these when a refactor lands; never raise one without saying why here.",
+  "hotMass": 8488,
+  "cloneLines": 3139,
+  "locNonTest": 83546
+}

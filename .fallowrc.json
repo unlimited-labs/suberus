@@ -52,7 +52,7 @@
         ],
         "functions": ["PresentationRow"],
         "maxCrap": 133,
-        "reason": "e2e-covered (public-program.spec.ts presentations + author-info; presentation-favorites.spec.ts open/favorite); CC 10 after RowAuthors extraction, numbered/plain variant + interaction branches, estimated-coverage artifact"
+        "reason": "e2e-covered (public-program.spec.ts presentations + author-info; presentation-favorites.spec.ts open/favorite); CC 19, all 18 contributions are JSX &&/?:/?. across the favourite, untimed, numbered, ribbon-badge and cancelled variants — not one `if`; estimated-coverage artifact"
       },
       {
         "files": [
