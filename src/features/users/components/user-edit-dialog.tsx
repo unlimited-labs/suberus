@@ -1,4 +1,3 @@
-import { IconBuilding, IconMail } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
@@ -7,13 +6,13 @@ import {
 	adminUsersQueryOptions,
 	updateAdminUserProfile,
 } from "@/features/users/api/users";
+import { UserContactFieldsGroup } from "@/features/users/components/user-contact-fields-group";
 import type { AdminUser } from "@/features/users/server/users";
 import type { AdminUserEditFormData } from "@/features/users/validations";
 import { adminUserEditSchema } from "@/features/users/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
-import { titleOptions } from "@/shared/lib/labels/title";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -106,53 +105,26 @@ export function UserEditDialog({
 						void form.handleSubmit();
 					}}
 				>
-					<div className="grid gap-4 sm:grid-cols-2">
-						<form.AppField name="firstName">
-							{(field) => <field.InputField label="First name *" />}
-						</form.AppField>
-						<form.AppField name="lastName">
-							{(field) => <field.InputField label="Last name *" />}
-						</form.AppField>
-					</div>
-
-					<div className="grid gap-4 sm:grid-cols-2">
-						<form.AppField name="title">
-							{(field) => (
-								<field.SelectField
-									label="Title"
-									options={titleOptions}
-									placeholder="—"
-								/>
-							)}
-						</form.AppField>
-						<form.AppField name="affiliation">
-							{(field) => (
-								<field.IconInputField
-									icon={<IconBuilding className="size-4" />}
-									label="Affiliation"
-								/>
-							)}
-						</form.AppField>
-					</div>
-
-					<form.AppField name="orcid">
-						{(field) => (
-							<field.InputField
-								label="ORCID"
-								placeholder="0000-0002-1825-0097"
-							/>
-						)}
-					</form.AppField>
-
-					<form.AppField name="email">
-						{(field) => (
-							<field.IconInputField
-								icon={<IconMail className="size-4" />}
-								label="Email *"
-								type="email"
-							/>
-						)}
-					</form.AppField>
+					<UserContactFieldsGroup
+						afterAffiliation={
+							<form.AppField name="orcid">
+								{(field) => (
+									<field.InputField
+										label="ORCID"
+										placeholder="0000-0002-1825-0097"
+									/>
+								)}
+							</form.AppField>
+						}
+						fields={{
+							firstName: "firstName",
+							lastName: "lastName",
+							title: "title",
+							affiliation: "affiliation",
+							email: "email",
+						}}
+						form={form}
+					/>
 
 					<BillingFieldsGroup
 						fields={{

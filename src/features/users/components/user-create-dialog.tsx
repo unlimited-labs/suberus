@@ -1,4 +1,3 @@
-import { IconBuilding, IconMail } from "@tabler/icons-react";
 import {
 	useMutation,
 	useQueryClient,
@@ -11,6 +10,7 @@ import {
 	adminUsersQueryOptions,
 	createAdminUser,
 } from "@/features/users/api/users";
+import { UserContactFieldsGroup } from "@/features/users/components/user-contact-fields-group";
 import type { AdminUserCreateFormData } from "@/features/users/validations";
 import { adminUserCreateSchema } from "@/features/users/validations";
 import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
@@ -18,7 +18,6 @@ import { Form } from "@/shared/components/composable/form";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
-import { titleOptions } from "@/shared/lib/labels/title";
 import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";
 import { Button } from "@/shared/ui/button";
 import {
@@ -144,44 +143,16 @@ export function UserCreateDialog({
 						void form.handleSubmit();
 					}}
 				>
-					<div className="grid gap-4 sm:grid-cols-2">
-						<form.AppField name="firstName">
-							{(field) => <field.InputField label="First name *" />}
-						</form.AppField>
-						<form.AppField name="lastName">
-							{(field) => <field.InputField label="Last name *" />}
-						</form.AppField>
-					</div>
-
-					<div className="grid gap-4 sm:grid-cols-2">
-						<form.AppField name="title">
-							{(field) => (
-								<field.SelectField
-									label="Title"
-									options={titleOptions}
-									placeholder="—"
-								/>
-							)}
-						</form.AppField>
-						<form.AppField name="affiliation">
-							{(field) => (
-								<field.IconInputField
-									icon={<IconBuilding className="size-4" />}
-									label="Affiliation"
-								/>
-							)}
-						</form.AppField>
-					</div>
-
-					<form.AppField name="email">
-						{(field) => (
-							<field.IconInputField
-								icon={<IconMail className="size-4" />}
-								label="Email *"
-								type="email"
-							/>
-						)}
-					</form.AppField>
+					<UserContactFieldsGroup
+						fields={{
+							firstName: "firstName",
+							lastName: "lastName",
+							title: "title",
+							affiliation: "affiliation",
+							email: "email",
+						}}
+						form={form}
+					/>
 
 					<BillingFieldsGroup
 						fields={{
