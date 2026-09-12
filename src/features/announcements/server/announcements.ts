@@ -1,7 +1,7 @@
 import type { AnnouncementStatus } from "@/generated/prisma/enums";
 import {
 	assertKnownPlaceholders,
-	placeholderIssues as sharedPlaceholderIssues,
+	collectPlaceholderIssues,
 } from "@/shared/lib/placeholder-issues";
 import {
 	parseDataColumns,
@@ -230,19 +230,23 @@ export async function placeholderIssues(
 		throw new Response("Announcement not found", { status: 404 });
 	}
 
-	return sharedPlaceholderIssues(announcement.dataColumns, tokens, async () => {
-		const recipients = await prisma.announcementRecipient.findMany({
-			where: { announcementId: id },
-			select: {
-				firstName: true,
-				lastName: true,
-				titles: true,
-				data: true,
-				user: { select: { email: true } },
-			},
-		});
-		return recipients.map((r) => ({ ...r, email: r.user.email }));
-	});
+	return collectPlaceholderIssues(
+		announcement.dataColumns,
+		tokens,
+		async () => {
+			const recipients = await prisma.announcementRecipient.findMany({
+				where: { announcementId: id },
+				select: {
+					firstName: true,
+					lastName: true,
+					titles: true,
+					data: true,
+					user: { select: { email: true } },
+				},
+			});
+			return recipients.map((r) => ({ ...r, email: r.user.email }));
+		},
+	);
 }
 
 export async function publishAnnouncement(

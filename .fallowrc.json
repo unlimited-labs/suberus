@@ -29,8 +29,12 @@
     "unused-dependencies": "warn",
     "boundary-violation": "error"
   },
-  // CRAP here is inflated by estimated zero coverage; both paths are e2e-covered (bulk-email.spec.ts) and CC is trivial.
   "health": {
+    // 10, not fallow's default 20: the same threshold `pnpm sloppiness` uses for
+    // erosion, so the two tools agree on what "too complex" means. The gate hook
+    // audits changed code only, so the functions already above it do not block.
+    "maxCyclomatic": 10,
+    // CRAP here is inflated by estimated zero coverage; both paths are e2e-covered (bulk-email.spec.ts) and CC is trivial.
     "thresholdOverrides": [
       {
         "files": ["src/features/bulk-email/components/attachment-dropzone.tsx"],
@@ -143,6 +147,18 @@
         "files": ["src/routes/api/admin/finances/export.ts"],
         "maxCrap": 45,
         "reason": "XLSX export row builder; e2e asserts the endpoint, estimated-coverage artifact"
+      },
+      {
+        "files": ["src/features/planner/components/create-event-dialog.tsx"],
+        "functions": ["CreateEventDialog"],
+        "maxCognitive": 18,
+        "maxCrap": 75,
+        "reason": "e2e-covered (e2e/admin/planner/*, 30 specs through program-planner.page.ts); CC 8 after the TYPE_COPY collapse, cognitive 18 is hook density (3 queries + 8 form selectors), CRAP estimated-coverage artifact"
+      },
+      {
+        "files": ["scripts/sloppiness.ts"],
+        "maxCrap": 75,
+        "reason": "Build-tooling script that shells out to fallow and oxlint; CC 5-8, its own output is the check. Kept audited for CC rather than ignored like scripts/repl.ts"
       }
     ]
   },

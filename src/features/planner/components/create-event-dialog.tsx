@@ -79,6 +79,77 @@ const TYPE_COPY = {
 	},
 } as const;
 
+type DurationMode = "slots" | "explicitEnd" | "fixed";
+
+function DurationFields({
+	durationMode,
+	form,
+}: {
+	durationMode: DurationMode;
+	form: ReturnType<typeof useCreateEventForm>["form"];
+}) {
+	return (
+		<>
+			{durationMode === "slots" ? (
+				<div className="grid grid-cols-2 gap-4">
+					<form.Field name="presentationCount">
+						{(field) => (
+							<div className="space-y-2">
+								<Label>Presentations</Label>
+								<Stepper
+									max={20}
+									min={1}
+									onChange={field.handleChange}
+									value={field.state.value}
+								/>
+							</div>
+						)}
+					</form.Field>
+					<form.Field name="minutesPerPresentation">
+						{(field) => (
+							<div className="space-y-2">
+								<Label>Min / talk</Label>
+								<Stepper
+									max={120}
+									min={5}
+									onChange={field.handleChange}
+									step={5}
+									value={field.state.value}
+								/>
+							</div>
+						)}
+					</form.Field>
+				</div>
+			) : durationMode === "explicitEnd" ? (
+				<form.AppField name="endInput">
+					{(field) => (
+						<field.InputField
+							label="End"
+							testId="create-event-end"
+							type="datetime-local"
+						/>
+					)}
+				</form.AppField>
+			) : (
+				<form.Field name="breakDurationMin">
+					{(field) => (
+						<div className="space-y-2">
+							<Label>Duration</Label>
+							<Stepper
+								max={180}
+								min={5}
+								onChange={field.handleChange}
+								step={5}
+								value={field.state.value}
+							/>
+						</div>
+					)}
+				</form.Field>
+			)}
+		</>
+	);
+}
+
 export function CreateEventDialog({
 	open,
 	selectedEvent,
@@ -211,62 +282,7 @@ export function CreateEventDialog({
 						</div>
 					)}
 
-					{durationMode === "slots" ? (
-						<div className="grid grid-cols-2 gap-4">
-							<form.Field name="presentationCount">
-								{(field) => (
-									<div className="space-y-2">
-										<Label>Presentations</Label>
-										<Stepper
-											max={20}
-											min={1}
-											onChange={field.handleChange}
-											value={field.state.value}
-										/>
-									</div>
-								)}
-							</form.Field>
-							<form.Field name="minutesPerPresentation">
-								{(field) => (
-									<div className="space-y-2">
-										<Label>Min / talk</Label>
-										<Stepper
-											max={120}
-											min={5}
-											onChange={field.handleChange}
-											step={5}
-											value={field.state.value}
-										/>
-									</div>
-								)}
-							</form.Field>
-						</div>
-					) : durationMode === "explicitEnd" ? (
-						<form.AppField name="endInput">
-							{(field) => (
-								<field.InputField
-									label="End"
-									testId="create-event-end"
-									type="datetime-local"
-								/>
-							)}
-						</form.AppField>
-					) : (
-						<form.Field name="breakDurationMin">
-							{(field) => (
-								<div className="space-y-2">
-									<Label>Duration</Label>
-									<Stepper
-										max={180}
-										min={5}
-										onChange={field.handleChange}
-										step={5}
-										value={field.state.value}
-									/>
-								</div>
-							)}
-						</form.Field>
-					)}
+					<DurationFields durationMode={durationMode} form={form} />
 
 					<TimeRangeSummary
 						compact

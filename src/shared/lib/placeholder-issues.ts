@@ -24,7 +24,7 @@ const SAMPLE_LIMIT = 5;
  * Which of `tokens` name nothing, and which name a column some recipient leaves
  * empty. `loadRecipients` runs only when at least one known token is in play.
  */
-export async function placeholderIssues(
+export async function collectPlaceholderIssues(
 	dataColumns: JsonValue,
 	tokens: string[],
 	loadRecipients: () => Promise<PlaceholderRecipient[]>,

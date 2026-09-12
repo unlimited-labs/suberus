@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
 	assertKnownPlaceholders,
 	type PlaceholderRecipient,
-	placeholderIssues,
+	collectPlaceholderIssues,
 } from "./placeholder-issues";
 
 const recipient = (
@@ -18,7 +18,7 @@ const recipient = (
 
 describe("placeholderIssues", () => {
 	it("reports tokens that name neither a builtin nor a data column", async () => {
-		const { unknown } = await placeholderIssues(
+		const { unknown } = await collectPlaceholderIssues(
 			{ room: "Room" },
 			["firstName", "room", "nope"],
 			async () => [],
@@ -28,14 +28,14 @@ describe("placeholderIssues", () => {
 
 	it("does not load recipients when no known token is in play", async () => {
 		const load = vi.fn(async () => []);
-		const result = await placeholderIssues({}, ["nope"], load);
+		const result = await collectPlaceholderIssues({}, ["nope"], load);
 		expect(load).not.toHaveBeenCalled();
 		expect(result).toEqual({ unknown: ["nope"], missing: [] });
 	});
 
 	it("counts recipients whose column is empty and samples at most five", async () => {
 		const rows = Array.from({ length: 7 }, (_, i) => recipient(`u${i}@x.org`));
-		const { missing } = await placeholderIssues(
+		const { missing } = await collectPlaceholderIssues(
 			{ room: "Room" },
 			["room"],
 			async () => [...rows, recipient("has@x.org", { room: "A1" })],
@@ -50,7 +50,7 @@ describe("placeholderIssues", () => {
 	});
 
 	it("reports nothing missing when every recipient has the column", async () => {
-		const { missing } = await placeholderIssues(
+		const { missing } = await collectPlaceholderIssues(
 			{ room: "Room" },
 			["room"],
 			async () => [recipient("a@x.org", { room: "A1" })],
@@ -59,7 +59,7 @@ describe("placeholderIssues", () => {
 	});
 
 	it("treats builtins as satisfied by the recipient's own fields", async () => {
-		const { unknown, missing } = await placeholderIssues(
+		const { unknown, missing } = await collectPlaceholderIssues(
 			{},
 			["firstName"],
 			async () => [recipient("a@x.org")],

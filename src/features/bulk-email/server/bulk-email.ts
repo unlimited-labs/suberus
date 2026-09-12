@@ -8,7 +8,7 @@ import type {
 } from "@/generated/prisma/enums";
 import {
 	assertKnownPlaceholders,
-	placeholderIssues as sharedPlaceholderIssues,
+	collectPlaceholderIssues,
 } from "@/shared/lib/placeholder-issues";
 import {
 	applyPlaceholders,
@@ -395,7 +395,7 @@ export async function placeholderIssues(
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
 
-	return sharedPlaceholderIssues(campaign.dataColumns, tokens, () =>
+	return collectPlaceholderIssues(campaign.dataColumns, tokens, () =>
 		prisma.emailCampaignRecipient.findMany({
 			where: { campaignId: id },
 			select: {

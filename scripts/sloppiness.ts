@@ -122,6 +122,8 @@ for (const key of ["hotMass", "cloneLines", "locNonTest"] as const) {
 	if (delta > 0) regressed = true;
 }
 if (regressed) {
-	// ponytail: reporting only until the refactor lands; flip to exit 1 with the CI gate.
-	console.log(`\nAbove baseline. Cut the numerator or re-baseline in ${BASELINE_PATH}.`);
+	console.error(
+		`\nAbove baseline. Cut the numerator, or re-baseline in ${BASELINE_PATH} and say why there.`,
+	);
+	process.exit(1);
 }
