@@ -6,18 +6,18 @@ import type {
 	EmailCampaignRecipientStatus,
 	EmailCampaignStatus,
 } from "@/generated/prisma/enums";
-import { lookup } from "@/shared/lib/lookup";
+import {
+	assertKnownPlaceholders,
+	placeholderIssues as sharedPlaceholderIssues,
+} from "@/shared/lib/placeholder-issues";
 import {
 	applyPlaceholders,
-	BUILTIN_PLACEHOLDER_KEYS,
-	extractTokens,
 	parseDataColumns,
 	parseRecipientData,
 	pickRandom,
 	recipientValues,
 	type RecipientSnapshot,
 	SAMPLE_VALUES,
-	unknownTokens,
 	type PlaceholderIssues,
 } from "@/shared/lib/placeholders";
 import { buildRecipientSnapshot } from "@/shared/lib/recipient-snapshot";
@@ -395,63 +395,19 @@ export async function placeholderIssues(
 	});
 	if (!campaign) throw new Response("Campaign not found", { status: 404 });
 
-	const known = [
-		...BUILTIN_PLACEHOLDER_KEYS,
-		...Object.keys(parseDataColumns(campaign.dataColumns)),
-	];
-	const knownSet = new Set(known);
-	const unknown = unknownTokens(tokens, known);
-	const used = tokens.filter((t) => knownSet.has(t));
-	if (used.length === 0) return { unknown, missing: [] };
-
-	const recipients = await prisma.emailCampaignRecipient.findMany({
-		where: { campaignId: id },
-		select: {
-			email: true,
-			firstName: true,
-			lastName: true,
-			titles: true,
-			data: true,
-		},
-		orderBy: [{ email: "asc" }],
-	});
-	const values = recipients.map((r) => ({
-		email: r.email,
-		values: recipientValues({ ...r, data: parseRecipientData(r.data) }),
-	}));
-
-	const missing = used.flatMap((key) => {
-		const empty = values.filter((v) => !lookup(v.values, key));
-		return empty.length === 0
-			? []
-			: [
-					{
-						key,
-						count: empty.length,
-						sample: empty.slice(0, 5).map((v) => v.email),
-					},
-				];
-	});
-
-	return { unknown, missing };
-}
-
-async function assertKnownPlaceholders(
-	id: string,
-	subject: string,
-	bodySource: string,
-): Promise<void> {
-	const { unknown } = await placeholderIssues(
-		id,
-		extractTokens(`${subject}
-${bodySource}`),
+	return sharedPlaceholderIssues(campaign.dataColumns, tokens, () =>
+		prisma.emailCampaignRecipient.findMany({
+			where: { campaignId: id },
+			select: {
+				email: true,
+				firstName: true,
+				lastName: true,
+				titles: true,
+				data: true,
+			},
+			orderBy: [{ email: "asc" }],
+		}),
 	);
-	if (unknown.length > 0) {
-		throw new Response(
-			`Unknown placeholders: ${unknown.map((t) => `{{${t}}}`).join(", ")}`,
-			{ status: 400 },
-		);
-	}
 }
 
 export async function sendCampaignTest(
@@ -475,7 +431,11 @@ export async function sendCampaignTest(
 	if (!campaign.subject.trim() || !campaign.bodySource.trim()) {
 		throw new Response("Subject and body are required", { status: 400 });
 	}
-	await assertKnownPlaceholders(id, campaign.subject, campaign.bodySource);
+	await assertKnownPlaceholders(
+		(tokens) => placeholderIssues(id, tokens),
+		campaign.subject,
+		campaign.bodySource,
+	);
 
 	const rendered = await renderEmailContent(
 		campaign.format,
@@ -526,7 +486,11 @@ export async function finalizeAndEnqueue(
 	if (!campaign.subject.trim() || !campaign.bodySource.trim()) {
 		throw new Response("Subject and body are required", { status: 400 });
 	}
-	await assertKnownPlaceholders(id, campaign.subject, campaign.bodySource);
+	await assertKnownPlaceholders(
+		(tokens) => placeholderIssues(id, tokens),
+		campaign.subject,
+		campaign.bodySource,
+	);
 
 	const [rendered, jobProgressId] = await Promise.all([
 		renderEmailContent(campaign.format, campaign.bodySource),
