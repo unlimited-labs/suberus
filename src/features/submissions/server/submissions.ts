@@ -39,8 +39,9 @@ function normalizeName(firstName: string, lastName: string): string {
 
 /**
  * Replace a submission's canonical authors (delete + recreate), repoint
- * `presenterId`, and link co-authors to verified user accounts. Shared by draft edit
- * and revision resubmit. Affiliations are upserted dedupe-by-name and
+ * `presenterId`, and link co-authors to verified user accounts. Shared by create,
+ * draft edit and revision resubmit; the clear-and-delete pair is a no-op on a
+ * freshly created submission. Affiliations are upserted dedupe-by-name and
  * sequentially to avoid an intra-transaction race on the unique constraint.
  * Caller MUST run this inside a transaction.
  */
@@ -48,7 +49,7 @@ async function replaceSubmissionAuthors(
 	tx: Prisma.TransactionClient,
 	submissionId: string,
 	authorsInput: Author[],
-): Promise<void> {
+) {
 	const uniqueAffiliationNames = Array.from(
 		new Set(
 			authorsInput.flatMap((a) => (a.affiliationId ? [] : [a.affiliationName])),
@@ -122,6 +123,8 @@ async function replaceSubmissionAuthors(
 			data: { userId: matchedUser.id },
 		});
 	}
+
+	return { authors, matchedUsers };
 }
 
 /**
@@ -197,48 +200,6 @@ export async function createNewSubmission(
 	performedById: string = userId,
 ): Promise<CreateSubmissionResult> {
 	const submission = await prisma.$transaction(async (tx) => {
-		// Upsert affiliations for authors without affiliationId — dedupe by name
-		// and run sequentially to avoid intra-transaction race on the unique
-		// constraint when multiple co-authors share an affiliation.
-		const uniqueAffiliationNames = Array.from(
-			new Set(
-				data.authors.flatMap((a) =>
-					a.affiliationId ? [] : [a.affiliationName],
-				),
-			),
-		);
-		const affiliationByName = new Map<string, string>();
-		for (const name of uniqueAffiliationNames) {
-			const affiliation = await tx.affiliation.upsert({
-				where: { name },
-				update: {},
-				create: { name },
-			});
-			affiliationByName.set(name, affiliation.id);
-		}
-		const authorAffiliations = data.authors.map((a) => {
-			if (a.affiliationId) return a.affiliationId;
-			const id = affiliationByName.get(a.affiliationName);
-			if (!id) {
-				throw new Error(
-					`Affiliation upsert missing for "${a.affiliationName}"`,
-				);
-			}
-			return id;
-		});
-
-		// Upsert keywords — dedupe + sequential for the same reason
-		const uniqueKeywordNames = Array.from(new Set(data.keywords));
-		const keywordRecords: Array<{ id: string; name: string }> = [];
-		for (const name of uniqueKeywordNames) {
-			const keyword = await tx.keyword.upsert({
-				where: { name },
-				update: {},
-				create: { name },
-			});
-			keywordRecords.push({ id: keyword.id, name: keyword.name });
-		}
-
 		const initialStatus = isDraft ? "DRAFT" : "SUBMITTED";
 		const submission = await tx.submission.create({
 			data: {
@@ -266,51 +227,19 @@ export async function createNewSubmission(
 			data: { currentVersionId: version.id },
 		});
 
-		const authors = await Promise.all(
-			data.authors.map(async (author, index) => {
-				return tx.submissionAuthor.create({
-					data: {
-						submissionId: submission.id,
-						firstName: author.firstName,
-						lastName: author.lastName,
-						email: author.email,
-						affiliationId: authorAffiliations[index],
-						orderIndex: index,
-						isPresenter: author.isPresenter,
-					},
-				});
-			}),
+		const { authors, matchedUsers } = await replaceSubmissionAuthors(
+			tx,
+			submission.id,
+			data.authors,
 		);
-
-		const presenter = authors.find((a) => a.isPresenter);
-		if (presenter) {
-			await tx.submission.update({
-				where: { id: submission.id },
-				data: { presenterId: presenter.id },
-			});
-		}
-
-		const coAuthorEmails = data.authors.map((a) => a.email);
-		const matchedUsers = await tx.user.findMany({
-			where: {
-				email: { in: coAuthorEmails, mode: "insensitive" },
-				emailVerified: true,
-			},
-			select: { id: true, email: true },
-		});
+		const keywordNames = await replaceSubmissionKeywords(
+			tx,
+			submission.id,
+			data.keywords,
+		);
 		const matchedEmails = new Set(
 			matchedUsers.map((u) => u.email.toLowerCase()),
 		);
-		for (const matchedUser of matchedUsers) {
-			await tx.submissionAuthor.updateMany({
-				where: {
-					submissionId: submission.id,
-					email: { equals: matchedUser.email, mode: "insensitive" },
-					userId: null,
-				},
-				data: { userId: matchedUser.id },
-			});
-		}
 
 		// Fallback: link the submitter's own author row even when they entered a
 		// different email than their account. Match by latinized name and ONLY
@@ -341,23 +270,7 @@ export async function createNewSubmission(
 			}
 		}
 
-		await Promise.all(
-			keywordRecords.map(async (keyword) => {
-				return tx.submissionKeyword.create({
-					data: {
-						submissionId: submission.id,
-						keywordId: keyword.id,
-					},
-				});
-			}),
-		);
-
-		await writeVersionSnapshot(
-			tx,
-			version.id,
-			data.authors,
-			keywordRecords.map((k) => k.name),
-		);
+		await writeVersionSnapshot(tx, version.id, data.authors, keywordNames);
 
 		await logActivityTx(tx, {
 			type: "SUBMISSION_CREATED",
