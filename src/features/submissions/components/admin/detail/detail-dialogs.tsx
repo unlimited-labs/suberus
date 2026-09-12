@@ -2,8 +2,7 @@ import type { ComponentProps } from "react";
 import { AssignReviewerDialog } from "@/features/submissions/components/admin/assign-reviewer-dialog";
 import { ChangeSubmitterDialog } from "@/features/submissions/components/admin/change-submitter-dialog";
 import { ConfirmConditionsDialog } from "@/features/submissions/components/admin/confirm-conditions-dialog";
-import { DeskAcceptDialog } from "@/features/submissions/components/admin/desk-accept-dialog";
-import { DeskRejectDialog } from "@/features/submissions/components/admin/desk-reject-dialog";
+import { DeskDecisionDialog } from "@/features/submissions/components/admin/desk-decision-dialog";
 import { EditorDecisionDialog } from "@/features/submissions/components/admin/editor-decision-dialog";
 import { OverrideDecisionDialog } from "@/features/submissions/components/admin/override-decision-dialog";
 import { SubmissionDeleteDialog } from "@/features/submissions/components/admin/submission-delete-dialog";
@@ -77,17 +76,19 @@ export function DetailDialogs({
 				submissionTitle={submission.title}
 			/>
 
-			<DeskAcceptDialog
-				onAccepted={onInvalidate}
+			<DeskDecisionDialog
+				decision="accept"
+				onDecided={onInvalidate}
 				onOpenChange={onOpenChange}
 				open={activeDialog === "deskAccept"}
 				submissionId={submission.id}
 				submissionTitle={submission.title}
 			/>
 
-			<DeskRejectDialog
+			<DeskDecisionDialog
+				decision="reject"
+				onDecided={onInvalidate}
 				onOpenChange={onOpenChange}
-				onRejected={onInvalidate}
 				open={activeDialog === "deskReject"}
 				submissionId={submission.id}
 				submissionTitle={submission.title}
