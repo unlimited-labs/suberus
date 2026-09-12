@@ -9,6 +9,7 @@ interface FormInputFieldProps {
 	disabled?: boolean;
 	description?: string;
 	testId?: string;
+	autoFocus?: boolean;
 }
 
 export function FormInputField({
@@ -18,6 +19,7 @@ export function FormInputField({
 	disabled,
 	description,
 	testId,
+	autoFocus,
 }: FormInputFieldProps) {
 	const { field, errors, hasError } = useFieldError();
 
@@ -31,6 +33,7 @@ export function FormInputField({
 		>
 			<Input
 				{...fieldAria(field.name, hasError, !!description)}
+				autoFocus={autoFocus}
 				className="h-9"
 				data-testid={testId}
 				disabled={disabled}
