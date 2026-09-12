@@ -1,4 +1,5 @@
 export { BulkActionDialog } from "./bulk-action-dialog";
+export { type BulkAction, BulkActionsToolbar } from "./bulk-actions-toolbar";
 export {
 	createActionsColumn,
 	createSelectColumn,
