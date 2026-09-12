@@ -537,250 +537,244 @@ export async function getSubmissionById(
 	submissionId: string,
 	userId: string,
 ): Promise<SubmissionDetail | null> {
-	try {
-		const submission = await prisma.submission.findFirst({
-			where: { id: submissionId, ...userAccessFilter(userId) },
-			include: {
-				currentVersion: true,
-				authors: {
-					include: { affiliation: true },
-					orderBy: { orderIndex: "asc" },
-				},
-				keywords: {
-					include: { keyword: true },
-				},
-				activityLog: {
-					where: {
-						type: {
-							in: [
-								"SUBMISSION_CREATED",
-								"SUBMISSION_DRAFT_SUBMITTED",
-								"SUBMISSION_STATUS_CHANGED",
-								"SUBMISSION_WITHDRAWN",
-								"SUBMISSION_RESUBMITTED",
-							],
-						},
-					},
-					include: {
-						performer: { select: { firstName: true, lastName: true } },
-					},
-					orderBy: { createdAt: "asc" },
-				},
-				reviews: {
-					include: {
-						reviewer: {
-							select: { firstName: true, lastName: true },
-						},
-					},
-					orderBy: { createdAt: "desc" },
-				},
-				editorDecisions: {
-					orderBy: { createdAt: "desc" },
-					take: 1,
-				},
-				versions: {
-					include: {
-						file: {
-							select: {
-								id: true,
-								fileName: true,
-								originalName: true,
-								mimeType: true,
-								size: true,
-							},
-						},
-						authorsSnapshot: { orderBy: { orderIndex: "asc" } },
-						keywordsSnapshot: true,
-					},
-					orderBy: { version: "asc" },
-				},
+	const submission = await prisma.submission.findFirst({
+		where: { id: submissionId, ...userAccessFilter(userId) },
+		include: {
+			currentVersion: true,
+			authors: {
+				include: { affiliation: true },
+				orderBy: { orderIndex: "asc" },
 			},
-		});
-
-		if (!submission) return null;
-
-		const authors: UserSubmissionAuthor[] = submission.authors.map((a) => ({
-			firstName: a.firstName,
-			lastName: a.lastName,
-			email: a.email,
-			affiliation: a.affiliation?.name ?? "",
-			isPresenter: a.isPresenter,
-		}));
-
-		const keywords = submission.keywords.map((k) => k.keyword.name);
-
-		const statusHistory: UserSubmissionStatusHistory[] =
-			submission.activityLog.map((h) => {
-				const detail = activityDetailSchema.safeParse(h.detail).data ?? {};
-
-				let status: SubmissionStatus;
-				switch (h.type) {
-					case "SUBMISSION_CREATED":
-						status = detail.isDraft ? "DRAFT" : "SUBMITTED";
-						break;
-					case "SUBMISSION_DRAFT_SUBMITTED":
-						status = "SUBMITTED";
-						break;
-					case "SUBMISSION_RESUBMITTED":
-						status = "RESUBMITTED";
-						break;
-					case "SUBMISSION_WITHDRAWN":
-						status = "WITHDRAWN";
-						break;
-					default:
-						status = detail.toStatus ?? "SUBMITTED";
-				}
-
-				return {
-					id: h.id,
-					submissionId: h.submissionId ?? "",
-					status,
-					timestamp: h.createdAt,
-					triggeredBy: h.performer
-						? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim() ||
-							"System"
-						: "System",
-					metadata: detail,
-				};
-			});
-
-		// In OPEN mode, authors can see reviewer identities
-		const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
-		const config = await getSetting(configKey);
-		const isOpenReview = config.reviewMode === "OPEN";
-
-		// Hide current-round reviews during active review phase — authors see reviews only after decision
-		const activeReviewStatuses: SubmissionStatus[] = [
-			"UNDER_REVIEW",
-			"REVIEWS_COMPLETE",
-			"AWAITING_DECISION",
-		];
-		const hideCurrentRound = activeReviewStatuses.includes(submission.status);
-
-		const visibleReviews = submission.reviews.filter(
-			(r) => !hideCurrentRound || r.round < submission.currentRound,
-		);
-
-		const visibleReviewIds = visibleReviews.map((r) => r.id);
-		const reviewAttachments =
-			visibleReviewIds.length > 0
-				? await prisma.file.findMany({
-						where: {
-							entityType: "REVIEW",
-							entityId: { in: visibleReviewIds },
-							type: "REVIEW_ATTACHMENT",
-						},
+			keywords: {
+				include: { keyword: true },
+			},
+			activityLog: {
+				where: {
+					type: {
+						in: [
+							"SUBMISSION_CREATED",
+							"SUBMISSION_DRAFT_SUBMITTED",
+							"SUBMISSION_STATUS_CHANGED",
+							"SUBMISSION_WITHDRAWN",
+							"SUBMISSION_RESUBMITTED",
+						],
+					},
+				},
+				include: {
+					performer: { select: { firstName: true, lastName: true } },
+				},
+				orderBy: { createdAt: "asc" },
+			},
+			reviews: {
+				include: {
+					reviewer: {
+						select: { firstName: true, lastName: true },
+					},
+				},
+				orderBy: { createdAt: "desc" },
+			},
+			editorDecisions: {
+				orderBy: { createdAt: "desc" },
+				take: 1,
+			},
+			versions: {
+				include: {
+					file: {
 						select: {
 							id: true,
-							entityId: true,
 							fileName: true,
 							originalName: true,
+							mimeType: true,
 							size: true,
 						},
-					})
-				: [];
-		const attachmentByReviewId = new Map(
-			reviewAttachments.map((a) => [a.entityId, a]),
-		);
+					},
+					authorsSnapshot: { orderBy: { orderIndex: "asc" } },
+					keywordsSnapshot: true,
+				},
+				orderBy: { version: "asc" },
+			},
+		},
+	});
 
-		const reviews: UserSubmissionReview[] = visibleReviews.map((r, index) => {
-			const att = attachmentByReviewId.get(r.id);
-			// SAFETY: scores is written only by the review form, which stores criterion -> number.
-			const reviewScores = (r.scores as Record<string, number>) ?? null;
+	if (!submission) return null;
+
+	const authors: UserSubmissionAuthor[] = submission.authors.map((a) => ({
+		firstName: a.firstName,
+		lastName: a.lastName,
+		email: a.email,
+		affiliation: a.affiliation?.name ?? "",
+		isPresenter: a.isPresenter,
+	}));
+
+	const keywords = submission.keywords.map((k) => k.keyword.name);
+
+	const statusHistory: UserSubmissionStatusHistory[] =
+		submission.activityLog.map((h) => {
+			const detail = activityDetailSchema.safeParse(h.detail).data ?? {};
+
+			let status: SubmissionStatus;
+			switch (h.type) {
+				case "SUBMISSION_CREATED":
+					status = detail.isDraft ? "DRAFT" : "SUBMITTED";
+					break;
+				case "SUBMISSION_DRAFT_SUBMITTED":
+					status = "SUBMITTED";
+					break;
+				case "SUBMISSION_RESUBMITTED":
+					status = "RESUBMITTED";
+					break;
+				case "SUBMISSION_WITHDRAWN":
+					status = "WITHDRAWN";
+					break;
+				default:
+					status = detail.toStatus ?? "SUBMITTED";
+			}
+
 			return {
-				id: r.id,
-				submissionId: r.submissionId,
-				round: r.round,
-				reviewerName: isOpenReview
-					? `${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
-						`Reviewer ${index + 1}`
-					: `Reviewer ${index + 1}`,
-				scores: config.enableScoring ? reviewScores : null,
-				comments: r.comments,
-				attachment: att
-					? {
-							id: att.id,
-							fileName: att.fileName,
-							originalName: att.originalName,
-							size: att.size,
-						}
-					: null,
-				createdAt: r.createdAt,
+				id: h.id,
+				submissionId: h.submissionId ?? "",
+				status,
+				timestamp: h.createdAt,
+				triggeredBy: h.performer
+					? `${h.performer.firstName ?? ""} ${h.performer.lastName ?? ""}`.trim() ||
+						"System"
+					: "System",
+				metadata: detail,
 			};
 		});
 
-		const latestDecision = submission.editorDecisions[0];
-		const decision: UserSubmissionDecision | null = latestDecision
-			? {
-					id: latestDecision.id,
-					submissionId: latestDecision.submissionId,
-					decision: latestDecision.decision,
-					reasoning: latestDecision.reasoning,
-					letterToAuthor: latestDecision.letterToAuthor,
-					createdAt: latestDecision.createdAt,
-				}
-			: null;
+	// In OPEN mode, authors can see reviewer identities
+	const configKey = SUBMISSION_TYPE_TO_KEY[submission.type];
+	const config = await getSetting(configKey);
+	const isOpenReview = config.reviewMode === "OPEN";
 
-		const versions: UserSubmissionVersion[] = submission.versions.map((v) => ({
-			id: v.id,
-			submissionId: v.submissionId,
-			version: v.version,
-			title: v.title,
-			content: v.content,
-			comment: v.comment,
-			// Per-version frozen snapshot; fall back to current for legacy rows
-			authors:
-				v.authorsSnapshot.length > 0
-					? v.authorsSnapshot.map((a) => ({
-							firstName: a.firstName,
-							lastName: a.lastName,
-							email: a.email,
-							affiliation: a.affiliation,
-							isPresenter: a.isPresenter,
-						}))
-					: authors,
-			keywords:
-				v.keywordsSnapshot.length > 0
-					? v.keywordsSnapshot.map((k) => k.name)
-					: keywords,
-			file: v.file
+	// Hide current-round reviews during active review phase — authors see reviews only after decision
+	const activeReviewStatuses: SubmissionStatus[] = [
+		"UNDER_REVIEW",
+		"REVIEWS_COMPLETE",
+		"AWAITING_DECISION",
+	];
+	const hideCurrentRound = activeReviewStatuses.includes(submission.status);
+
+	const visibleReviews = submission.reviews.filter(
+		(r) => !hideCurrentRound || r.round < submission.currentRound,
+	);
+
+	const visibleReviewIds = visibleReviews.map((r) => r.id);
+	const reviewAttachments =
+		visibleReviewIds.length > 0
+			? await prisma.file.findMany({
+					where: {
+						entityType: "REVIEW",
+						entityId: { in: visibleReviewIds },
+						type: "REVIEW_ATTACHMENT",
+					},
+					select: {
+						id: true,
+						entityId: true,
+						fileName: true,
+						originalName: true,
+						size: true,
+					},
+				})
+			: [];
+	const attachmentByReviewId = new Map(
+		reviewAttachments.map((a) => [a.entityId, a]),
+	);
+
+	const reviews: UserSubmissionReview[] = visibleReviews.map((r, index) => {
+		const att = attachmentByReviewId.get(r.id);
+		// SAFETY: scores is written only by the review form, which stores criterion -> number.
+		const reviewScores = (r.scores as Record<string, number>) ?? null;
+		return {
+			id: r.id,
+			submissionId: r.submissionId,
+			round: r.round,
+			reviewerName: isOpenReview
+				? `${r.reviewer.firstName ?? ""} ${r.reviewer.lastName ?? ""}`.trim() ||
+					`Reviewer ${index + 1}`
+				: `Reviewer ${index + 1}`,
+			scores: config.enableScoring ? reviewScores : null,
+			comments: r.comments,
+			attachment: att
 				? {
-						id: v.file.id,
-						fileName: v.file.fileName,
-						originalName: v.file.originalName,
-						mimeType: v.file.mimeType,
-						size: v.file.size,
+						id: att.id,
+						fileName: att.fileName,
+						originalName: att.originalName,
+						size: att.size,
 					}
 				: null,
-			createdAt: v.createdAt,
-		}));
-
-		console.log("[DEBUG] getSubmissionById returning data for:", submissionId);
-		return {
-			submission: {
-				id: submission.id,
-				title: submission.currentVersion?.title ?? submission.title,
-				type: submission.type,
-				status: submission.status,
-				currentRound: submission.currentRound,
-				currentVersion: submission.currentVersion?.version ?? 1,
-				createdAt: submission.createdAt,
-				updatedAt: submission.updatedAt,
-				content: submission.currentVersion?.content ?? submission.content,
-				acknowledgment: submission.acknowledgment,
-				authors,
-				keywords,
-				role: submission.userId === userId ? "author" : "coauthor",
-			},
-			statusHistory,
-			reviews,
-			decision,
-			versions,
+			createdAt: r.createdAt,
 		};
-	} catch (err) {
-		console.error("[DEBUG] getSubmissionById ERROR:", err);
-		throw err;
-	}
+	});
+
+	const latestDecision = submission.editorDecisions[0];
+	const decision: UserSubmissionDecision | null = latestDecision
+		? {
+				id: latestDecision.id,
+				submissionId: latestDecision.submissionId,
+				decision: latestDecision.decision,
+				reasoning: latestDecision.reasoning,
+				letterToAuthor: latestDecision.letterToAuthor,
+				createdAt: latestDecision.createdAt,
+			}
+		: null;
+
+	const versions: UserSubmissionVersion[] = submission.versions.map((v) => ({
+		id: v.id,
+		submissionId: v.submissionId,
+		version: v.version,
+		title: v.title,
+		content: v.content,
+		comment: v.comment,
+		// Per-version frozen snapshot; fall back to current for legacy rows
+		authors:
+			v.authorsSnapshot.length > 0
+				? v.authorsSnapshot.map((a) => ({
+						firstName: a.firstName,
+						lastName: a.lastName,
+						email: a.email,
+						affiliation: a.affiliation,
+						isPresenter: a.isPresenter,
+					}))
+				: authors,
+		keywords:
+			v.keywordsSnapshot.length > 0
+				? v.keywordsSnapshot.map((k) => k.name)
+				: keywords,
+		file: v.file
+			? {
+					id: v.file.id,
+					fileName: v.file.fileName,
+					originalName: v.file.originalName,
+					mimeType: v.file.mimeType,
+					size: v.file.size,
+				}
+			: null,
+		createdAt: v.createdAt,
+	}));
+
+	return {
+		submission: {
+			id: submission.id,
+			title: submission.currentVersion?.title ?? submission.title,
+			type: submission.type,
+			status: submission.status,
+			currentRound: submission.currentRound,
+			currentVersion: submission.currentVersion?.version ?? 1,
+			createdAt: submission.createdAt,
+			updatedAt: submission.updatedAt,
+			content: submission.currentVersion?.content ?? submission.content,
+			acknowledgment: submission.acknowledgment,
+			authors,
+			keywords,
+			role: submission.userId === userId ? "author" : "coauthor",
+		},
+		statusHistory,
+		reviews,
+		decision,
+		versions,
+	};
 }
 
 export interface ResubmitSubmissionInput {
