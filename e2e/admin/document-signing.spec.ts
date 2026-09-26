@@ -192,9 +192,9 @@ test.describe("Admin - Document signing", () => {
 		const doc = await getPrisma(testInfo.parallelIndex)
 			.generatedDocument.findFirstOrThrow({
 				where: { name: title },
-				select: { id: true, sealVisible: true },
+				select: { id: true, signMode: true },
 			});
-		expect(doc.sealVisible).toBe(false);
+		expect(doc.signMode).toBe("INVISIBLE");
 
 		await page.goto("/verify-document");
 		await page.getByTestId("verify-file-input").setInputFiles({

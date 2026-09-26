@@ -30,7 +30,7 @@ import {
 import { attachUploadedDocument } from "@/features/documents/server/upload";
 import { issueDocumentUploadLink } from "@/features/documents/server/upload-link";
 import {
-	type DocumentDelivery,
+	documentDeliverySchema,
 	uploadedDocumentMetaSchema,
 } from "@/features/documents/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
@@ -111,13 +111,11 @@ export const generateDocumentFn = createServerFn({ method: "POST" })
 		}),
 	);
 
-const flag = (data: FormData, field: string) => data.get(field) === "true";
-
-const deliveryFlags = (data: FormData): DocumentDelivery => ({
-	sign: flag(data, "sign"),
-	sealVisible: flag(data, "sealVisible"),
-	notify: flag(data, "notify"),
-});
+const deliveryFromForm = (data: FormData) =>
+	documentDeliverySchema.parse({
+		signMode: data.get("signMode") ?? undefined,
+		notify: data.get("notify") === "true",
+	});
 
 export const uploadDocumentFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
@@ -126,7 +124,7 @@ export const uploadDocumentFn = createServerFn({ method: "POST" })
 		meta: uploadedDocumentMetaSchema.parse({
 			userId: String(data.get("userId") ?? ""),
 			title: String(data.get("title") ?? ""),
-			...deliveryFlags(data),
+			...deliveryFromForm(data),
 		}),
 	}))
 	.handler(async ({ data, context }) =>
@@ -144,7 +142,7 @@ export const importDocumentsZipFn = createServerFn({ method: "POST" })
 		title: uploadedDocumentMetaSchema.shape.title.parse(
 			String(data.get("title") ?? ""),
 		),
-		delivery: deliveryFlags(data),
+		delivery: deliveryFromForm(data),
 	}))
 	.handler(async ({ data, context }) =>
 		importDocumentsZip({

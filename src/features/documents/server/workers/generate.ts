@@ -8,16 +8,15 @@ import { prisma } from "@/shared/server/db.server";
 
 interface DocumentGenerateJobData {
 	documentId: string;
-	sign?: boolean;
 }
 
 async function handleDocumentGenerateJob(
 	jobs: Job<DocumentGenerateJobData>[],
 ): Promise<void> {
 	for (const job of jobs) {
-		const { documentId, sign } = job.data;
+		const { documentId } = job.data;
 		try {
-			await processDocumentGeneration(documentId, { sign });
+			await processDocumentGeneration(documentId);
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
 			logger.error(`[document-generate] job ${documentId} failed:`, msg);

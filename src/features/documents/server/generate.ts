@@ -134,13 +134,8 @@ async function renderFromTemplate(
 	);
 }
 
-export interface DocumentGenerateOptions {
-	sign?: boolean;
-}
-
 export async function processDocumentGeneration(
 	documentId: string,
-	opts: DocumentGenerateOptions = {},
 ): Promise<void> {
 	const doc = await prisma.generatedDocument.findUnique({
 		where: { id: documentId },
@@ -168,7 +163,7 @@ export async function processDocumentGeneration(
 		doc.template
 			? renderFromTemplate(doc, doc.template)
 			: getFileBuffer(uploadedKey),
-		opts.sign === false ? null : loadSigningMaterial(),
+		doc.signMode === "NONE" ? null : loadSigningMaterial(),
 	]);
 	let pdf = rendered;
 
@@ -187,7 +182,7 @@ export async function processDocumentGeneration(
 				: undefined,
 			timestampUrl: cfg.timestampEnabled ? cfg.timestampUrl : undefined,
 			certify: cfg.certifying,
-			visible: doc.sealVisible,
+			visible: doc.signMode === "VISIBLE",
 		});
 		signed = true;
 	}

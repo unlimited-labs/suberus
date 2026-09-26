@@ -5,8 +5,7 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { Label } from "@/shared/ui/label";
 
 export const DEFAULT_DELIVERY: DocumentDelivery = {
-	sign: true,
-	sealVisible: true,
+	signMode: "VISIBLE",
 	notify: true,
 };
 
@@ -28,31 +27,35 @@ export function DocumentDeliveryFields({
 	onChange,
 }: DocumentDeliveryFieldsProps) {
 	const { data: signing } = useQuery(documentSigningQueryOptions());
-	const toggle = (key: keyof DocumentDelivery) => (checked: boolean) =>
-		onChange({ ...value, [key]: checked });
+	const setSignMode = (signMode: DocumentDelivery["signMode"]) =>
+		onChange({ ...value, signMode });
 
 	return (
 		<div className="space-y-2.5">
 			{signing?.enabled && (
 				<div className="flex items-center gap-2.5">
 					<Checkbox
-						checked={value.sign}
+						checked={value.signMode !== "NONE"}
 						data-testid="document-sign-checkbox"
 						id={`${idPrefix}-sign`}
-						onCheckedChange={toggle("sign")}
+						onCheckedChange={(checked) =>
+							setSignMode(checked ? "VISIBLE" : "NONE")
+						}
 					/>
 					<Label className="font-normal" htmlFor={`${idPrefix}-sign`}>
 						Sign with the conference certificate
 					</Label>
 				</div>
 			)}
-			{signing?.enabled && value.sign && (
+			{signing?.enabled && value.signMode !== "NONE" && (
 				<div className="flex items-center gap-2.5 pl-6">
 					<Checkbox
-						checked={value.sealVisible}
+						checked={value.signMode === "VISIBLE"}
 						data-testid="document-seal-visible-checkbox"
 						id={`${idPrefix}-seal-visible`}
-						onCheckedChange={toggle("sealVisible")}
+						onCheckedChange={(checked) =>
+							setSignMode(checked ? "VISIBLE" : "INVISIBLE")
+						}
 					/>
 					<Label className="font-normal" htmlFor={`${idPrefix}-seal-visible`}>
 						Visible seal
@@ -64,7 +67,7 @@ export function DocumentDeliveryFields({
 					checked={value.notify}
 					data-testid="document-notify-checkbox"
 					id={`${idPrefix}-notify`}
-					onCheckedChange={toggle("notify")}
+					onCheckedChange={(notify) => onChange({ ...value, notify })}
 				/>
 				<Label className="font-normal" htmlFor={`${idPrefix}-notify`}>
 					E-mail the participant when it is ready

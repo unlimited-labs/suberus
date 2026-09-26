@@ -92,8 +92,7 @@ export async function importDocumentsZip(
 			await attachUploadedDocument({
 				userId,
 				title,
-				sign: opts.sign,
-				sealVisible: opts.sealVisible,
+				signMode: opts.signMode,
 				notify: opts.notify,
 				buffer: entry.getData(),
 				createdById: opts.createdById,

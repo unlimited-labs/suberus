@@ -1140,7 +1140,7 @@ model GeneratedDocument {
   storageKey    String?           @unique
   size          Int?
   signed        Boolean           @default(false)
-  sealVisible   Boolean           @default(true)
+  signMode      SignMode          @default(VISIBLE)
   notify        Boolean           @default(true)
   error         String?
   generatedById String?           @db.Uuid
@@ -1176,6 +1176,12 @@ enum DocumentStatus {
   PENDING
   READY
   FAILED
+}
+
+enum SignMode {
+  NONE
+  INVISIBLE
+  VISIBLE
 }
 
 model Jwks {

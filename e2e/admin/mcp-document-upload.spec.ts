@@ -15,13 +15,12 @@ function tokenFor(meta: {
 	userId: string;
 	title: string;
 	by: string;
-	sign?: boolean;
 	notify?: boolean;
 }) {
 	const secret = process.env.AUTH_SECRET;
 	if (!secret) throw new Error("AUTH_SECRET is required to mint an upload token");
 	const subject = Buffer.from(
-		JSON.stringify({ sign: false, notify: false, ...meta }),
+		JSON.stringify({ signMode: "NONE", notify: false, ...meta }),
 	).toString("base64url");
 	return createCapabilityToken("dup", subject, secret, DOCUMENT_UPLOAD_LINK_TTL_MS)
 		.token;
@@ -59,6 +58,7 @@ test.describe("Document upload link endpoint", () => {
 			where: { userId: testUserId, name: title },
 		});
 		expect(doc?.templateId).toBeNull();
+		expect(doc?.signMode).toBe("NONE");
 	});
 
 	test("a tampered token is refused", async ({ request, testRun }) => {

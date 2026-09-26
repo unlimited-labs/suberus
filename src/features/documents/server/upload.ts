@@ -44,7 +44,7 @@ export async function attachUploadedDocument(
 			templateId: null,
 			batchId: input.batchId,
 			name: title,
-			sealVisible: input.sealVisible,
+			signMode: input.signMode,
 			notify: input.notify,
 			generatedById: input.createdById,
 			status: "PENDING",
@@ -77,7 +77,7 @@ export async function attachUploadedDocument(
 
 	await ensureQueueAndSend(
 		DOCUMENT_GENERATE_QUEUE,
-		{ documentId: doc.id, sign: input.sign },
+		{ documentId: doc.id },
 		ENQUEUE_OPTS,
 	);
 	return doc;
