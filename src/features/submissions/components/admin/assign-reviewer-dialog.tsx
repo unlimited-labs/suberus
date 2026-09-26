@@ -1,10 +1,4 @@
-import {
-	IconCalendar,
-	IconLoader2,
-	IconSearch,
-	IconUser,
-	IconX,
-} from "@tabler/icons-react";
+import { IconCalendar, IconX } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, format } from "date-fns";
 import { useState } from "react";
@@ -17,6 +11,10 @@ import {
 } from "@/features/reviews/api/assignments";
 import { assignmentStatusVariants } from "@/features/reviews/labels";
 import { submissionKeys } from "@/features/submissions/api/admin-submissions";
+import {
+	filterPeople,
+	PersonPickerList,
+} from "@/features/submissions/components/admin/person-picker-list";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -80,15 +78,23 @@ export function AssignReviewerDialog({
 		enabled: open,
 	});
 
-	const filteredReviewers = availableReviewers.filter((r) => {
-		const searchLower = search.toLowerCase();
-		const name = `${r.firstName ?? ""} ${r.lastName ?? ""}`.toLowerCase();
-		return (
-			name.includes(searchLower) ||
-			r.email.toLowerCase().includes(searchLower) ||
-			r.affiliationName?.toLowerCase().includes(searchLower)
-		);
-	});
+	const reviewerRows = availableReviewers.map((r) => ({
+		id: r.id,
+		name: `${r.firstName ?? ""} ${r.lastName ?? ""}`.trim(),
+		email: r.email,
+		affiliation: r.affiliationName,
+		meta: (
+			<div className="mt-1 flex gap-2 pl-6">
+				<Badge className="text-xs" variant="outline">
+					{r.activeAssignmentsCount} active
+				</Badge>
+				<Badge className="text-xs" variant="outline">
+					{r.completedReviewsCount} completed
+				</Badge>
+			</div>
+		),
+	}));
+	const filteredReviewers = filterPeople(reviewerRows, search);
 
 	const activeAssignments = currentAssignments.filter(
 		(a) => a.status !== "CANCELLED",
@@ -239,73 +245,18 @@ export function AssignReviewerDialog({
 					<div className="space-y-3">
 						<Label className="text-base">Available Reviewers</Label>
 
-						<div className="relative">
-							<IconSearch className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-							<Input
-								className="pl-10"
-								onChange={(e) => setSearch(e.target.value)}
-								placeholder="Search by name, email, or affiliation..."
-								value={search}
-							/>
-						</div>
-
-						{isLoading ? (
-							<div className="flex items-center justify-center py-8">
-								<IconLoader2 className="text-muted-foreground size-6 animate-spin" />
-							</div>
-						) : filteredReviewers.length === 0 ? (
-							<p className="text-muted-foreground py-4 text-center text-sm">
-								{search
-									? "No reviewers found matching search"
-									: "No available reviewers"}
-							</p>
-						) : (
-							<div className="max-h-64 space-y-2 overflow-y-auto">
-								{filteredReviewers.map((reviewer) => (
-									<div
-										className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3"
-										data-testid="reviewer-option"
-										key={reviewer.id}
-									>
-										<div className="min-w-0 flex-1">
-											<div className="flex items-center gap-2">
-												<IconUser className="text-muted-foreground size-4 shrink-0" />
-												<span className="truncate font-medium">
-													{reviewer.firstName} {reviewer.lastName}
-												</span>
-											</div>
-											<p className="text-muted-foreground truncate pl-6 text-sm">
-												{reviewer.email}
-											</p>
-											{reviewer.affiliationName && (
-												<p className="text-muted-foreground truncate pl-6 text-xs">
-													{reviewer.affiliationName}
-												</p>
-											)}
-											<div className="mt-1 flex gap-2 pl-6">
-												<Badge className="text-xs" variant="outline">
-													{reviewer.activeAssignmentsCount} active
-												</Badge>
-												<Badge className="text-xs" variant="outline">
-													{reviewer.completedReviewsCount} completed
-												</Badge>
-											</div>
-										</div>
-										<Button
-											disabled={assigningReviewerId !== null}
-											onClick={() => handleAssign(reviewer.id)}
-											size="sm"
-										>
-											{assigningReviewerId === reviewer.id ? (
-												<IconLoader2 className="size-4 animate-spin" />
-											) : (
-												"Assign"
-											)}
-										</Button>
-									</div>
-								))}
-							</div>
-						)}
+						<PersonPickerList
+							actionLabel="Assign"
+							emptyLabel="No available reviewers"
+							emptySearchLabel="No reviewers found matching search"
+							isLoading={isLoading}
+							onSearchChange={setSearch}
+							onSelect={handleAssign}
+							optionTestId="reviewer-option"
+							pendingId={assigningReviewerId}
+							rows={filteredReviewers}
+							search={search}
+						/>
 					</div>
 				</div>
 

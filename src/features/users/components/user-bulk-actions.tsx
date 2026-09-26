@@ -27,7 +27,7 @@ import {
 import type { AdminUser } from "@/features/users/server/users";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 import { getErrorMessage } from "@/shared/lib/error-message";
-import { BulkActionDialog } from "@/shared/ui/data-table";
+import { BulkActionDialog, BulkActionsToolbar } from "@/shared/ui/data-table";
 import type { AppTable } from "@/shared/ui/data-table/table-features";
 import {
 	Select,
@@ -156,10 +156,6 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 		});
 	};
 
-	// Shares the bulk-action toolbar shape with submission-bulk-actions.tsx and
-	// data-table-bulk-actions.tsx (a pre-existing 3-way pattern). Deduping these
-	// belongs in one coordinated refactor of all three, not this feature.
-	// fallow-ignore-next-line code-duplication
 	const actions = [
 		{ value: "mark_fee", label: "Mark fee paid" },
 		...(canChangeRoles ? [{ value: "change_role", label: "Change role" }] : []),
@@ -170,23 +166,12 @@ export function UserBulkActions({ table, rowSelection }: UserBulkActionsProps) {
 
 	return (
 		<>
-			<div className="flex items-center gap-2">
-				<span className="text-muted-foreground text-sm">
-					{selectedCount} selected
-				</span>
-				<Select items={actions} onValueChange={handleSelectAction} value="">
-					<SelectTrigger className="h-8 w-[180px]">
-						<SelectValue placeholder="Bulk actions" />
-					</SelectTrigger>
-					<SelectContent>
-						{actions.map((action) => (
-							<SelectItem key={action.value} value={action.value}>
-								{action.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
+			<BulkActionsToolbar
+				actions={actions}
+				onValueChange={handleSelectAction}
+				selectedCount={selectedCount}
+				value=""
+			/>
 
 			<BulkActionDialog
 				description={`Select fee type for ${selectedCount} selected users.`}

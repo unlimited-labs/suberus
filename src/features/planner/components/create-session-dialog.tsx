@@ -4,7 +4,6 @@ import { addMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { Form } from "@/shared/components/composable/form";
-import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -14,8 +13,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
-import { Field, FieldError } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { useCreateSessionForm } from "./hooks/use-create-session-form";
@@ -51,10 +48,6 @@ export function CreateSessionDialog({
 		onCreated,
 	});
 
-	const submissionAttempts = useSelector(
-		form.store,
-		(s) => s.submissionAttempts,
-	);
 	const slotMin = useSelector(form.store, (s) => s.values.slotMin);
 	const untimedSlots = useSelector(form.store, (s) => s.values.untimedSlots);
 	const sessionMin = useSelector(form.store, (s) => s.values.sessionMin);
@@ -92,39 +85,22 @@ export function CreateSessionDialog({
 						totalMin={durationMin}
 					/>
 
-					<form.Field
+					<form.AppField
 						name="title"
 						validators={{
 							onSubmit: ({ value }) =>
 								!value.trim() ? "Title is required" : undefined,
 						}}
 					>
-						{(field) => {
-							const errors = isFieldErrorVisible(
-								field.state.meta,
-								submissionAttempts,
-							)
-								? field.state.meta.errors
-								: [];
-							const hasError = errors.length > 0;
-							return (
-								<Field className="space-y-2" data-invalid={hasError}>
-									<Label htmlFor="cs-title">Title</Label>
-									<Input
-										aria-invalid={hasError}
-										autoFocus
-										data-testid="create-session-name"
-										id="cs-title"
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="Session title"
-										value={field.state.value}
-									/>
-									<FieldError errors={hasError ? errors : undefined} />
-								</Field>
-							);
-						}}
-					</form.Field>
+						{(field) => (
+							<field.InputField
+								autoFocus
+								label="Title"
+								placeholder="Session title"
+								testId="create-session-name"
+							/>
+						)}
+					</form.AppField>
 
 					<form.Field name="roomId">
 						{(field) => (

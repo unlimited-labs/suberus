@@ -32,6 +32,9 @@ jobs:
 
       - run: pnpm exec oxlint
 
+      # Gates the sloppiness numerators against sloppiness-baseline.json.
+      - run: pnpm sloppiness
+
       # build is the typecheck: vite-plugin-checker gates types and generates
       # routeTree.gen.ts (a standalone tsc can't). Before test for route imports.
       - run: pnpm build

@@ -34,11 +34,11 @@ import {
 	updateDraftSubmission,
 } from "@/features/submissions/server/submissions";
 import {
-	authorSchema,
 	submissionCreateInput,
 	submissionIdInput,
 } from "@/features/submissions/validations";
 import { logger } from "@/logger";
+import { authorSchema } from "@/shared/lib/author-schema";
 import { prisma } from "@/shared/server/db.server";
 import { getUploadedFile } from "@/shared/server/form-upload";
 

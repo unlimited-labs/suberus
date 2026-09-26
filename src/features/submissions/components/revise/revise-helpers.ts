@@ -4,7 +4,7 @@ import type {
 	UserSubmissionAuthor,
 	UserSubmissionFile,
 } from "@/features/submissions/server/submissions";
-import { authorSchema } from "@/features/submissions/validations";
+import { authorSchema } from "@/shared/lib/author-schema";
 import type { Author } from "@/shared/types/author";
 
 export interface RevisionFormData {

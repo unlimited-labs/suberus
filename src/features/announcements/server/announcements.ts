@@ -1,14 +1,12 @@
 import type { AnnouncementStatus } from "@/generated/prisma/enums";
-import { lookup } from "@/shared/lib/lookup";
 import {
-	BUILTIN_PLACEHOLDER_KEYS,
-	extractTokens,
+	assertKnownPlaceholders,
+	collectPlaceholderIssues,
+} from "@/shared/lib/placeholder-issues";
+import {
 	parseDataColumns,
-	parseRecipientData,
 	type PlaceholderIssues,
 	type RecipientSnapshot,
-	recipientValues,
-	unknownTokens,
 } from "@/shared/lib/placeholders";
 import { buildRecipientSnapshot } from "@/shared/lib/recipient-snapshot";
 import { FUTURE_INSTANT_MESSAGE, isFutureInstant } from "@/shared/lib/schedule";
@@ -228,65 +226,27 @@ export async function placeholderIssues(
 		where: { id },
 		select: { dataColumns: true },
 	});
-	if (!announcement)
+	if (!announcement) {
 		throw new Response("Announcement not found", { status: 404 });
-
-	const known = [
-		...BUILTIN_PLACEHOLDER_KEYS,
-		...Object.keys(parseDataColumns(announcement.dataColumns)),
-	];
-	const knownSet = new Set(known);
-	const unknown = unknownTokens(tokens, known);
-	const used = tokens.filter((t) => knownSet.has(t));
-	if (used.length === 0) return { unknown, missing: [] };
-
-	const recipients = await prisma.announcementRecipient.findMany({
-		where: { announcementId: id },
-		select: {
-			firstName: true,
-			lastName: true,
-			titles: true,
-			data: true,
-			user: { select: { email: true } },
-		},
-	});
-	const values = recipients.map((r) => ({
-		email: r.user.email,
-		values: recipientValues({ ...r, data: parseRecipientData(r.data) }),
-	}));
-
-	const missing = used.flatMap((key) => {
-		const empty = values.filter((v) => !lookup(v.values, key));
-		return empty.length === 0
-			? []
-			: [
-					{
-						key,
-						count: empty.length,
-						sample: empty.slice(0, 5).map((v) => v.email),
-					},
-				];
-	});
-
-	return { unknown, missing };
-}
-
-async function assertKnownPlaceholders(
-	id: string,
-	subject: string,
-	bodySource: string,
-): Promise<void> {
-	const { unknown } = await placeholderIssues(
-		id,
-		extractTokens(`${subject}
-${bodySource}`),
-	);
-	if (unknown.length > 0) {
-		throw new Response(
-			`Unknown placeholders: ${unknown.map((t) => `{{${t}}}`).join(", ")}`,
-			{ status: 400 },
-		);
 	}
+
+	return collectPlaceholderIssues(
+		announcement.dataColumns,
+		tokens,
+		async () => {
+			const recipients = await prisma.announcementRecipient.findMany({
+				where: { announcementId: id },
+				select: {
+					firstName: true,
+					lastName: true,
+					titles: true,
+					data: true,
+					user: { select: { email: true } },
+				},
+			});
+			return recipients.map((r) => ({ ...r, email: r.user.email }));
+		},
+	);
 }
 
 export async function publishAnnouncement(
@@ -309,7 +269,7 @@ export async function publishAnnouncement(
 		throw new Response("Subject and body are required", { status: 400 });
 	}
 	await assertKnownPlaceholders(
-		id,
+		(tokens) => placeholderIssues(id, tokens),
 		announcement.subject,
 		announcement.bodySource,
 	);

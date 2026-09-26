@@ -1,0 +1,6 @@
+{
+  "$comment": "Ceiling for `pnpm sloppiness`, enforced in CI and on pre-push. hotMass and cloneLines gate; locNonTest is reported only, because a codebase that grows is not a codebase that got sloppy. Absolute counts, not the ratios, which shrink whenever code is added. Lower these when a refactor lands; never raise one without saying why here.",
+  "hotMass": 7800,
+  "cloneLines": 2302,
+  "locNonTest": 83360
+}

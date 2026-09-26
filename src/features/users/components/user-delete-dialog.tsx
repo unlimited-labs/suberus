@@ -1,23 +1,14 @@
-import { IconAlertTriangle } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
-	adminUsersQueryOptions,
 	adminUserDeletableQueryOptions,
+	adminUsersQueryOptions,
 	deleteAdminUser,
 } from "@/features/users/api/users";
 import type { AdminUser } from "@/features/users/server/users";
+import { DeleteConfirmDialog } from "@/shared/components/delete-confirm-dialog";
 import { getErrorMessage } from "@/shared/lib/error-message";
-import { Button } from "@/shared/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/shared/ui/dialog";
 
 interface UserDeleteDialogProps {
 	user: AdminUser;
@@ -56,75 +47,46 @@ export function UserDeleteDialog({
 	const displayName =
 		[user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 
-	if (isLoading) {
-		return (
-			<Dialog onOpenChange={onOpenChange} open={open}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Delete User Account</DialogTitle>
-					</DialogHeader>
-					<p className="text-muted-foreground py-4 text-sm">Checking...</p>
-				</DialogContent>
-			</Dialog>
-		);
-	}
-
-	if (check && !check.deletable) {
-		return (
-			<Dialog onOpenChange={onOpenChange} open={open}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Cannot Delete User</DialogTitle>
-						<DialogDescription>This user cannot be deleted:</DialogDescription>
-					</DialogHeader>
-					<ul className="list-disc space-y-1 pl-6 text-sm">
-						{check.reasons.map((reason) => (
-							<li key={reason}>{reason}</li>
-						))}
-					</ul>
-					<p className="text-muted-foreground text-sm">Remove these first.</p>
-					<DialogFooter>
-						<Button onClick={() => onOpenChange(false)} variant="outline">
-							Close
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		);
-	}
-
 	return (
-		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						<IconAlertTriangle className="text-destructive size-5" />
-						Delete User Account
-					</DialogTitle>
-					<DialogDescription>Permanently delete account of:</DialogDescription>
-				</DialogHeader>
-				<div className="space-y-2 py-2">
-					<p className="font-medium">
-						{displayName}{" "}
-						<span className="text-muted-foreground">({user.email})</span>
-					</p>
-					<p className="text-muted-foreground text-sm">
-						This action cannot be undone. All account data will be removed.
-					</p>
-				</div>
-				<DialogFooter>
-					<Button onClick={() => onOpenChange(false)} variant="outline">
-						Cancel
-					</Button>
-					<Button
-						disabled={mutation.isPending}
-						onClick={() => mutation.mutate()}
-						variant="destructive"
-					>
-						{mutation.isPending ? "Deleting..." : "Delete User"}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+		<DeleteConfirmDialog
+			blocked={
+				check && !check.deletable
+					? {
+							title: "Cannot Delete User",
+							description: "This user cannot be deleted:",
+							content: (
+								<>
+									<ul className="list-disc space-y-1 pl-6 text-sm">
+										{check.reasons.map((reason) => (
+											<li key={reason}>{reason}</li>
+										))}
+									</ul>
+									<p className="text-muted-foreground text-sm">
+										Remove these first.
+									</p>
+								</>
+							),
+						}
+					: null
+			}
+			confirmLabel="Delete User"
+			description="Permanently delete account of:"
+			isChecking={isLoading}
+			isPending={mutation.isPending}
+			onConfirm={() => mutation.mutate()}
+			onOpenChange={onOpenChange}
+			open={open}
+			title="Delete User Account"
+		>
+			<div className="space-y-2 py-2">
+				<p className="font-medium">
+					{displayName}{" "}
+					<span className="text-muted-foreground">({user.email})</span>
+				</p>
+				<p className="text-muted-foreground text-sm">
+					This action cannot be undone. All account data will be removed.
+				</p>
+			</div>
+		</DeleteConfirmDialog>
 	);
 }

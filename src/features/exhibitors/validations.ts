@@ -1,19 +1,5 @@
 import { z } from "zod";
-
-export const exhibitorAuthorSchema = z.object({
-	firstName: z
-		.string()
-		.min(1, "First name is required")
-		.max(100, "First name must be at most 100 characters"),
-	lastName: z
-		.string()
-		.min(1, "Last name is required")
-		.max(100, "Last name must be at most 100 characters"),
-	email: z.email("Invalid email address"),
-	affiliationId: z.uuid().nullable(),
-	affiliationName: z.string().min(1, "Affiliation is required"),
-	isPresenter: z.boolean(),
-});
+import { authorSchema } from "@/shared/lib/author-schema";
 
 export const exhibitorPresentationSchema = z.object({
 	title: z
@@ -22,7 +8,7 @@ export const exhibitorPresentationSchema = z.object({
 		.max(300, "Title must be at most 300 characters"),
 	content: z.string().min(10, "Content must be at least 10 characters"),
 	authors: z
-		.array(exhibitorAuthorSchema)
+		.array(authorSchema)
 		.min(1, "At least one author is required")
 		.refine(
 			(authors) => authors.filter((a) => a.isPresenter).length === 1,

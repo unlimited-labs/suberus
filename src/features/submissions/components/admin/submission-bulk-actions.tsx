@@ -13,7 +13,7 @@ import type { AvailableTrack } from "@/features/submissions/types";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
-import { BulkActionDialog } from "@/shared/ui/data-table";
+import { BulkActionDialog, BulkActionsToolbar } from "@/shared/ui/data-table";
 import type { AppTable } from "@/shared/ui/data-table/table-features";
 import {
 	Select,
@@ -158,30 +158,16 @@ export function SubmissionBulkActions({
 
 	return (
 		<>
-			<div className="flex items-center gap-2">
-				<span className="text-muted-foreground text-sm">
-					{selectedCount} selected
-				</span>
-				<Select
-					items={actions}
-					onValueChange={setSelectedAction}
-					value={selectedAction}
-				>
-					<SelectTrigger className="h-8 w-[180px]">
-						<SelectValue placeholder="Bulk actions" />
-					</SelectTrigger>
-					<SelectContent>
-						{actions.map((action) => (
-							<SelectItem key={action.value} value={action.value}>
-								{action.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+			<BulkActionsToolbar
+				actions={actions}
+				onValueChange={setSelectedAction}
+				selectedCount={selectedCount}
+				value={selectedAction}
+			>
 				<Button disabled={!selectedAction} onClick={handleApply} size="sm">
 					Apply
 				</Button>
-			</div>
+			</BulkActionsToolbar>
 
 			<BulkActionDialog
 				description={`Select new status for ${selectedCount} selected submissions. Some status changes may not be allowed depending on the current submission state.`}

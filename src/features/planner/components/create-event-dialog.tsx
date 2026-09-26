@@ -12,7 +12,6 @@ import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
 import { tzLocalInputToUtc } from "@/features/planner/tz-datetime";
 import { Form } from "@/shared/components/composable/form";
-import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -22,7 +21,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
-import { Field, FieldError } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
@@ -35,6 +33,121 @@ import { Stepper } from "./stepper";
 
 interface CreateEventDialogProps extends EventFormProps {
 	timezone?: string;
+}
+
+const EVENT_TYPES = ["session", "break", "event"] as const;
+
+const TYPE_COPY = {
+	session: {
+		dialogTitle: "New session",
+		tab: "Session",
+		Icon: IconLayoutGrid,
+		duration: "slots",
+		titleLabel: "Title (optional)",
+		titleRequired: false,
+		autoTitle: true,
+		showUntimedSwitch: true,
+		showEventFields: false,
+		showRoom: true,
+		showTrack: true,
+	},
+	break: {
+		dialogTitle: "New break",
+		tab: "Break",
+		Icon: IconClock,
+		duration: "fixed",
+		titleLabel: "Title",
+		titleRequired: true,
+		autoTitle: false,
+		showUntimedSwitch: false,
+		showEventFields: false,
+		showRoom: true,
+		showTrack: false,
+	},
+	event: {
+		dialogTitle: "New event",
+		tab: "Event",
+		Icon: IconCalendarEvent,
+		duration: "explicitEnd",
+		titleLabel: "Title",
+		titleRequired: true,
+		autoTitle: false,
+		showUntimedSwitch: false,
+		showEventFields: true,
+		showRoom: false,
+		showTrack: false,
+	},
+} as const;
+
+type DurationMode = "slots" | "explicitEnd" | "fixed";
+
+function DurationFields({
+	durationMode,
+	form,
+}: {
+	durationMode: DurationMode;
+	form: ReturnType<typeof useCreateEventForm>["form"];
+}) {
+	return (
+		<>
+			{durationMode === "slots" ? (
+				<div className="grid grid-cols-2 gap-4">
+					<form.Field name="presentationCount">
+						{(field) => (
+							<div className="space-y-2">
+								<Label>Presentations</Label>
+								<Stepper
+									max={20}
+									min={1}
+									onChange={field.handleChange}
+									value={field.state.value}
+								/>
+							</div>
+						)}
+					</form.Field>
+					<form.Field name="minutesPerPresentation">
+						{(field) => (
+							<div className="space-y-2">
+								<Label>Min / talk</Label>
+								<Stepper
+									max={120}
+									min={5}
+									onChange={field.handleChange}
+									step={5}
+									value={field.state.value}
+								/>
+							</div>
+						)}
+					</form.Field>
+				</div>
+			) : durationMode === "explicitEnd" ? (
+				<form.AppField name="endInput">
+					{(field) => (
+						<field.InputField
+							label="End"
+							testId="create-event-end"
+							type="datetime-local"
+						/>
+					)}
+				</form.AppField>
+			) : (
+				<form.Field name="breakDurationMin">
+					{(field) => (
+						<div className="space-y-2">
+							<Label>Duration</Label>
+							<Stepper
+								max={180}
+								min={5}
+								onChange={field.handleChange}
+								step={5}
+								value={field.state.value}
+							/>
+						</div>
+					)}
+				</form.Field>
+			)}
+		</>
+	);
 }
 
 export function CreateEventDialog({
@@ -53,10 +166,6 @@ export function CreateEventDialog({
 		onClose,
 	});
 
-	const submissionAttempts = useSelector(
-		form.store,
-		(s) => s.submissionAttempts,
-	);
 	const type = useSelector(form.store, (s) => s.values.type);
 	const startInput = useSelector(form.store, (s) => s.values.startInput);
 	const endInput = useSelector(form.store, (s) => s.values.endInput);
@@ -80,30 +189,24 @@ export function CreateEventDialog({
 	const sessionEndDate = addMinutes(startDate, sessionDurationMin);
 	const breakEndDate = addMinutes(startDate, breakDurationMin);
 	const eventEndDate = tzLocalInputToUtc(endInput, timezone);
-	const endDate =
-		untimedSession || type === "event"
-			? eventEndDate
-			: type === "session"
-				? sessionEndDate
-				: breakEndDate;
-	const totalMin =
-		untimedSession || type === "event"
-			? Math.max(0, differenceInMinutes(eventEndDate, startDate))
-			: type === "session"
-				? sessionDurationMin
-				: breakDurationMin;
+	const copy = TYPE_COPY[type];
+	const durationMode = untimedSession ? "explicitEnd" : copy.duration;
+	const endDate = {
+		explicitEnd: eventEndDate,
+		slots: sessionEndDate,
+		fixed: breakEndDate,
+	}[durationMode];
+	const totalMin = {
+		explicitEnd: Math.max(0, differenceInMinutes(eventEndDate, startDate)),
+		slots: sessionDurationMin,
+		fixed: breakDurationMin,
+	}[durationMode];
 
 	return (
 		<Dialog onOpenChange={(isOpen) => !isOpen && handleClose()} open={open}>
 			<DialogContent className="sm:max-w-sm" data-testid="create-event-dialog">
 				<DialogHeader>
-					<DialogTitle>
-						{type === "session"
-							? "New session"
-							: type === "event"
-								? "New event"
-								: "New break"}
-					</DialogTitle>
+					<DialogTitle>{copy.dialogTitle}</DialogTitle>
 					<DialogDescription className="sr-only">
 						Add a new session, break, or event to the program schedule.
 					</DialogDescription>
@@ -118,32 +221,25 @@ export function CreateEventDialog({
 					<form.Field name="type">
 						{(field) => (
 							<div className="grid grid-cols-3 gap-2">
-								{(["session", "break", "event"] as const).map((t) => (
-									<button
-										className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-											field.state.value === t
-												? "border-primary bg-primary text-primary-foreground"
-												: "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
-										}`}
-										data-testid={`create-event-type-${t}`}
-										key={t}
-										onClick={() => field.handleChange(t)}
-										type="button"
-									>
-										{t === "session" ? (
-											<IconLayoutGrid size={14} />
-										) : t === "event" ? (
-											<IconCalendarEvent size={14} />
-										) : (
-											<IconClock size={14} />
-										)}
-										{t === "session"
-											? "Session"
-											: t === "event"
-												? "Event"
-												: "Break"}
-									</button>
-								))}
+								{EVENT_TYPES.map((t) => {
+									const { Icon, tab } = TYPE_COPY[t];
+									return (
+										<button
+											className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+												field.state.value === t
+													? "border-primary bg-primary text-primary-foreground"
+													: "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+											}`}
+											data-testid={`create-event-type-${t}`}
+											key={t}
+											onClick={() => field.handleChange(t)}
+											type="button"
+										>
+											<Icon size={14} />
+											{tab}
+										</button>
+									);
+								})}
 							</div>
 						)}
 					</form.Field>
@@ -164,7 +260,7 @@ export function CreateEventDialog({
 						)}
 					</form.Field>
 
-					{type === "session" && (
+					{copy.showUntimedSwitch && (
 						<div className="flex items-start justify-between gap-4">
 							<div className="space-y-0.5">
 								<Label htmlFor="event-untimed">Untimed presentations</Label>
@@ -186,85 +282,13 @@ export function CreateEventDialog({
 						</div>
 					)}
 
-					{type === "session" && !untimedSlots ? (
-						<div className="grid grid-cols-2 gap-4">
-							<form.Field name="presentationCount">
-								{(field) => (
-									<div className="space-y-2">
-										<Label>Presentations</Label>
-										<Stepper
-											max={20}
-											min={1}
-											onChange={field.handleChange}
-											value={field.state.value}
-										/>
-									</div>
-								)}
-							</form.Field>
-							<form.Field name="minutesPerPresentation">
-								{(field) => (
-									<div className="space-y-2">
-										<Label>Min / talk</Label>
-										<Stepper
-											max={120}
-											min={5}
-											onChange={field.handleChange}
-											step={5}
-											value={field.state.value}
-										/>
-									</div>
-								)}
-							</form.Field>
-						</div>
-					) : untimedSession || type === "event" ? (
-						<form.Field name="endInput">
-							{(field) => {
-								const errors = isFieldErrorVisible(
-									field.state.meta,
-									submissionAttempts,
-								)
-									? field.state.meta.errors
-									: [];
-								const hasError = errors.length > 0;
-								return (
-									<Field className="space-y-2" data-invalid={hasError}>
-										<Label htmlFor="event-end">End</Label>
-										<Input
-											aria-invalid={hasError}
-											data-testid="create-event-end"
-											id="event-end"
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											type="datetime-local"
-											value={field.state.value}
-										/>
-										<FieldError errors={hasError ? errors : undefined} />
-									</Field>
-								);
-							}}
-						</form.Field>
-					) : (
-						<form.Field name="breakDurationMin">
-							{(field) => (
-								<div className="space-y-2">
-									<Label>Duration</Label>
-									<Stepper
-										max={180}
-										min={5}
-										onChange={field.handleChange}
-										step={5}
-										value={field.state.value}
-									/>
-								</div>
-							)}
-						</form.Field>
-					)}
+					<DurationFields durationMode={durationMode} form={form} />
 
 					<TimeRangeSummary
 						compact
 						end={endDate}
 						extra={
-							type === "session" && !untimedSlots ? (
+							durationMode === "slots" ? (
 								<span className="ml-1 opacity-60">
 									({presentationCount} × {minutesPerPresentation})
 								</span>
@@ -275,49 +299,28 @@ export function CreateEventDialog({
 						totalMin={totalMin}
 					/>
 
-					<form.Field
+					<form.AppField
 						name="title"
 						validators={{
 							onSubmit: ({ value }) =>
-								type !== "session" && !value.trim()
+								copy.titleRequired && !value.trim()
 									? "Title is required"
 									: undefined,
 						}}
 					>
-						{(field) => {
-							const errors = isFieldErrorVisible(
-								field.state.meta,
-								submissionAttempts,
-							)
-								? field.state.meta.errors
-								: [];
-							const hasError = errors.length > 0;
-							return (
-								<Field className="space-y-2" data-invalid={hasError}>
-									<Label htmlFor="event-title">
-										{type === "session" ? "Title (optional)" : "Title"}
-									</Label>
-									<Input
-										aria-invalid={hasError}
-										autoFocus
-										data-testid="create-event-title"
-										id="event-title"
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder={
-											type === "session"
-												? `Session ${sessions.length + 1}`
-												: undefined
-										}
-										value={field.state.value}
-									/>
-									<FieldError errors={hasError ? errors : undefined} />
-								</Field>
-							);
-						}}
-					</form.Field>
+						{(field) => (
+							<field.InputField
+								autoFocus
+								label={copy.titleLabel}
+								placeholder={
+									copy.autoTitle ? `Session ${sessions.length + 1}` : undefined
+								}
+								testId="create-event-title"
+							/>
+						)}
+					</form.AppField>
 
-					{type === "event" && (
+					{copy.showEventFields && (
 						<>
 							<form.Field name="description">
 								{(field) => (
@@ -368,7 +371,7 @@ export function CreateEventDialog({
 						</>
 					)}
 
-					{type !== "event" && (
+					{copy.showRoom && (
 						<form.Field name="roomId">
 							{(field) => (
 								<div className="space-y-2">
@@ -383,7 +386,7 @@ export function CreateEventDialog({
 						</form.Field>
 					)}
 
-					{type === "session" && (
+					{copy.showTrack && (
 						<form.Field name="trackId">
 							{(field) => (
 								<div className="space-y-2">
