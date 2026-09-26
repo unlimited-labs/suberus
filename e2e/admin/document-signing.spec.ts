@@ -168,6 +168,45 @@ test.describe("Admin - Document signing", () => {
 		});
 	});
 
+	test("an uploaded PDF can be signed without a visible seal", async ({
+		page,
+		testRun,
+	}, testInfo) => {
+		const title = testRun.prefix("InvisibleSeal");
+		const { testUserId } = await getTestUserIds();
+
+		await page.goto(`/admin/users/${testUserId}`);
+		await page.getByTestId("add-document-button").click();
+		await page.getByTestId("document-mode-upload").click();
+		await page.getByTestId("document-file-input").setInputFiles(PDF);
+		await page.getByTestId("document-title-input").fill(title);
+		await page.getByTestId("document-seal-visible-checkbox").click();
+		await page.getByTestId("upload-document-button").click();
+
+		const row = page.getByTestId("user-document-row").filter({ hasText: title });
+		await expect(row.getByTestId("doc-status-READY")).toBeVisible({
+			timeout: 40000,
+		});
+		await expect(row.getByTestId("document-signed-badge")).toBeVisible();
+
+		const doc = await getPrisma(testInfo.parallelIndex)
+			.generatedDocument.findFirstOrThrow({
+				where: { name: title },
+				select: { id: true, sealVisible: true },
+			});
+		expect(doc.sealVisible).toBe(false);
+
+		await page.goto("/verify-document");
+		await page.getByTestId("verify-file-input").setInputFiles({
+			name: "invisible-seal.pdf",
+			mimeType: "application/pdf",
+			buffer: await (await page.request.get(`/api/documents/${doc.id}`)).body(),
+		});
+		await page.getByTestId("verify-submit").click();
+		await expect(page.getByTestId("verify-verdict")).toHaveText("Authentic", {
+			timeout: 30000,
+		});
+	});
 	test("uploading an own .p12 switches the source to Uploaded", async ({
 		page,
 	}) => {

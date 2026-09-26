@@ -49,6 +49,18 @@ def test_sign_then_verify_roundtrip():
     assert "ICCMS 2026" in res["signerSubject"]
 
 
+def test_invisible_seal_signs_without_appearance():
+    from pyhanko.pdf_utils.reader import PdfFileReader
+
+    p12, password, _meta, _pem = signing.gen_self_signed_p12("ICCMS 2026", "Org", 365)
+    signed = signing.sign_pdf(_make_pdf(), p12, password, {"visible": False})
+    res = signing.verify_pdf(signed)
+    assert res["signed"] and res["intact"] and res["valid"]
+
+    field = PdfFileReader(io.BytesIO(signed), strict=False).embedded_signatures[0].sig_field
+    assert [float(v) for v in field["/Rect"]] == [0, 0, 0, 0]
+
+
 def test_tamper_breaks_integrity():
     p12, password, _meta, _pem = signing.gen_self_signed_p12("ICCMS 2026", "Org", 365)
     signed = signing.sign_pdf(_make_pdf(), p12, password, {"reason": "x"})

@@ -187,6 +187,7 @@ export async function processDocumentGeneration(
 				: undefined,
 			timestampUrl: cfg.timestampEnabled ? cfg.timestampUrl : undefined,
 			certify: cfg.certifying,
+			visible: doc.sealVisible,
 		});
 		signed = true;
 	}

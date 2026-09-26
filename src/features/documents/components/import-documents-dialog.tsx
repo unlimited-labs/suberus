@@ -6,7 +6,11 @@ import {
 	documentKeys,
 	importDocumentsZipFn,
 } from "@/features/documents/api/documents";
-import { DocumentDeliveryFields } from "@/features/documents/components/document-delivery-fields";
+import {
+	appendDelivery,
+	DEFAULT_DELIVERY,
+	DocumentDeliveryFields,
+} from "@/features/documents/components/document-delivery-fields";
 import type {
 	ImportDocumentsResult,
 	ImportSkipReason,
@@ -44,16 +48,14 @@ export function ImportDocumentsDialog({
 	const queryClient = useQueryClient();
 	const [file, setFile] = useState<File | null>(null);
 	const [title, setTitle] = useState("");
-	const [sign, setSign] = useState(true);
-	const [notify, setNotify] = useState(true);
+	const [delivery, setDelivery] = useState(DEFAULT_DELIVERY);
 	const [busy, setBusy] = useState(false);
 	const [result, setResult] = useState<ImportDocumentsResult | null>(null);
 
 	const reset = () => {
 		setFile(null);
 		setTitle("");
-		setSign(true);
-		setNotify(true);
+		setDelivery(DEFAULT_DELIVERY);
 		setResult(null);
 	};
 
@@ -64,8 +66,7 @@ export function ImportDocumentsDialog({
 			const form = new FormData();
 			form.set("file", file);
 			form.set("title", title.trim());
-			form.set("sign", String(sign));
-			form.set("notify", String(notify));
+			appendDelivery(form, delivery);
 			const imported = await importDocumentsZipFn({ data: form });
 			await queryClient.invalidateQueries({ queryKey: documentKeys.all });
 			setResult(imported);
@@ -122,10 +123,8 @@ export function ImportDocumentsDialog({
 
 					<DocumentDeliveryFields
 						idPrefix="import"
-						notify={notify}
-						onNotifyChange={setNotify}
-						onSignChange={setSign}
-						sign={sign}
+						onChange={setDelivery}
+						value={delivery}
 					/>
 
 					{result && (

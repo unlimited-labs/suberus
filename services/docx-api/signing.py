@@ -19,6 +19,7 @@ import io
 import os
 import secrets
 import tempfile
+from typing import TypedDict
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -34,6 +35,18 @@ from pyhanko.stamp import QRStampStyle, TextStampStyle
 from pyhanko_certvalidator import ValidationContext
 
 FIELD_NAME = "Signature1"
+
+
+class SignOpts(TypedDict, total=False):
+    reason: str
+    location: str
+    corner: str
+    qr_url: str | None
+    timestamp_url: str | None
+    certify: bool
+    visible: bool
+
+
 # Visible seal box in PDF points (bottom-left origin) + page margin.
 SEAL_W, SEAL_H, MARGIN = 200, 70, 28
 
@@ -142,9 +155,21 @@ def _seal_box(corner: str, page_w: float, page_h: float) -> tuple[int, int, int,
     return (int(x1), int(y1), int(x2), int(y2))
 
 
-def sign_pdf(pdf_bytes: bytes, p12_bytes: bytes, password: str, opts: dict) -> bytes:
-    """Apply a PAdES signature with a visible seal. opts: reason, location, corner,
-    qr_url, certify, timestamp_url."""
+def _seal_appearance(pdf_bytes: bytes, reason: str, opts: SignOpts):
+    qr_url = opts.get("qr_url")
+    stamp_text = "Digitally signed by\n%(signer)s\n%(ts)s"
+    if reason:
+        stamp_text = f"{reason}\n{stamp_text}"
+    if qr_url:
+        stamp_style = QRStampStyle(stamp_text=f"{stamp_text}\n%(url)s")
+    else:
+        stamp_style = TextStampStyle(stamp_text=stamp_text)
+    page_w, page_h = _first_page_size(pdf_bytes)
+    box = _seal_box(opts.get("corner") or "bottom-right", page_w, page_h)
+    return stamp_style, box, {"url": qr_url} if qr_url else None
+
+
+def sign_pdf(pdf_bytes: bytes, p12_bytes: bytes, password: str, opts: SignOpts) -> bytes:
     with tempfile.NamedTemporaryFile(suffix=".p12", delete=False) as f:
         f.write(p12_bytes)
         p12_path = f.name
@@ -159,18 +184,9 @@ def sign_pdf(pdf_bytes: bytes, p12_bytes: bytes, password: str, opts: dict) -> b
         raise ValueError("Could not load the signing certificate from the P12")
 
     reason = opts.get("reason") or ""
-    qr_url = opts.get("qr_url")
-
-    stamp_text = "Digitally signed by\n%(signer)s\n%(ts)s"
-    if reason:
-        stamp_text = f"{reason}\n{stamp_text}"
-    if qr_url:
-        stamp_style = QRStampStyle(stamp_text=f"{stamp_text}\n%(url)s")
-    else:
-        stamp_style = TextStampStyle(stamp_text=stamp_text)
-
-    page_w, page_h = _first_page_size(pdf_bytes)
-    box = _seal_box(opts.get("corner") or "bottom-right", page_w, page_h)
+    stamp_style = box = text_params = None
+    if opts.get("visible", True):
+        stamp_style, box, text_params = _seal_appearance(pdf_bytes, reason, opts)
 
     certify = bool(opts.get("certify"))
     meta = signers.PdfSignatureMetadata(
@@ -196,7 +212,7 @@ def sign_pdf(pdf_bytes: bytes, p12_bytes: bytes, password: str, opts: dict) -> b
     pdf_signer.sign_pdf(
         writer,
         output=out,
-        appearance_text_params={"url": qr_url} if qr_url else None,
+        appearance_text_params=text_params,
     )
     return out.getvalue()
 

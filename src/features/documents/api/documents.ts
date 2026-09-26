@@ -29,7 +29,10 @@ import {
 } from "@/features/documents/server/templates";
 import { attachUploadedDocument } from "@/features/documents/server/upload";
 import { issueDocumentUploadLink } from "@/features/documents/server/upload-link";
-import { uploadedDocumentMetaSchema } from "@/features/documents/validations";
+import {
+	type DocumentDelivery,
+	uploadedDocumentMetaSchema,
+} from "@/features/documents/validations";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 const documentStatus = z.enum(["PENDING", "READY", "FAILED"]);
@@ -110,6 +113,12 @@ export const generateDocumentFn = createServerFn({ method: "POST" })
 
 const flag = (data: FormData, field: string) => data.get(field) === "true";
 
+const deliveryFlags = (data: FormData): DocumentDelivery => ({
+	sign: flag(data, "sign"),
+	sealVisible: flag(data, "sealVisible"),
+	notify: flag(data, "notify"),
+});
+
 export const uploadDocumentFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator((data: FormData) => ({
@@ -117,8 +126,7 @@ export const uploadDocumentFn = createServerFn({ method: "POST" })
 		meta: uploadedDocumentMetaSchema.parse({
 			userId: String(data.get("userId") ?? ""),
 			title: String(data.get("title") ?? ""),
-			sign: flag(data, "sign"),
-			notify: flag(data, "notify"),
+			...deliveryFlags(data),
 		}),
 	}))
 	.handler(async ({ data, context }) =>
@@ -136,15 +144,13 @@ export const importDocumentsZipFn = createServerFn({ method: "POST" })
 		title: uploadedDocumentMetaSchema.shape.title.parse(
 			String(data.get("title") ?? ""),
 		),
-		sign: flag(data, "sign"),
-		notify: flag(data, "notify"),
+		delivery: deliveryFlags(data),
 	}))
 	.handler(async ({ data, context }) =>
 		importDocumentsZip({
 			zipBuffer: await fileToBuffer(data.file),
 			title: data.title,
-			sign: data.sign,
-			notify: data.notify,
+			...data.delivery,
 			createdById: context.user.id,
 		}),
 	);

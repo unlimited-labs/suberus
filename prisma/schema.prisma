@@ -1140,6 +1140,7 @@ model GeneratedDocument {
   storageKey    String?           @unique
   size          Int?
   signed        Boolean           @default(false)
+  sealVisible   Boolean           @default(true)
   notify        Boolean           @default(true)
   error         String?
   generatedById String?           @db.Uuid

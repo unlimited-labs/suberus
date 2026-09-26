@@ -8,6 +8,7 @@ import {
 	attachUploadedDocument,
 	MAX_DOCUMENT_BYTES,
 } from "@/features/documents/server/upload";
+import type { DocumentDelivery } from "@/features/documents/validations";
 import { prisma } from "@/shared/server/db.server";
 import { UploadValidationError } from "@/shared/server/validate-upload";
 
@@ -26,13 +27,13 @@ export interface ImportDocumentsResult {
 	skipped: { name: string; reason: ImportSkipReason; error?: string }[];
 }
 
-export async function importDocumentsZip(opts: {
-	zipBuffer: Buffer;
-	title: string;
-	sign: boolean;
-	notify: boolean;
-	createdById: string;
-}): Promise<ImportDocumentsResult> {
+export async function importDocumentsZip(
+	opts: DocumentDelivery & {
+		zipBuffer: Buffer;
+		title: string;
+		createdById: string;
+	},
+): Promise<ImportDocumentsResult> {
 	if (opts.zipBuffer.length > MAX_IMPORT_ZIP_BYTES) {
 		throw new UploadValidationError(
 			`The archive exceeds the ${Math.round(MAX_IMPORT_ZIP_BYTES / (1024 * 1024))}MB limit.`,
@@ -92,6 +93,7 @@ export async function importDocumentsZip(opts: {
 				userId,
 				title,
 				sign: opts.sign,
+				sealVisible: opts.sealVisible,
 				notify: opts.notify,
 				buffer: entry.getData(),
 				createdById: opts.createdById,

@@ -122,13 +122,14 @@ signed by the organising committee — you attach the finished file instead of g
 Open a participant from **Users**, click **Add document** in the **Documents** section,
 and switch to the **Upload a PDF** tab.
 
-🖼️ [Screenshot placeholder: 72 — Add-document dialog on the "Upload a PDF" tab, with the file picker, title, and the sign / notify checkboxes]
+🖼️ [Screenshot placeholder: 72 — Add-document dialog on the "Upload a PDF" tab, with the file picker, title, and the sign / visible seal / notify checkboxes]
 
 | Field | What it does |
 |---|---|
 | **PDF file** | The finished document. PDF only, up to **25 MB**. Suberus checks the real file contents, not the extension. |
 | **Title** | The document's name everywhere it appears, including in the participant's account. Defaults to the file name. |
 | **Sign with the conference certificate** | Adds the conference's digital signature, exactly as for a generated document. Shown only when [signing](/settings/documents/) is switched on. |
+| **Visible seal** | Draws the signature seal on the first page. Turn it off to sign without a visible stamp — the signature is still embedded and verifiable. Shown only when **Sign** is checked; on by default. |
 | **E-mail the participant when it is ready** | Sends the **Document generated** email. Turn it off to file a document quietly. |
 
 The document appears as **Generating…** while it is signed and stored, then flips to
@@ -150,13 +151,14 @@ certificates.zip
 └─ c9042f6e-71b8-4c93-a0e5-77aa1b2c3d4e.pdf
 ```
 
-🖼️ [Screenshot placeholder: 73 — Import-ZIP dialog with the archive picker, the shared title, the sign / notify checkboxes, and the imported / skipped summary]
+🖼️ [Screenshot placeholder: 73 — Import-ZIP dialog with the archive picker, the shared title, the sign / visible seal / notify checkboxes, and the imported / skipped summary]
 
 | Field | What it does |
 |---|---|
 | **ZIP archive** | The archive of PDFs, up to **200 MB**. Files inside folders are fine; `__MACOSX` entries and dotfiles are ignored. |
 | **Title for every document** | One title, applied to **all** documents in the archive — so import one kind at a time ("Certificate of attendance", "Invoice"). |
 | **Sign with the conference certificate** | As above, applied to every document in the archive. |
+| **Visible seal** | As above, applied to every document in the archive. |
 | **E-mail the participant when it is ready** | As above, applied to every document in the archive. |
 
 When the import finishes you get a count of what was imported and a list of what was

@@ -64,8 +64,9 @@ async def sign_pdf(
     qrUrl: str = Form(""),
     timestampUrl: str = Form(""),
     certify: str = Form("false"),
+    visible: str = Form("true"),
 ):
-    """Apply a PAdES signature (visible seal) to an uploaded PDF."""
+    """Apply a PAdES signature (visible seal unless visible=false) to an uploaded PDF."""
     pdf_bytes = await file.read()
     p12_bytes = await p12.read()
     if not pdf_bytes:
@@ -89,6 +90,7 @@ async def sign_pdf(
                 "qr_url": qrUrl or None,
                 "timestamp_url": timestampUrl or None,
                 "certify": certify.lower() == "true",
+                "visible": visible.lower() == "true",
             },
         )
     except ValueError as e:

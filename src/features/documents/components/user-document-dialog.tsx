@@ -10,7 +10,11 @@ import {
 	uploadDocumentFn,
 } from "@/features/documents/api/documents";
 import { NoTemplatesHint } from "@/features/documents/components/document-bits";
-import { DocumentDeliveryFields } from "@/features/documents/components/document-delivery-fields";
+import {
+	appendDelivery,
+	DEFAULT_DELIVERY,
+	DocumentDeliveryFields,
+} from "@/features/documents/components/document-delivery-fields";
 import { ResolutionPreviewCard } from "@/features/documents/components/resolution-preview-card";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
@@ -53,8 +57,7 @@ export function UserDocumentDialog({
 	const [templateId, setTemplateId] = useState<string | null>(null);
 	const [file, setFile] = useState<File | null>(null);
 	const [title, setTitle] = useState("");
-	const [sign, setSign] = useState(true);
-	const [notify, setNotify] = useState(true);
+	const [delivery, setDelivery] = useState(DEFAULT_DELIVERY);
 	const [busy, setBusy] = useState(false);
 
 	const { data: templates = [] } = useQuery(documentTemplatesQueryOptions());
@@ -71,8 +74,7 @@ export function UserDocumentDialog({
 		setTemplateId(null);
 		setFile(null);
 		setTitle("");
-		setSign(true);
-		setNotify(true);
+		setDelivery(DEFAULT_DELIVERY);
 	};
 
 	const finish = async (message: string) => {
@@ -104,8 +106,7 @@ export function UserDocumentDialog({
 			form.set("file", file);
 			form.set("userId", userId);
 			form.set("title", title.trim());
-			form.set("sign", String(sign));
-			form.set("notify", String(notify));
+			appendDelivery(form, delivery);
 			await uploadDocumentFn({ data: form });
 			await finish("Document uploaded");
 		} catch (error) {
@@ -199,10 +200,8 @@ export function UserDocumentDialog({
 
 						<DocumentDeliveryFields
 							idPrefix="doc"
-							notify={notify}
-							onNotifyChange={setNotify}
-							onSignChange={setSign}
-							sign={sign}
+							onChange={setDelivery}
+							value={delivery}
 						/>
 					</TabsContent>
 				</Tabs>

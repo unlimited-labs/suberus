@@ -82,6 +82,7 @@ export interface SignOptions {
 	qrUrl?: string;
 	timestampUrl?: string;
 	certify?: boolean;
+	visible: boolean;
 }
 
 export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
@@ -95,6 +96,7 @@ export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
 	form.append("qrUrl", opts.qrUrl ?? "");
 	form.append("timestampUrl", opts.timestampUrl ?? "");
 	form.append("certify", opts.certify ? "true" : "false");
+	form.append("visible", String(opts.visible));
 	const res = await post("/v1/sign-pdf", form, SIGN_TIMEOUT_MS);
 	return Buffer.from(await res.arrayBuffer());
 }

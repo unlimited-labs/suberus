@@ -4,6 +4,7 @@ import {
 	ENQUEUE_OPTS,
 	uploadedDocumentKey,
 } from "@/features/documents/server/generate";
+import type { DocumentDelivery } from "@/features/documents/validations";
 import { prisma } from "@/shared/server/db.server";
 import { ensureQueueAndSend } from "@/shared/server/queue";
 import { uploadFile } from "@/shared/server/storage";
@@ -11,11 +12,9 @@ import { validateUpload } from "@/shared/server/validate-upload";
 
 export const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024;
 
-export interface AttachUploadedDocumentInput {
+export interface AttachUploadedDocumentInput extends DocumentDelivery {
 	userId: string;
 	title: string;
-	sign: boolean;
-	notify: boolean;
 	buffer: Buffer;
 	createdById: string;
 	batchId?: string;
@@ -45,6 +44,7 @@ export async function attachUploadedDocument(
 			templateId: null,
 			batchId: input.batchId,
 			name: title,
+			sealVisible: input.sealVisible,
 			notify: input.notify,
 			generatedById: input.createdById,
 			status: "PENDING",
