@@ -87,9 +87,11 @@ export function setupOfflineProgram(queryClient: QueryClient) {
 	// so a tab opened while already offline would treat fetches as online.
 	onlineManager.setOnline(navigator.onLine);
 
-	// Safari drops script-created storage after 7 days without a visit to the origin,
-	// which would empty the cache before a conference the attendee installed for.
-	if ("storage" in navigator) void navigator.storage.persist().catch(() => {});
+	// Firefox prompts before granting persistence; only the installed program,
+	// which depends on its offline cache, is worth that prompt.
+	if (window.matchMedia("(display-mode: standalone)").matches) {
+		void navigator.storage?.persist().catch(() => {});
+	}
 
 	purgeContactDataOnEntitlementLoss(queryClient);
 
