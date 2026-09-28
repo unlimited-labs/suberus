@@ -1,24 +1,25 @@
-FROM python:3.14-slim AS base
+FROM python:3.14-slim
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
-    UV_PYTHON_DOWNLOADS=never
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/app/.venv/bin:$PATH" \
+    PORT=8110
+
+RUN adduser --disabled-password --no-create-home --gecos "" appuser
 
 WORKDIR /app
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-COPY pyproject.toml ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-install-project --no-dev
+RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/usr/local/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    uv sync --frozen --no-install-project --no-dev
 
 COPY main.py ./
 
-RUN adduser --disabled-password --no-create-home --gecos "" appuser
 USER appuser
 
-ENV PORT=8110 \
-    PATH="/app/.venv/bin:$PATH"
 EXPOSE ${PORT}
 
 CMD ["python", "main.py"]
