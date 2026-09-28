@@ -30,7 +30,10 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: uv
-    directory: /services/pdf-api
+    directories:
+      - /services/pdf-api
+      - /services/docx-api
+      - /services/planner-api
     schedule:
       interval: weekly
       day: monday

@@ -21,3 +21,7 @@ explicit = true
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
 torchvision = { index = "pytorch-cpu" }
+
+[tool.uv]
+# rapidocr pulls the GUI opencv-python next to easyocr's headless build; both write cv2/.
+override-dependencies = ["opencv-python; sys_platform == 'never'"]
