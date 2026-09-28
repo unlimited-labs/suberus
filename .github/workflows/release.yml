@@ -11,7 +11,7 @@ on:
         description: Commit SHA or branch to build
         default: master
       targets:
-        description: Bake targets to build (space-separated; empty = all)
+        description: Bake targets to build (comma-separated; empty = all)
         default: ""
 
 concurrency:
@@ -50,8 +50,13 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      # bake-action (not `run:`) exposes ACTIONS_RUNTIME_TOKEN, which the gha cache backend needs.
       - name: Build and push
-        run: docker buildx bake --push ${{ inputs.targets }}
+        uses: docker/bake-action@v7
+        with:
+          source: .
+          push: true
+          targets: ${{ inputs.targets }}
         env:
           REGISTRY: ${{ vars.REGISTRY }}
           TAG: ${{ steps.meta.outputs.tag }}
