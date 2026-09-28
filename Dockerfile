@@ -1,3 +1,14 @@
+FROM node:24-alpine AS prisma-cli
+
+WORKDIR /prisma-runtime
+
+COPY package.json /tmp/package.json
+RUN npm init -y >/dev/null \
+    && npm install --save-exact \
+        "prisma@$(node -p "require('/tmp/package.json').devDependencies.prisma")" \
+        "dotenv@$(node -p "require('/tmp/package.json').dependencies.dotenv")" \
+    && npm cache clean --force
+
 FROM node:24-alpine AS build
 
 WORKDIR /app
@@ -6,9 +17,6 @@ RUN corepack enable && corepack prepare pnpm@12 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
-
-# Run only necessary postinstall scripts (prisma engines, esbuild)
-RUN pnpm rebuild @prisma/engines esbuild
 
 COPY prisma ./prisma
 COPY prisma.config.ts ./
@@ -19,29 +27,19 @@ ENV NODE_ENV=production
 COPY . .
 RUN pnpm build
 
-RUN mkdir /prisma-runtime && cd /prisma-runtime \
-    && npm init -y \
-    && npm install "prisma@$(node -p "require('/app/package.json').devDependencies.prisma")" dotenv --save-exact \
-    && npm cache clean --force
-
 FROM node:24-alpine AS migrate
 
 WORKDIR /app
 
-COPY --from=build /app/prisma ./prisma
-COPY --from=build /app/prisma.config.ts ./prisma.config.ts
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /prisma-runtime/node_modules ./node_modules
+COPY --from=prisma-cli /prisma-runtime/node_modules ./node_modules
+COPY package.json prisma.config.ts ./
+COPY prisma ./prisma
 
-CMD ["npx", "prisma", "migrate", "deploy"]
+USER node
+
+CMD ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
 
 FROM node:24-alpine
-
-# Build metadata (passed via docker-bake args); exposed at runtime via /api/version
-ARG GIT_COMMIT=unknown
-ARG BUILD_DATE=unknown
-ENV GIT_COMMIT=$GIT_COMMIT
-ENV BUILD_DATE=$BUILD_DATE
 
 RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
 
@@ -49,6 +47,13 @@ WORKDIR /app
 
 COPY --from=build --chown=appuser:appgroup /app/.output ./.output
 COPY --chown=appuser:appgroup --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
+
+# Build metadata (passed via docker-bake args); exposed at runtime via /api/version
+ARG GIT_COMMIT=unknown
+ARG BUILD_DATE=unknown
+ENV GIT_COMMIT=$GIT_COMMIT \
+    BUILD_DATE=$BUILD_DATE \
+    PORT=3001
 
 USER appuser
 
