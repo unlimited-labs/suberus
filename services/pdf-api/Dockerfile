@@ -1,4 +1,10 @@
 # syntax=docker/dockerfile:1.7
+# Pinned Pandoc (markdown -> HTML for the diff /bundle; participates in the artifact
+# cache key as pandocVersion — bump deliberately, mirror docx-api).
+FROM scratch AS pandoc
+ARG PANDOC_VERSION=3.5
+ADD https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-1-amd64.deb /pandoc.deb
+
 FROM python:3.14-slim AS base
 
 ENV UV_LINK_MODE=copy \
@@ -7,7 +13,6 @@ ENV UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv
 
 WORKDIR /app
-
 
 # Only the torch and model-tool pins leave this stage, so the heavy layers below are keyed
 # on those versions instead of on every uv.lock change.
@@ -18,7 +23,6 @@ RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/usr/local/bin/uv
     uv export --frozen --no-dev --no-emit-project --no-hashes --no-header --no-annotate > /all.txt \
     && grep -E '^(torch|torchvision)==' /all.txt > /torch.txt \
     && grep -E '^(docling|easyocr)==' /all.txt > /models.txt
-
 
 FROM base AS models
 COPY --from=reqs /torch.txt /models.txt /tmp/
@@ -33,17 +37,12 @@ RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/usr/local/bin/uv
         --output-dir /opt/docling/models \
     && rm -rf /opt/docling/models/docling-project--docling-layout-heron-onnx
 
-
 FROM base AS runtime
 
-# Pinned Pandoc (markdown -> HTML for the diff /bundle; participates in the artifact
-# cache key as pandocVersion — bump deliberately, mirror docx-api).
-ARG PANDOC_VERSION=3.5
-ADD https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-1-amd64.deb /tmp/pandoc.deb
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=bind,from=pandoc,source=/pandoc.deb,target=/tmp/pandoc.deb \
+    apt-get update && apt-get install -y --no-install-recommends \
         libglib2.0-0 /tmp/pandoc.deb \
-    && rm -rf /var/lib/apt/lists/* /tmp/pandoc.deb \
+    && rm -rf /var/lib/apt/lists/* \
     && pandoc --version
 
 RUN adduser --disabled-password --gecos "" appuser
