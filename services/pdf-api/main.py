@@ -38,10 +38,7 @@ from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
 
 import bundle_meta
 
-easyocr_path = os.getenv("EASYOCR_MODULE_PATH")
-easyocr_options = EasyOcrOptions(download_enabled=True)
-if easyocr_path:
-    easyocr_options.model_storage_directory = f"{easyocr_path}/model"
+easyocr_options = EasyOcrOptions()
 
 artifacts_path = os.getenv("DOCLING_ARTIFACTS_PATH")
 
