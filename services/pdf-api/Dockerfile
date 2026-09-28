@@ -35,6 +35,7 @@ RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/usr/local/bin/uv
         --index-strategy unsafe-best-match -r /tmp/torch.txt -r /tmp/models.txt \
     && /tmp/venv/bin/docling-tools models download layout tableformer code_formula easyocr \
         --output-dir /opt/docling/models \
+    # layout fetches every engine variant; only the torch one loads (verified with --network none).
     && rm -rf /opt/docling/models/docling-project--docling-layout-heron-onnx
 
 FROM base AS runtime
