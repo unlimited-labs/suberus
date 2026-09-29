@@ -88,6 +88,14 @@ describe("VAT gross/net conversion", () => {
 		expect(sumGross(rows)).toBe(173);
 		expect(sumNet(rows)).toBe(150);
 	});
+
+	it("sums without float drift", () => {
+		const rows = [
+			{ label: "a", amountExpr: "100" },
+			{ label: "b", amountExpr: "202.08" },
+		];
+		expect(sumGross(rows)).toBe(302.08);
+	});
 });
 
 describe("projectFeeIncome", () => {
@@ -109,6 +117,11 @@ describe("breakEvenUnits", () => {
 	it("returns 0 when income already covers expenses", () => {
 		expect(breakEvenUnits(1000, 1000, 250)).toBe(0);
 		expect(breakEvenUnits(1000, 2000, 250)).toBe(0);
+	});
+
+	it("is exact at a float-noisy boundary", () => {
+		expect(breakEvenUnits(100 + 202.08, 0, 302.08)).toBe(1);
+		expect(breakEvenUnits(0.1 + 0.2, 0.3, 1)).toBe(0);
 	});
 
 	it("returns null when the price cannot close the gap", () => {

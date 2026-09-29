@@ -39,12 +39,16 @@ export function netAmount(row: FinanceRow): number {
 		: amount / (1 + row.vatRate / 100);
 }
 
+export function toCents(amount: number): number {
+	return Math.round(amount * 100);
+}
+
 export function sumGross(rows: FinanceRow[]): number {
-	return rows.reduce((sum, row) => sum + grossAmount(row), 0);
+	return rows.reduce((sum, row) => sum + toCents(grossAmount(row)), 0) / 100;
 }
 
 export function sumNet(rows: FinanceRow[]): number {
-	return rows.reduce((sum, row) => sum + netAmount(row), 0);
+	return rows.reduce((sum, row) => sum + toCents(netAmount(row)), 0) / 100;
 }
 
 export interface FeeProjectionRow {
@@ -66,10 +70,11 @@ export function breakEvenUnits(
 	otherIncome: number,
 	price: number,
 ): number | null {
-	if (price <= 0) return null;
-	const shortfall = expenses - otherIncome;
-	if (shortfall <= 0) return 0;
-	return Math.ceil(shortfall / price);
+	const priceCents = toCents(price);
+	if (priceCents <= 0) return null;
+	const shortfallCents = toCents(expenses) - toCents(otherIncome);
+	if (shortfallCents <= 0) return 0;
+	return Math.ceil(shortfallCents / priceCents);
 }
 
 export type ExpenseSort = "manual" | "due" | "amount" | "name";

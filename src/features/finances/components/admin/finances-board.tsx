@@ -33,6 +33,7 @@ import {
 	sortExpenses,
 	sumGross,
 	sumNet,
+	toCents,
 } from "@/features/finances/calc";
 import { DueCell } from "@/features/finances/components/admin/due-cell";
 import { ExpenseToolbar } from "@/features/finances/components/admin/expense-toolbar";
@@ -614,7 +615,7 @@ export function FinancesBoard() {
 						const feeIncome =
 							mode === "actual" ? feeSummary.collectedTotal : projectedFee;
 						const totalIncome = manualIncome + feeIncome;
-						const netto = totalIncome - totalExpenses;
+						const netto = (toCents(totalIncome) - toCents(totalExpenses)) / 100;
 
 						const profit = netto >= 0;
 
