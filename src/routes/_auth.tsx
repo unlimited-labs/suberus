@@ -4,7 +4,6 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
-import { isValid } from "date-fns";
 import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
@@ -14,7 +13,7 @@ import { getAuthPageBrandingFn } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
 import { useSession } from "@/shared/hooks/use-session";
-import { formatDate } from "@/shared/lib/format-date";
+import { formatDate, parseDateOnly } from "@/shared/lib/format-date";
 
 const defaults: AuthPageBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
@@ -37,11 +36,7 @@ function formatDateRange(
 	dateFormatStr: string,
 ): string {
 	if (!start && !end) return "";
-	const fmt = (d: string) => {
-		const date = new Date(d);
-		if (!isValid(date)) return "";
-		return formatDate(date, dateFormatStr);
-	};
+	const fmt = (d: string) => formatDate(parseDateOnly(d), dateFormatStr);
 	const s = start ? fmt(start) : "";
 	const e = end ? fmt(end) : "";
 	if (s && e) return `${s} – ${e}`;

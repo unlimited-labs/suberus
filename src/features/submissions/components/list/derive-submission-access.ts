@@ -1,5 +1,6 @@
 import { differenceInCalendarDays } from "date-fns";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
+import { parseDateOnly } from "@/shared/lib/format-date";
 
 export interface SubmissionAccessInput {
 	deadline: string | null;
@@ -41,7 +42,7 @@ export function deriveSubmissionAccess(
 	const { deadline, timezone, locked, canBypass, activeTypeCount, now } = input;
 
 	const daysLeft = deadline
-		? differenceInCalendarDays(new Date(deadline), now)
+		? differenceInCalendarDays(parseDateOnly(deadline), now)
 		: null;
 	const deadlineUrgent = daysLeft !== null && daysLeft <= 7;
 	const deadlineCritical = daysLeft !== null && daysLeft <= 3;

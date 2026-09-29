@@ -4,7 +4,7 @@ import { getSetting } from "@/features/settings/server/settings";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
-import { formatDate } from "@/shared/lib/format-date";
+import { formatDate, parseDateOnly } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 
@@ -194,7 +194,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 	]);
 	if (!deadlineStr) return 0;
 
-	const deadline = new Date(deadlineStr);
+	const deadline = parseDateOnly(deadlineStr);
 	const now = new Date();
 	if (isDeadlinePassed(deadlineStr, timezone, now)) return 0;
 
