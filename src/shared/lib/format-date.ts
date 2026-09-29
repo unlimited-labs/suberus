@@ -1,4 +1,3 @@
-import { tz } from "@date-fns/tz";
 import { format, formatDistanceToNow, isValid, parseISO } from "date-fns";
 
 const DATE_FORMAT_VALUES = [
@@ -42,27 +41,24 @@ export function getDateFormats(
 	}));
 }
 
-/** Local midnight of a stored `YYYY-MM-DD` setting (tolerates a trailing time part). */
-export function parseDateOnly(value: string): Date {
-	return parseISO(value.slice(0, 10));
+/** A calendar day (`YYYY-MM-DD…`) as local noon, for pattern formatting; noon is never in a DST gap. */
+export function dateForPattern(day: string): Date {
+	const [year, month, date] = day.slice(0, 10).split("-").map(Number);
+	return new Date(year, month - 1, date, 12);
 }
 
 function toDate(date: Date | string): Date {
 	return date instanceof Date ? date : parseISO(date);
 }
 
-export function formatDate(
-	date: Date | string,
-	dateFormat: string,
-	zone?: string,
-): string {
+export function formatDate(date: Date | string, dateFormat: string): string {
 	const d = toDate(date);
 	if (!isValid(d)) return "";
 	const pattern =
 		// SAFETY: an unknown pattern falls through to the ?? default below.
 		DATE_FORMAT_PATTERNS[dateFormat as DateFormatValue] ??
 		DATE_FORMAT_PATTERNS["DD.MM.YYYY"];
-	return format(d, pattern, zone ? { in: tz(zone) } : undefined);
+	return format(d, pattern);
 }
 
 export function formatTime(date: Date | string, timeFormat: string): string {

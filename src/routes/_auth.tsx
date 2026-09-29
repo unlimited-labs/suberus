@@ -13,7 +13,7 @@ import { getAuthPageBrandingFn } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
 import { useSession } from "@/shared/hooks/use-session";
-import { formatDate, parseDateOnly } from "@/shared/lib/format-date";
+import { formatDate, dateForPattern } from "@/shared/lib/format-date";
 
 const defaults: AuthPageBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
@@ -36,7 +36,7 @@ function formatDateRange(
 	dateFormatStr: string,
 ): string {
 	if (!start && !end) return "";
-	const fmt = (d: string) => formatDate(parseDateOnly(d), dateFormatStr);
+	const fmt = (d: string) => formatDate(dateForPattern(d), dateFormatStr);
 	const s = start ? fmt(start) : "";
 	const e = end ? fmt(end) : "";
 	if (s && e) return `${s} – ${e}`;

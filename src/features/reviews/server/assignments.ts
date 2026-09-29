@@ -1,5 +1,4 @@
-import { TZDate } from "@date-fns/tz";
-import { addDays, format, subDays } from "date-fns";
+import { subDays } from "date-fns";
 import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
@@ -19,7 +18,8 @@ import type {
 } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { deadlineCutoff } from "@/shared/lib/deadline";
-import { formatDate } from "@/shared/lib/format-date";
+import { dateForPattern, formatDate } from "@/shared/lib/format-date";
+import { todayInZone, zonedDateString } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { compareAssignmentUrgency } from "./assignment-urgency";
@@ -194,14 +194,10 @@ export async function assignReviewer(
 		};
 	}
 
-	const zone = (await getSetting("CONFERENCE_TIMEZONE")) || "UTC";
+	const zone = await getSetting("CONFERENCE_TIMEZONE");
 	const deadlineDay =
-		customDeadline ??
-		format(
-			addDays(new TZDate(Date.now(), zone), config.reviewDeadlineDays),
-			"yyyy-MM-dd",
-		);
-	const deadline = new Date(deadlineCutoff(deadlineDay, zone).getTime());
+		customDeadline ?? todayInZone(zone, config.reviewDeadlineDays);
+	const deadline = deadlineCutoff(deadlineDay, zone);
 
 	const assignment = await prisma.reviewAssignment.create({
 		data: {
@@ -241,7 +237,10 @@ export async function assignReviewer(
 			`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
 			reviewer.email,
 		submissionTitle: submission.title,
-		deadline: formatDate(deadline, dateFormat, zone),
+		deadline: formatDate(
+			dateForPattern(zonedDateString(deadline, zone)),
+			dateFormat,
+		),
 		reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 	});
 

@@ -17,7 +17,7 @@ import { SubmissionsTable } from "@/features/submissions/components/submissions-
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
-import { parseDateOnly } from "@/shared/lib/format-date";
+import { dateForPattern } from "@/shared/lib/format-date";
 
 export const Route = createFileRoute("/_app/submissions/")({
 	server: {
@@ -71,7 +71,7 @@ function SubmissionsPage() {
 			{deadline && (
 				<SubmissionsDeadlineBanner
 					critical={deadlineCritical}
-					formattedDeadline={formatDate(parseDateOnly(deadline))}
+					formattedDeadline={formatDate(dateForPattern(deadline))}
 					urgent={deadlineUrgent}
 				/>
 			)}

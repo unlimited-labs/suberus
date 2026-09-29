@@ -1,12 +1,12 @@
 import { setTimeout } from "node:timers/promises";
-import { tz } from "@date-fns/tz";
 import { addDays, differenceInCalendarDays } from "date-fns";
 import { env } from "@/env.ts";
 import { getSetting } from "@/features/settings/server/settings";
 import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
-import { formatDate, parseDateOnly } from "@/shared/lib/format-date";
+import { dateForPattern, formatDate } from "@/shared/lib/format-date";
+import { calendarDaysBetween, zonedDateString } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 
@@ -44,11 +44,10 @@ export async function sendReviewerReminders(): Promise<number> {
 		return 0;
 	}
 
-	const [dateFormat, timezone] = await Promise.all([
+	const [dateFormat, zone] = await Promise.all([
 		getSetting("DATE_FORMAT"),
 		getSetting("CONFERENCE_TIMEZONE"),
 	]);
-	const zone = timezone || "UTC";
 	const now = new Date();
 	let sentCount = 0;
 
@@ -76,9 +75,7 @@ export async function sendReviewerReminders(): Promise<number> {
 			const reviewerName =
 				`${assignment.reviewer.firstName ?? ""} ${assignment.reviewer.lastName ?? ""}`.trim() ||
 				assignment.reviewer.email;
-			const daysRemaining = differenceInCalendarDays(deadline, now, {
-				in: tz(zone),
-			});
+			const daysRemaining = calendarDaysBetween(now, deadline, zone);
 
 			const sent = await sendReminderOnce(
 				{
@@ -91,7 +88,10 @@ export async function sendReviewerReminders(): Promise<number> {
 					sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
 						reviewerName,
 						submissionTitle: assignment.submission.title,
-						deadline: formatDate(deadline, dateFormat, zone),
+						deadline: formatDate(
+							dateForPattern(zonedDateString(deadline, zone)),
+							dateFormat,
+						),
 						daysRemaining: String(daysRemaining),
 						reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 					}),
@@ -196,7 +196,6 @@ export async function sendDeadlineReminders(): Promise<number> {
 	]);
 	if (!deadlineStr) return 0;
 
-	const deadline = parseDateOnly(deadlineStr);
 	const now = new Date();
 	if (isDeadlinePassed(deadlineStr, timezone, now)) return 0;
 
@@ -204,7 +203,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 
 	for (let i = 0; i < settings.daysBefore.length; i++) {
 		const days = settings.daysBefore[i];
-		const daysUntilDeadline = differenceInCalendarDays(deadline, now);
+		const daysUntilDeadline = calendarDaysBetween(now, deadlineStr, timezone);
 
 		if (daysUntilDeadline > days) continue;
 
@@ -234,7 +233,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 					sendEmail("DEADLINE_APPROACHING", submission.user.email, {
 						recipientName,
 						submissionTitle: submission.title,
-						deadline: formatDate(deadline, dateFormat),
+						deadline: formatDate(dateForPattern(deadlineStr), dateFormat),
 						daysRemaining: String(daysRemaining),
 						submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
 					}),
