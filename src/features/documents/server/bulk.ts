@@ -5,7 +5,7 @@ import {
 } from "@/features/documents/server/generate";
 import {
 	displayName,
-	resolvePlaceholders,
+	resolvePlaceholdersForUsers,
 } from "@/features/documents/server/resolve";
 import { getSigningConfig } from "@/features/settings/server/document-signing";
 import type { Prisma } from "@/generated/prisma/client";
@@ -33,21 +33,12 @@ export async function previewBulk(
 	});
 	if (!template) throw new Error("Template not found.");
 
-	const users = await prisma.user.findMany({
-		where: { id: { in: userIds } },
-		select: { id: true, firstName: true, lastName: true, email: true },
-	});
-
 	const resolvableIds: string[] = [];
 	const skipped: BulkSkip[] = [];
-	const resolved = await Promise.all(
-		users.map(async (u) => ({
-			u,
-			missing: (await resolvePlaceholders(u.id)).missing,
-		})),
-	);
-	for (const { u, missing } of resolved) {
-		const missingSet = new Set<string>(missing);
+	for (const { user: u, resolved } of await resolvePlaceholdersForUsers(
+		userIds,
+	)) {
+		const missingSet = new Set<string>(resolved.missing);
 		const blocked = template.placeholders.filter((p) => missingSet.has(p));
 		if (blocked.length > 0) {
 			skipped.push({ userId: u.id, name: displayName(u), missing: blocked });
