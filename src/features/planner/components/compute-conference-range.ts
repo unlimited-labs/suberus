@@ -1,6 +1,6 @@
-import { differenceInCalendarDays } from "date-fns";
-import { inTz, tzDayStart } from "@/features/planner/tz-datetime";
+import { tzDayStart } from "@/features/planner/tz-datetime";
 import type { ConferenceSettings } from "@/features/settings/api/settings";
+import { calendarDaysBetween } from "@/shared/lib/zoned";
 
 export interface ConferenceRange {
 	confStart: Date | null;
@@ -33,9 +33,8 @@ export function isOutsideConferenceRange(
 	zone: string | undefined,
 ): boolean {
 	if (!currentDate || !confStart || !confEnd) return false;
-	const opts = inTz(zone);
 	return (
-		differenceInCalendarDays(currentDate, confStart, opts) < 0 ||
-		differenceInCalendarDays(currentDate, confEnd, opts) > 0
+		calendarDaysBetween(confStart, currentDate, zone) < 0 ||
+		calendarDaysBetween(confEnd, currentDate, zone) > 0
 	);
 }

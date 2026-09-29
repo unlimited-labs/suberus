@@ -98,9 +98,7 @@ async function resolveProgramRange(
 	input: z.infer<typeof programRangeInput>,
 ): Promise<{ from?: Date; to?: Date } | undefined> {
 	if (input.day) {
-		// Unset timezone must resolve to UTC here — the shared fallback reads the
-		// host's zone, which on the server is the container's, not the organiser's.
-		const zone = (await getSetting("CONFERENCE_TIMEZONE")) || "UTC";
+		const zone = await getSetting("CONFERENCE_TIMEZONE");
 		return {
 			from: tzLocalInputToUtc(`${input.day}T00:00`, zone),
 			to: tzLocalInputToUtc(`${nextDay(input.day)}T00:00`, zone),

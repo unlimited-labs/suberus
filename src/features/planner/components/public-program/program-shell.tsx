@@ -90,6 +90,7 @@ export function ProgramFrame({
 					searchPlaceholder={searchPlaceholder}
 					setActiveDay={setActiveDay}
 					setSearch={setSearch}
+					zone={settings.timezone}
 					zoneLabel={
 						settings.timezone && days.length > 0
 							? formatZoneLabel(
@@ -169,6 +170,7 @@ export function ProgramShell({
 					framed={framed}
 					otherDay={otherDay}
 					setActiveDay={setActiveDay}
+					zone={settings.timezone}
 				/>
 			)}
 			{activeItems.length === 0 ? (
@@ -209,6 +211,7 @@ function ProgramStickyBar({
 	search,
 	searchPlaceholder,
 	setSearch,
+	zone,
 	zoneLabel,
 }: {
 	framed: boolean;
@@ -219,6 +222,7 @@ function ProgramStickyBar({
 	search: string;
 	searchPlaceholder?: string;
 	setSearch: (value: string) => void;
+	zone: string;
 	zoneLabel: string | null;
 }) {
 	return (
@@ -243,6 +247,7 @@ function ProgramStickyBar({
 							dayMatchCounts={dayMatchCounts}
 							days={days}
 							setActiveDay={setActiveDay}
+							zone={zone}
 						/>
 					) : (
 						<MinimalNav
@@ -250,6 +255,7 @@ function ProgramStickyBar({
 							dayMatchCounts={dayMatchCounts}
 							days={days}
 							setActiveDay={setActiveDay}
+							zone={zone}
 						/>
 					))}
 				<SearchBox
@@ -301,7 +307,7 @@ function MinimalHeader({
 				</div>
 				{settings.startDate && (
 					<p className="text-primary-ink text-xs font-medium tracking-[0.2em] uppercase">
-						{formatLongDate(settings.startDate, settings.timezone)}
+						{formatLongDate(settings.startDate)}
 					</p>
 				)}
 				<h1 className="text-foreground mt-3 font-(family-name:--prog-font-display) text-3xl font-bold tracking-tight sm:text-5xl">
@@ -407,16 +413,18 @@ function MinimalNav({
 	activeDay,
 	dayMatchCounts,
 	setActiveDay,
+	zone,
 }: {
 	days: Date[];
 	activeDay: number;
 	dayMatchCounts: number[];
 	setActiveDay: (i: number) => void;
+	zone: string;
 }) {
 	return (
 		<nav aria-label="Select day" className="flex flex-wrap gap-2">
 			{days.map((day, i) => {
-				const label = dayLabelParts(day);
+				const label = dayLabelParts(day, zone);
 				const isActive = activeDay === i;
 				const matches = dayMatchCounts[i];
 				return (
@@ -466,11 +474,13 @@ function FramedNav({
 	activeDay,
 	dayMatchCounts,
 	setActiveDay,
+	zone,
 }: {
 	days: Date[];
 	activeDay: number;
 	dayMatchCounts: number[];
 	setActiveDay: (i: number) => void;
+	zone: string;
 }) {
 	return (
 		<nav
@@ -478,7 +488,7 @@ function FramedNav({
 			className="flex flex-wrap items-stretch gap-x-6 gap-y-4"
 		>
 			{days.map((day, i) => {
-				const label = dayLabelParts(day);
+				const label = dayLabelParts(day, zone);
 				const isActive = activeDay === i;
 				const matches = dayMatchCounts[i];
 				return (
@@ -602,11 +612,13 @@ function SearchNotice({
 	days,
 	otherDay,
 	setActiveDay,
+	zone,
 }: {
 	framed: boolean;
 	days: Date[];
 	otherDay: number;
 	setActiveDay?: (index: number) => void;
+	zone: string;
 }) {
 	const target = days[otherDay];
 	return (
@@ -625,7 +637,7 @@ function SearchNotice({
 					size="sm"
 					variant="outline"
 				>
-					Go to {dayLabelParts(target).weekday}
+					Go to {dayLabelParts(target, zone).weekday}
 				</Button>
 			)}
 		</div>

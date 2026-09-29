@@ -1,20 +1,19 @@
 import { format, isAfter } from "date-fns";
-import { inTz, tzDayStart } from "@/features/planner/tz-datetime";
+import { dateForPattern } from "@/shared/lib/format-date";
+import { zonedDateString } from "@/shared/lib/zoned";
 import type { ProgramItem, TimeGroup } from "./program-types";
 
-export function dayLabelParts(date: Date) {
+export function dayLabelParts(date: Date, zone: string | undefined) {
+	const day = dateForPattern(zonedDateString(date, zone));
 	return {
-		weekday: format(date, "EEEE"),
-		dayNum: format(date, "dd"),
-		month: format(date, "MMMM"),
+		weekday: format(day, "EEEE"),
+		dayNum: format(day, "dd"),
+		month: format(day, "MMMM"),
 	};
 }
 
-export function formatLongDate(
-	dateStr: string,
-	zone: string | undefined,
-): string {
-	return format(tzDayStart(dateStr, zone), "MMMM d, yyyy", inTz(zone));
+export function formatLongDate(dateStr: string): string {
+	return format(dateForPattern(dateStr), "MMMM d, yyyy");
 }
 
 function sharesStartTime(group: TimeGroup, item: ProgramItem): boolean {

@@ -1,6 +1,6 @@
 import type { WeekDays } from "@ilamy/calendar";
-import { differenceInCalendarDays, getDay } from "date-fns";
-import { eachDayInTz, inTz } from "@/features/planner/tz-datetime";
+import { eachDayInTz } from "@/features/planner/tz-datetime";
+import { calendarDaysBetween, isoWeekday } from "@/shared/lib/zoned";
 
 const WEEKDAYS: readonly WeekDays[] = [
 	"sunday",
@@ -18,12 +18,11 @@ export function computeHiddenWeekdays(
 	zone: string | undefined,
 ): WeekDays[] {
 	if (!start || !end) return [];
-	const opts = inTz(zone);
-	const diffDays = differenceInCalendarDays(end, start, opts) + 1;
+	const diffDays = calendarDaysBetween(start, end, zone) + 1;
 	if (diffDays <= 0 || diffDays >= 7) return [];
 
 	const present = new Set(
-		eachDayInTz(start, end, zone).map((d) => getDay(d, opts)),
+		eachDayInTz(start, end, zone).map((d) => isoWeekday(d, zone) % 7),
 	);
 	return WEEKDAYS.filter((_, idx) => !present.has(idx));
 }

@@ -1,47 +1,20 @@
-import { TZDate, tz } from "@date-fns/tz";
 import {
 	addMinutes as dfAddMinutes,
 	differenceInMinutes,
-	eachDayOfInterval,
 	format,
-	isSameDay,
 } from "date-fns";
+import { dateForPattern } from "@/shared/lib/format-date";
+import { resolveZone, zonedDateString } from "@/shared/lib/zoned";
 
-function resolveTz(zone: string | undefined): string {
-	return zone || "UTC";
-}
-
-export function inTz(zone: string | undefined) {
-	return { in: tz(resolveTz(zone)) };
-}
-
-export function utcToTzLocalInput(utc: Date, zone: string | undefined): string {
-	return format(utc, "yyyy-MM-dd'T'HH:mm", inTz(zone));
-}
-
-export function tzLocalInputToUtc(
-	local: string,
-	zone: string | undefined,
-): Date {
-	const [datePart, timePart] = local.split("T");
-	const [y, m, d] = datePart.split("-").map(Number);
-	const [hh, mm] = timePart.split(":").map(Number);
-	const wall = new TZDate(y, m - 1, d, hh, mm, resolveTz(zone));
-	return new Date(wall.getTime());
-}
-
-export function tzDayStart(date: string, zone: string | undefined): Date {
-	return tzLocalInputToUtc(`${date.slice(0, 10)}T00:00`, zone);
-}
-
-export function withWallTime(
-	d: Date,
-	hhmm: string,
-	zone: string | undefined,
-): Date {
-	const [datePart] = utcToTzLocalInput(d, zone).split("T");
-	return tzLocalInputToUtc(`${datePart}T${hhmm}`, zone);
-}
+export {
+	eachDayInZone as eachDayInTz,
+	formatClockTime,
+	sameDayInZone as sameDayInTz,
+	startOfDayInZone as tzDayStart,
+	utcToWallClock as utcToTzLocalInput,
+	wallClockToUtc as tzLocalInputToUtc,
+	withWallTime,
+} from "@/shared/lib/zoned";
 
 export function formatDurationMin(start: Date, end: Date): number {
 	return differenceInMinutes(end, start);
@@ -49,32 +22,12 @@ export function formatDurationMin(start: Date, end: Date): number {
 
 export const addMinutes = dfAddMinutes;
 
-export function sameDayInTz(
-	a: Date,
-	b: Date,
-	zone: string | undefined,
-): boolean {
-	return isSameDay(a, b, inTz(zone));
-}
-
 export function formatDayLabel(d: Date, zone: string | undefined): string {
-	return format(d, "EEE d MMM", inTz(zone));
-}
-
-export function formatClockTime(d: Date, zone: string | undefined): string {
-	return format(d, "HH:mm", inTz(zone));
-}
-
-export function eachDayInTz(
-	start: Date,
-	end: Date,
-	zone: string | undefined,
-): Date[] {
-	return eachDayOfInterval({ start, end }, inTz(zone));
+	return format(dateForPattern(zonedDateString(d, zone)), "EEE d MMM");
 }
 
 export function formatZoneLabel(d: Date, zone: string | undefined): string {
-	const resolved = resolveTz(zone);
+	const resolved = resolveZone(zone);
 	const abbr = new Intl.DateTimeFormat("en-US", {
 		timeZone: resolved,
 		timeZoneName: "short",

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deadlineCutoff, isDeadlinePassed } from "./deadline";
 
-// TZDate.toISOString() keeps its offset; normalize to a plain UTC instant.
 const instant = (d: Date) => new Date(d.getTime()).toISOString();
 
 describe("deadlineCutoff", () => {

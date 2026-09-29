@@ -6,7 +6,7 @@ export function resolveZone(zone: string | undefined): string {
 	return zone || "UTC";
 }
 
-function zoned(d: Date, zone: string): Temporal.ZonedDateTime {
+function zoned(d: Date, zone: string | undefined): Temporal.ZonedDateTime {
 	return Temporal.Instant.fromEpochMilliseconds(d.getTime()).toZonedDateTimeISO(
 		resolveZone(zone),
 	);
@@ -16,18 +16,18 @@ function toDate(z: Temporal.ZonedDateTime): Date {
 	return new Date(z.epochMilliseconds);
 }
 
-function plainDay(day: DayInput, zone: string): Temporal.PlainDate {
+function plainDay(day: DayInput, zone: string | undefined): Temporal.PlainDate {
 	return day instanceof Date
 		? zoned(day, zone).toPlainDate()
 		: Temporal.PlainDate.from(day.slice(0, 10));
 }
 
-function dayStart(day: Temporal.PlainDate, zone: string): Date {
+function dayStart(day: Temporal.PlainDate, zone: string | undefined): Date {
 	return toDate(day.toZonedDateTime({ timeZone: resolveZone(zone) }));
 }
 
 // "compatible": a skipped wall time moves forward, a repeated one takes the first occurrence.
-export function wallClockToUtc(local: string, zone: string): Date {
+export function wallClockToUtc(local: string, zone: string | undefined): Date {
 	return toDate(
 		Temporal.PlainDateTime.from(local).toZonedDateTime(resolveZone(zone), {
 			disambiguation: "compatible",
@@ -35,56 +35,75 @@ export function wallClockToUtc(local: string, zone: string): Date {
 	);
 }
 
-export function utcToWallClock(d: Date, zone: string): string {
+export function utcToWallClock(d: Date, zone: string | undefined): string {
 	return zoned(d, zone).toPlainDateTime().toString({ smallestUnit: "minute" });
 }
 
-export function startOfDayInZone(day: DayInput, zone: string): Date {
+export function startOfDayInZone(
+	day: DayInput,
+	zone: string | undefined,
+): Date {
 	return dayStart(plainDay(day, zone), zone);
 }
 
-export function endOfDayInZone(day: DayInput, zone: string): Date {
+export function endOfDayInZone(day: DayInput, zone: string | undefined): Date {
 	const next = dayStart(plainDay(day, zone).add({ days: 1 }), zone);
 	return new Date(next.getTime() - 1);
 }
 
-export function withWallTime(d: Date, hhmm: string, zone: string): Date {
+export function withWallTime(
+	d: Date,
+	hhmm: string,
+	zone: string | undefined,
+): Date {
 	return toDate(zoned(d, zone).withPlainTime(Temporal.PlainTime.from(hhmm)));
 }
 
-export function addCalendarDays(d: Date, days: number, zone: string): Date {
+export function addCalendarDays(
+	d: Date,
+	days: number,
+	zone: string | undefined,
+): Date {
 	return toDate(zoned(d, zone).add({ days }));
 }
 
 export function calendarDaysBetween(
 	from: DayInput,
 	to: DayInput,
-	zone: string,
+	zone: string | undefined,
 ): number {
 	return plainDay(from, zone).until(plainDay(to, zone), { largestUnit: "days" })
 		.days;
 }
 
-export function sameDayInZone(a: Date, b: Date, zone: string): boolean {
+export function sameDayInZone(
+	a: Date,
+	b: Date,
+	zone: string | undefined,
+): boolean {
 	return plainDay(a, zone).equals(plainDay(b, zone));
 }
 
 /** 1 = Monday … 7 = Sunday. */
-export function isoWeekday(d: Date, zone: string): number {
+export function isoWeekday(d: Date, zone: string | undefined): number {
 	return plainDay(d, zone).dayOfWeek;
 }
 
-export function zonedDateString(d: Date, zone: string): string {
+export function zonedDateString(d: Date, zone: string | undefined): string {
 	return plainDay(d, zone).toString();
 }
 
-export function todayInZone(zone: string, plusDays = 0): string {
+export function todayInZone(zone: string | undefined, plusDays = 0): string {
 	return Temporal.Now.plainDateISO(resolveZone(zone))
 		.add({ days: plusDays })
 		.toString();
 }
 
-export function eachDayInZone(start: Date, end: Date, zone: string): Date[] {
+export function eachDayInZone(
+	start: Date,
+	end: Date,
+	zone: string | undefined,
+): Date[] {
 	const last = plainDay(end, zone);
 	const days: Date[] = [];
 	for (
@@ -97,6 +116,6 @@ export function eachDayInZone(start: Date, end: Date, zone: string): Date[] {
 	return days;
 }
 
-export function formatClockTime(d: Date, zone: string): string {
+export function formatClockTime(d: Date, zone: string | undefined): string {
 	return zoned(d, zone).toPlainTime().toString({ smallestUnit: "minute" });
 }

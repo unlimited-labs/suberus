@@ -1,5 +1,6 @@
-import { addDays, isAfter } from "date-fns";
-import { inTz, withWallTime } from "@/features/planner/tz-datetime";
+import { isAfter } from "date-fns";
+import { tzDayStart, withWallTime } from "@/features/planner/tz-datetime";
+import { addCalendarDays } from "@/shared/lib/zoned";
 
 export function computeDefaultStartAt(
 	currentDate: Date | null,
@@ -10,7 +11,7 @@ export function computeDefaultStartAt(
 ): Date {
 	const day = currentDate ?? confStart ?? new Date();
 	const dayBegin = withWallTime(day, dayStartTime || "09:00", zone);
-	const nextDayBegin = addDays(withWallTime(day, "00:00", zone), 1, inTz(zone));
+	const nextDayBegin = tzDayStart(addCalendarDays(day, 1, zone), zone);
 
 	const daySessions = sessions.filter((s) => {
 		const start = new Date(s.startAt);
