@@ -29,7 +29,7 @@ describe("computeConferenceRange", () => {
 		});
 		expect(r.confStart).toBeNull();
 		expect(r.confEnd).toBeNull();
-		expect(r.tz).toBeUndefined();
+		expect(r.tz).toBe("UTC");
 	});
 });
 

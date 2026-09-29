@@ -57,7 +57,7 @@ export function SessionEditorProvider({
 	const { data: tracks } = useSuspenseQuery(allProgramTracksQueryOptions());
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
-	const tz = settings.timezone || undefined;
+	const tz = settings.timezone || "UTC";
 	const mutations = useSessionEditorMutations(sessionId);
 
 	const session = sessions.find((s) => s.id === sessionId);

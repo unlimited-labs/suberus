@@ -55,7 +55,7 @@ export function useProgramSchedule({
 	search,
 	activeDay,
 }: UseProgramScheduleArgs) {
-	const tzName = settings.timezone || undefined;
+	const tzName = settings.timezone || "UTC";
 	const days =
 		settings.startDate && settings.endDate
 			? eachDayInTz(

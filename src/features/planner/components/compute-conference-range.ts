@@ -14,7 +14,7 @@ export function computeConferenceRange(
 		"conferenceStartDate" | "conferenceEndDate" | "timezone"
 	>,
 ): ConferenceRange {
-	const tz = settings.timezone || undefined;
+	const tz = settings.timezone || "UTC";
 	return {
 		confStart: settings.conferenceStartDate
 			? tzDayStart(settings.conferenceStartDate, tz)

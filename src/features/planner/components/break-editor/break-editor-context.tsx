@@ -45,7 +45,7 @@ export function BreakEditorProvider({
 	const { data: breaks } = useSuspenseQuery(allBreaksQueryOptions());
 	const { data: rooms } = useSuspenseQuery(allRoomsQueryOptions());
 	const { data: settings } = useSuspenseQuery(conferenceSettingsQueryOptions());
-	const tz = settings.timezone || undefined;
+	const tz = settings.timezone || "UTC";
 	const mutations = useBreakEditorMutations(breakId);
 
 	const breakItem = breaks.find((b) => b.id === breakId);

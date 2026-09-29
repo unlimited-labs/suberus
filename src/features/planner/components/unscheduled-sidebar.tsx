@@ -215,7 +215,7 @@ export function UnscheduledSidebar() {
 						onOpenSession={selectSession}
 						search={search}
 						sessions={sessions}
-						timezone={settings.timezone || undefined}
+						timezone={settings.timezone || "UTC"}
 					/>
 				) : (
 					<UnscheduledBody

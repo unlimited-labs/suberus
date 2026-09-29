@@ -8,12 +8,7 @@ import {
 } from "date-fns";
 
 function resolveTz(zone: string | undefined): string {
-	if (zone) return zone;
-	try {
-		return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-	} catch {
-		return "UTC";
-	}
+	return zone || "UTC";
 }
 
 export function inTz(zone: string | undefined) {
