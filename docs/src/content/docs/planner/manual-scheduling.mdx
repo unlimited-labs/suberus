@@ -124,7 +124,7 @@ unsaved changes asks you to confirm. Chairs, presentations, **Split**, and
 | Field / action | What it does | Notes |
 |---|---|---|
 | **Title** | The session name shown on the grid and public program. | Committed with **Save**. |
-| **Start** | When the session begins. | `datetime-local`, in the conference timezone. Committed with **Save**. |
+| **Start** | When the session begins. | `datetime-local`, in the conference timezone. A time skipped by a daylight-saving change (e.g. 02:30 on the spring-forward night) moves forward (03:30); a time that occurs twice uses the first occurrence. Committed with **Save**. |
 | **Slots** × **Min / slot** | Capacity and per-talk length. | Session duration = *Slots × Min / slot*. Hidden when **Untimed presentations** is on. Committed with **Save**. |
 | **Untimed presentations** | Turns the session into a poster / lightning block. | The presentations inside lose their individual times; you set the block's **End** directly. Committed with **Save**. |
 | **Room** | Which room column the session sits in. | Or *No room* (flagged as an issue). |
