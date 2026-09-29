@@ -1,3 +1,4 @@
+import { formatWithOptions } from "node:util";
 import chalk from "chalk";
 import { createConsola } from "consola";
 import { format } from "date-fns";
@@ -27,7 +28,7 @@ export const logger = createConsola({
 			log(logObj) {
 				const ts = format(new Date(), "HH:mm:ss");
 				const tag = logObj.tag ? `[${logObj.tag}] ` : " ";
-				const msg = logObj.args.map(String).join(" ");
+				const msg = formatWithOptions({ depth: 4 }, ...logObj.args);
 				colorPrint(logObj.type, `${ts} ${tag}${msg}`);
 			},
 		},
