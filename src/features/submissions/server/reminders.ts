@@ -1,3 +1,4 @@
+import { tz } from "@date-fns/tz";
 import { addDays, differenceInCalendarDays } from "date-fns";
 import { env } from "@/env.ts";
 import { getSetting } from "@/features/settings/server/settings";
@@ -45,7 +46,11 @@ export async function sendReviewerReminders(): Promise<number> {
 		return 0;
 	}
 
-	const dateFormat = await getSetting("DATE_FORMAT");
+	const [dateFormat, timezone] = await Promise.all([
+		getSetting("DATE_FORMAT"),
+		getSetting("CONFERENCE_TIMEZONE"),
+	]);
+	const zone = timezone || "UTC";
 	const now = new Date();
 	let sentCount = 0;
 
@@ -80,12 +85,14 @@ export async function sendReviewerReminders(): Promise<number> {
 			const reviewerName =
 				`${assignment.reviewer.firstName ?? ""} ${assignment.reviewer.lastName ?? ""}`.trim() ||
 				assignment.reviewer.email;
-			const daysRemaining = differenceInCalendarDays(assignment.deadline, now);
+			const daysRemaining = differenceInCalendarDays(assignment.deadline, now, {
+				in: tz(zone),
+			});
 
 			void sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
 				reviewerName,
 				submissionTitle: assignment.submission.title,
-				deadline: formatDate(assignment.deadline, dateFormat),
+				deadline: formatDate(assignment.deadline, dateFormat, zone),
 				daysRemaining: String(daysRemaining),
 				reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 			});

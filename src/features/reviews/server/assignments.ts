@@ -1,4 +1,5 @@
-import { addDays, subDays } from "date-fns";
+import { TZDate } from "@date-fns/tz";
+import { addDays, format, subDays } from "date-fns";
 import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
@@ -17,6 +18,7 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
+import { deadlineCutoff } from "@/shared/lib/deadline";
 import { formatDate } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
@@ -137,7 +139,7 @@ export async function assignReviewer(
 	submissionId: string,
 	reviewerId: string,
 	assignedBy: string,
-	customDeadline?: Date,
+	customDeadline?: string,
 ): Promise<{ success: boolean; assignmentId?: string; error?: string }> {
 	const submissionWithRelations = await prisma.submission.findUniqueOrThrow({
 		where: { id: submissionId },
@@ -192,8 +194,14 @@ export async function assignReviewer(
 		};
 	}
 
-	const deadline =
-		customDeadline ?? addDays(new Date(), config.reviewDeadlineDays);
+	const zone = (await getSetting("CONFERENCE_TIMEZONE")) || "UTC";
+	const deadlineDay =
+		customDeadline ??
+		format(
+			addDays(new TZDate(Date.now(), zone), config.reviewDeadlineDays),
+			"yyyy-MM-dd",
+		);
+	const deadline = new Date(deadlineCutoff(deadlineDay, zone).getTime());
 
 	const assignment = await prisma.reviewAssignment.create({
 		data: {
@@ -233,7 +241,7 @@ export async function assignReviewer(
 			`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
 			reviewer.email,
 		submissionTitle: submission.title,
-		deadline: formatDate(deadline, dateFormat),
+		deadline: formatDate(deadline, dateFormat, zone),
 		reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 	});
 
@@ -248,7 +256,7 @@ export async function assignReviewer(
 		performedBy: assignedBy,
 		detail: activityDetail("REVIEW_ASSIGNED", {
 			assignmentId: assignment.id,
-			deadline: customDeadline?.toISOString(),
+			deadline: customDeadline,
 		}),
 	});
 

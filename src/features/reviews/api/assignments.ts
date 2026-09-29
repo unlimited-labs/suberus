@@ -58,7 +58,7 @@ export const assignReviewerFn = createServerFn({ method: "POST" })
 		z.object({
 			submissionId: z.uuid(),
 			reviewerId: z.uuid(),
-			deadline: z.iso.datetime().optional(),
+			deadline: z.iso.date().optional(),
 		}),
 	)
 	.handler(
@@ -74,7 +74,7 @@ export const assignReviewerFn = createServerFn({ method: "POST" })
 				data.submissionId,
 				data.reviewerId,
 				context.user.id,
-				data.deadline ? new Date(data.deadline) : undefined,
+				data.deadline,
 			);
 		},
 	);

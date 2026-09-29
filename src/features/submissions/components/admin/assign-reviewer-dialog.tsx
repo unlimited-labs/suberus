@@ -107,9 +107,7 @@ export function AssignReviewerDialog({
 				data: {
 					submissionId,
 					reviewerId,
-					deadline: customDeadline
-						? new Date(customDeadline).toISOString()
-						: undefined,
+					deadline: customDeadline || undefined,
 				},
 			});
 
