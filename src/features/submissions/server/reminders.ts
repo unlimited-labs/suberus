@@ -1,3 +1,4 @@
+import { setTimeout } from "node:timers/promises";
 import { tz } from "@date-fns/tz";
 import { addDays, differenceInCalendarDays } from "date-fns";
 import { env } from "@/env.ts";
@@ -9,34 +10,31 @@ import { formatDate, parseDateOnly } from "@/shared/lib/format-date";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 
-async function wasReminderSent(
-	userId: string,
-	reminderType: EmailEventType,
-	entityId: string,
-	reminderIndex: number,
-): Promise<boolean> {
-	const existing = await prisma.sentReminder.findUnique({
-		where: {
-			userId_reminderType_entityId_reminderIndex: {
-				userId,
-				reminderType,
-				entityId,
-				reminderIndex,
-			},
-		},
-	});
-	return !!existing;
+interface ReminderClaim {
+	userId: string;
+	reminderType: EmailEventType;
+	entityId: string;
+	reminderIndex: number;
 }
 
-async function recordReminder(
-	userId: string,
-	reminderType: EmailEventType,
-	entityId: string,
-	reminderIndex: number,
-): Promise<void> {
-	await prisma.sentReminder.create({
-		data: { userId, reminderType, entityId, reminderIndex },
+// Claim before sending so overlapping runs can't double-send; release on failure to retry next run.
+async function sendReminderOnce(
+	claim: ReminderClaim,
+	send: () => Promise<boolean>,
+): Promise<boolean> {
+	const { count } = await prisma.sentReminder.createMany({
+		data: [claim],
+		skipDuplicates: true,
 	});
+	if (count === 0) return false;
+	if (!(await send())) {
+		await prisma.sentReminder.delete({
+			where: { userId_reminderType_entityId_reminderIndex: claim },
+		});
+		return false;
+	}
+	await setTimeout(env.BULK_EMAIL_DELAY_SECONDS * 1000);
+	return true;
 }
 
 export async function sendReviewerReminders(): Promise<number> {
@@ -72,38 +70,33 @@ export async function sendReviewerReminders(): Promise<number> {
 		});
 
 		for (const assignment of assignments) {
-			if (!assignment.deadline) continue;
-
-			const alreadySent = await wasReminderSent(
-				assignment.reviewer.id,
-				"REVIEWER_REMINDER",
-				assignment.id,
-				i,
-			);
-			if (alreadySent) continue;
+			const { deadline } = assignment;
+			if (!deadline) continue;
 
 			const reviewerName =
 				`${assignment.reviewer.firstName ?? ""} ${assignment.reviewer.lastName ?? ""}`.trim() ||
 				assignment.reviewer.email;
-			const daysRemaining = differenceInCalendarDays(assignment.deadline, now, {
+			const daysRemaining = differenceInCalendarDays(deadline, now, {
 				in: tz(zone),
 			});
 
-			void sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
-				reviewerName,
-				submissionTitle: assignment.submission.title,
-				deadline: formatDate(assignment.deadline, dateFormat, zone),
-				daysRemaining: String(daysRemaining),
-				reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
-			});
-
-			await recordReminder(
-				assignment.reviewer.id,
-				"REVIEWER_REMINDER",
-				assignment.id,
-				i,
+			const sent = await sendReminderOnce(
+				{
+					userId: assignment.reviewer.id,
+					reminderType: "REVIEWER_REMINDER",
+					entityId: assignment.id,
+					reminderIndex: i,
+				},
+				() =>
+					sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
+						reviewerName,
+						submissionTitle: assignment.submission.title,
+						deadline: formatDate(deadline, dateFormat, zone),
+						daysRemaining: String(daysRemaining),
+						reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
+					}),
 			);
-			sentCount++;
+			if (sent) sentCount++;
 		}
 	}
 
@@ -168,19 +161,21 @@ export async function sendRevisionReminders(): Promise<number> {
 			`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
 			submission.user.email;
 
-		void sendEmail("REVISION_REMINDER", submission.user.email, {
-			authorName,
-			submissionTitle: submission.title,
-			submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
-		});
-
-		await recordReminder(
-			userId,
-			"REVISION_REMINDER",
-			submission.id,
-			alreadySentCount,
+		const sent = await sendReminderOnce(
+			{
+				userId,
+				reminderType: "REVISION_REMINDER",
+				entityId: submission.id,
+				reminderIndex: alreadySentCount,
+			},
+			() =>
+				sendEmail("REVISION_REMINDER", submission.user.email, {
+					authorName,
+					submissionTitle: submission.title,
+					submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
+				}),
 		);
-		sentCount++;
+		if (sent) sentCount++;
 	}
 
 	logger.info(`[reminders] sent ${sentCount} revision reminders`);
@@ -223,34 +218,28 @@ export async function sendDeadlineReminders(): Promise<number> {
 		});
 
 		for (const submission of submissions) {
-			const alreadySent = await wasReminderSent(
-				submission.user.id,
-				"DEADLINE_APPROACHING",
-				submission.id,
-				i,
-			);
-			if (alreadySent) continue;
-
 			const recipientName =
 				`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
 				submission.user.email;
 			const daysRemaining = daysUntilDeadline;
 
-			void sendEmail("DEADLINE_APPROACHING", submission.user.email, {
-				recipientName,
-				submissionTitle: submission.title,
-				deadline: formatDate(deadline, dateFormat),
-				daysRemaining: String(daysRemaining),
-				submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
-			});
-
-			await recordReminder(
-				submission.user.id,
-				"DEADLINE_APPROACHING",
-				submission.id,
-				i,
+			const sent = await sendReminderOnce(
+				{
+					userId: submission.user.id,
+					reminderType: "DEADLINE_APPROACHING",
+					entityId: submission.id,
+					reminderIndex: i,
+				},
+				() =>
+					sendEmail("DEADLINE_APPROACHING", submission.user.email, {
+						recipientName,
+						submissionTitle: submission.title,
+						deadline: formatDate(deadline, dateFormat),
+						daysRemaining: String(daysRemaining),
+						submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
+					}),
 			);
-			sentCount++;
+			if (sent) sentCount++;
 		}
 	}
 
