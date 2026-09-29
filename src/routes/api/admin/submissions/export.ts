@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/admin/submissions/export")({
 
 				const submissions = await getSubmissionsForExport(filters.data);
 
-				const archive = await createSubmissionsZipStream(submissions);
+				const archive = createSubmissionsZipStream(submissions);
 				// SAFETY: Node types toWeb as ReadableStream<any>; the archive emits bytes.
 				const webStream = Readable.toWeb(archive) as ReadableStream<Uint8Array>;
 

@@ -1,9 +1,11 @@
+import { once } from "node:events";
 import type { Readable } from "node:stream";
 import { ZipArchive } from "archiver";
 import {
 	buildSubmissionWhereClause,
 	type GetSubmissionsFilters,
 } from "@/features/submissions/server/admin-submissions";
+import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 import { writeXlsxBuffer } from "@/shared/server/xlsx-write";
@@ -100,38 +102,66 @@ function buildXlsx(submissions: ExportSubmission[]): Buffer {
 	return writeXlsxBuffer(rows, "Submissions");
 }
 
-export async function createSubmissionsZipStream(
+async function buildZipEntry(
+	s: ExportSubmission,
+	missing: string[],
+): Promise<{ name: string; data: Buffer | string }> {
+	const file = s.currentVersion?.file;
+	if (file) {
+		try {
+			const buffer = await getFileBuffer(file.storageKey);
+			const ext = getFileExtension(file.originalName);
+			return { name: `${s.sequentialNumber}${ext}`, data: buffer };
+		} catch (error) {
+			logger.error(
+				`[export] S3 fetch failed for ${file.storageKey}, using text`,
+				error,
+			);
+			missing.push(`${s.sequentialNumber} — ${file.originalName}`);
+		}
+	}
+	const content = s.currentVersion?.content || s.content;
+	const body = s.acknowledgment
+		? `${content}\n\nAcknowledgment\n${s.acknowledgment}`
+		: content;
+	return { name: `${s.sequentialNumber}.txt`, data: body };
+}
+
+async function appendEntry(
+	archive: ZipArchive,
+	data: Buffer | string,
+	name: string,
+): Promise<void> {
+	const appended = once(archive, "entry");
+	archive.append(data, { name });
+	await appended;
+}
+
+export function createSubmissionsZipStream(
 	submissions: ExportSubmission[],
-): Promise<Readable> {
+): Readable {
 	const archive = new ZipArchive({ store: true });
 
-	const fileEntries = await Promise.all(
-		submissions.map(async (s) => {
-			const file = s.currentVersion?.file;
-			if (file) {
-				try {
-					const buffer = await getFileBuffer(file.storageKey);
-					const ext = getFileExtension(file.originalName);
-					return { name: `${s.sequentialNumber}${ext}`, data: buffer };
-				} catch {
-					// Fall through to text content
-				}
-			}
-			const content = s.currentVersion?.content || s.content;
-			const body = s.acknowledgment
-				? `${content}\n\nAcknowledgment\n${s.acknowledgment}`
-				: content;
-			return { name: `${s.sequentialNumber}.txt`, data: body };
-		}),
-	);
-
-	for (const entry of fileEntries) {
-		archive.append(entry.data, { name: entry.name });
-	}
-
-	archive.append(buildXlsx(submissions), { name: "submissions.xlsx" });
-
-	void archive.finalize();
+	// Sequential so only one file is held in memory at a time.
+	void (async () => {
+		const missing: string[] = [];
+		for (const s of submissions) {
+			const entry = await buildZipEntry(s, missing);
+			await appendEntry(archive, entry.data, entry.name);
+		}
+		await appendEntry(archive, buildXlsx(submissions), "submissions.xlsx");
+		if (missing.length > 0) {
+			await appendEntry(
+				archive,
+				`Original files could not be fetched; text content included instead:\n${missing.join("\n")}\n`,
+				"_MISSING_FILES.txt",
+			);
+		}
+		await archive.finalize();
+	})().catch((err) => {
+		logger.error("[export] ZIP build failed", err);
+		archive.destroy(err);
+	});
 
 	return archive;
 }
