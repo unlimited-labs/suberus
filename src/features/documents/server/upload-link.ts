@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { env } from "@/env";
 import {
 	type UploadedDocumentToken,
@@ -24,6 +25,12 @@ export function issueDocumentUploadLink(meta: UploadedDocumentToken) {
 	};
 }
 
+// ponytail: pre-signMode tokens (1 h TTL) — delete 1 h after the signMode deploy.
+const legacySigningSchema = z.object({
+	sign: z.boolean().optional(),
+	sealVisible: z.boolean().optional(),
+});
+
 export function readDocumentUploadToken(token: string): UploadedDocumentToken {
 	const parsed = verifyCapabilityToken(token, "dup", env.AUTH_SECRET);
 	if (!parsed.ok) {
@@ -32,11 +39,17 @@ export function readDocumentUploadToken(token: string): UploadedDocumentToken {
 			: new Response("This upload link is not valid", { status: 403 });
 	}
 
-	const meta = uploadedDocumentTokenSchema.safeParse(
-		JSON.parse(Buffer.from(parsed.subjectId, "base64url").toString("utf8")),
+	const payload: unknown = JSON.parse(
+		Buffer.from(parsed.subjectId, "base64url").toString("utf8"),
 	);
+	const meta = uploadedDocumentTokenSchema.safeParse(payload);
 	if (!meta.success) {
 		throw new Response("This upload link is not valid", { status: 403 });
+	}
+	const legacy = legacySigningSchema.safeParse(payload).data;
+	if (legacy?.sign === false) return { ...meta.data, signMode: "NONE" };
+	if (legacy?.sealVisible === false) {
+		return { ...meta.data, signMode: "INVISIBLE" };
 	}
 	return meta.data;
 }
