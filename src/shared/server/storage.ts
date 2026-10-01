@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import {
 	DeleteObjectCommand,
 	GetObjectCommand,
@@ -105,6 +106,16 @@ export async function getFileContent(key: string): Promise<{
 		contentType: response.ContentType ?? "application/octet-stream",
 		contentLength: response.ContentLength ?? 0,
 	};
+}
+
+export async function getFileStream(key: string): Promise<Readable> {
+	const response = await getS3Client().send(
+		new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }),
+	);
+	if (!(response.Body instanceof Readable)) {
+		throw new Error(`S3 returned no stream body for key: ${key}`);
+	}
+	return response.Body;
 }
 
 export async function getFileBuffer(key: string): Promise<Buffer> {

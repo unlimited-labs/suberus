@@ -1,5 +1,5 @@
 import { once } from "node:events";
-import type { Readable } from "node:stream";
+import { Readable } from "node:stream";
 import { ZipArchive } from "archiver";
 import {
 	buildSubmissionWhereClause,
@@ -7,7 +7,7 @@ import {
 } from "@/features/submissions/server/admin-submissions";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
-import { getFileBuffer } from "@/shared/server/storage";
+import { getFileStream } from "@/shared/server/storage";
 import { writeXlsxBuffer } from "@/shared/server/xlsx-write";
 
 export async function getSubmissionsForExport(filters: GetSubmissionsFilters) {
@@ -102,16 +102,21 @@ function buildXlsx(submissions: ExportSubmission[]): Buffer {
 	return writeXlsxBuffer(rows, "Submissions");
 }
 
+type ZipEntryData = Readable | Buffer | string;
+
 async function buildZipEntry(
 	s: ExportSubmission,
 	missing: string[],
-): Promise<{ name: string; data: Buffer | string }> {
+): Promise<{ name: string; data: ZipEntryData }> {
 	const file = s.currentVersion?.file;
 	if (file) {
 		try {
-			const buffer = await getFileBuffer(file.storageKey);
+			const stream = await getFileStream(file.storageKey);
 			const ext = getFileExtension(file.originalName);
-			return { name: `${s.sequentialNumber}${ext}`, data: buffer };
+			return {
+				name: `${s.sequentialNumber}${ext}`,
+				data: stream,
+			};
 		} catch (error) {
 			logger.error(
 				`[export] S3 fetch failed for ${file.storageKey}, using text`,
@@ -127,14 +132,26 @@ async function buildZipEntry(
 	return { name: `${s.sequentialNumber}.txt`, data: body };
 }
 
+// Resolves false once the download is gone (client abort) so the producer stops.
 async function appendEntry(
 	archive: ZipArchive,
-	data: Buffer | string,
+	data: ZipEntryData,
 	name: string,
-): Promise<void> {
-	const appended = once(archive, "entry");
+): Promise<boolean> {
+	const stop = new AbortController();
+	const appended = once(archive, "entry", { signal: stop.signal }).then(
+		() => true,
+	);
+	const closed = once(archive, "close", { signal: stop.signal }).then(
+		() => false,
+	);
 	archive.append(data, { name });
-	await appended;
+	const ok = await Promise.race([appended, closed]);
+	stop.abort();
+	appended.catch(() => undefined);
+	closed.catch(() => undefined);
+	if (!ok && data instanceof Readable) data.destroy();
+	return ok;
 }
 
 export function createSubmissionsZipStream(
@@ -142,20 +159,27 @@ export function createSubmissionsZipStream(
 ): Readable {
 	const archive = new ZipArchive({ store: true });
 
-	// Sequential so only one file is held in memory at a time.
+	// Streamed one file at a time so S3 reads follow the client's download pace.
 	void (async () => {
 		const missing: string[] = [];
 		for (const s of submissions) {
 			const entry = await buildZipEntry(s, missing);
-			await appendEntry(archive, entry.data, entry.name);
+			if (!(await appendEntry(archive, entry.data, entry.name))) return;
 		}
-		await appendEntry(archive, buildXlsx(submissions), "submissions.xlsx");
-		if (missing.length > 0) {
-			await appendEntry(
+		if (
+			!(await appendEntry(archive, buildXlsx(submissions), "submissions.xlsx"))
+		) {
+			return;
+		}
+		if (
+			missing.length > 0 &&
+			!(await appendEntry(
 				archive,
 				`Original files could not be fetched; text content included instead:\n${missing.join("\n")}\n`,
 				"_MISSING_FILES.txt",
-			);
+			))
+		) {
+			return;
 		}
 		await archive.finalize();
 	})().catch((err) => {
