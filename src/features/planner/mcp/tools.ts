@@ -61,7 +61,6 @@ import {
 	importFromConferenceTracks,
 	updateProgramTrack,
 } from "@/features/planner/server/tracks";
-import { tzLocalInputToUtc } from "@/features/planner/tz-datetime";
 import {
 	breakCreateInput,
 	breakUpdateInput,
@@ -85,6 +84,7 @@ import {
 	trackUpdateInput,
 } from "@/features/planner/validations";
 import { getSetting } from "@/features/settings/server/settings";
+import { wallClockToUtc } from "@/shared/lib/zoned";
 import {
 	ADMIN_AND_EDITOR,
 	defineTool,
@@ -100,8 +100,8 @@ async function resolveProgramRange(
 	if (input.day) {
 		const zone = await getSetting("CONFERENCE_TIMEZONE");
 		return {
-			from: tzLocalInputToUtc(`${input.day}T00:00`, zone),
-			to: tzLocalInputToUtc(`${nextDay(input.day)}T00:00`, zone),
+			from: wallClockToUtc(`${input.day}T00:00`, zone),
+			to: wallClockToUtc(`${nextDay(input.day)}T00:00`, zone),
 		};
 	}
 	if (input.from || input.to) return { from: input.from, to: input.to };

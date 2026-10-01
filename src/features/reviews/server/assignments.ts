@@ -19,7 +19,7 @@ import type {
 import { logger } from "@/logger.ts";
 import { deadlineCutoff } from "@/shared/lib/deadline";
 import { dateForPattern, formatDate } from "@/shared/lib/format-date";
-import { todayInZone, zonedDateString } from "@/shared/lib/zoned";
+import { todayInZone } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { compareAssignmentUrgency } from "./assignment-urgency";
@@ -237,10 +237,7 @@ export async function assignReviewer(
 			`${reviewer.firstName ?? ""} ${reviewer.lastName ?? ""}`.trim() ||
 			reviewer.email,
 		submissionTitle: submission.title,
-		deadline: formatDate(
-			dateForPattern(zonedDateString(deadline, zone)),
-			dateFormat,
-		),
+		deadline: formatDate(dateForPattern(deadlineDay), dateFormat),
 		reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
 	});
 

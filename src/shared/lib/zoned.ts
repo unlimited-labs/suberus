@@ -1,4 +1,5 @@
 import { Temporal } from "temporal-polyfill";
+import { dateForPattern } from "@/shared/lib/format-date";
 
 type DayInput = Date | string;
 
@@ -93,8 +94,12 @@ export function isoWeekday(d: Date, zone: string | undefined): number {
 	return plainDay(d, zone).dayOfWeek;
 }
 
-export function zonedDateString(d: Date, zone: string | undefined): string {
+function zonedDateString(d: Date, zone: string | undefined): string {
 	return plainDay(d, zone).toString();
+}
+
+export function zonedDayForPattern(d: Date, zone: string | undefined): Date {
+	return dateForPattern(zonedDateString(d, zone));
 }
 
 export function todayInZone(zone: string | undefined, plusDays = 0): string {

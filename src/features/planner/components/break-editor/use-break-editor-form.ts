@@ -1,11 +1,7 @@
-import {
-	addMinutes,
-	formatDurationMin,
-	tzLocalInputToUtc,
-	utcToTzLocalInput,
-} from "@/features/planner/tz-datetime";
+import { addMinutes, formatDurationMin } from "@/features/planner/tz-datetime";
 import { breakEditSchema } from "@/features/planner/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { utcToWallClock, wallClockToUtc } from "@/shared/lib/zoned";
 import type { PlannerBreak } from "../types";
 import type { useBreakEditorMutations } from "./use-break-editor-mutations";
 
@@ -32,8 +28,8 @@ function breakFormDefaults(
 	return {
 		kind: breakItem.kind,
 		title: breakItem.title,
-		startLocal: utcToTzLocalInput(new Date(breakItem.startAt), tz),
-		endLocal: utcToTzLocalInput(new Date(breakItem.endAt), tz),
+		startLocal: utcToWallClock(new Date(breakItem.startAt), tz),
+		endLocal: utcToWallClock(new Date(breakItem.endAt), tz),
 		durationMin: formatDurationMin(
 			new Date(breakItem.startAt),
 			new Date(breakItem.endAt),
@@ -49,10 +45,10 @@ type BreakFormValue = ReturnType<typeof breakFormDefaults>;
 
 function buildBreakUpdate(value: BreakFormValue, tz: string | undefined) {
 	const isEvent = value.kind === "EVENT";
-	const startAt = tzLocalInputToUtc(value.startLocal, tz);
+	const startAt = wallClockToUtc(value.startLocal, tz);
 	const endAt =
 		isEvent && value.endLocal
-			? tzLocalInputToUtc(value.endLocal, tz)
+			? wallClockToUtc(value.endLocal, tz)
 			: addMinutes(startAt, Math.max(1, value.durationMin));
 	const eventText = (s: string) => (isEvent ? s.trim() || null : null);
 	return {

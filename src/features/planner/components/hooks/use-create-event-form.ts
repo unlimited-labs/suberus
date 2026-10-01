@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { createBreakFn } from "@/features/planner/api/breaks";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { createSessionFn } from "@/features/planner/api/sessions";
-import { tzLocalInputToUtc } from "@/features/planner/tz-datetime";
 import { eventFormSchema } from "@/features/planner/validations";
 import { conferenceSettingsQueryOptions } from "@/features/settings/api/settings";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { wallClockToUtc } from "@/shared/lib/zoned";
 import { usePlannerTools } from "../planner-tools-context";
 import { buildEventFormDefaults } from "./create-event-form-helpers";
 
@@ -42,12 +42,12 @@ export function useCreateEventForm({
 			onSubmit: eventFormSchema,
 		},
 		onSubmit: async ({ value }) => {
-			const startDate = tzLocalInputToUtc(value.startInput, timezone);
+			const startDate = wallClockToUtc(value.startInput, timezone);
 			const trimmed = value.title.trim();
 			try {
 				if (value.type === "session") {
 					const endDate = value.untimedSlots
-						? tzLocalInputToUtc(value.endInput, timezone)
+						? wallClockToUtc(value.endInput, timezone)
 						: addMinutes(
 								startDate,
 								value.presentationCount * value.minutesPerPresentation,
@@ -63,7 +63,7 @@ export function useCreateEventForm({
 						},
 					});
 				} else if (value.type === "event") {
-					const endDate = tzLocalInputToUtc(value.endInput, timezone);
+					const endDate = wallClockToUtc(value.endInput, timezone);
 					await createBreakFn({
 						data: {
 							kind: "EVENT",

@@ -11,9 +11,9 @@ import {
 	type PresentationDetailAuthor,
 	presentationDetailQueryOptions,
 } from "@/features/planner/api/favorites";
-import { formatClockTime } from "@/features/planner/tz-datetime";
 import { affiliationDisplay } from "@/shared/components/author-card-styles";
 import { cn } from "@/shared/lib/utils";
+import { formatClockTime } from "@/shared/lib/zoned";
 import {
 	Dialog,
 	DialogContent,

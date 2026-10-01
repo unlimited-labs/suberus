@@ -8,8 +8,8 @@ import type {
 	PublicProgramBreak,
 	PublicProgramSession,
 } from "@/features/planner/server/schedule";
-import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
+import { formatClockTime } from "@/shared/lib/zoned";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { PresentationBadge } from "./presentation-badge";
 import { useProgramInteraction } from "./program-interaction";

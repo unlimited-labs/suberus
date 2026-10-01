@@ -5,10 +5,10 @@ import type {
 	PublicProgramSession,
 } from "@/features/planner/server/schedule";
 import {
-	eachDayInTz,
-	sameDayInTz,
-	tzDayStart,
-} from "@/features/planner/tz-datetime";
+	eachDayInZone,
+	sameDayInZone,
+	startOfDayInZone,
+} from "@/shared/lib/zoned";
 import { buildTimeGroups } from "./program-formatting";
 import type { ProgramItem } from "./program-types";
 
@@ -58,9 +58,9 @@ export function useProgramSchedule({
 	const tzName = settings.timezone || "UTC";
 	const days =
 		settings.startDate && settings.endDate
-			? eachDayInTz(
-					tzDayStart(settings.startDate, tzName),
-					tzDayStart(settings.endDate, tzName),
+			? eachDayInZone(
+					startOfDayInZone(settings.startDate, tzName),
+					startOfDayInZone(settings.endDate, tzName),
 					tzName,
 				)
 			: [];
@@ -85,10 +85,11 @@ export function useProgramSchedule({
 	const itemsForDay = (day: Date): ProgramItem[] => {
 		if (!program) return [];
 		const sessions = program.sessions.filter(
-			(s) => sameDayInTz(new Date(s.startAt), day, tzName) && sessionMatches(s),
+			(s) =>
+				sameDayInZone(new Date(s.startAt), day, tzName) && sessionMatches(s),
 		);
 		const breaks = program.breaks.filter(
-			(b) => sameDayInTz(new Date(b.startAt), day, tzName) && breakMatches(b),
+			(b) => sameDayInZone(new Date(b.startAt), day, tzName) && breakMatches(b),
 		);
 		const all: ProgramItem[] = [
 			...sessions.map((s) => ({ kind: "session" as const, data: s })),

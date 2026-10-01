@@ -10,8 +10,8 @@ import { addMinutes, differenceInMinutes } from "date-fns";
 import { allRoomsQueryOptions } from "@/features/planner/api/rooms";
 import { allSessionsQueryOptions } from "@/features/planner/api/sessions";
 import { allProgramTracksQueryOptions } from "@/features/planner/api/tracks";
-import { tzLocalInputToUtc } from "@/features/planner/tz-datetime";
 import { Form } from "@/shared/components/composable/form";
+import { wallClockToUtc } from "@/shared/lib/zoned";
 import { Button } from "@/shared/ui/button";
 import {
 	Dialog,
@@ -184,11 +184,11 @@ export function CreateEventDialog({
 	const untimedSlots = useSelector(form.store, (s) => s.values.untimedSlots);
 	const untimedSession = type === "session" && untimedSlots;
 
-	const startDate = tzLocalInputToUtc(startInput, timezone);
+	const startDate = wallClockToUtc(startInput, timezone);
 	const sessionDurationMin = presentationCount * minutesPerPresentation;
 	const sessionEndDate = addMinutes(startDate, sessionDurationMin);
 	const breakEndDate = addMinutes(startDate, breakDurationMin);
-	const eventEndDate = tzLocalInputToUtc(endInput, timezone);
+	const eventEndDate = wallClockToUtc(endInput, timezone);
 	const copy = TYPE_COPY[type];
 	const durationMode = untimedSession ? "explicitEnd" : copy.duration;
 	const endDate = {

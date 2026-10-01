@@ -1,6 +1,5 @@
-import { tzDayStart } from "@/features/planner/tz-datetime";
 import type { ConferenceSettings } from "@/features/settings/api/settings";
-import { calendarDaysBetween } from "@/shared/lib/zoned";
+import { calendarDaysBetween, startOfDayInZone } from "@/shared/lib/zoned";
 
 export interface ConferenceRange {
 	confStart: Date | null;
@@ -17,10 +16,10 @@ export function computeConferenceRange(
 	const tz = settings.timezone || "UTC";
 	return {
 		confStart: settings.conferenceStartDate
-			? tzDayStart(settings.conferenceStartDate, tz)
+			? startOfDayInZone(settings.conferenceStartDate, tz)
 			: null,
 		confEnd: settings.conferenceEndDate
-			? tzDayStart(settings.conferenceEndDate, tz)
+			? startOfDayInZone(settings.conferenceEndDate, tz)
 			: null,
 		tz,
 	};

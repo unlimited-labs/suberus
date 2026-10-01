@@ -1,11 +1,7 @@
-import {
-	addMinutes,
-	formatDurationMin,
-	tzLocalInputToUtc,
-	utcToTzLocalInput,
-} from "@/features/planner/tz-datetime";
+import { addMinutes, formatDurationMin } from "@/features/planner/tz-datetime";
 import { sessionEditSchema } from "@/features/planner/validations";
 import { useAppForm } from "@/shared/hooks/use-app-form";
+import { utcToWallClock, wallClockToUtc } from "@/shared/lib/zoned";
 import type { PlannerSession } from "../types";
 import type { useSessionEditorMutations } from "./use-session-editor-mutations";
 
@@ -38,8 +34,8 @@ function sessionFormDefaults(
 			?.durationMin ?? defaultPresentationMin;
 	return {
 		title: session.title,
-		startLocal: utcToTzLocalInput(new Date(session.startAt), tz),
-		endLocal: utcToTzLocalInput(new Date(session.endAt), tz),
+		startLocal: utcToWallClock(new Date(session.startAt), tz),
+		endLocal: utcToWallClock(new Date(session.endAt), tz),
 		untimedSlots: session.untimedSlots,
 		slotCount: Math.max(1, Math.round(durationMin / Math.max(1, slotMin))),
 		slotMin,
@@ -58,9 +54,9 @@ export function useSessionEditorForm(
 		defaultValues: sessionFormDefaults(session, tz, defaultPresentationMin),
 		validators: { onChange: sessionEditSchema, onSubmit: sessionEditSchema },
 		onSubmit: async ({ value }) => {
-			const startAt = tzLocalInputToUtc(value.startLocal, tz);
+			const startAt = wallClockToUtc(value.startLocal, tz);
 			const endAt = value.untimedSlots
-				? tzLocalInputToUtc(value.endLocal, tz)
+				? wallClockToUtc(value.endLocal, tz)
 				: addMinutes(startAt, Math.max(1, value.slotCount * value.slotMin));
 			const result = await mutations.updateHeader({
 				title: value.title,

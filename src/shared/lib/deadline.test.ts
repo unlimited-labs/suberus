@@ -1,24 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { deadlineCutoff, isDeadlinePassed } from "./deadline";
 
-const instant = (d: Date) => new Date(d.getTime()).toISOString();
-
 describe("deadlineCutoff", () => {
 	it("returns end of the deadline day in UTC when timezone is empty", () => {
-		expect(instant(deadlineCutoff("2026-04-15", ""))).toBe(
+		expect(deadlineCutoff("2026-04-15", "").toISOString()).toBe(
 			"2026-04-15T23:59:59.999Z",
 		);
 	});
 
 	it("returns end of day in the conference timezone", () => {
 		// America/New_York on 2026-04-15 is UTC-4 (DST) → 23:59:59.999 local = 03:59 UTC next day
-		expect(instant(deadlineCutoff("2026-04-15", "America/New_York"))).toBe(
+		expect(deadlineCutoff("2026-04-15", "America/New_York").toISOString()).toBe(
 			"2026-04-16T03:59:59.999Z",
 		);
 	});
 
 	it("tolerates a trailing time component", () => {
-		expect(instant(deadlineCutoff("2026-04-15T00:00:00Z", ""))).toBe(
+		expect(deadlineCutoff("2026-04-15T00:00:00Z", "").toISOString()).toBe(
 			"2026-04-15T23:59:59.999Z",
 		);
 	});

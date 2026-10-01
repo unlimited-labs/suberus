@@ -6,7 +6,7 @@ import type { EmailEventType } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { dateForPattern, formatDate } from "@/shared/lib/format-date";
-import { calendarDaysBetween, zonedDateString } from "@/shared/lib/zoned";
+import { calendarDaysBetween, zonedDayForPattern } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 
@@ -20,14 +20,15 @@ interface ReminderClaim {
 // Claim before sending so overlapping runs can't double-send; release on failure to retry next run.
 async function sendReminderOnce(
 	claim: ReminderClaim,
-	send: () => Promise<boolean>,
+	to: string,
+	variables: Record<string, string>,
 ): Promise<boolean> {
 	const { count } = await prisma.sentReminder.createMany({
 		data: [claim],
 		skipDuplicates: true,
 	});
 	if (count === 0) return false;
-	if (!(await send())) {
+	if (!(await sendEmail(claim.reminderType, to, variables))) {
 		await prisma.sentReminder.delete({
 			where: { userId_reminderType_entityId_reminderIndex: claim },
 		});
@@ -77,26 +78,28 @@ export async function sendReviewerReminders(): Promise<number> {
 				assignment.reviewer.email;
 			const daysRemaining = calendarDaysBetween(now, deadline, zone);
 
-			const sent = await sendReminderOnce(
-				{
-					userId: assignment.reviewer.id,
-					reminderType: "REVIEWER_REMINDER",
-					entityId: assignment.id,
-					reminderIndex: i,
-				},
-				() =>
-					sendEmail("REVIEWER_REMINDER", assignment.reviewer.email, {
+			if (
+				await sendReminderOnce(
+					{
+						userId: assignment.reviewer.id,
+						reminderType: "REVIEWER_REMINDER",
+						entityId: assignment.id,
+						reminderIndex: i,
+					},
+					assignment.reviewer.email,
+					{
 						reviewerName,
 						submissionTitle: assignment.submission.title,
 						deadline: formatDate(
-							dateForPattern(zonedDateString(deadline, zone)),
+							zonedDayForPattern(deadline, zone),
 							dateFormat,
 						),
 						daysRemaining: String(daysRemaining),
 						reviewUrl: `${env.APP_BASE_URL}/reviews/${assignment.id}`,
-					}),
-			);
-			if (sent) sentCount++;
+					},
+				)
+			)
+				sentCount++;
 		}
 	}
 
@@ -161,21 +164,23 @@ export async function sendRevisionReminders(): Promise<number> {
 			`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
 			submission.user.email;
 
-		const sent = await sendReminderOnce(
-			{
-				userId,
-				reminderType: "REVISION_REMINDER",
-				entityId: submission.id,
-				reminderIndex: alreadySentCount,
-			},
-			() =>
-				sendEmail("REVISION_REMINDER", submission.user.email, {
+		if (
+			await sendReminderOnce(
+				{
+					userId,
+					reminderType: "REVISION_REMINDER",
+					entityId: submission.id,
+					reminderIndex: alreadySentCount,
+				},
+				submission.user.email,
+				{
 					authorName,
 					submissionTitle: submission.title,
 					submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
-				}),
-		);
-		if (sent) sentCount++;
+				},
+			)
+		)
+			sentCount++;
 	}
 
 	logger.info(`[reminders] sent ${sentCount} revision reminders`);
@@ -220,25 +225,26 @@ export async function sendDeadlineReminders(): Promise<number> {
 			const recipientName =
 				`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
 				submission.user.email;
-			const daysRemaining = daysUntilDeadline;
 
-			const sent = await sendReminderOnce(
-				{
-					userId: submission.user.id,
-					reminderType: "DEADLINE_APPROACHING",
-					entityId: submission.id,
-					reminderIndex: i,
-				},
-				() =>
-					sendEmail("DEADLINE_APPROACHING", submission.user.email, {
+			if (
+				await sendReminderOnce(
+					{
+						userId: submission.user.id,
+						reminderType: "DEADLINE_APPROACHING",
+						entityId: submission.id,
+						reminderIndex: i,
+					},
+					submission.user.email,
+					{
 						recipientName,
 						submissionTitle: submission.title,
 						deadline: formatDate(dateForPattern(deadlineStr), dateFormat),
-						daysRemaining: String(daysRemaining),
+						daysRemaining: String(daysUntilDeadline),
 						submissionUrl: `${env.APP_BASE_URL}/submissions/${submission.id}`,
-					}),
-			);
-			if (sent) sentCount++;
+					},
+				)
+			)
+				sentCount++;
 		}
 	}
 

@@ -154,6 +154,20 @@ async function appendEntry(
 	return ok;
 }
 
+async function* zipEntries(
+	submissions: ExportSubmission[],
+): AsyncGenerator<{ name: string; data: ZipEntryData }> {
+	const missing: string[] = [];
+	for (const s of submissions) yield buildZipEntry(s, missing);
+	yield { name: "submissions.xlsx", data: buildXlsx(submissions) };
+	if (missing.length > 0) {
+		yield {
+			name: "_MISSING_FILES.txt",
+			data: `Original files could not be fetched; text content included instead:\n${missing.join("\n")}\n`,
+		};
+	}
+}
+
 export function createSubmissionsZipStream(
 	submissions: ExportSubmission[],
 ): Readable {
@@ -161,25 +175,8 @@ export function createSubmissionsZipStream(
 
 	// Streamed one file at a time so S3 reads follow the client's download pace.
 	void (async () => {
-		const missing: string[] = [];
-		for (const s of submissions) {
-			const entry = await buildZipEntry(s, missing);
+		for await (const entry of zipEntries(submissions)) {
 			if (!(await appendEntry(archive, entry.data, entry.name))) return;
-		}
-		if (
-			!(await appendEntry(archive, buildXlsx(submissions), "submissions.xlsx"))
-		) {
-			return;
-		}
-		if (
-			missing.length > 0 &&
-			!(await appendEntry(
-				archive,
-				`Original files could not be fetched; text content included instead:\n${missing.join("\n")}\n`,
-				"_MISSING_FILES.txt",
-			))
-		) {
-			return;
 		}
 		await archive.finalize();
 	})().catch((err) => {

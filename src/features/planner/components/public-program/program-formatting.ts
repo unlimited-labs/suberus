@@ -1,10 +1,10 @@
 import { format, isAfter } from "date-fns";
 import { dateForPattern } from "@/shared/lib/format-date";
-import { zonedDateString } from "@/shared/lib/zoned";
+import { zonedDayForPattern } from "@/shared/lib/zoned";
 import type { ProgramItem, TimeGroup } from "./program-types";
 
 export function dayLabelParts(date: Date, zone: string | undefined) {
-	const day = dateForPattern(zonedDateString(date, zone));
+	const day = zonedDayForPattern(date, zone);
 	return {
 		weekday: format(day, "EEEE"),
 		dayNum: format(day, "dd"),

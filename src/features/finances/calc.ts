@@ -39,8 +39,12 @@ export function netAmount(row: FinanceRow): number {
 		: amount / (1 + row.vatRate / 100);
 }
 
-export function toCents(amount: number): number {
+function toCents(amount: number): number {
 	return Math.round(amount * 100);
+}
+
+export function subtractMoney(a: number, b: number): number {
+	return (toCents(a) - toCents(b)) / 100;
 }
 
 export function sumGross(rows: FinanceRow[]): number {

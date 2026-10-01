@@ -1,8 +1,6 @@
 import { IconCalendarEvent } from "@tabler/icons-react";
-import {
-	formatClockTime,
-	formatDurationMin,
-} from "@/features/planner/tz-datetime";
+import { formatDurationMin } from "@/features/planner/tz-datetime";
+import { formatClockTime } from "@/shared/lib/zoned";
 import type { BreakItem } from "./planner-item";
 
 interface Props {

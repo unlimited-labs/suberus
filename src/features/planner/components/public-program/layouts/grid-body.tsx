@@ -1,8 +1,8 @@
 import { IconHandFinger } from "@tabler/icons-react";
 import { useState } from "react";
 import type { PublicProgramSession } from "@/features/planner/server/schedule";
-import { formatClockTime } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
+import { formatClockTime } from "@/shared/lib/zoned";
 import {
 	EventDetails,
 	PresentationList,

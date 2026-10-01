@@ -5,8 +5,12 @@ import {
 	IconLayoutList,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { formatDayLabel, sameDayInTz } from "@/features/planner/tz-datetime";
-import { addCalendarDays, calendarDaysBetween } from "@/shared/lib/zoned";
+import { formatDayLabel } from "@/features/planner/tz-datetime";
+import {
+	addCalendarDays,
+	calendarDaysBetween,
+	sameDayInZone,
+} from "@/shared/lib/zoned";
 import { MobileBreakRow } from "./mobile/mobile-break-row";
 import { MobileSessionRow } from "./mobile/mobile-session-row";
 import { buildPlannerItems } from "./mobile/planner-item";
@@ -37,7 +41,7 @@ export function MobilePlanner({
 	const allItems = buildPlannerItems(sessions, breaks);
 
 	const dayItems = allItems.filter((i) =>
-		sameDayInTz(i.startAt, cursor, timezone),
+		sameDayInZone(i.startAt, cursor, timezone),
 	);
 
 	const shiftDay = (delta: number) => {

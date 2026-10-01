@@ -1,9 +1,7 @@
 import { IconMapPin } from "@tabler/icons-react";
 import type { ProgramSessionDetail } from "@/features/planner/server/sessions";
-import {
-	formatClockTime,
-	formatDayLabel,
-} from "@/features/planner/tz-datetime";
+import { formatDayLabel } from "@/features/planner/tz-datetime";
+import { formatClockTime } from "@/shared/lib/zoned";
 
 interface Props {
 	sessions: ProgramSessionDetail[];

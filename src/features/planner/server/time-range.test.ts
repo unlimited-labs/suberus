@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tzLocalInputToUtc } from "../tz-datetime";
+import { wallClockToUtc } from "@/shared/lib/zoned";
 import { assertOrderedTimes, nextDay, overlapWhere } from "./time-range";
 
 describe("nextDay", () => {
@@ -10,8 +10,8 @@ describe("nextDay", () => {
 
 	it("gives a day window that respects the conference timezone", () => {
 		const zone = "Europe/Warsaw";
-		const from = tzLocalInputToUtc("2026-09-14T00:00", zone);
-		const to = tzLocalInputToUtc(`${nextDay("2026-09-14")}T00:00`, zone);
+		const from = wallClockToUtc("2026-09-14T00:00", zone);
+		const to = wallClockToUtc(`${nextDay("2026-09-14")}T00:00`, zone);
 		expect(from.toISOString()).toBe("2026-09-13T22:00:00.000Z");
 		expect(to.toISOString()).toBe("2026-09-14T22:00:00.000Z");
 	});

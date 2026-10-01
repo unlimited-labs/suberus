@@ -1,8 +1,8 @@
 import type { EventFormProps } from "@ilamy/calendar";
 import { addMinutes, differenceInMinutes, isAfter, isValid } from "date-fns";
 import { z } from "zod";
-import { utcToTzLocalInput } from "@/features/planner/tz-datetime";
 import type { EventFormValues } from "@/features/planner/validations";
+import { utcToWallClock } from "@/shared/lib/zoned";
 
 const dateBearerSchema = z.object({
 	toDate: z.custom<() => Date>((fn) => fn instanceof Function),
@@ -65,8 +65,8 @@ export function buildEventFormDefaults(
 	return {
 		type: "session",
 		title: "",
-		startInput: utcToTzLocalInput(initialStart, input.timezone),
-		endInput: utcToTzLocalInput(initialEnd, input.timezone),
+		startInput: utcToWallClock(initialStart, input.timezone),
+		endInput: utcToWallClock(initialEnd, input.timezone),
 		description: "",
 		location: "",
 		locationUrl: "",
