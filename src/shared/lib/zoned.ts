@@ -26,8 +26,12 @@ function dayStart(day: Temporal.PlainDate, zone: string | undefined): Date {
 	return toDate(day.toZonedDateTime({ timeZone: resolveZone(zone) }));
 }
 
+const WALL_CLOCK = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/;
+
+// Partial `datetime-local` input → Invalid Date (rendered on every keystroke).
 // "compatible": a skipped wall time moves forward, a repeated one takes the first occurrence.
 export function wallClockToUtc(local: string, zone: string | undefined): Date {
+	if (!WALL_CLOCK.test(local)) return new Date(Number.NaN);
 	return toDate(
 		Temporal.PlainDateTime.from(local).toZonedDateTime(resolveZone(zone), {
 			disambiguation: "compatible",

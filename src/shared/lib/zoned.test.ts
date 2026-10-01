@@ -58,6 +58,15 @@ describe("wallClockToUtc across DST", () => {
 		});
 	});
 
+	it("returns Invalid Date for an empty or partial input", () => {
+		expect(Number.isNaN(wallClockToUtc("", "Europe/Warsaw").getTime())).toBe(
+			true,
+		);
+		expect(
+			Number.isNaN(wallClockToUtc("2026-09-14T", "Europe/Warsaw").getTime()),
+		).toBe(true);
+	});
+
 	it("round-trips through utcToWallClock", () => {
 		onEveryHost(() => {
 			const utc = wallClockToUtc("2026-09-14T09:05", "Europe/Warsaw");
