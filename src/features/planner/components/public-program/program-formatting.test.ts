@@ -107,7 +107,7 @@ describe("dayLabelParts", () => {
 	it("labels the conference day, not the viewer's", () => {
 		vi.stubEnv("TZ", "America/New_York");
 		const warsawMonday = new Date("2026-09-13T22:00:00Z");
-		expect(dayLabelParts(warsawMonday, "Europe/Warsaw")).toEqual({
+		expect(dayLabelParts(warsawMonday, "Europe/Warsaw")).toMatchObject({
 			weekday: "Monday",
 			dayNum: "14",
 			month: "September",

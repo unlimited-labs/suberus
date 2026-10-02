@@ -3,9 +3,17 @@ import { dateForPattern } from "@/shared/lib/format-date";
 import { zonedDayForPattern } from "@/shared/lib/zoned";
 import type { ProgramItem, TimeGroup } from "./program-types";
 
-export function dayLabelParts(date: Date, zone: string | undefined) {
+export interface DayLabel {
+	key: string;
+	weekday: string;
+	dayNum: string;
+	month: string;
+}
+
+export function dayLabelParts(date: Date, zone: string | undefined): DayLabel {
 	const day = zonedDayForPattern(date, zone);
 	return {
+		key: date.toISOString(),
 		weekday: format(day, "EEEE"),
 		dayNum: format(day, "dd"),
 		month: format(day, "MMMM"),

@@ -38,6 +38,14 @@ async function sendReminderOnce(
 	return true;
 }
 
+function recipientName(user: {
+	firstName: string | null;
+	lastName: string | null;
+	email: string;
+}): string {
+	return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email;
+}
+
 export async function sendReviewerReminders(): Promise<number> {
 	const settings = await getSetting("REMINDER_REVIEWER_SETTINGS");
 	if (!settings.enabled || settings.daysBefore.length === 0) {
@@ -73,9 +81,7 @@ export async function sendReviewerReminders(): Promise<number> {
 			const { deadline } = assignment;
 			if (!deadline) continue;
 
-			const reviewerName =
-				`${assignment.reviewer.firstName ?? ""} ${assignment.reviewer.lastName ?? ""}`.trim() ||
-				assignment.reviewer.email;
+			const reviewerName = recipientName(assignment.reviewer);
 			const daysRemaining = calendarDaysBetween(now, deadline, zone);
 
 			if (
@@ -160,9 +166,7 @@ export async function sendRevisionReminders(): Promise<number> {
 		const daysSinceReference = differenceInCalendarDays(now, referenceDate);
 		if (daysSinceReference < settings.intervalDays) continue;
 
-		const authorName =
-			`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
-			submission.user.email;
+		const authorName = recipientName(submission.user);
 
 		if (
 			await sendReminderOnce(
@@ -222,10 +226,6 @@ export async function sendDeadlineReminders(): Promise<number> {
 		});
 
 		for (const submission of submissions) {
-			const recipientName =
-				`${submission.user.firstName ?? ""} ${submission.user.lastName ?? ""}`.trim() ||
-				submission.user.email;
-
 			if (
 				await sendReminderOnce(
 					{
@@ -236,7 +236,7 @@ export async function sendDeadlineReminders(): Promise<number> {
 					},
 					submission.user.email,
 					{
-						recipientName,
+						recipientName: recipientName(submission.user),
 						submissionTitle: submission.title,
 						deadline: formatDate(dateForPattern(deadlineStr), dateFormat),
 						daysRemaining: String(daysUntilDeadline),

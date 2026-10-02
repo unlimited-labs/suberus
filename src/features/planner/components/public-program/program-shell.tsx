@@ -8,7 +8,11 @@ import { Input } from "@/shared/ui/input";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { GridBody } from "./layouts/grid-body";
 import { ListBody } from "./layouts/list-body";
-import { dayLabelParts, formatLongDate } from "./program-formatting";
+import {
+	type DayLabel,
+	dayLabelParts,
+	formatLongDate,
+} from "./program-formatting";
 import type {
 	ProgramChrome,
 	ProgramLayout,
@@ -245,17 +249,15 @@ function ProgramStickyBar({
 						<FramedNav
 							activeDay={activeDay}
 							dayMatchCounts={dayMatchCounts}
-							days={days}
+							labels={days.map((day) => dayLabelParts(day, zone))}
 							setActiveDay={setActiveDay}
-							zone={zone}
 						/>
 					) : (
 						<MinimalNav
 							activeDay={activeDay}
 							dayMatchCounts={dayMatchCounts}
-							days={days}
+							labels={days.map((day) => dayLabelParts(day, zone))}
 							setActiveDay={setActiveDay}
-							zone={zone}
 						/>
 					))}
 				<SearchBox
@@ -408,23 +410,22 @@ function CustomFooter({ html }: { html: string }) {
 	);
 }
 
-function MinimalNav({
-	days,
-	activeDay,
-	dayMatchCounts,
-	setActiveDay,
-	zone,
-}: {
-	days: Date[];
+interface DayNavProps {
+	labels: DayLabel[];
 	activeDay: number;
 	dayMatchCounts: number[];
 	setActiveDay: (i: number) => void;
-	zone: string;
-}) {
+}
+
+function MinimalNav({
+	labels,
+	activeDay,
+	dayMatchCounts,
+	setActiveDay,
+}: DayNavProps) {
 	return (
 		<nav aria-label="Select day" className="flex flex-wrap gap-2">
-			{days.map((day, i) => {
-				const label = dayLabelParts(day, zone);
+			{labels.map((label, i) => {
 				const isActive = activeDay === i;
 				const matches = dayMatchCounts[i];
 				return (
@@ -441,7 +442,7 @@ function MinimalNav({
 									? "border-primary/60 text-foreground"
 									: "border-dashed"),
 						)}
-						key={day.toISOString()}
+						key={label.key}
 						onClick={() => setActiveDay(i)}
 						type="button"
 					>
@@ -470,25 +471,17 @@ function MinimalNav({
 }
 
 function FramedNav({
-	days,
+	labels,
 	activeDay,
 	dayMatchCounts,
 	setActiveDay,
-	zone,
-}: {
-	days: Date[];
-	activeDay: number;
-	dayMatchCounts: number[];
-	setActiveDay: (i: number) => void;
-	zone: string;
-}) {
+}: DayNavProps) {
 	return (
 		<nav
 			aria-label="Select day"
 			className="flex flex-wrap items-stretch gap-x-6 gap-y-4"
 		>
-			{days.map((day, i) => {
-				const label = dayLabelParts(day, zone);
+			{labels.map((label, i) => {
 				const isActive = activeDay === i;
 				const matches = dayMatchCounts[i];
 				return (
@@ -503,7 +496,7 @@ function FramedNav({
 								matches !== undefined &&
 								(matches > 0 ? "text-foreground" : "italic"),
 						)}
-						key={day.toISOString()}
+						key={label.key}
 						onClick={() => setActiveDay(i)}
 						type="button"
 					>
