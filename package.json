@@ -69,7 +69,7 @@
     "@tanstack/react-start": "^1.168.49",
     "@tanstack/react-store": "^0.11.1",
     "@tanstack/react-table": "^9.2.4",
-    "adm-zip": "^0.6.0",
+    "adm-zip": "^0.6.1",
     "archiver": "^8.0.0",
     "better-auth": "1.7.2",
     "chalk": "^6.0.0",
