@@ -47,7 +47,7 @@
     "@fontsource/dm-sans": "^5.3.0",
     "@fontsource/rajdhani": "^5.3.0",
     "@fontsource/spectral": "^5.3.0",
-    "@ilamy/calendar": "^2.0.3",
+    "@ilamy/calendar": "^3.0.1",
     "@modelcontextprotocol/server": "2.2.0",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
@@ -117,7 +117,7 @@
     "web-push": "^3.6.7",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "xstate": "^5.33.2",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
@@ -167,8 +167,8 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vite-plugin-checker": "^0.14.5",
-    "vitest": "^4.1.11",
-    "zod-compiler": "^1.27.0"
+    "vitest": "^5.0.3",
+    "zod-compiler": "^2.0.7"
   },
   "engines": {
     "node": ">=24"
