@@ -2,7 +2,7 @@
  * Seed three demo submissions (text-only, DOCX, PDF) into the DEV database, each
  * with TWO versions (original + "corrections"), a fake completed round-1 review,
  * and a pending round-2 assignment — so the version-diff feature can be tested
- * live. Run with:  pnpm dotenv -e .env -- tsx scripts/seed-diff-demo.ts
+ * live. Run with:  pnpm dotenv run -q -- tsx scripts/seed-diff-demo.ts
  * (or:  pnpm tsx scripts/seed-diff-demo.ts  if env is already loaded)
  *
  * The reviewer for every submission is admin@suberus.app, so a single admin
