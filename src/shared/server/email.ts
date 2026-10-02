@@ -1,5 +1,5 @@
 import { convert } from "html-to-text";
-import nodemailer, { type SentMessageInfo } from "nodemailer";
+import nodemailer from "nodemailer";
 import { z } from "zod";
 import { env } from "@/env.ts";
 import type { EmailEventType } from "@/generated/prisma/enums";
@@ -64,9 +64,7 @@ function textAlternative(html: string): string {
 	return convert(html, { wordwrap: false });
 }
 
-async function sendWithRetry(
-	send: () => Promise<SentMessageInfo>,
-): Promise<void> {
+async function sendWithRetry<T>(send: () => Promise<T>): Promise<void> {
 	try {
 		await send();
 	} catch (err) {
