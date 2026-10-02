@@ -62,6 +62,7 @@ function makeAuth(allowedOrigins: string[]) {
 		// Mirrors auth.server.ts: oauth_* ids are @db.Uuid, but the provider mints
 		// non-UUID strings without this override.
 		advanced: { database: { generateId: () => randomUUID() } },
+		user: { fields: { name: "lastName" } },
 		plugins: [
 			jwt(),
 			mcp({

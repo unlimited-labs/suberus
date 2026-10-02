@@ -13,11 +13,6 @@ import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 
 const SET_PASSWORD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-// better-auth 1.7 looks credential accounts up by (issuer, accountId), deriving
-// this as `local:${encodeURIComponent(providerId)}` (createLocalAccountIssuer,
-// unexported). A mismatch silently blocks login for admin-created users.
-const CREDENTIAL_ISSUER = "local:credential";
-
 export type CreateUserByAdminInput = z.infer<typeof userCreateInput>;
 
 /**
@@ -75,7 +70,6 @@ export async function createUserByAdmin(
 				userId: created.id,
 				accountId: created.id,
 				providerId: "credential",
-				issuer: CREDENTIAL_ISSUER,
 				password: passwordHash,
 			},
 		});
