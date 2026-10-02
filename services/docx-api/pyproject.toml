@@ -20,7 +20,7 @@ dependencies = [
 # Test + fixture-generation deps. The baseline tests also need the system
 # binaries `pandoc` and `soffice` (LibreOffice) — run them in the `test` Docker
 # stage (see Dockerfile) which has the pinned toolchain.
-test = ["pytest==8.*", "python-docx==1.*"]
+test = ["pytest>=8,<10", "python-docx==1.*"]
 
 # Lint + complexity (Python "fallow-equivalent"). Advisory; run via uvx. See README.
 dev = ["ruff", "radon"]
