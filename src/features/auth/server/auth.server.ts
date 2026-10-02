@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { cimd } from "@better-auth/cimd";
+import { fetchClientMetadataResource } from "@better-auth/cimd/node";
 import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
@@ -15,7 +16,6 @@ import {
 	mcpClientRegisteredDetail,
 	mcpClientUpdatedDetail,
 } from "@/features/auth/server/cimd-audit-rules";
-import { fetchClientMetadataResource } from "@/features/auth/server/cimd-transport";
 import { MCP_SCOPES } from "@/features/mcp/scopes";
 import { getSetting } from "@/features/settings/server/settings";
 import { UserRole } from "@/generated/prisma/client";
