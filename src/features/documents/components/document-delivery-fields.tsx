@@ -21,40 +21,41 @@ interface DocumentDeliveryFieldsProps {
 	onChange: (value: DocumentDelivery) => void;
 }
 
-export function DocumentDeliveryFields({
+function SignModeFields({
 	idPrefix,
-	value,
-	onChange,
-}: DocumentDeliveryFieldsProps) {
+	signMode,
+	onSignModeChange,
+}: {
+	idPrefix: string;
+	signMode: DocumentDelivery["signMode"];
+	onSignModeChange: (signMode: DocumentDelivery["signMode"]) => void;
+}) {
 	const { data: signing } = useQuery(documentSigningQueryOptions());
-	const setSignMode = (signMode: DocumentDelivery["signMode"]) =>
-		onChange({ ...value, signMode });
+	if (!signing?.enabled) return null;
 
 	return (
-		<div className="space-y-2.5">
-			{signing?.enabled && (
-				<div className="flex items-center gap-2.5">
-					<Checkbox
-						checked={value.signMode !== "NONE"}
-						data-testid="document-sign-checkbox"
-						id={`${idPrefix}-sign`}
-						onCheckedChange={(checked) =>
-							setSignMode(checked ? "VISIBLE" : "NONE")
-						}
-					/>
-					<Label className="font-normal" htmlFor={`${idPrefix}-sign`}>
-						Sign with the conference certificate
-					</Label>
-				</div>
-			)}
-			{signing?.enabled && value.signMode !== "NONE" && (
+		<>
+			<div className="flex items-center gap-2.5">
+				<Checkbox
+					checked={signMode !== "NONE"}
+					data-testid="document-sign-checkbox"
+					id={`${idPrefix}-sign`}
+					onCheckedChange={(checked) =>
+						onSignModeChange(checked ? "VISIBLE" : "NONE")
+					}
+				/>
+				<Label className="font-normal" htmlFor={`${idPrefix}-sign`}>
+					Sign with the conference certificate
+				</Label>
+			</div>
+			{signMode !== "NONE" && (
 				<div className="flex items-center gap-2.5 pl-6">
 					<Checkbox
-						checked={value.signMode === "VISIBLE"}
+						checked={signMode === "VISIBLE"}
 						data-testid="document-seal-visible-checkbox"
 						id={`${idPrefix}-seal-visible`}
 						onCheckedChange={(checked) =>
-							setSignMode(checked ? "VISIBLE" : "INVISIBLE")
+							onSignModeChange(checked ? "VISIBLE" : "INVISIBLE")
 						}
 					/>
 					<Label className="font-normal" htmlFor={`${idPrefix}-seal-visible`}>
@@ -62,6 +63,22 @@ export function DocumentDeliveryFields({
 					</Label>
 				</div>
 			)}
+		</>
+	);
+}
+
+export function DocumentDeliveryFields({
+	idPrefix,
+	value,
+	onChange,
+}: DocumentDeliveryFieldsProps) {
+	return (
+		<div className="space-y-2.5">
+			<SignModeFields
+				idPrefix={idPrefix}
+				onSignModeChange={(signMode) => onChange({ ...value, signMode })}
+				signMode={value.signMode}
+			/>
 			<div className="flex items-center gap-2.5">
 				<Checkbox
 					checked={value.notify}

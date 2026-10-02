@@ -103,33 +103,38 @@ function buildXlsx(submissions: ExportSubmission[]): Buffer {
 }
 
 type ZipEntryData = Readable | Buffer | string;
+interface ZipEntry {
+	name: string;
+	data: ZipEntryData;
+}
+
+function textZipEntry(s: ExportSubmission): ZipEntry {
+	const content = s.currentVersion?.content || s.content;
+	const data = s.acknowledgment
+		? `${content}\n\nAcknowledgment\n${s.acknowledgment}`
+		: content;
+	return { name: `${s.sequentialNumber}.txt`, data };
+}
 
 async function buildZipEntry(
 	s: ExportSubmission,
 	missing: string[],
-): Promise<{ name: string; data: ZipEntryData }> {
+): Promise<ZipEntry> {
 	const file = s.currentVersion?.file;
-	if (file) {
-		try {
-			const stream = await getFileStream(file.storageKey);
-			const ext = getFileExtension(file.originalName);
-			return {
-				name: `${s.sequentialNumber}${ext}`,
-				data: stream,
-			};
-		} catch (error) {
-			logger.error(
-				`[export] S3 fetch failed for ${file.storageKey}, using text`,
-				error,
-			);
-			missing.push(`${s.sequentialNumber} — ${file.originalName}`);
-		}
+	if (!file) return textZipEntry(s);
+	try {
+		return {
+			name: `${s.sequentialNumber}${getFileExtension(file.originalName)}`,
+			data: await getFileStream(file.storageKey),
+		};
+	} catch (error) {
+		logger.error(
+			`[export] S3 fetch failed for ${file.storageKey}, using text`,
+			error,
+		);
+		missing.push(`${s.sequentialNumber} — ${file.originalName}`);
+		return textZipEntry(s);
 	}
-	const content = s.currentVersion?.content || s.content;
-	const body = s.acknowledgment
-		? `${content}\n\nAcknowledgment\n${s.acknowledgment}`
-		: content;
-	return { name: `${s.sequentialNumber}.txt`, data: body };
 }
 
 // Resolves false once the download is gone (client abort) so the producer stops.
@@ -156,7 +161,7 @@ async function appendEntry(
 
 async function* zipEntries(
 	submissions: ExportSubmission[],
-): AsyncGenerator<{ name: string; data: ZipEntryData }> {
+): AsyncGenerator<ZipEntry> {
 	const missing: string[] = [];
 	for (const s of submissions) yield buildZipEntry(s, missing);
 	yield { name: "submissions.xlsx", data: buildXlsx(submissions) };
