@@ -5,7 +5,7 @@ overrides:
   shell-quote: 1.9.0
   ws: 8.21.0
   fast-uri: 3.1.8
-  seroval: 1.6.2
+  seroval: 1.6.8
   qs: 6.16.0
   browserslist: 4.28.7
   mysql2: 3.24.5
