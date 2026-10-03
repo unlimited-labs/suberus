@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
-import { consentClientQueryOptions } from "@/features/mcp/api/consent";
+import { consentRequestQueryOptions } from "@/features/mcp/api/consent";
 import { scopeLabel } from "@/features/mcp/labels";
 import { getAuthPageBrandingFn } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
@@ -33,6 +33,13 @@ export const Route = createFileRoute("/consent")({
 	component: ConsentPage,
 });
 
+const INVALID_REQUEST_MESSAGE =
+	"This authorization link is invalid or has expired. Return to the application and connect again.";
+
+function consentErrorMessage(body: string): string {
+	return body.includes("invalid_signature") ? INVALID_REQUEST_MESSAGE : body;
+}
+
 async function submitConsent(accept: boolean): Promise<string> {
 	const res = await fetch("/api/auth/oauth2/consent", {
 		method: "POST",
@@ -40,7 +47,7 @@ async function submitConsent(accept: boolean): Promise<string> {
 		// Signed by the provider and re-verified there — must travel back verbatim.
 		body: JSON.stringify({ accept, oauth_query: window.location.search }),
 	});
-	if (!res.ok) throw new Error(await res.text());
+	if (!res.ok) throw new Error(consentErrorMessage(await res.text()));
 	// Documented as `redirect_uri`; non-navigation callers get the envelope.
 	const data: { redirect_uri?: string; url?: string } = await res.json();
 	const target = data.redirect_uri ?? data.url;
@@ -54,14 +61,12 @@ function ConsentPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState<"approve" | "deny" | null>(null);
 
+	// Raw, not router search: re-serialising reorders and re-encodes the signed params.
 	const search = "window" in globalThis ? window.location.search : "";
-	const params = new URLSearchParams(search);
-	const clientId = params.get("client_id") ?? "";
-	const scopes = (params.get("scope") ?? "").split(" ").filter(Boolean);
 
-	const { data: client } = useQuery({
-		...consentClientQueryOptions(clientId),
-		enabled: Boolean(clientId) && Boolean(user),
+	const { data: request, isError } = useQuery({
+		...consentRequestQueryOptions(search),
+		enabled: Boolean(search) && Boolean(user),
 	});
 
 	const decide = async (accept: boolean) => {
@@ -76,8 +81,10 @@ function ConsentPage() {
 	};
 
 	if (isPending) return null;
+	if (user && search && !request && !isError) return null;
 
-	const appName = client?.name || clientId || "Unknown application";
+	const client = request?.valid ? request : null;
+	const appName = client?.name || "Unknown application";
 
 	const card = !user ? (
 		<Card className="mx-auto w-full max-w-md" data-testid="consent-signed-out">
@@ -95,13 +102,24 @@ function ConsentPage() {
 				</Button>
 			</CardContent>
 		</Card>
+	) : !client ? (
+		<Card className="mx-auto w-full max-w-md" data-testid="consent-invalid">
+			<CardHeader>
+				<CardTitle className="text-xl">Authorization link not valid</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<p className="text-muted-foreground text-sm">
+					{INVALID_REQUEST_MESSAGE}
+				</p>
+			</CardContent>
+		</Card>
 	) : (
 		<Card className="mx-auto w-full max-w-md" data-testid="consent-card">
 			<CardHeader className="gap-1">
 				<CardTitle className="text-xl" data-testid="consent-client">
 					Authorize {appName}
 				</CardTitle>
-				{client?.origin && (
+				{client.origin && (
 					<p className="text-muted-foreground text-sm">
 						Identity verified at{" "}
 						<span className="text-foreground font-medium">{client.origin}</span>
@@ -119,11 +137,11 @@ function ConsentPage() {
 					</p>
 				</div>
 
-				{scopes.length > 0 && (
+				{client.scopes.length > 0 && (
 					<div className="space-y-2">
 						<div className="text-sm font-medium">It will be able to</div>
 						<ul className="space-y-1.5">
-							{scopes.map((scope) => (
+							{client.scopes.map((scope) => (
 								<li className="flex items-start gap-2 text-sm" key={scope}>
 									<IconCheck className="text-muted-foreground mt-0.5 size-4 shrink-0" />
 									<span>{scopeLabel(scope)}</span>

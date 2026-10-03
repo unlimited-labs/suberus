@@ -10,3 +10,5 @@ export const mcpDesktopClientInput = z.object({
 export type McpDesktopClientInput = z.infer<typeof mcpDesktopClientInput>;
 
 export const mcpClientIdInput = z.object({ clientId: z.string().min(1) });
+
+export const consentRequestInput = z.object({ oauthQuery: z.string().min(1) });

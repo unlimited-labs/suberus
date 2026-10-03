@@ -267,6 +267,22 @@ test.describe("MCP — consent screen", () => {
 		);
 	});
 
+	test("refuses a consent link whose signed query was altered", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const resource = await seedClient(page);
+
+		await page.goto(authorizeUrl(resource));
+		await expect(page).toHaveURL(/\/consent\?/);
+		const tampered = new URL(page.url());
+		tampered.searchParams.set("scope", "openid users:write");
+		await page.goto(tampered.toString());
+
+		await expect(page.getByTestId("consent-invalid")).toBeVisible();
+		await expect(page.getByTestId("consent-approve")).toHaveCount(0);
+	});
+
 	test("approving hands an authorization code to the client", async ({
 		page,
 	}) => {
