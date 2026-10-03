@@ -11,7 +11,9 @@ const QUEUES = [
 	"document-generate",
 ] as const;
 
-let _initPromise: Promise<PgBoss> | null = null;
+declare global {
+	var __pgBoss: Promise<PgBoss> | undefined;
+}
 
 async function initBoss(): Promise<PgBoss> {
 	const boss = new PgBoss({
@@ -28,14 +30,8 @@ async function initBoss(): Promise<PgBoss> {
 		await boss.createQueue(q).catch(() => {});
 	}
 
-	// Worker registration is indirected through the app-shell composition root
-	// (`src/pg-boss-workers`, an untracked module) so this shared infra file never
-	// imports feature code — keeps the shared→feature boundary clean. Dynamic import
-	// keeps the heavy worker code lazy (loaded on first enqueue, same as before) and
-	// in THIS module instance, so the single lazy boss owns its workers (a nitro
-	// plugin would be a separate bundle — its singleton wouldn't reach this initBoss).
-	// Cycle (queue→workers→feature→queue) closes only through this lazy import; runtime
-	// load is deferred so there's no init-order hazard.
+	// Lazy import keeps feature code out of this shared module; the cycle
+	// (queue→workers→feature→queue) closes only here, so there's no init-order hazard.
 	// fallow-ignore-next-line circular-dependency
 	const { registerAllWorkers } = await import("@/pg-boss-workers");
 	await registerAllWorkers(boss);
@@ -43,14 +39,14 @@ async function initBoss(): Promise<PgBoss> {
 	return boss;
 }
 
+// On globalThis: the nitro boot plugin and the request path load separate copies of
+// this module, and both must share one boss or every worker registers twice.
 export function getBoss(): Promise<PgBoss> {
-	if (!_initPromise) {
-		_initPromise = initBoss().catch((err) => {
-			_initPromise = null;
-			throw err;
-		});
-	}
-	return _initPromise;
+	globalThis.__pgBoss ??= initBoss().catch((err) => {
+		globalThis.__pgBoss = undefined;
+		throw err;
+	});
+	return globalThis.__pgBoss;
 }
 
 export interface QueueSendOptions {
