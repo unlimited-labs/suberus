@@ -162,7 +162,6 @@ async function main() {
 				"Content-Type": "application/json",
 				Accept: "application/json, text/event-stream",
 				Authorization: `Bearer ${tokens.access_token}`,
-				"MCP-Protocol-Version": "2026-07-28",
 			},
 			body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
 		});
