@@ -4,18 +4,8 @@ import {
 	McpServer,
 	originValidationResponse,
 } from "@modelcontextprotocol/server";
-import { createInsufficientScopeError } from "better-auth/oauth2";
 import type { z } from "zod";
 import type { McpActor, McpTool } from "@/shared/server/mcp/define-tool";
-
-/**
- * The SDK turns every throw from a tool into an `isError` result, so an
- * insufficient_scope error reaches requireMcpAuth (which makes it a challenge)
- * only by being parked here and re-thrown after the handler returns.
- */
-interface ChallengeBox {
-	error: unknown;
-}
 
 export interface McpServerConfig {
 	name: string;
@@ -27,6 +17,7 @@ export interface McpHandlerConfig extends McpServerConfig {
 	// Hostnames, not origins: the SDK compares Origin's hostname, so a full
 	// origin never matches and 403s every browser-sent request.
 	allowedHostnames: string[];
+	resource: URL;
 }
 
 export async function runTool<Input extends z.ZodType>(
@@ -55,7 +46,6 @@ export async function runTool<Input extends z.ZodType>(
 export function buildMcpServer(
 	config: McpServerConfig,
 	actor: McpActor | null,
-	challenge?: ChallengeBox,
 ): McpServer {
 	const server = new McpServer({
 		name: config.name,
@@ -80,19 +70,29 @@ export function buildMcpServer(
 					readOnlyHint: tool.readOnly ?? false,
 					destructiveHint: tool.destructive ?? false,
 				},
+				// Held scopes travel with the missing one: re-consent overwrites
+				// oauthConsent.scopes instead of unioning.
+				scopeChallenge: () =>
+					missingScope
+						? {
+								scopes: [
+									tool.scope,
+									...actor.scopes.filter((s) => s !== tool.scope),
+								],
+								errorDescription: `access token is missing required scope: ${tool.scope}`,
+							}
+						: undefined,
 			},
-			async (input) => {
-				if (missingScope) {
-					// Held scopes travel with the missing one: re-consent overwrites
-					// oauthConsent.scopes instead of unioning.
-					const error = createInsufficientScopeError([
-						...new Set([...actor.scopes, tool.scope]),
-					]);
-					if (challenge) challenge.error = error;
-					throw error;
-				}
-				return runTool(tool, input, actor);
-			},
+			// The guard stays: transports without HTTP (in-memory, stdio) skip scopeChallenge.
+			async (input) =>
+				missingScope
+					? {
+							content: [
+								{ type: "text", text: `missing required scope: ${tool.scope}` },
+							],
+							isError: true,
+						}
+					: runTool(tool, input, actor),
 		);
 	}
 
@@ -102,10 +102,8 @@ export function buildMcpServer(
 export function createSuberusMcpHandler(config: McpHandlerConfig) {
 	const handler = createMcpHandler((ctx) => {
 		// SAFETY: our MCP auth middleware is what populates `extra`.
-		const extra = ctx.authInfo?.extra as
-			| { actor?: McpActor; challenge?: ChallengeBox }
-			| undefined;
-		return buildMcpServer(config, extra?.actor ?? null, extra?.challenge);
+		const extra = ctx.authInfo?.extra as { actor?: McpActor } | undefined;
+		return buildMcpServer(config, extra?.actor ?? null);
 	});
 
 	return async (request: Request, actor: McpActor): Promise<Response> => {
@@ -114,16 +112,14 @@ export function createSuberusMcpHandler(config: McpHandlerConfig) {
 			originValidationResponse(request, config.allowedHostnames);
 		if (rejected) return rejected;
 
-		const challenge: ChallengeBox = { error: null };
-		const response = await handler.fetch(request, {
+		return handler.fetch(request, {
 			authInfo: {
 				token: "",
 				clientId: "",
 				scopes: actor.scopes,
-				extra: { actor, challenge },
+				resource: config.resource,
+				extra: { actor },
 			},
 		});
-		if (challenge.error) throw challenge.error;
-		return response;
 	};
 }

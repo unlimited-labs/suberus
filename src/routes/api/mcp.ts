@@ -32,6 +32,7 @@ const handler = createSuberusMcpHandler({
 		...documentsMcpTools,
 	],
 	allowedHostnames: [baseUrl.hostname],
+	resource: new URL(MCP_RESOURCE),
 });
 
 async function serve(request: Request): Promise<Response> {
