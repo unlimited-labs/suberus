@@ -1,3 +1,7 @@
+// Must evaluate first: zod reads the hook at schema construction and the route tree
+// builds schemas on import; oxfmt would sort this side-effect import last.
+// oxfmt-ignore
+import "zod/compile";
 import { StartClient } from "@tanstack/react-start/client";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
