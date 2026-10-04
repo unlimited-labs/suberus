@@ -25,7 +25,7 @@ test.describe("Export Users as XLSX", () => {
 		expect(adminRow?.["Last Login"]).toBeTruthy();
 	});
 
-	test("neutralizes spreadsheet formula injection in user-controlled fields", async ({
+	test("writes user-controlled formula text as plain string cells", async ({
 		page,
 	}) => {
 		const { createTestUser, deleteTestUser } = await import("../helpers/test-db");
@@ -46,11 +46,14 @@ test.describe("Export Users as XLSX", () => {
 			const rows = XLSX.utils.sheet_to_json<ExportRow>(ws);
 			const row = rows.find((r) => r.Email === evil.email);
 
-			// Assert — leading formula char is prefixed with ' so Excel treats it
-			// as literal text instead of evaluating it.
+			// Typed string cells carry no formula, so Excel shows the text verbatim.
 			expect(row).toBeDefined();
-			expect(row?.["First Name"]).toBe("'=1+2");
-			expect(row?.["Last Name"]).toBe("'@SUM(A1)");
+			expect(row?.["First Name"]).toBe("=1+2");
+			expect(row?.["Last Name"]).toBe("@SUM(A1)");
+			const formulaCells = Object.entries(ws).filter(
+				([ref, cell]) => !ref.startsWith("!") && "f" in cell,
+			);
+			expect(formulaCells).toEqual([]);
 		} finally {
 			await deleteTestUser(evil.id);
 		}
