@@ -10,23 +10,9 @@ import {
 } from "../../src/generated/prisma/enums";
 import type { AppSettingKey } from "../../src/features/settings/types";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { config } from "dotenv";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
-import { dbUrlFor, baseUrlFor, fromAddrFor } from "../../playwright.config";
+import "./app-env";
+import { dbUrlFor } from "../../playwright.config";
 import { TEST_USER, ADMIN_USER, REVIEWER_USER, EDITOR_USER, DEFAULT_PASSWORD } from "./test-users";
-
-// App modules dynamically imported by test helpers (e.g. storage.ts → src/env.ts)
-// need env; the per-worker overrides point in-process app code at this worker's DB.
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = resolve(__dirname, "../..");
-config({ quiet: true, path: resolve(PROJECT_ROOT, ".env") });
-{
-	const wi = Number(process.env.TEST_PARALLEL_INDEX ?? 0);
-	process.env.DATABASE_URL = dbUrlFor(wi);
-	process.env.APP_BASE_URL = baseUrlFor(wi);
-	process.env.SMTP_FROM_EMAIL = fromAddrFor(wi);
-}
 
 const clients = new Map<number, PrismaClient>();
 
