@@ -6,6 +6,7 @@ import {
 	HeadContent,
 	Link,
 	Outlet,
+	ScriptOnce,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -182,6 +183,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			suppressHydrationWarning
 		>
 			<head>
+				{theme === "system" && (
+					// Before first paint: applied from an effect, a dark-system user sees the light
+					// page and then every transition-colors element animating into dark.
+					<ScriptOnce>
+						{`document.documentElement.classList.toggle("dark",matchMedia("(prefers-color-scheme: dark)").matches)`}
+					</ScriptOnce>
+				)}
 				<HeadContent />
 			</head>
 			<body>
