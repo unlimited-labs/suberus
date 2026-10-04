@@ -1508,6 +1508,7 @@ test.describe("docs screenshots", () => {
 });
 
 test.describe("announcements", () => {
+	test.skip(!process.env.DOCS_SHOTS, "Set DOCS_SHOTS=1 to capture docs screenshots");
 	async function seedAnnouncement(publish: boolean, overrides?: {
 		subject?: string;
 		read?: boolean;
