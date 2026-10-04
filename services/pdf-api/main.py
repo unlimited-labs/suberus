@@ -20,6 +20,7 @@ Functional endpoints are versioned under /v1 so a future contract change can shi
 while older app deploys keep calling /v1. Health stays unversioned at /.
 """
 
+import asyncio
 import base64
 import hashlib
 import io
@@ -105,10 +106,20 @@ async def _to_temp(file: UploadFile) -> str:
         return tmp.name
 
 
+# Conversion is CPU-bound and blocking: run it off the event loop so the health probe
+# still answers, serialised because DocumentConverter isn't documented as thread-safe.
+_convert_lock = asyncio.Lock()
+
+
+async def _convert(conv: DocumentConverter, path: str):
+    async with _convert_lock:
+        return (await asyncio.to_thread(conv.convert, path)).document
+
+
 async def convert_upload(file: UploadFile):
     tmp_path = await _to_temp(file)
     try:
-        return converter.convert(tmp_path).document
+        return await _convert(converter, tmp_path)
     finally:
         Path(tmp_path).unlink(missing_ok=True)
 
@@ -146,7 +157,7 @@ async def to_bundle(file: UploadFile):
     """Convert WITH figure rendering and return a zip bundle for the diff pipeline."""
     tmp_path = await _to_temp(file)
     try:
-        doc = get_image_converter().convert(tmp_path).document
+        doc = await _convert(get_image_converter(), tmp_path)
     finally:
         Path(tmp_path).unlink(missing_ok=True)
 
