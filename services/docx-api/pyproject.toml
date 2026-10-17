@@ -5,7 +5,7 @@ description = "DOCX -> normalized-HTML + rasterized-figure bundle for the submis
 requires-python = ">=3.12,<3.15"
 dependencies = [
     "fastapi==0.115.*",
-    "uvicorn[standard]==0.32.*",
+    "uvicorn[standard]>=0.32,<0.55",
     "python-multipart==0.0.*",
     "Pillow==11.*",
     "xmldiff==3.0.*",
