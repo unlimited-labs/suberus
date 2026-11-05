@@ -28,9 +28,8 @@ FROM base AS models
 COPY --from=reqs /torch.txt /models.txt /tmp/
 RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/usr/local/bin/uv \
     --mount=type=cache,target=/root/.cache/uv \
-    echo "opencv-python ; sys_platform == 'never'" > /tmp/overrides.txt \
-    && uv venv /tmp/venv \
-    && uv pip install --python /tmp/venv/bin/python --override /tmp/overrides.txt \
+    uv venv /tmp/venv \
+    && uv pip install --python /tmp/venv/bin/python \
         --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple \
         --index-strategy unsafe-best-match -r /tmp/torch.txt -r /tmp/models.txt \
     && /tmp/venv/bin/docling-tools models download layout tableformer code_formula easyocr \
