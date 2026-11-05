@@ -4,14 +4,14 @@ version = "0.1.0"
 description = "DOCX -> normalized-HTML + rasterized-figure bundle for the submission version-diff pipeline"
 requires-python = ">=3.12,<3.15"
 dependencies = [
-    "fastapi==0.115.*",
-    "uvicorn[standard]==0.32.*",
+    "fastapi==0.162.*",
+    "uvicorn[standard]==0.54.*",
     "python-multipart==0.0.*",
-    "Pillow==11.*",
+    "Pillow==13.*",
     "xmldiff==3.0.*",
     "lxml>=5,<7",
     "olefile==0.47.*",
-    "pyHanko[image-support]==0.35.*",
+    "pyHanko[image-support]==0.38.*",
     "qrcode==8.*",
     "cryptography>=43",
 ]
@@ -20,7 +20,7 @@ dependencies = [
 # Test + fixture-generation deps. The baseline tests also need the system
 # binaries `pandoc` and `soffice` (LibreOffice) — run them in the `test` Docker
 # stage (see Dockerfile) which has the pinned toolchain.
-test = ["pytest==8.*", "python-docx==1.*"]
+test = ["pytest==9.*", "python-docx==1.*"]
 
 # Lint + complexity (Python "fallow-equivalent"). Advisory; run via uvx. See README.
 dev = ["ruff", "radon"]
