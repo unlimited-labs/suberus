@@ -40,7 +40,7 @@ const nitroConfig: NitroPluginConfig = {
 	// files (incl. the CSS asset) into .output/server/node_modules.
 	traceDeps: ["jsdom*"],
 	output: outputDir ? { dir: outputDir } : undefined,
-	experimental: { tasks: true, vite: {} },
+	experimental: { tasks: true },
 	scheduledTasks: {
 		"* * * * *": isE2E ? [] : ["program:reminders"],
 		"*/5 * * * *": isE2E
