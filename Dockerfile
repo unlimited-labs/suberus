@@ -1,4 +1,4 @@
-FROM node:24-alpine AS prisma-cli
+FROM node:26-alpine AS prisma-cli
 
 WORKDIR /prisma-runtime
 
@@ -9,11 +9,11 @@ RUN npm init -y >/dev/null \
         "dotenv@$(node -p "require('/tmp/package.json').dependencies.dotenv")" \
     && npm cache clean --force
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@12 --activate
+RUN npm install -g pnpm@12 && npm cache clean --force
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
@@ -27,7 +27,7 @@ ENV NODE_ENV=production
 COPY . .
 RUN pnpm build
 
-FROM node:24-alpine AS migrate
+FROM node:26-alpine AS migrate
 
 WORKDIR /app
 
@@ -39,7 +39,7 @@ USER node
 
 CMD ["node", "node_modules/prisma/build/index.js", "migrate", "deploy"]
 
-FROM node:24-alpine
+FROM node:26-alpine
 
 RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001 -G appgroup
 

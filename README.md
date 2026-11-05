@@ -39,7 +39,7 @@ Suberus runs the full lifecycle of a conference call for submissions: authors su
 
 ## Quick start
 
-**Prerequisites:** Node.js 22+, pnpm, and Docker (managed via [proto](https://moonrepo.dev/proto) — run `proto install` to get the pinned toolchain).
+**Prerequisites:** Node.js 26+, pnpm, and Docker (managed via [proto](https://moonrepo.dev/proto) — run `proto install` to get the pinned toolchain).
 
 > **Note:** PostgreSQL must have the [`pgvector`](https://github.com/pgvector/pgvector) extension available — it backs submission embeddings (semantic search / similarity). The Docker image ships with it; a self-managed PostgreSQL needs `pgvector` installed and `CREATE EXTENSION vector` enabled, or migrations will fail.
 

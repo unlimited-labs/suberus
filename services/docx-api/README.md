@@ -106,4 +106,4 @@ uvx radon mi .
   `-env:UserInstallation` profile (gotcha C5). The worker should still cap
   `localConcurrency` for this queue.
 - Image is heavy (LibreOffice). Acceptable: keeps Pandoc + LO out of the
-  `node:22-alpine` app image, and isolates the LO concurrency hazard.
+  `node:26-alpine` app image, and isolates the LO concurrency hazard.
