@@ -44,17 +44,15 @@ test.describe("Version skew banner", () => {
 		expect(version.commit).toBe(E2E_GIT_COMMIT)
 		expect(version.pollMs).toBe(500)
 
-		// The stamped x-app-version header does NOT survive the thrown
-		// "info not found" error, and prod hides the message (generic body) — so
-		// a stale-hash 500 is indistinguishable from a genuine 500 on the client.
-		// This is why a headerless server-fn error triggers an active version
-		// re-check rather than assuming skew.
+		// Since react-start 1.169 / router 1.170.46 the stamped header survives the
+		// thrown "info not found" error, so a stale tab learns the commit from the 500.
+		// A headerless server-fn error still triggers an active re-check.
 		const stale = await page.evaluate(async (hash) => {
 			const res = await fetch(`/_serverFn/${hash}`)
 			return { status: res.status, version: res.headers.get("x-app-version") }
 		}, STALE_HASH)
 		expect(stale.status).toBe(500)
-		expect(stale.version).toBeNull()
+		expect(stale.version).toBe(E2E_GIT_COMMIT)
 	})
 
 	test("poll detects a new backend commit and raises the banner", async ({

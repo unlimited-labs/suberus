@@ -4,7 +4,7 @@ import type { BreakEventData } from "../break-event-card";
 import type { SessionEventData } from "../session-event-card";
 import type { PlannerBreak, PlannerSession } from "../types";
 
-type PlannerEvent = NonNullable<IlamyCalendarProps["events"]>[number];
+type PlannerEvent = Extract<IlamyCalendarProps["events"], unknown[]>[number];
 
 type RoomInput = { id: string; name: string; order: number };
 
