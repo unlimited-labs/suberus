@@ -1,6 +1,6 @@
 {
-  "$comment": "Ceiling for `pnpm sloppiness`, enforced in CI and on pre-push. hotMass and cloneLines gate; locNonTest is reported only, because a codebase that grows is not a codebase that got sloppy. Absolute counts, not the ratios, which shrink whenever code is added. Lower these when a refactor lands; never raise one without saying why here.",
+  "$comment": "Ceiling for `pnpm sloppiness`, enforced in CI and on pre-push. hotMass and cloneLines gate; locNonTest is reported only, because a codebase that grows is not a codebase that got sloppy. Absolute counts, not the ratios, which shrink whenever code is added. Lower these when a refactor lands; never raise one without saying why here. cloneLines 2302->2458 (2026-11-05): fallow 3.34 counts more duplicated lines on unchanged code (2827->2998 raw), not new clones.",
   "hotMass": 7800,
-  "cloneLines": 2302,
+  "cloneLines": 2458,
   "locNonTest": 83360
 }
