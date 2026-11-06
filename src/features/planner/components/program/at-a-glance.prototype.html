@@ -1,0 +1,708 @@
+<!doctype html>
+<!-- PROTOTYPE (throwaway) for wayfinder ticket "Program at a glance: page size and grid layout". Not production code. -->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>PROTOTYPE · Program at a glance</title>
+		<style>
+			:root {
+				--track-a: #2563eb;
+				--track-b: #16a34a;
+				--track-c: #d97706;
+				--track-d: #9333ea;
+				--track-e: #dc2626;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: #e5e7eb;
+				font-family: Arial, Helvetica, sans-serif;
+				color: #111;
+				padding-bottom: 120px;
+			}
+			.banner {
+				background: #fde047;
+				padding: 6px 12px;
+				font-size: 13px;
+				font-weight: bold;
+			}
+			.state {
+				font:
+					12px/1.5 ui-monospace,
+					monospace;
+				background: #111827;
+				color: #d1fae5;
+				padding: 8px 12px;
+				white-space: pre-wrap;
+			}
+			.canvas {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 24px;
+				padding: 24px;
+				align-items: flex-start;
+			}
+			.pagewrap {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+			.pagelabel {
+				font-size: 12px;
+				color: #374151;
+			}
+			.spread {
+				display: flex;
+				gap: 2px;
+			}
+			.page {
+				background: #fff;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+				padding: 15mm;
+				overflow: hidden;
+				position: relative;
+			}
+			.page.overflow {
+				outline: 4px solid #dc2626;
+			}
+			.page.overflow::after {
+				content: "OVERFLOW: content does not fit";
+				position: absolute;
+				bottom: 2mm;
+				right: 2mm;
+				background: #dc2626;
+				color: #fff;
+				font-size: 10px;
+				padding: 2px 4px;
+			}
+			.grayscale .page {
+				filter: grayscale(1);
+			}
+			h1.day {
+				font-size: 12pt;
+				margin: 0 0 3mm;
+			}
+			table.grid {
+				border-collapse: collapse;
+				width: 100%;
+				table-layout: fixed;
+			}
+			table.grid th,
+			table.grid td {
+				border: 0.3mm solid #444;
+				padding: 0.8mm 1mm;
+				vertical-align: top;
+				overflow: hidden;
+			}
+			table.grid th {
+				background: #f3f4f6;
+				font-weight: bold;
+			}
+			td.time {
+				white-space: nowrap;
+				font-weight: bold;
+			}
+			td.band {
+				text-align: center;
+				background: #f3f4f6;
+				font-style: italic;
+			}
+			td.band.plenary {
+				font-style: normal;
+				font-weight: bold;
+				background: #fff;
+			}
+			td.empty {
+				background: repeating-linear-gradient(
+					45deg,
+					#fff,
+					#fff 2px,
+					#f3f4f6 2px,
+					#f3f4f6 4px
+				);
+			}
+			.code {
+				font-weight: bold;
+			}
+			.trk-fill {
+				color: #fff;
+			}
+			.trk-bar {
+				border-left: 2.2mm solid transparent !important;
+			}
+			.legend {
+				margin-top: 3mm;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 3mm;
+			}
+			.legend span {
+				display: inline-flex;
+				align-items: center;
+				gap: 1mm;
+			}
+			.legend i {
+				width: 3mm;
+				height: 3mm;
+				display: inline-block;
+			}
+			.blocklist h2 {
+				font-size: 1.1em;
+				margin: 2mm 0 1mm;
+				border-bottom: 0.3mm solid #444;
+			}
+			.blocklist div {
+				margin-left: 2mm;
+			}
+			.detail .sess {
+				margin-bottom: 4mm;
+			}
+			.detail .sh {
+				font-weight: bold;
+				border-bottom: 0.3mm solid #444;
+				padding-bottom: 0.5mm;
+				margin-bottom: 1mm;
+			}
+			.detail .meta {
+				font-size: 0.9em;
+				color: #333;
+				margin-bottom: 1mm;
+			}
+			.detail .slot {
+				display: grid;
+				grid-template-columns: 16mm 1fr;
+				gap: 2mm;
+				margin-bottom: 1.2mm;
+			}
+			.detail .slot .t {
+				font-weight: bold;
+			}
+			.detail .title {
+				font-weight: bold;
+			}
+			.detail .pres {
+				text-decoration: underline;
+			}
+			.detail .badge {
+				font-size: 0.8em;
+				border: 0.2mm solid #444;
+				padding: 0 1mm;
+				margin-left: 1mm;
+			}
+			.detail .cancel {
+				text-decoration: line-through;
+				color: #777;
+			}
+			.bar {
+				position: fixed;
+				left: 50%;
+				bottom: 12px;
+				transform: translateX(-50%);
+				background: #111827;
+				color: #fff;
+				border-radius: 10px;
+				padding: 8px 12px;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 14px;
+				font-size: 13px;
+				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+				max-width: 96vw;
+			}
+			.bar label {
+				display: flex;
+				gap: 4px;
+				align-items: center;
+			}
+			.bar button {
+				background: #374151;
+				color: #fff;
+				border: 0;
+				border-radius: 4px;
+				padding: 3px 7px;
+				cursor: pointer;
+			}
+			.bar button.on {
+				background: #2563eb;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="banner">
+			PROTOTYPE: throwaway mock of printed "Program at a glance" + one "Detailed
+			program" page. Fake data. Pages at real size (mm).
+		</div>
+		<div class="state" id="state"></div>
+		<div class="canvas" id="canvas"></div>
+		<div class="bar" id="bar"></div>
+		<script>
+			const OPTS = {
+				v: {
+					label: "Layout",
+					values: ["auto", "columns", "spread", "transposed", "list"],
+				},
+				n: { label: "Parallel rooms", values: ["3", "6", "10", "16", "22"] },
+				book: { label: "Book", values: ["A4", "A5"] },
+				color: { label: "Track colour", values: ["off", "bar", "fill"] },
+				bw: { label: "B/W print", values: ["no", "yes"] },
+			};
+			const params = new URLSearchParams(location.search);
+			const state = Object.fromEntries(
+				Object.entries(OPTS).map(([k, o]) => [k, params.get(k) ?? o.values[0]]),
+			);
+			if (!params.get("n")) state.n = "6";
+
+			const TRACKS = [
+				{ name: "Thin Films", color: "var(--track-a)" },
+				{ name: "Biomaterials", color: "var(--track-b)" },
+				{ name: "Metallurgy", color: "var(--track-c)" },
+				{ name: "Modelling", color: "var(--track-d)" },
+				{ name: "Energy Materials", color: "var(--track-e)" },
+			];
+			const TITLES = [
+				"Functional Oxide Thin Films",
+				"Additive Manufacturing of Alloys",
+				"Computational Design of Catalysts",
+				"Bioresorbable Implants",
+				"Perovskite Solar Cells",
+				"Grain Boundary Engineering",
+				"Machine Learning for Microstructure",
+				"Corrosion Protection Coatings",
+				"Polymer Nanocomposites",
+				"High-Entropy Alloys",
+				"2D Materials Beyond Graphene",
+				"Hydrogen Storage Materials",
+			];
+			const ROOM_NAMES = [
+				"Aula Magna",
+				"Room 1.12",
+				"Room 1.14",
+				"Conference Hall B",
+				"Seminar Room 2.01",
+				"Room 2.05",
+				"Lecture Hall C",
+				"Room 3.10",
+				"Room 3.11",
+				"Senate Hall",
+				"Room 0.21",
+				"Room 0.22",
+				"Library Room",
+				"Room 4.01",
+				"Room 4.02",
+				"Room 4.03",
+				"Gallery",
+				"Room 5.01",
+				"Room 5.02",
+				"Room 5.03",
+				"Room 5.04",
+				"Room 5.05",
+			];
+			const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			const m = (hhmm) => {
+				const [h, mi] = hhmm.split(":").map(Number);
+				return h * 60 + mi;
+			};
+			const fmt = (min) =>
+				`${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+			function buildDay(n) {
+				const rooms = ROOM_NAMES.slice(0, n).map((name, i) => ({
+					name,
+					letter: LETTERS[i],
+				}));
+				const sessions = [];
+				let t = 0;
+				const add = (room, start, end, extra = {}) =>
+					sessions.push({
+						room,
+						start: m(start),
+						end: m(end),
+						track: TRACKS[(rooms.indexOf(room) + t) % TRACKS.length],
+						title: TITLES[(t++ * 5) % TITLES.length],
+						...extra,
+					});
+				add(rooms[0], "08:30", "09:30", {
+					title: "Opening & Keynote: Materials for a Net-Zero Future",
+					plenary: true,
+				});
+				rooms.forEach((r, i) => {
+					if (i % 3 === 1) {
+						add(r, "10:00", "11:00");
+						add(r, "11:00", "12:00");
+					} else add(r, "10:00", "12:00");
+				});
+				rooms.forEach((r, i) => {
+					if (i === n - 1 && n > 2) return;
+					if (i === 0) add(r, "13:00", "15:00");
+					else add(r, "13:00", "14:30");
+				});
+				add(rooms[0], "15:00", "16:30", {
+					title: "Poster Session I",
+					untimed: true,
+					plenary: true,
+				});
+				const breaks = [
+					{ title: "Coffee break", start: m("09:30"), end: m("10:00") },
+					{ title: "Lunch", start: m("12:00"), end: m("13:00") },
+				];
+				const counter = {};
+				[...sessions]
+					.sort((a, b) => a.start - b.start)
+					.forEach((s) => {
+						counter[s.room.letter] = (counter[s.room.letter] ?? 0) + 1;
+						s.code = `2${s.room.letter}${counter[s.room.letter]}`;
+					});
+				const bounds = [
+					...new Set([...sessions, ...breaks].flatMap((x) => [x.start, x.end])),
+				].sort((a, b) => a - b);
+				const intervals = bounds
+					.slice(0, -1)
+					.map((s, i) => ({ start: s, end: bounds[i + 1] }));
+				return { rooms, sessions, breaks, intervals };
+			}
+
+			const PAGE = { A4: { w: 210, h: 297 }, A5: { w: 148, h: 210 } };
+			function chooseLayout(n) {
+				if (state.v !== "auto") return state.v;
+				if (n <= 8) return "columns";
+				if (n <= 14) return "spread";
+				return "transposed";
+			}
+			function gridPage(layout, n) {
+				const b = PAGE[state.book];
+				const portraitMax = state.book === "A4" ? 4 : 3;
+				if (layout === "columns")
+					return n <= portraitMax
+						? { w: b.w, h: b.h, o: "portrait" }
+						: { w: b.h, h: b.w, o: "landscape" };
+				return { w: b.w, h: b.h, o: "portrait" };
+			}
+			function typeFor(colMm) {
+				if (colMm >= 30) return 8;
+				if (colMm >= 25) return 7;
+				return 6;
+			}
+			const trackAttr = (s) => {
+				if (state.color === "fill")
+					return { cls: "trk-fill", style: `background:${s.track.color}` };
+				if (state.color === "bar")
+					return {
+						cls: "trk-bar",
+						style: `border-left-color:${s.track.color} !important`,
+					};
+				return { cls: "", style: "" };
+			};
+			const cellText = (s, colMm) => {
+				const short =
+					colMm < 30 ? s.title.split(" ").slice(0, 3).join(" ") : s.title;
+				return `<span class="code">${s.code}</span> ${short}`;
+			};
+			const legend = () =>
+				state.color === "off"
+					? ""
+					: `<div class="legend">${TRACKS.map((t) => `<span><i style="background:${t.color}"></i>${t.name}</span>`).join("")}</div>`;
+
+			function columnsTable(day, rooms, colMm) {
+				const isFullWidth = (iv) => {
+					const br = day.breaks.find(
+						(b) => b.start <= iv.start && b.end >= iv.end,
+					);
+					if (br) return { kind: "break", text: br.title, start: br.start };
+					const pl = day.sessions.find(
+						(s) => s.plenary && s.start <= iv.start && s.end >= iv.end,
+					);
+					if (pl)
+						return {
+							kind: "plenary",
+							text: `<span class="code">${pl.code}</span> ${pl.title} · ${pl.room.name}`,
+							start: pl.start,
+						};
+					return null;
+				};
+				let html = `<table class="grid"><colgroup><col style="width:15mm">${rooms.map(() => `<col>`).join("")}</colgroup>`;
+				html += `<tr><th>Time</th>${rooms.map((r) => `<th>${r.letter} · ${r.name}</th>`).join("")}</tr>`;
+				const covered = new Set();
+				day.intervals.forEach((iv, ri) => {
+					const fw = isFullWidth(iv);
+					html += `<tr><td class="time">${fmt(iv.start)}<br>${fmt(iv.end)}</td>`;
+					if (fw) {
+						html += `<td class="band ${fw.kind}" colspan="${rooms.length}">${fw.text}</td></tr>`;
+						return;
+					}
+					rooms.forEach((r) => {
+						const key = `${r.letter}:${ri}`;
+						if (covered.has(key)) return;
+						const s = day.sessions.find(
+							(x) =>
+								!x.plenary &&
+								x.room === r &&
+								x.start <= iv.start &&
+								x.end >= iv.end,
+						);
+						if (!s) {
+							html += `<td class="empty"></td>`;
+							return;
+						}
+						const span = day.intervals.filter(
+							(x) => x.start >= s.start && x.end <= s.end,
+						).length;
+						for (let k = 1; k < span; k++) covered.add(`${r.letter}:${ri + k}`);
+						const a = trackAttr(s);
+						html += `<td rowspan="${span}" class="${a.cls}" style="${a.style}">${cellText(s, colMm)}</td>`;
+					});
+					html += `</tr>`;
+				});
+				return html + `</table>`;
+			}
+
+			function transposedTable(day) {
+				const ivs = day.intervals.filter((iv) =>
+					day.sessions.some(
+						(s) => !s.plenary && s.start <= iv.start && s.end >= iv.end,
+					),
+				);
+				let html = `<div style="margin-bottom:2mm">${day.sessions
+					.filter((s) => s.plenary)
+					.map(
+						(s) =>
+							`<b>${fmt(s.start)}–${fmt(s.end)}</b> <span class="code">${s.code}</span> ${s.title} · ${s.room.name}`,
+					)
+					.join(
+						"<br>",
+					)}<br>${day.breaks.map((b) => `<i>${fmt(b.start)}–${fmt(b.end)} ${b.title}</i>`).join(" · ")}</div>`;
+				html += `<table class="grid"><colgroup><col style="width:32mm">${ivs.map(() => "<col>").join("")}</colgroup>`;
+				html += `<tr><th>Room</th>${ivs.map((iv) => `<th>${fmt(iv.start)}–${fmt(iv.end)}</th>`).join("")}</tr>`;
+				day.rooms.forEach((r) => {
+					html += `<tr><th style="text-align:left">${r.letter} · ${r.name}</th>`;
+					let skip = 0;
+					ivs.forEach((iv, ci) => {
+						if (skip > 0) {
+							skip--;
+							return;
+						}
+						const s = day.sessions.find(
+							(x) =>
+								!x.plenary &&
+								x.room === r &&
+								x.start <= iv.start &&
+								x.end >= iv.end,
+						);
+						if (!s) {
+							html += `<td class="empty"></td>`;
+							return;
+						}
+						const span = ivs
+							.slice(ci)
+							.filter((x) => x.start >= s.start && x.end <= s.end).length;
+						skip = span - 1;
+						const a = trackAttr(s);
+						html += `<td colspan="${span}" class="${a.cls}" style="${a.style}">${cellText(s, 20)}</td>`;
+					});
+					html += `</tr>`;
+				});
+				return html + `</table>`;
+			}
+
+			function blockList(day) {
+				const items = [
+					...day.sessions.map((s) => ({ ...s, kind: "s" })),
+					...day.breaks.map((b) => ({ ...b, kind: "b" })),
+				];
+				const starts = [...new Set(items.map((x) => x.start))].sort(
+					(a, b) => a - b,
+				);
+				return `<div class="blocklist">${starts
+					.map((st) => {
+						const here = items.filter((x) => x.start === st);
+						const end = Math.max(...here.map((x) => x.end));
+						return `<h2>${fmt(st)}–${fmt(end)}</h2>${here
+							.map((x) =>
+								x.kind === "b"
+									? `<div><i>${x.title}</i></div>`
+									: `<div><b>${x.room.letter} · ${x.room.name}</b> — <span class="code">${x.code}</span> ${x.title} <small>(${x.track.name}, until ${fmt(x.end)})</small></div>`,
+							)
+							.join("")}`;
+					})
+					.join("")}</div>`;
+			}
+
+			function pageEl(p, inner, label) {
+				return `<div class="pagewrap"><div class="pagelabel">${label} — ${p.w}×${p.h} mm</div>
+    <div class="page" style="width:${p.w}mm;height:${p.h}mm;font-size:${p.pt}pt">${inner}</div></div>`;
+			}
+
+			function detailPage(day) {
+				const b = PAGE[state.book];
+				const pt = state.book === "A4" ? 9 : 8;
+				const s = day.sessions.find(
+					(x) => !x.plenary && x.start === m("10:00"),
+				);
+				const slots = [
+					{
+						t: "10:00",
+						title: "Epitaxial growth of LaNiO3 on vicinal substrates",
+						authors: ["A. Nowak", "J. Kowalski", "M. Zięba"],
+						pres: 1,
+					},
+					{
+						t: "10:20",
+						title: "Interface magnetism in oxide heterostructures",
+						authors: ["K. Müller", "Ł. Wiśniewski"],
+						pres: 0,
+						badge: "Keynote",
+						invited: true,
+					},
+					{
+						t: "10:40",
+						title: "Strain tuning of ferroelectric domains",
+						authors: [
+							"P. Dubois",
+							"E. Rossi",
+							"T. Tanaka",
+							"S. Ivanova",
+							"R. García",
+						],
+						pres: 2,
+						cancelled: true,
+					},
+					{
+						t: "11:00",
+						title: "Sputtered TiO2 films for photocatalysis",
+						authors: ["B. Lewandowska"],
+						pres: 0,
+					},
+				];
+				const sess = `<div class="sess"><div class="sh"><span class="code">${s.code}</span> ${s.title}</div>
+    <div class="meta">${fmt(s.start)}–${fmt(s.end)} · ${s.room.name} · Track: ${s.track.name} · Chairs: A. Nowak, P. Dubois</div>
+    ${slots
+			.map(
+				(
+					x,
+				) => `<div class="slot ${x.cancelled ? "cancel" : ""}"><div class="t">${x.t}</div><div>
+      <span class="title">${x.title}</span>${x.badge ? `<span class="badge">${x.badge}</span>` : ""}${x.invited ? `<span class="badge">Invited</span>` : ""}<br>
+      ${x.authors.map((a, i) => (i === x.pres ? `<span class="pres">${a}</span>` : a)).join(", ")}</div></div>`,
+			)
+			.join("")}</div>`;
+				const posters = `<div class="sess"><div class="sh"><span class="code">2A3</span> Poster Session I</div>
+    <div class="meta">15:00–16:30 · Aula Magna</div>
+    ${["Porous scaffolds from PCL", "DFT study of Li diffusion", "Wear of DLC coatings"].map((t, i) => `<div class="slot"><div class="t">P${i + 1}</div><div><span class="title">${t}</span><br><span class="pres">J. Kowalski</span>, A. Nowak</div></div>`).join("")}</div>`;
+				return pageEl(
+					{ ...b, pt },
+					`<h1 class="day">Tuesday, 9 June — Detailed program</h1>${sess}${sess.replaceAll(s.code, s.code.slice(0, -1) + "2")}${posters}`,
+					`Detailed program (${state.book} portrait, ${pt} pt)`,
+				);
+			}
+
+			function render() {
+				const n = Number(state.n);
+				const day = buildDay(n);
+				const layout = chooseLayout(n);
+				const book = PAGE[state.book];
+				const usable = (w) => w - 30;
+				let html = "",
+					info = {};
+				if (layout === "columns") {
+					const p = gridPage(layout, n);
+					const colMm = (usable(p.w) - 15) / n;
+					const pt = typeFor(colMm);
+					info = { page: `${state.book} ${p.o}`, colMm: colMm.toFixed(1), pt };
+					html = pageEl(
+						{ ...p, pt },
+						`<h1 class="day">Tuesday, 9 June — At a glance</h1>${columnsTable(day, day.rooms, colMm)}${legend()}`,
+						`At a glance · rooms as columns`,
+					);
+				} else if (layout === "spread") {
+					const half = Math.ceil(n / 2);
+					const colMm = (usable(book.w) - 15) / half;
+					const pt = typeFor(colMm);
+					info = {
+						page: `2 × ${state.book} portrait (facing pages)`,
+						colMm: colMm.toFixed(1),
+						pt,
+					};
+					const left = pageEl(
+						{ ...book, pt },
+						`<h1 class="day">Tuesday, 9 June — At a glance (rooms A–${LETTERS[half - 1]})</h1>${columnsTable(day, day.rooms.slice(0, half), colMm)}`,
+						"Left (even) page",
+					);
+					const right = pageEl(
+						{ ...book, pt },
+						`<h1 class="day">(rooms ${LETTERS[half]}–${LETTERS[n - 1]})</h1>${columnsTable(day, day.rooms.slice(half), colMm)}${legend()}`,
+						"Right (odd) page",
+					);
+					html = `<div class="spread">${left}${right}</div>`;
+				} else if (layout === "transposed") {
+					const pt = 7;
+					info = {
+						page: `${state.book} portrait, rows paginate`,
+						colMm: "n/a",
+						pt,
+					};
+					html = pageEl(
+						{ ...book, pt },
+						`<h1 class="day">Tuesday, 9 June — At a glance</h1>${transposedTable(day)}${legend()}`,
+						"At a glance · transposed (rooms as rows)",
+					);
+				} else {
+					const pt = state.book === "A4" ? 8 : 7;
+					info = {
+						page: `${state.book} portrait, list paginates`,
+						colMm: "n/a",
+						pt,
+					};
+					html = pageEl(
+						{ ...book, pt },
+						`<h1 class="day">Tuesday, 9 June — At a glance</h1>${blockList(day)}`,
+						"At a glance · per-time-block list",
+					);
+				}
+				html += detailPage(day);
+				const canvas = document.getElementById("canvas");
+				canvas.innerHTML = html;
+				canvas.classList.toggle("grayscale", state.bw === "yes");
+				const overflows = [...canvas.querySelectorAll(".page")].filter(
+					(p) =>
+						p.scrollHeight > p.clientHeight + 1 ||
+						p.scrollWidth > p.clientWidth + 1,
+				);
+				overflows.forEach((p) => p.classList.add("overflow"));
+				document.getElementById("state").textContent = JSON.stringify(
+					{
+						...state,
+						N: n,
+						chosenLayout: layout,
+						gridPage: info.page,
+						roomColumnMm: info.colMm,
+						typePt: info.pt,
+						sessions: day.sessions.length,
+						timeRows: day.intervals.length,
+						overflowingPages: overflows.length,
+					},
+					null,
+					0,
+				).replaceAll(",", ", ");
+			}
+
+			function renderBar() {
+				document.getElementById("bar").innerHTML = Object.entries(OPTS)
+					.map(
+						([k, o]) =>
+							`<label>${o.label}: ${o.values.map((v) => `<button data-k="${k}" data-v="${v}" class="${state[k] === v ? "on" : ""}">${v}</button>`).join("")}</label>`,
+					)
+					.join("");
+			}
+			document.getElementById("bar").addEventListener("click", (e) => {
+				const b = e.target.closest("button");
+				if (!b) return;
+				state[b.dataset.k] = b.dataset.v;
+				history.replaceState(null, "", `?${new URLSearchParams(state)}`);
+				renderBar();
+				render();
+			});
+			renderBar();
+			render();
+		</script>
+	</body>
+</html>
