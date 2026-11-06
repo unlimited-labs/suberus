@@ -51,7 +51,9 @@ function PrintExportPage() {
 		includeCancelled,
 	});
 	const doc = useDeferredValue(
-		buildPrintDocument(program, exporter.options, data.logo),
+		format === "xlsx"
+			? null
+			: buildPrintDocument(program, exporter.options, data.logo),
 	);
 	const sheets = useDeferredValue(
 		format === "xlsx" ? buildXlsxSheets(program, exporter.options) : [],
@@ -85,7 +87,7 @@ function PrintExportPage() {
 					{format === "xlsx" ? (
 						<SheetPreview sheets={sheets} />
 					) : (
-						<PrintPreview doc={doc} />
+						doc && <PrintPreview doc={doc} />
 					)}
 				</section>
 			</div>

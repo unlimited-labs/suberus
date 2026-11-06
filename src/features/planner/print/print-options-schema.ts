@@ -3,24 +3,26 @@ import { z } from "zod";
 export const PRINT_FORMATS = ["docx", "idml", "xlsx"] as const;
 export const PRINT_PARTS = ["title", "glance", "detailed", "index"] as const;
 export const BOOK_SIZES = ["A4", "B5", "A5"] as const;
-export const GLANCE_LAYOUTS = [
-	"columns",
-	"spread",
-	"transposed",
-	"list",
-] as const;
+const GLANCE_LAYOUTS = ["columns", "spread", "transposed", "list"] as const;
 export const PRINT_LANGUAGES = ["en", "pl"] as const;
 
 export type PrintFormat = (typeof PRINT_FORMATS)[number];
+
+export type PrintPart = (typeof PRINT_PARTS)[number];
+export type GlanceLayout = (typeof GLANCE_LAYOUTS)[number];
+export type PrintLanguage = (typeof PRINT_LANGUAGES)[number];
+
+export const FORMAT_META = {
+	docx: { label: "Word", hint: "Ready booklet, lightly editable" },
+	idml: { label: "InDesign", hint: "Handoff to a designer" },
+	xlsx: { label: "Excel", hint: "Raw data, one sheet per day" },
+} satisfies Record<PrintFormat, { label: string; hint: string }>;
 
 export const IDML_UNAVAILABLE =
 	"InDesign export needs the document service (DOCX_API_URL).";
 
 export const printFileName = (format: PrintFormat, draft: boolean) =>
 	`program${draft ? "-DRAFT" : ""}.${format}`;
-export type PrintPart = (typeof PRINT_PARTS)[number];
-export type GlanceLayout = (typeof GLANCE_LAYOUTS)[number];
-export type PrintLanguage = (typeof PRINT_LANGUAGES)[number];
 
 export const printOptionsSchema = z
 	.object({

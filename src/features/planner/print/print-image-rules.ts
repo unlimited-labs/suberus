@@ -1,4 +1,4 @@
-export interface PrintImageInfo {
+interface PrintImageInfo {
 	mime: "image/png" | "image/jpeg";
 	width: number;
 	height: number;

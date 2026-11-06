@@ -8,6 +8,7 @@ import {
 	type PrintTable,
 } from "./print-document-schema";
 import type { DayGrid } from "./print-grid-rules";
+import { byAt, groupBy } from "./print-grid-rules";
 import { PRINT_LABELS, type PrintLabels } from "./print-labels";
 import type { GlanceLayout, PrintOptions } from "./print-options-schema";
 import type {
@@ -15,11 +16,9 @@ import type {
 	PrintProgram,
 	PrintSession,
 } from "./print-program-rules";
-import { byAt, groupBy } from "./print-program-rules";
 
 type BookSize = PrintOptions["bookSize"];
 type Orientation = PrintSection["page"]["orientation"];
-type Labels = PrintLabels;
 
 const GLANCE_LIMITS = {
 	A4: { landscapeFrom: 5, maxColumns: 8, maxSpread: 14 },
@@ -38,6 +37,11 @@ export const PAGE_MM = {
 export const MARGIN_MM = 15;
 export const FOOTER_MM = 10;
 export const PX_PER_MM = 3.7795;
+
+export function contentSizeMm(page: PrintSection["page"]): [number, number] {
+	const [w, h] = pageSizeMm(page);
+	return [w - 2 * MARGIN_MM, h - 2 * MARGIN_MM - FOOTER_MM];
+}
 
 export function pageSizeMm(page: PrintSection["page"]): [number, number] {
 	const [w, h] = PAGE_MM[page.size];
@@ -157,7 +161,7 @@ function cellParagraph(
 
 function columnsTable(
 	grid: DayGrid,
-	l: Labels,
+	l: PrintLabels,
 	colorOn: boolean,
 	from = 0,
 	to = grid.columns.length,
@@ -207,7 +211,7 @@ function columnsTable(
 
 function transposedTable(
 	grid: DayGrid,
-	l: Labels,
+	l: PrintLabels,
 	colorOn: boolean,
 ): PrintTable {
 	const header: TableCellInput[] = [
@@ -308,7 +312,7 @@ function section(
 function glanceSections(
 	program: PrintProgram,
 	options: PrintOptions,
-	l: Labels,
+	l: PrintLabels,
 	swatches: PrintDocument["swatches"],
 ): PrintSection[] {
 	return program.days.flatMap((day, i): PrintSection[] => {
@@ -349,7 +353,7 @@ function glanceSections(
 	});
 }
 
-function sessionBlocks(s: PrintSession, l: Labels): PrintParagraph[] {
+function sessionBlocks(s: PrintSession, l: PrintLabels): PrintParagraph[] {
 	const meta = [s.timeLabel, s.room, s.track?.name].filter(Boolean).join(" · ");
 	const chairs =
 		s.chairs.length > 0
@@ -387,7 +391,7 @@ function sessionBlocks(s: PrintSession, l: Labels): PrintParagraph[] {
 	];
 }
 
-function dayBlocks(day: PrintDay, l: Labels): PrintParagraph[] {
+function dayBlocks(day: PrintDay, l: PrintLabels): PrintParagraph[] {
 	const entries = [
 		...day.sessions.map((s) => ({
 			at: s.startAt,
@@ -412,7 +416,7 @@ function dayBlocks(day: PrintDay, l: Labels): PrintParagraph[] {
 	];
 }
 
-function indexBlocks(program: PrintProgram, l: Labels): PrintParagraph[] {
+function indexBlocks(program: PrintProgram, l: PrintLabels): PrintParagraph[] {
 	let letter = "";
 	return [
 		para("PartHeading", run(l.parts.index)),

@@ -1,4 +1,5 @@
 import type { XlsxCell, XlsxSheetSpec } from "@/shared/lib/xlsx-types";
+import { byAt } from "./print-grid-rules";
 import {
 	capitalizeFirst,
 	PRINT_LABELS,
@@ -13,7 +14,6 @@ import type {
 	PrintSession,
 	PrintSlot,
 } from "./print-program-rules";
-import { byAt } from "./print-program-rules";
 
 const SHEET_NAME_FORBIDDEN = /[[\]:*?/\\]/g;
 
@@ -117,8 +117,8 @@ function dayRows(
 function programSheet(
 	program: PrintProgram,
 	options: PrintOptions,
+	l: PrintLabels,
 ): XlsxSheetSpec {
-	const l = PRINT_LABELS[options.language];
 	const weekdayFormat = new Intl.DateTimeFormat(
 		PRINT_LOCALE[options.language],
 		{
@@ -187,11 +187,7 @@ function gridSheet(
 	};
 }
 
-function authorsSheet(
-	program: PrintProgram,
-	options: PrintOptions,
-): XlsxSheetSpec {
-	const l = PRINT_LABELS[options.language];
+function authorsSheet(program: PrintProgram, l: PrintLabels): XlsxSheetSpec {
 	const a = l.authorColumns;
 	const rows: XlsxCell[][] = [
 		[a.lastName, a.firstName, a.sessionCode, a.role, a.slotTitle],
@@ -214,6 +210,7 @@ function authorsSheet(
 function gridSheets(
 	program: PrintProgram,
 	options: PrintOptions,
+	l: PrintLabels,
 ): XlsxSheetSpec[] {
 	const short = new Intl.DateTimeFormat(PRINT_LOCALE[options.language], {
 		timeZone: "UTC",
@@ -221,22 +218,21 @@ function gridSheets(
 		day: "numeric",
 		month: "short",
 	});
-	return program.days.map((d) =>
-		gridSheet(d, PRINT_LABELS[options.language], short),
-	);
+	return program.days.map((d) => gridSheet(d, l, short));
 }
 
 export function buildXlsxSheets(
 	program: PrintProgram,
 	options: PrintOptions,
 ): XlsxSheetSpec[] {
+	const l = PRINT_LABELS[options.language];
 	return [
 		...(options.parts.includes("detailed")
-			? [programSheet(program, options)]
+			? [programSheet(program, options, l)]
 			: []),
-		...(options.parts.includes("glance") ? gridSheets(program, options) : []),
-		...(options.parts.includes("index")
-			? [authorsSheet(program, options)]
+		...(options.parts.includes("glance")
+			? gridSheets(program, options, l)
 			: []),
+		...(options.parts.includes("index") ? [authorsSheet(program, l)] : []),
 	];
 }

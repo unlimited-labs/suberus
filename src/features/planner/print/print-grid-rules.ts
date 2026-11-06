@@ -1,4 +1,4 @@
-export interface GridColumn {
+interface GridColumn {
 	room: string;
 	lane: number;
 	lanes: number;
@@ -25,7 +25,7 @@ export interface GridEntry {
 	start: number;
 	end: number;
 	roomId: string | null;
-	band: boolean;
+	session: boolean;
 	code: string | null;
 	title: string;
 	trackColor: string | null;
@@ -34,16 +34,28 @@ export interface GridEntry {
 const overlaps = (a: GridEntry, b: GridEntry) =>
 	a.start < b.end && a.end > b.start;
 
+export const byAt = (a: { at: string }, b: { at: string }) =>
+	a.at < b.at ? -1 : a.at > b.at ? 1 : 0;
+
+export function groupBy<T, K>(
+	list: readonly T[],
+	key: (item: T) => K,
+): Map<K, T[]> {
+	const groups = new Map<K, T[]>();
+	for (const item of list) {
+		const k = key(item);
+		const group = groups.get(k) ?? [];
+		group.push(item);
+		groups.set(k, group);
+	}
+	return groups;
+}
+
 function assignLanes(
 	entries: GridEntry[],
 	roomOrder: (id: string | null) => number,
 ) {
-	const byRoom = new Map<string | null, GridEntry[]>();
-	for (const e of entries) {
-		const list = byRoom.get(e.roomId) ?? [];
-		list.push(e);
-		byRoom.set(e.roomId, list);
-	}
+	const byRoom = groupBy(entries, (e) => e.roomId);
 	const rooms = [...byRoom.keys()].toSorted(
 		(a, b) => roomOrder(a) - roomOrder(b),
 	);
@@ -70,12 +82,11 @@ export function buildGrid(
 	roomName: (id: string | null) => string,
 	roomOrder: (id: string | null) => number,
 ): DayGrid {
-	const sessionsOnly = entries.filter((e) => !e.band);
-	const marked = entries.map((e) =>
-		e.band
-			? e
-			: { ...e, band: !sessionsOnly.some((o) => o !== e && overlaps(o, e)) },
-	);
+	const sessions = entries.filter((e) => e.session);
+	const marked = entries.map((e) => ({
+		...e,
+		band: !sessions.some((o) => o !== e && overlaps(o, e)),
+	}));
 	const { rooms, laneOf, laneCount } = assignLanes(
 		marked.filter((e) => !e.band),
 		roomOrder,
