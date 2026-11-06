@@ -14,12 +14,6 @@ import { getErrorMessage } from "@/shared/lib/error-message";
 
 const errorBody = z.object({ error: z.string() });
 
-export const FORMAT_META = {
-	docx: { label: "Word", hint: "Ready booklet, lightly editable" },
-	idml: { label: "InDesign", hint: "Handoff to a designer" },
-	xlsx: { label: "Excel", hint: "Raw data, one sheet per day" },
-} satisfies Record<PrintFormat, { label: string; hint: string }>;
-
 interface ExportContext {
 	format: PrintFormat;
 	initialOptions: PrintOptions;

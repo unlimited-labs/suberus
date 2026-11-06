@@ -1,4 +1,4 @@
-export interface CodableSession {
+interface CodableSession {
 	id: string;
 	dayIndex: number;
 	roomId: string | null;

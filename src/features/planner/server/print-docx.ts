@@ -28,8 +28,8 @@ import {
 	FOOTER_MM,
 	MARGIN_MM,
 	PAGE_MM,
-	pageSizeMm,
 	PX_PER_MM,
+	contentSizeMm,
 	coveredCells,
 } from "@/features/planner/print/print-document-rules";
 import type {
@@ -155,7 +155,7 @@ function paragraph(p: PrintParagraph): Paragraph {
 }
 
 function contentWidthMm(section: PrintSection): number {
-	return pageSizeMm(section.page)[0] - 2 * MARGIN_MM;
+	return contentSizeMm(section.page)[0];
 }
 
 function tableCell(cell: PrintTable["cells"][number] | undefined): TableCell {

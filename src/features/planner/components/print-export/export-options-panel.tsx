@@ -2,6 +2,7 @@ import { IconAlertTriangle, IconDownload } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import {
 	BOOK_SIZES,
+	FORMAT_META,
 	PRINT_FORMATS,
 	PRINT_PARTS,
 	type PrintFormat,
@@ -14,7 +15,6 @@ import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Label } from "@/shared/ui/label";
 import { SegmentedControl } from "./segmented-control";
-import { FORMAT_META } from "./use-print-export";
 
 const PART_LABELS = {
 	title: "Title & contents",

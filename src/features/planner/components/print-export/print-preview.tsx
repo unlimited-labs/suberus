@@ -5,7 +5,7 @@ import {
 	paginate,
 } from "@/features/planner/print/paginate-rules";
 import {
-	FOOTER_MM,
+	contentSizeMm,
 	MARGIN_MM,
 	pageSizeMm,
 	PX_PER_MM,
@@ -75,12 +75,12 @@ function MeasureLayer({
 			...el.querySelectorAll<HTMLElement>(":scope > [data-section]"),
 		].map((node, i) => {
 			const section = doc.sections[i];
-			const [, h] = section ? pageSizeMm(section.page) : [0, 297];
+			const [, h] = section ? contentSizeMm(section.page) : [0, 0];
 			return {
 				start: section?.start ?? "nextPage",
 				columns: section?.columns ?? 1,
 				blocks: measureSection(node),
-				pageHeight: (h - 2 * MARGIN_MM - FOOTER_MM) * mm,
+				pageHeight: h * mm,
 			};
 		});
 		onMeasured(paginate(sections));
@@ -94,13 +94,13 @@ function MeasureLayer({
 			<div ref={ruler} style={{ height: "1000mm" }} />
 			<div ref={root}>
 				{doc.sections.map((section, si) => {
-					const [w] = pageSizeMm(section.page);
+					const [w] = contentSizeMm(section.page);
 					return (
 						<div
 							className={cn(section.columns === 2 && "columns-2 gap-[6mm]")}
 							data-section={si}
 							key={`${si}-${section.blocks.length}`}
-							style={{ width: `${w - 2 * MARGIN_MM}mm` }}
+							style={{ width: `${w}mm` }}
 						>
 							{section.blocks.map((block, bi) => (
 								<div
@@ -180,7 +180,10 @@ function Sheet({ doc, page, number, toc, width }: SheetProps) {
 							) : null;
 						})}
 					</div>
-					<div className="absolute inset-x-[15mm] bottom-[8mm] flex justify-between text-[7pt] opacity-60">
+					<div
+						className="absolute bottom-[8mm] flex justify-between text-[7pt] opacity-60"
+						style={{ left: `${MARGIN_MM}mm`, right: `${MARGIN_MM}mm` }}
+					>
 						<span>{section.footer}</span>
 						<span>{number}</span>
 					</div>

@@ -32,8 +32,6 @@ export interface PrintFile {
 
 export class PrintFormatUnavailableError extends Error {}
 
-type Logo = PrintLogo | null;
-
 const RENDERERS = {
 	xlsx: async (program, options) =>
 		writeXlsxWorkbook(
@@ -49,7 +47,11 @@ const RENDERERS = {
 	},
 } satisfies Record<
 	PrintFormat,
-	(program: PrintProgram, options: PrintOptions, logo: Logo) => Promise<Buffer>
+	(
+		program: PrintProgram,
+		options: PrintOptions,
+		logo: PrintLogo | null,
+	) => Promise<Buffer>
 >;
 
 const usesLogo = (format: PrintFormat, options: PrintOptions) =>

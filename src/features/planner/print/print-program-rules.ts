@@ -3,7 +3,12 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { zonedDateString } from "@/shared/lib/zoned";
-import { buildGrid, type DayGrid, type GridEntry } from "./print-grid-rules";
+import {
+	buildGrid,
+	type DayGrid,
+	type GridEntry,
+	groupBy,
+} from "./print-grid-rules";
 import {
 	capitalizeFirst,
 	PRINT_LABELS,
@@ -13,18 +18,15 @@ import {
 import type { PrintLanguage, PrintOptions } from "./print-options-schema";
 import { assignSessionCodes } from "./session-code-rules";
 
-export type ProgramOptions = Pick<
-	PrintOptions,
-	"language" | "includeCancelled"
->;
+type ProgramOptions = Pick<PrintOptions, "language" | "includeCancelled">;
 
-export interface SourceRoom {
+interface SourceRoom {
 	id: string;
 	name: string;
 	order: number;
 }
 
-export interface SourcePerson {
+interface SourcePerson {
 	userId: string | null;
 	email: string;
 	firstName: string | null;
@@ -67,7 +69,7 @@ export interface SourceSession {
 	slots: SourceSlot[];
 }
 
-export interface SourceItem {
+interface SourceItem {
 	id: string;
 	kind: ScheduleItemKind;
 	title: string;
@@ -120,7 +122,7 @@ export interface PrintSession {
 	slots: PrintSlot[];
 }
 
-export interface PrintItem {
+interface PrintItem {
 	kind: ScheduleItemKind;
 	title: string;
 	startAt: string;
@@ -210,23 +212,6 @@ function datesLabel(src: PrintSource, language: PrintLanguage): string {
 		utcDate(src.startDate),
 		utcDate(src.endDate || src.startDate),
 	);
-}
-
-export const byAt = (a: { at: string }, b: { at: string }) =>
-	a.at < b.at ? -1 : a.at > b.at ? 1 : 0;
-
-export function groupBy<T, K>(
-	list: readonly T[],
-	key: (item: T) => K,
-): Map<K, T[]> {
-	const groups = new Map<K, T[]>();
-	for (const item of list) {
-		const k = key(item);
-		const group = groups.get(k) ?? [];
-		group.push(item);
-		groups.set(k, group);
-	}
-	return groups;
 }
 
 function isPresenting(slot: SourceSlot, a: SourceAuthor): boolean {
@@ -371,13 +356,13 @@ export function buildPrintProgram(
 	const collator = new Intl.Collator(PRINT_LOCALE[options.language]);
 	const roomName = (id: string | null) =>
 		(id ? roomsById.get(id)?.name : undefined) ?? labels.noRoom;
-	const roomOrder = (id: string | null) =>
-		(id ? roomRank.get(id) : undefined) ?? Number.MAX_SAFE_INTEGER;
 	const roomRank = new Map(
 		src.rooms
-			.toSorted((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+			.toSorted((a, b) => a.order - b.order || collator.compare(a.name, b.name))
 			.map((r, i) => [r.id, i]),
 	);
+	const roomOrder = (id: string | null) =>
+		(id ? roomRank.get(id) : undefined) ?? Number.MAX_SAFE_INTEGER;
 
 	const keyOf = new Map(
 		[...src.sessions, ...src.items].map((x) => [x, f.dayKey(x.startAt)]),
@@ -416,7 +401,7 @@ export function buildPrintProgram(
 				start: s.startAt.getTime(),
 				end: s.endAt.getTime(),
 				roomId: s.roomId,
-				band: false,
+				session: true,
 				code: codes.get(s.id) ?? null,
 				title: s.title,
 				trackColor: s.track?.color ?? null,
@@ -425,9 +410,7 @@ export function buildPrintProgram(
 				start: x.startAt.getTime(),
 				end: x.endAt.getTime(),
 				roomId: x.roomId,
-				band: !daySessions.some(
-					(s) => s.startAt < x.endAt && s.endAt > x.startAt,
-				),
+				session: false,
 				code: null,
 				title: x.title,
 				trackColor: null,
@@ -449,7 +432,7 @@ export function buildPrintProgram(
 					timeLabel: `${start}–${end}`,
 					start,
 					end,
-					room: s.roomId ? (roomsById.get(s.roomId)?.name ?? null) : null,
+					room: s.roomId ? roomName(s.roomId) : null,
 					track: s.track,
 					chairs: s.chairs.map(shortName),
 					slots: buildSlots(s, f, options, badgeLabels),

@@ -1,6 +1,9 @@
 import { IconChevronDown, IconFileExport } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { PRINT_FORMATS } from "@/features/planner/print/print-options-schema";
+import {
+	FORMAT_META,
+	PRINT_FORMATS,
+} from "@/features/planner/print/print-options-schema";
 import { Button } from "@/shared/ui/button";
 import {
 	DropdownMenu,
@@ -10,7 +13,6 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { FORMAT_META } from "./use-print-export";
 
 export function ExportMenu() {
 	const navigate = useNavigate();
