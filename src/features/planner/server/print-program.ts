@@ -1,0 +1,120 @@
+import {
+	type PrintOptions,
+	printOptionsSchema,
+} from "@/features/planner/print/print-options-schema";
+import type { PrintSource } from "@/features/planner/print/print-program-rules";
+import {
+	getSetting,
+	getSettings,
+	setSetting,
+} from "@/features/settings/server/settings";
+import { prisma } from "@/shared/server/db.server";
+
+const personSelect = {
+	id: true,
+	firstName: true,
+	lastName: true,
+	email: true,
+} as const;
+
+export async function loadPrintSource(): Promise<PrintSource> {
+	const [settings, rooms, sessions, items] = await Promise.all([
+		getSettings([
+			"CONFERENCE_NAME",
+			"CONFERENCE_DATE_START",
+			"CONFERENCE_DATE_END",
+			"CONFERENCE_TIMEZONE",
+			"TIME_FORMAT",
+			"SCHEDULE_STATE",
+			"PROGRAM_BADGES",
+		]),
+		prisma.room.findMany({ select: { id: true, name: true, order: true } }),
+		prisma.programSession.findMany({
+			include: {
+				track: { select: { name: true, color: true } },
+				chairs: { include: { user: { select: personSelect } } },
+				presentations: {
+					include: {
+						submission: {
+							select: {
+								id: true,
+								sequentialNumber: true,
+								title: true,
+								type: true,
+								presenterId: true,
+								authors: {
+									select: {
+										id: true,
+										userId: true,
+										email: true,
+										firstName: true,
+										lastName: true,
+										orderIndex: true,
+										isPresenter: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}),
+		prisma.scheduleBreak.findMany(),
+	]);
+
+	return {
+		conferenceName: settings.CONFERENCE_NAME,
+		startDate: settings.CONFERENCE_DATE_START,
+		endDate: settings.CONFERENCE_DATE_END,
+		timeZone: settings.CONFERENCE_TIMEZONE || "UTC",
+		timeFormat: settings.TIME_FORMAT,
+		draft: settings.SCHEDULE_STATE.status !== "PUBLISHED",
+		rooms,
+		badges: settings.PROGRAM_BADGES.map((b) => ({ id: b.id, label: b.label })),
+		sessions: sessions.map((s) => ({
+			id: s.id,
+			title: s.title,
+			startAt: s.startAt,
+			endAt: s.endAt,
+			untimedSlots: s.untimedSlots,
+			roomId: s.roomId,
+			track: s.track,
+			chairs: s.chairs.map(({ user }) => ({
+				userId: user.id,
+				email: user.email,
+				firstName: user.firstName,
+				lastName: user.lastName,
+			})),
+			slots: s.presentations.map((p) => ({
+				id: p.id,
+				order: p.order,
+				durationMin: p.durationMin,
+				cancelled: p.cancelled,
+				badgeId: p.badgeId,
+				submission: p.submission,
+			})),
+		})),
+		items: items.map((x) => ({
+			id: x.id,
+			kind: x.kind,
+			title: x.title,
+			description: x.description,
+			location: x.location,
+			roomId: x.roomId,
+			startAt: x.startAt,
+			endAt: x.endAt,
+		})),
+	};
+}
+
+export async function getPrintOptions(): Promise<PrintOptions> {
+	// A setting saved by an older schema falls back to defaults; it only pre-fills the export page.
+	const parsed = printOptionsSchema.safeParse(
+		await getSetting("PRINT_EXPORT_OPTIONS"),
+	);
+	return parsed.success ? parsed.data : printOptionsSchema.parse({});
+}
+
+export async function savePrintOptions(options: PrintOptions): Promise<void> {
+	await setSetting("PRINT_EXPORT_OPTIONS", options);
+}
