@@ -19,13 +19,13 @@ const SHEET_NAME_FORBIDDEN = /[[\]:*?/\\]/g;
 
 const utcDate = (isoDate: string) => new Date(`${isoDate}T00:00:00Z`);
 
+const cellLength = (cell: XlsxCell) =>
+	cell instanceof Date ? 10 : String(cell ?? "").length;
+
 function widths(rows: XlsxCell[][]): number[] {
 	const cols = Math.max(0, ...rows.map((r) => r.length));
 	return Array.from({ length: cols }, (_, c) =>
-		Math.min(
-			60,
-			Math.max(6, ...rows.map((r) => String(r[c] ?? "").length + 2)),
-		),
+		Math.min(60, Math.max(6, ...rows.map((r) => cellLength(r[c]) + 2))),
 	);
 }
 

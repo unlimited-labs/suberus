@@ -1,0 +1,81 @@
+---
+title: Printed program export
+description: Download the conference program as an Excel workbook, a Word booklet or an InDesign package for a designer — with a live page preview and options that are remembered.
+sidebar:
+  label: Printed program
+  order: 6
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Turn the schedule into an offline document: a **Word** booklet you can print as is, an
+**InDesign** (IDML) package to hand to a designer, or an **Excel** workbook with the raw
+data. All three are built from the same program, so session codes and times match
+everywhere.
+
+<Aside type="note" title="Where to find it">
+The **Export ▾** button in the planner header, next to **Publish**. Pick a format to open
+the export page.
+</Aside>
+
+🖼️ [Screenshot placeholder: export page with the options panel and the page preview]
+
+## How to export
+
+<Steps>
+
+1. In the planner header, open **Export ▾** and choose **Word**, **InDesign** or **Excel**.
+
+2. Set the options in the left panel (see the table below). The preview on the right
+   updates as you change them; scroll it to see further pages — the counter at the top
+   shows the current page.
+
+3. Check the **schedule issues** box, if shown. Export still works, but the file prints
+   the schedule exactly as it is.
+
+4. Click **Download**. The options you used are saved and pre-filled next time.
+
+</Steps>
+
+<Aside type="caution" title="Draft programs">
+Until the schedule is **Published**, files are marked as drafts: the file name ends in
+`-DRAFT`, Word and the preview show a diagonal **DRAFT** watermark, and InDesign puts
+the mark on its own layer (**Draft mark**) behind the content so a designer can hide it.
+</Aside>
+
+## Options
+
+| Option | What it does | Excel |
+|---|---|---|
+| **Format** | Word (`.docx`), InDesign (`.idml`) or Excel (`.xlsx`). | — |
+| **Include** | Which parts go into the file: *Title & contents*, *Program at a glance*, *Detailed program*, *Author index*, and the conference *Logo*. At least *Program at a glance* or *Detailed program* must stay on. | Parts become sheets; title and logo are not used |
+| **Book size** | Page size of the booklet: A4, B5 or A5. | Not used |
+| **At-a-glance layout** | *Auto* picks a layout per day from the number of rooms: rooms as columns (landscape from 5 rooms on A4, 4 on A5), a two-page spread, or a transposed grid for very many rooms. Pick one to use it for every day; *List* prints a time-block list instead of a grid. | Always rooms as columns |
+| **Track colour** | Adds a coloured bar to each session in the grid and a legend. | Not used |
+| **Cancelled talks** | *Hide* leaves cancelled talks out; *Include* prints them struck through. | Adds a *Cancelled* column |
+| **Labels language** | Language of fixed labels (Room, Chair, weekdays, headings, column names). Titles and names are printed as entered. | Column and sheet names |
+
+<Aside type="note" title="Logo">
+The logo comes from **Settings › Branding**. Only PNG and JPEG logos can be printed; with
+another format the *Logo* box is disabled.
+</Aside>
+
+## What each format contains
+
+| Format | Contents |
+|---|---|
+| **Word** | Title and contents (with page numbers), *Program at a glance* grids, *Detailed program* day by day, *Author index* in two columns. Named paragraph and character styles (e.g. *SessionHeading*, *Presenter*) so you can restyle the whole booklet at once. |
+| **InDesign** | The same parts as threaded stories with named paragraph, character, table and cell styles, one swatch per track (*Track: name*) and a ready **Program TOC** style — run *Layout › Table of Contents* to build the contents. InDesign adds pages as text flows. |
+| **Excel** | *Program* (one row per talk, empty session or break, with filters), one grid sheet per day, and *Authors* (one row per appearance: author, presenter or chair). |
+
+<Aside type="caution" title="InDesign needs the document service">
+InDesign export runs in the document service (`DOCX_API_URL`). Without it the
+*InDesign* format is disabled with a reason on the export page.
+</Aside>
+
+## Session codes
+
+Every session gets a short code such as `2B3` — day 2, room B, third session in that
+room that day. Rooms are lettered in their planner order (`X` is used for sessions
+without a room). Codes link the grid, the detailed program and the author index, where
+**bold** codes mark a person's presenting talks.
