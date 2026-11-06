@@ -1,4 +1,4 @@
-import type { XlsxCell, XlsxSheetSpec } from "@/shared/server/xlsx-write";
+import type { XlsxCell, XlsxSheetSpec } from "@/shared/lib/xlsx-types";
 import {
 	capitalizeFirst,
 	PRINT_LABELS,
@@ -13,17 +13,20 @@ import type {
 	PrintSession,
 	PrintSlot,
 } from "./print-program-rules";
+import { byAt } from "./print-program-rules";
 
 const SHEET_NAME_FORBIDDEN = /[[\]:*?/\\]/g;
 
 const cellLength = (cell: XlsxCell) =>
 	cell instanceof Date ? 10 : String(cell ?? "").length;
 
-function widths(rows: XlsxCell[][]): number[] {
-	const cols = Math.max(0, ...rows.map((r) => r.length));
-	return Array.from({ length: cols }, (_, c) =>
-		Math.min(60, Math.max(6, ...rows.map((r) => cellLength(r[c]) + 2))),
-	);
+function widths(rows: XlsxCell[][], max = 60): number[] {
+	const w: number[] = [];
+	for (const row of rows)
+		row.forEach((cell, c) => {
+			w[c] = Math.max(w[c] ?? 6, cellLength(cell) + 2);
+		});
+	return w.map((x) => Math.min(max, x ?? 6));
 }
 
 type ColumnKey = keyof PrintLabels["columns"];
@@ -130,7 +133,7 @@ function programSheet(
 		: PROGRAM_COLUMNS;
 	const body = program.days
 		.flatMap((d) => dayRows(d, l, weekday))
-		.toSorted((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
+		.toSorted(byAt)
 		.map(({ row }) => columns.map((key) => row[key] ?? ""));
 	const all = [columns.map((key) => l.columns[key]), ...body];
 	return {
@@ -141,15 +144,12 @@ function programSheet(
 	};
 }
 
-function gridSheet(day: PrintDay, options: PrintOptions): XlsxSheetSpec {
+function gridSheet(
+	day: PrintDay,
+	l: PrintLabels,
+	short: Intl.DateTimeFormat,
+): XlsxSheetSpec {
 	const grid = day.grid;
-	const l = PRINT_LABELS[options.language];
-	const short = new Intl.DateTimeFormat(PRINT_LOCALE[options.language], {
-		timeZone: "UTC",
-		weekday: "short",
-		day: "numeric",
-		month: "short",
-	});
 	const name = `D${day.index} ${short.format(utcDate(day.date))}`
 		.replace(SHEET_NAME_FORBIDDEN, "")
 		.slice(0, 31);
@@ -158,7 +158,7 @@ function gridSheet(day: PrintDay, options: PrintOptions): XlsxSheetSpec {
 		...grid.columns.map((col) => (col.lane === 1 ? col.room : null)),
 	];
 	const body: XlsxCell[][] = grid.rows.map((r) => [
-		`${r.start}–${r.end}`,
+		r,
 		...grid.columns.map((): XlsxCell => null),
 	]);
 	const merges: XlsxSheetSpec["merges"] = [];
@@ -183,7 +183,7 @@ function gridSheet(day: PrintDay, options: PrintOptions): XlsxSheetSpec {
 		name,
 		rows,
 		merges,
-		widths: widths(rows).map((w) => Math.min(w, 40)),
+		widths: widths(rows, 40),
 	};
 }
 
@@ -211,6 +211,21 @@ function authorsSheet(
 	};
 }
 
+function gridSheets(
+	program: PrintProgram,
+	options: PrintOptions,
+): XlsxSheetSpec[] {
+	const short = new Intl.DateTimeFormat(PRINT_LOCALE[options.language], {
+		timeZone: "UTC",
+		weekday: "short",
+		day: "numeric",
+		month: "short",
+	});
+	return program.days.map((d) =>
+		gridSheet(d, PRINT_LABELS[options.language], short),
+	);
+}
+
 export function buildXlsxSheets(
 	program: PrintProgram,
 	options: PrintOptions,
@@ -219,9 +234,7 @@ export function buildXlsxSheets(
 		...(options.parts.includes("detailed")
 			? [programSheet(program, options)]
 			: []),
-		...(options.parts.includes("glance")
-			? program.days.map((d) => gridSheet(d, options))
-			: []),
+		...(options.parts.includes("glance") ? gridSheets(program, options) : []),
 		...(options.parts.includes("index")
 			? [authorsSheet(program, options)]
 			: []),

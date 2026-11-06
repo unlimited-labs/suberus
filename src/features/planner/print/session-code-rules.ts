@@ -6,7 +6,7 @@ export interface CodableSession {
 }
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWYZ";
-export const NO_ROOM_LETTER = "X";
+const NO_ROOM_LETTER = "X";
 
 export function roomLetter(rank: number): string {
 	let n = rank + 1;

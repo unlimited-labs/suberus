@@ -7,14 +7,15 @@ import {
 	type PrintSection,
 	type PrintTable,
 } from "./print-document-schema";
+import type { DayGrid } from "./print-grid-rules";
 import { PRINT_LABELS, type PrintLabels } from "./print-labels";
 import type { GlanceLayout, PrintOptions } from "./print-options-schema";
 import type {
-	DayGrid,
 	PrintDay,
 	PrintProgram,
 	PrintSession,
 } from "./print-program-rules";
+import { byAt, groupBy } from "./print-program-rules";
 
 type BookSize = PrintOptions["bookSize"];
 type Orientation = PrintSection["page"]["orientation"];
@@ -43,7 +44,7 @@ export function pageSizeMm(page: PrintSection["page"]): [number, number] {
 	return page.orientation === "landscape" ? [h, w] : [w, h];
 }
 
-export interface GlanceChoice {
+interface GlanceChoice {
 	layout: GlanceLayout;
 	orientation: Orientation;
 }
@@ -73,12 +74,26 @@ export function chooseGlanceLayout(
 	return { layout, orientation };
 }
 
-export interface DocumentContext {
-	logo: Omit<
-		Extract<PrintBlock, { type: "image" }>,
-		"type" | "widthFraction"
-	> | null;
+export function coveredCells(
+	cells: readonly {
+		row: number;
+		col: number;
+		rowSpan: number;
+		colSpan: number;
+	}[],
+): Set<string> {
+	const covered = new Set<string>();
+	for (const c of cells)
+		for (let r = c.row; r < c.row + c.rowSpan; r++)
+			for (let k = c.col; k < c.col + c.colSpan; k++)
+				if (r !== c.row || k !== c.col) covered.add(`${r}:${k}`);
+	return covered;
 }
+
+export type PrintLogo = Omit<
+	Extract<PrintBlock, { type: "image" }>,
+	"type" | "widthFraction"
+>;
 
 const para = (
 	style: PrintParagraph["style"],
@@ -124,13 +139,20 @@ function table(
 	};
 }
 
-function cellParagraph(cell: DayGrid["cells"][number]): PrintParagraph {
+function cellParagraph(
+	cell: DayGrid["cells"][number],
+	suffix = "",
+): PrintParagraph {
 	const paragraphStyle: PrintParagraph["style"] = cell.band
 		? "GridBand"
 		: "GridCell";
 	return cell.code
-		? para(paragraphStyle, run(`${cell.code} `, "Code"), run(cell.title))
-		: para(paragraphStyle, run(cell.title));
+		? para(
+				paragraphStyle,
+				run(`${cell.code} `, "Code"),
+				run(`${cell.title}${suffix}`),
+			)
+		: para(paragraphStyle, run(`${cell.title}${suffix}`));
 }
 
 function columnsTable(
@@ -159,11 +181,11 @@ function columnsTable(
 	const times = grid.rows.map((r, i) => ({
 		row: i + 1,
 		col: 0,
-		block: para("GridTime", run(`${r.start}–${r.end}`)),
+		block: para("GridTime", run(r)),
 	}));
 	const body = grid.cells.flatMap((c): TableCellInput[] => {
-		const start = c.band ? from : c.col;
-		const end = c.band ? to : c.col + c.colSpan;
+		const start = c.col;
+		const end = c.col + c.colSpan;
 		if (end <= from || start >= to) return [];
 		return [
 			{
@@ -193,7 +215,7 @@ function transposedTable(
 		...grid.rows.map((r, i) => ({
 			row: 0,
 			col: i + 1,
-			block: para("GridTime", run(`${r.start}–${r.end}`)),
+			block: para("GridTime", run(r)),
 		})),
 	];
 	const rooms = grid.columns.map((c, i) => ({
@@ -205,9 +227,9 @@ function transposedTable(
 		),
 	}));
 	const body = grid.cells.map((c) => ({
-		row: c.band ? 1 : c.col + 1,
+		row: c.col + 1,
 		col: c.row + 1,
-		rowSpan: c.band ? grid.columns.length : 1,
+		rowSpan: c.colSpan,
 		colSpan: c.rowSpan,
 		accent: c.band ? null : accentOf(c.trackColor, colorOn),
 		block: cellParagraph(c),
@@ -220,21 +242,15 @@ function transposedTable(
 }
 
 function listBlocks(grid: DayGrid): PrintParagraph[] {
+	const byRow = groupBy(grid.cells, (c) => c.row);
 	return grid.rows.flatMap((r, i) => {
-		const cells = grid.cells.filter((c) => c.row === i);
+		const cells = byRow.get(i) ?? [];
 		if (cells.length === 0) return [];
 		return [
-			para("GridTime", run(`${r.start}–${r.end}`)),
-			...cells.map((c) => {
-				const room = c.band ? "" : ` · ${grid.columns[c.col]?.room ?? ""}`;
-				return c.code
-					? para(
-							"GridCell",
-							run(`${c.code} `, "Code"),
-							run(`${c.title}${room}`),
-						)
-					: para("GridBand", run(c.title));
-			}),
+			para("GridTime", run(r)),
+			...cells.map((c) =>
+				cellParagraph(c, c.band ? "" : ` · ${grid.columns[c.col]?.room ?? ""}`),
+			),
 		];
 	});
 }
@@ -392,9 +408,7 @@ function dayBlocks(day: PrintDay, l: Labels): PrintParagraph[] {
 	];
 	return [
 		para("DayHeading", run(day.label)),
-		...entries
-			.toSorted((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
-			.flatMap((e) => e.blocks),
+		...entries.toSorted(byAt).flatMap((e) => e.blocks),
 	];
 }
 
@@ -418,7 +432,7 @@ function indexBlocks(program: PrintProgram, l: Labels): PrintParagraph[] {
 export function buildPrintDocument(
 	program: PrintProgram,
 	options: PrintOptions,
-	ctx: DocumentContext,
+	logo: PrintLogo | null,
 ): PrintDocument {
 	const l = PRINT_LABELS[options.language];
 	const has = (part: PrintOptions["parts"][number]) =>
@@ -426,13 +440,13 @@ export function buildPrintDocument(
 	const swatches = swatchesOf(program, options);
 	const sections: PrintSection[] = [];
 	if (has("title")) {
-		const logo: PrintBlock[] =
-			ctx.logo && options.showLogo
-				? [{ type: "image", ...ctx.logo, widthFraction: 0.35 }]
+		const logoBlock: PrintBlock[] =
+			logo && options.showLogo
+				? [{ type: "image", ...logo, widthFraction: 0.35 }]
 				: [];
 		sections.push(
 			section(program, options, [
-				...logo,
+				...logoBlock,
 				para("Title", run(program.conferenceName)),
 				...(program.datesLabel
 					? [para("Subtitle", run(program.datesLabel))]

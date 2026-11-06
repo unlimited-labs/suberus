@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { coveredCells } from "@/features/planner/print/print-document-rules";
 import type {
 	ParagraphStyle,
 	PrintBlock,
@@ -56,7 +57,7 @@ function Run({ run }: { run: PrintRun }) {
 	);
 }
 
-export function Paragraph({ block }: { block: PrintParagraph }) {
+function Paragraph({ block }: { block: PrintParagraph }) {
 	return (
 		<p className={PARAGRAPH_CLASS[block.style]}>
 			{block.runs.map((r, i) => (
@@ -64,18 +65,6 @@ export function Paragraph({ block }: { block: PrintParagraph }) {
 			))}
 		</p>
 	);
-}
-
-function occupied(table: PrintTable, from: number, to: number) {
-	const taken = new Set<string>();
-	for (const c of table.cells)
-		for (
-			let r = Math.max(c.row, from);
-			r < Math.min(c.row + c.rowSpan, to);
-			r++
-		)
-			for (let k = c.col; k < c.col + c.colSpan; k++) taken.add(`${r}:${k}`);
-	return taken;
 }
 
 function visibleCells(table: PrintTable, from: number, to: number) {
@@ -87,7 +76,7 @@ function visibleCells(table: PrintTable, from: number, to: number) {
 		});
 }
 
-export function TableSlice({
+function TableSlice({
 	table,
 	rows,
 }: {
@@ -115,10 +104,9 @@ export function TableSlice({
 			</colgroup>
 			<tbody>
 				{ranges.flatMap(([a, b]) => {
-					const cells = new Map(
-						visibleCells(table, a, b).map((c) => [`${c.row}:${c.col}`, c]),
-					);
-					const taken = occupied(table, a, b);
+					const visible = visibleCells(table, a, b);
+					const cells = new Map(visible.map((c) => [`${c.row}:${c.col}`, c]));
+					const taken = coveredCells(visible);
 					return Array.from(
 						{ length: Math.max(0, b - a) },
 						(_, i) => a + i,

@@ -5,14 +5,14 @@ export interface MeasuredBlock {
 	breakable?: boolean[];
 }
 
-export interface MeasuredSection {
+interface MeasuredSection {
 	start: "nextPage" | "evenPage";
 	columns: 1 | 2;
 	blocks: MeasuredBlock[];
 	pageHeight: number;
 }
 
-export interface PageItem {
+interface PageItem {
 	block: number;
 	rows?: [number, number];
 }

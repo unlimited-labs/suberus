@@ -1,6 +1,6 @@
 import {
 	buildPrintDocument,
-	type DocumentContext,
+	type PrintLogo,
 } from "@/features/planner/print/print-document-rules";
 import {
 	IDML_UNAVAILABLE,
@@ -32,7 +32,7 @@ export interface PrintFile {
 
 export class PrintFormatUnavailableError extends Error {}
 
-type Logo = DocumentContext["logo"];
+type Logo = PrintLogo | null;
 
 const RENDERERS = {
 	xlsx: async (program, options) =>
@@ -41,11 +41,11 @@ const RENDERERS = {
 			`${program.conferenceName}${program.draft ? " (DRAFT)" : ""}`,
 		),
 	docx: async (program, options, logo) =>
-		renderDocx(buildPrintDocument(program, options, { logo })),
+		renderDocx(buildPrintDocument(program, options, logo)),
 	idml: async (program, options, logo) => {
 		if (!isIdmlAvailable())
 			throw new PrintFormatUnavailableError(IDML_UNAVAILABLE);
-		return renderIdml(buildPrintDocument(program, options, { logo }));
+		return renderIdml(buildPrintDocument(program, options, logo));
 	},
 } satisfies Record<
 	PrintFormat,

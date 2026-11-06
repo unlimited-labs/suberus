@@ -3,6 +3,7 @@ import type {
 	SubmissionType,
 } from "@/generated/prisma/enums";
 import { zonedDateString } from "@/shared/lib/zoned";
+import { buildGrid, type DayGrid, type GridEntry } from "./print-grid-rules";
 import {
 	capitalizeFirst,
 	PRINT_LABELS,
@@ -10,12 +11,12 @@ import {
 	utcDate,
 } from "./print-labels";
 import type { PrintLanguage, PrintOptions } from "./print-options-schema";
+import { assignSessionCodes } from "./session-code-rules";
 
 export type ProgramOptions = Pick<
 	PrintOptions,
 	"language" | "includeCancelled"
 >;
-import { assignSessionCodes } from "./session-code-rules";
 
 export interface SourceRoom {
 	id: string;
@@ -92,7 +93,6 @@ export interface PrintSource {
 
 export interface PrintSlot {
 	id: string;
-	submissionId: string;
 	submissionNumber: number;
 	submissionType: SubmissionType;
 	title: string;
@@ -111,19 +111,16 @@ export interface PrintSession {
 	code: string;
 	title: string;
 	startAt: string;
-	endAt: string;
 	timeLabel: string;
 	start: string;
 	end: string;
 	room: string | null;
 	track: { name: string; color: string | null } | null;
 	chairs: string[];
-	untimed: boolean;
 	slots: PrintSlot[];
 }
 
 export interface PrintItem {
-	id: string;
 	kind: ScheduleItemKind;
 	title: string;
 	startAt: string;
@@ -132,29 +129,6 @@ export interface PrintItem {
 	end: string;
 	place: string | null;
 	description: string | null;
-}
-
-export interface GridColumn {
-	room: string;
-	lane: number;
-	lanes: number;
-}
-
-export interface GridCell {
-	row: number;
-	col: number;
-	rowSpan: number;
-	colSpan: number;
-	band: boolean;
-	code: string | null;
-	title: string;
-	trackColor: string | null;
-}
-
-export interface DayGrid {
-	columns: GridColumn[];
-	rows: { start: string; end: string }[];
-	cells: GridCell[];
 }
 
 export interface PrintDay {
@@ -166,7 +140,7 @@ export interface PrintDay {
 	grid: DayGrid;
 }
 
-export type AppearanceRole = "author" | "presenter" | "chair";
+type AppearanceRole = "author" | "presenter" | "chair";
 
 export interface Appearance {
 	lastName: string;
@@ -176,7 +150,7 @@ export interface Appearance {
 	slotTitle: string | null;
 }
 
-export interface IndexEntry {
+interface IndexEntry {
 	name: string;
 	refs: { code: string; presenting: boolean }[];
 }
@@ -238,114 +212,21 @@ function datesLabel(src: PrintSource, language: PrintLanguage): string {
 	);
 }
 
-interface GridEntry {
-	start: number;
-	end: number;
-	roomId: string | null;
-	band: boolean;
-	code: string | null;
-	title: string;
-	trackColor: string | null;
-}
+export const byAt = (a: { at: string }, b: { at: string }) =>
+	a.at < b.at ? -1 : a.at > b.at ? 1 : 0;
 
-const overlaps = (a: GridEntry, b: GridEntry) =>
-	a.start < b.end && a.end > b.start;
-
-function assignLanes(
-	entries: GridEntry[],
-	roomOrder: (id: string | null) => number,
-) {
-	const byRoom = new Map<string | null, GridEntry[]>();
-	for (const e of entries)
-		byRoom.set(e.roomId, [...(byRoom.get(e.roomId) ?? []), e]);
-	const rooms = [...byRoom.keys()].toSorted(
-		(a, b) => roomOrder(a) - roomOrder(b),
-	);
-	const laneOf = new Map<GridEntry, { roomId: string | null; lane: number }>();
-	const laneCount = new Map<string | null, number>();
-	for (const roomId of rooms) {
-		const laneEnds: number[] = [];
-		for (const e of (byRoom.get(roomId) ?? []).toSorted(
-			(a, b) => a.start - b.start,
-		)) {
-			const free = laneEnds.findIndex((end) => end <= e.start);
-			const lane = free === -1 ? laneEnds.length : free;
-			laneEnds[lane] = e.end;
-			laneOf.set(e, { roomId, lane: lane + 1 });
-		}
-		laneCount.set(roomId, laneEnds.length);
+export function groupBy<T, K>(
+	list: readonly T[],
+	key: (item: T) => K,
+): Map<K, T[]> {
+	const groups = new Map<K, T[]>();
+	for (const item of list) {
+		const k = key(item);
+		const group = groups.get(k) ?? [];
+		group.push(item);
+		groups.set(k, group);
 	}
-	return { rooms, laneOf, laneCount };
-}
-
-function buildGrid(
-	entries: GridEntry[],
-	f: Formatters,
-	roomName: (id: string | null) => string,
-	roomOrder: (id: string | null) => number,
-): DayGrid {
-	const sessionsOnly = entries.filter((e) => !e.band);
-	const marked = entries.map((e) =>
-		e.band
-			? e
-			: { ...e, band: !sessionsOnly.some((o) => o !== e && overlaps(o, e)) },
-	);
-	const { rooms, laneOf, laneCount } = assignLanes(
-		marked.filter((e) => !e.band),
-		roomOrder,
-	);
-	const laneColumns = rooms.flatMap((roomId) =>
-		Array.from({ length: laneCount.get(roomId) ?? 0 }, (_, i) => ({
-			room: roomName(roomId),
-			lane: i + 1,
-			lanes: laneCount.get(roomId) ?? 0,
-		})),
-	);
-	const columns =
-		laneColumns.length > 0 ? laneColumns : [{ room: "", lane: 1, lanes: 1 }];
-	const firstCol = new Map<string | null, number>();
-	rooms.reduce((at, r) => {
-		firstCol.set(r, at);
-		return at + (laneCount.get(r) ?? 0);
-	}, 0);
-
-	const bounds = [...new Set(marked.flatMap((e) => [e.start, e.end]))].toSorted(
-		(a, b) => a - b,
-	);
-	const rows = bounds
-		.slice(0, -1)
-		.map((start, i) => ({ start, end: bounds[i + 1] ?? start }))
-		.filter((r) => marked.some((e) => e.start <= r.start && e.end >= r.end));
-	const rowIndex = new Map(rows.map((r, i) => [r.start, i]));
-
-	const cells = marked
-		.map((e): GridCell => {
-			const lane = laneOf.get(e);
-			return {
-				row: rowIndex.get(e.start) ?? 0,
-				col:
-					e.band || !lane
-						? 0
-						: (firstCol.get(lane.roomId) ?? 0) + lane.lane - 1,
-				rowSpan: rows.filter((r) => r.start >= e.start && r.end <= e.end)
-					.length,
-				colSpan: e.band ? columns.length : 1,
-				band: e.band,
-				code: e.code,
-				title: e.title,
-				trackColor: e.trackColor,
-			};
-		})
-		.toSorted((a, b) => a.row - b.row || a.col - b.col);
-
-	return {
-		columns,
-		rows: rows.map((r) => ({
-			start: f.time(new Date(r.start)),
-			end: f.time(new Date(r.end)),
-		})),
-		cells,
-	};
+	return groups;
 }
 
 function isPresenting(slot: SourceSlot, a: SourceAuthor): boolean {
@@ -376,7 +257,6 @@ function buildSlots(
 			return [
 				{
 					id: slot.id,
-					submissionId: slot.submission.id,
 					submissionNumber: slot.submission.sequentialNumber,
 					submissionType: slot.submission.type,
 					title: slot.submission.title,
@@ -499,16 +379,16 @@ export function buildPrintProgram(
 			.map((r, i) => [r.id, i]),
 	);
 
-	const dayKeys = [
-		...new Set([...src.sessions, ...src.items].map((x) => f.dayKey(x.startAt))),
-	].toSorted();
+	const keyOf = new Map(
+		[...src.sessions, ...src.items].map((x) => [x, f.dayKey(x.startAt)]),
+	);
+	const dayKeys = [...new Set(keyOf.values())].toSorted();
 	const dayIndex = new Map(dayKeys.map((k, i) => [k, i + 1]));
-	const indexOf = (d: Date) => dayIndex.get(f.dayKey(d)) ?? 0;
 
 	const codes = assignSessionCodes(
 		src.sessions.map((s) => ({
 			id: s.id,
-			dayIndex: indexOf(s.startAt),
+			dayIndex: dayIndex.get(keyOf.get(s) ?? "") ?? 0,
 			roomId: s.roomId,
 			startAt: s.startAt,
 		})),
@@ -526,9 +406,11 @@ export function buildPrintProgram(
 		(a, b) => a.startAt.getTime() - b.startAt.getTime(),
 	);
 
+	const sessionsByDay = groupBy(sessions, (s) => keyOf.get(s) ?? "");
+	const itemsByDay = groupBy(items, (x) => keyOf.get(x) ?? "");
 	const days = dayKeys.map((key, i) => {
-		const daySessions = sessions.filter((s) => f.dayKey(s.startAt) === key);
-		const dayItems = items.filter((x) => f.dayKey(x.startAt) === key);
+		const daySessions = sessionsByDay.get(key) ?? [];
+		const dayItems = itemsByDay.get(key) ?? [];
 		const entries: GridEntry[] = [
 			...daySessions.map((s) => ({
 				start: s.startAt.getTime(),
@@ -564,14 +446,12 @@ export function buildPrintProgram(
 					code: codes.get(s.id) ?? "",
 					title: s.title,
 					startAt: s.startAt.toISOString(),
-					endAt: s.endAt.toISOString(),
 					timeLabel: `${start}–${end}`,
 					start,
 					end,
 					room: s.roomId ? (roomsById.get(s.roomId)?.name ?? null) : null,
 					track: s.track,
 					chairs: s.chairs.map(shortName),
-					untimed: s.untimedSlots,
 					slots: buildSlots(s, f, options, badgeLabels),
 				};
 			}),
@@ -579,7 +459,6 @@ export function buildPrintProgram(
 				const start = f.time(x.startAt);
 				const end = f.time(x.endAt);
 				return {
-					id: x.id,
 					kind: x.kind,
 					title: x.title,
 					startAt: x.startAt.toISOString(),
@@ -590,7 +469,7 @@ export function buildPrintProgram(
 					description: x.kind === "EVENT" ? x.description : null,
 				};
 			}),
-			grid: buildGrid(entries, f, roomName, roomOrder),
+			grid: buildGrid(entries, f.time, roomName, roomOrder),
 		};
 	});
 

@@ -1,4 +1,4 @@
-import type { DocumentContext } from "@/features/planner/print/print-document-rules";
+import type { PrintLogo } from "@/features/planner/print/print-document-rules";
 import { printImageInfo } from "@/features/planner/print/print-image-rules";
 import {
 	type PrintOptions,
@@ -14,13 +14,6 @@ import { resolveZone } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 
-const personSelect = {
-	id: true,
-	firstName: true,
-	lastName: true,
-	email: true,
-} as const;
-
 export async function loadPrintSource(): Promise<PrintSource> {
 	const [settings, rooms, sessions, items] = await Promise.all([
 		getSettings([
@@ -34,11 +27,33 @@ export async function loadPrintSource(): Promise<PrintSource> {
 		]),
 		prisma.room.findMany({ select: { id: true, name: true, order: true } }),
 		prisma.programSession.findMany({
-			include: {
+			select: {
+				id: true,
+				title: true,
+				startAt: true,
+				endAt: true,
+				untimedSlots: true,
+				roomId: true,
 				track: { select: { name: true, color: true } },
-				chairs: { include: { user: { select: personSelect } } },
+				chairs: {
+					select: {
+						user: {
+							select: {
+								id: true,
+								firstName: true,
+								lastName: true,
+								email: true,
+							},
+						},
+					},
+				},
 				presentations: {
-					include: {
+					select: {
+						id: true,
+						order: true,
+						durationMin: true,
+						cancelled: true,
+						badgeId: true,
 						submission: {
 							select: {
 								id: true,
@@ -63,7 +78,18 @@ export async function loadPrintSource(): Promise<PrintSource> {
 				},
 			},
 		}),
-		prisma.scheduleBreak.findMany(),
+		prisma.scheduleBreak.findMany({
+			select: {
+				id: true,
+				kind: true,
+				title: true,
+				description: true,
+				location: true,
+				roomId: true,
+				startAt: true,
+				endAt: true,
+			},
+		}),
 	]);
 
 	return {
@@ -75,43 +101,21 @@ export async function loadPrintSource(): Promise<PrintSource> {
 		draft: settings.SCHEDULE_STATE.status !== "PUBLISHED",
 		rooms,
 		badges: settings.PROGRAM_BADGES.map((b) => ({ id: b.id, label: b.label })),
-		sessions: sessions.map((s) => ({
-			id: s.id,
-			title: s.title,
-			startAt: s.startAt,
-			endAt: s.endAt,
-			untimedSlots: s.untimedSlots,
-			roomId: s.roomId,
-			track: s.track,
-			chairs: s.chairs.map(({ user }) => ({
+		sessions: sessions.map(({ chairs, presentations, ...s }) => ({
+			...s,
+			chairs: chairs.map(({ user }) => ({
 				userId: user.id,
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
 			})),
-			slots: s.presentations.map((p) => ({
-				id: p.id,
-				order: p.order,
-				durationMin: p.durationMin,
-				cancelled: p.cancelled,
-				badgeId: p.badgeId,
-				submission: p.submission,
-			})),
+			slots: presentations,
 		})),
-		items: items.map((x) => ({
-			id: x.id,
-			kind: x.kind,
-			title: x.title,
-			description: x.description,
-			location: x.location,
-			roomId: x.roomId,
-			startAt: x.startAt,
-			endAt: x.endAt,
-		})),
+		items,
 	};
 }
 
-export async function loadPrintLogo(): Promise<DocumentContext["logo"]> {
+export async function loadPrintLogo(): Promise<PrintLogo | null> {
 	const key = await getSetting("BRANDING_LOGO_KEY");
 	if (!key) return null;
 	const buffer = await getFileBuffer(key);

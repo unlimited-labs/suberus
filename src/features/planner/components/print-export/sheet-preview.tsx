@@ -1,4 +1,4 @@
-import type { XlsxCell, XlsxSheetSpec } from "@/shared/server/xlsx-write";
+import type { XlsxCell, XlsxSheetSpec } from "@/shared/lib/xlsx-types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 const PREVIEW_ROWS = 50;
