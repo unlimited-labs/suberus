@@ -213,7 +213,10 @@ function formatters(src: PrintSource, language: PrintLanguage): Formatters {
 	});
 	return {
 		dayKey: (d) => key.format(d),
-		dayLabel: (d) => label.format(d),
+		dayLabel: (d) => {
+			const text = label.format(d);
+			return text.charAt(0).toLocaleUpperCase(LOCALE[language]) + text.slice(1);
+		},
 		time: (d) => time.format(d),
 	};
 }
@@ -534,7 +537,9 @@ export function buildPrintProgram(
 				start: x.startAt.getTime(),
 				end: x.endAt.getTime(),
 				roomId: x.roomId,
-				band: true,
+				band: !daySessions.some(
+					(s) => s.startAt < x.endAt && s.endAt > x.startAt,
+				),
 				code: null,
 				title: x.title,
 				trackColor: null,

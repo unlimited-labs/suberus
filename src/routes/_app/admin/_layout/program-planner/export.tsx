@@ -49,8 +49,8 @@ function PrintExportPage() {
 		[data.source, exporter.options],
 	);
 	const doc = useMemo(
-		() => buildPrintDocument(program, exporter.options, { logo: null }),
-		[program, exporter.options],
+		() => buildPrintDocument(program, exporter.options, { logo: data.logo }),
+		[program, exporter.options, data.logo],
 	);
 
 	return (
@@ -65,7 +65,7 @@ function PrintExportPage() {
 					downloading={exporter.download.isPending}
 					fileName={exporter.fileName}
 					format={format}
-					hasLogo={data.hasLogo}
+					hasLogo={data.logo !== null}
 					issues={issues}
 					onDownload={() => exporter.download.mutate()}
 					onFormatChange={(f) =>

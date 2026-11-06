@@ -1,3 +1,5 @@
+import type { DocumentContext } from "@/features/planner/print/print-document-rules";
+import { printImageInfo } from "@/features/planner/print/print-image-rules";
 import {
 	type PrintOptions,
 	printOptionsSchema,
@@ -9,6 +11,7 @@ import {
 	setSetting,
 } from "@/features/settings/server/settings";
 import { prisma } from "@/shared/server/db.server";
+import { getFileBuffer } from "@/shared/server/storage";
 
 const personSelect = {
 	id: true,
@@ -104,6 +107,19 @@ export async function loadPrintSource(): Promise<PrintSource> {
 			startAt: x.startAt,
 			endAt: x.endAt,
 		})),
+	};
+}
+
+export async function loadPrintLogo(): Promise<DocumentContext["logo"]> {
+	const key = await getSetting("BRANDING_LOGO_KEY");
+	if (!key) return null;
+	const buffer = await getFileBuffer(key);
+	const info = printImageInfo(buffer);
+	if (!info || info.height === 0) return null;
+	return {
+		mime: info.mime,
+		dataBase64: buffer.toString("base64"),
+		aspectRatio: info.width / info.height,
 	};
 }
 

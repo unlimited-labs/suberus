@@ -110,6 +110,20 @@ describe("buildPrintProgram: days", () => {
 	});
 });
 
+describe("buildPrintProgram: day headings", () => {
+	it("capitalises the Polish weekday that starts a day heading", () => {
+		const program = buildPrintProgram(
+			source({
+				sessions: [
+					session("s", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z"),
+				],
+			}),
+			{ ...options, language: "pl" },
+		);
+		expect(program.days[0]?.label).toBe("Poniedziałek, 14 września");
+	});
+});
+
 describe("buildPrintProgram: sessions and slots", () => {
 	const withSlots = session(
 		"s1",
@@ -286,6 +300,42 @@ describe("buildPrintProgram: at-a-glance grid and items", () => {
 			["Keynote", 4, 0, 1, 3, true],
 			["Dinner", 5, 0, 1, 3, true],
 		]);
+	});
+
+	it("keeps a break that overlaps sessions out of the full-width bands, in the roomless column", () => {
+		const clash = source({
+			sessions: [
+				session("s1", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+					roomId: "room-a",
+				}),
+				session("s2", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+					roomId: "room-b",
+				}),
+			],
+			items: [
+				{
+					id: "c",
+					kind: "BREAK",
+					title: "Coffee",
+					description: null,
+					location: null,
+					roomId: null,
+					startAt: new Date("2026-09-14T08:30:00Z"),
+					endAt: new Date("2026-09-14T09:30:00Z"),
+				},
+			],
+		});
+		const grid = buildPrintProgram(clash, options).days[0]?.grid;
+		expect(grid?.columns.map((c) => c.room)).toEqual([
+			"Aula",
+			"Sala 2",
+			"No room",
+		]);
+		expect(grid?.cells.find((c) => c.title === "Coffee")).toMatchObject({
+			band: false,
+			col: 2,
+			colSpan: 1,
+		});
 	});
 
 	it("lists breaks and events with time and place, describing only events", () => {
