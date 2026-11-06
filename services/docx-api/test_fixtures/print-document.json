@@ -1,0 +1,1059 @@
+{
+	"schemaVersion": 1,
+	"draft": true,
+	"language": "pl",
+	"swatches": [
+		{
+			"name": "Metals",
+			"color": "#1971c2"
+		},
+		{
+			"name": "Polymers",
+			"color": "#d9480f"
+		}
+	],
+	"sections": [
+		{
+			"page": {
+				"size": "A4",
+				"orientation": "portrait"
+			},
+			"columns": 1,
+			"start": "nextPage",
+			"footer": "Polymers 2026",
+			"blocks": [
+				{
+					"type": "image",
+					"mime": "image/png",
+					"dataBase64": "iVBORw0KGgoAAAANSUhEUgAAAAgAAAACCAIAAADq9gq6AAAAD0lEQVR4nGMwxgEYcEkAAO9CCZH40j2xAAAAAElFTkSuQmCC",
+					"aspectRatio": 4,
+					"widthFraction": 0.35
+				},
+				{
+					"type": "paragraph",
+					"style": "Title",
+					"runs": [
+						{
+							"text": "Polymers 2026"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "Subtitle",
+					"runs": [
+						{
+							"text": "14–15 września 2026"
+						}
+					]
+				},
+				{
+					"type": "toc",
+					"title": "Spis treści"
+				}
+			]
+		},
+		{
+			"page": {
+				"size": "A4",
+				"orientation": "portrait"
+			},
+			"columns": 1,
+			"start": "nextPage",
+			"footer": "Polymers 2026",
+			"blocks": [
+				{
+					"type": "paragraph",
+					"style": "PartHeading",
+					"runs": [
+						{
+							"text": "Program w skrócie"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "Legend",
+					"runs": [
+						{
+							"text": "■ ",
+							"color": "#1971c2"
+						},
+						{
+							"text": "Metals"
+						},
+						{
+							"text": "   ■ ",
+							"color": "#d9480f"
+						},
+						{
+							"text": "Polymers"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "DayHeading",
+					"runs": [
+						{
+							"text": "Poniedziałek, 14 września"
+						}
+					]
+				},
+				{
+					"type": "table",
+					"columns": [
+						{
+							"widthWeight": 0.6
+						},
+						{
+							"widthWeight": 1
+						},
+						{
+							"widthWeight": 1
+						},
+						{
+							"widthWeight": 1
+						}
+					],
+					"headerRows": 1,
+					"rowCount": 6,
+					"cells": [
+						{
+							"row": 0,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridHeader",
+									"runs": [
+										{
+											"text": "Godz."
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 0,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 2,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridHeader",
+									"runs": [
+										{
+											"text": "Aula"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 0,
+							"col": 3,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridHeader",
+									"runs": [
+										{
+											"text": "Sala 2"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "09:00–09:30"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 2,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "09:30–10:00"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 3,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "10:00–10:30"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 4,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "10:30–11:00"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 5,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "19:00–22:00"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 1,
+							"rowSpan": 2,
+							"colSpan": 1,
+							"accent": "#d9480f",
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridCell",
+									"runs": [
+										{
+											"text": "1A1 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Opening"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 3,
+							"rowSpan": 3,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridCell",
+									"runs": [
+										{
+											"text": "1B1 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Parallel"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 2,
+							"col": 2,
+							"rowSpan": 2,
+							"colSpan": 1,
+							"accent": "#1971c2",
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridCell",
+									"runs": [
+										{
+											"text": "1A2 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Overlap"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 4,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 3,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridBand",
+									"runs": [
+										{
+											"text": "Coffee"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 5,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 3,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridBand",
+									"runs": [
+										{
+											"text": "Dinner"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"page": {
+				"size": "A4",
+				"orientation": "portrait"
+			},
+			"columns": 1,
+			"start": "nextPage",
+			"footer": "Polymers 2026",
+			"blocks": [
+				{
+					"type": "paragraph",
+					"style": "DayHeading",
+					"runs": [
+						{
+							"text": "Wtorek, 15 września"
+						}
+					]
+				},
+				{
+					"type": "table",
+					"columns": [
+						{
+							"widthWeight": 0.6
+						},
+						{
+							"widthWeight": 1
+						}
+					],
+					"headerRows": 1,
+					"rowCount": 2,
+					"cells": [
+						{
+							"row": 0,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridHeader",
+									"runs": [
+										{
+											"text": "Godz."
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 0,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridHeader",
+									"runs": [
+										{
+											"text": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "12:00–14:00"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridBand",
+									"runs": [
+										{
+											"text": "Posters"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"page": {
+				"size": "A4",
+				"orientation": "portrait"
+			},
+			"columns": 1,
+			"start": "nextPage",
+			"footer": "Polymers 2026",
+			"blocks": [
+				{
+					"type": "paragraph",
+					"style": "PartHeading",
+					"runs": [
+						{
+							"text": "Program szczegółowy"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "DayHeading",
+					"runs": [
+						{
+							"text": "Poniedziałek, 14 września"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionHeading",
+					"runs": [
+						{
+							"text": "1A1 ",
+							"charStyle": "Code"
+						},
+						{
+							"text": "Opening"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionMeta",
+					"runs": [
+						{
+							"text": "09:00–10:00 · Aula · Polymers"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "ChairLine",
+					"runs": [
+						{
+							"text": "Prowadzący: A. Lis"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotTitle",
+					"runs": [
+						{
+							"text": "09:00–09:20 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Chain growth in composites p1"
+						},
+						{
+							"text": " Best paper",
+							"charStyle": "Badge"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotAuthors",
+					"runs": [
+						{
+							"text": "E. Zając",
+							"charStyle": "Presenter"
+						},
+						{
+							"text": ", "
+						},
+						{
+							"text": "Ł. Żak"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotTitle",
+					"runs": [
+						{
+							"text": "09:20–09:40 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Chain growth in composites p2",
+							"charStyle": "Cancelled"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotAuthors",
+					"runs": [
+						{
+							"text": "E. Zając",
+							"charStyle": "Presenter"
+						},
+						{
+							"text": ", "
+						},
+						{
+							"text": "Ł. Żak"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionHeading",
+					"runs": [
+						{
+							"text": "1B1 ",
+							"charStyle": "Code"
+						},
+						{
+							"text": "Parallel"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionMeta",
+					"runs": [
+						{
+							"text": "09:00–10:30 · Sala 2"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotTitle",
+					"runs": [
+						{
+							"text": "09:00–09:20 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Chain growth in composites p4"
+						},
+						{
+							"text": " Zaproszony",
+							"charStyle": "Invited"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotAuthors",
+					"runs": [
+						{
+							"text": "E. Zając",
+							"charStyle": "Presenter"
+						},
+						{
+							"text": ", "
+						},
+						{
+							"text": "Ł. Żak"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionHeading",
+					"runs": [
+						{
+							"text": "1A2 ",
+							"charStyle": "Code"
+						},
+						{
+							"text": "Overlap"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionMeta",
+					"runs": [
+						{
+							"text": "09:30–10:30 · Aula · Metals"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotTitle",
+					"runs": [
+						{
+							"text": "09:30–09:50 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Chain growth in composites p3"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotAuthors",
+					"runs": [
+						{
+							"text": "E. Zając",
+							"charStyle": "Presenter"
+						},
+						{
+							"text": ", "
+						},
+						{
+							"text": "Ł. Żak"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "BreakLine",
+					"runs": [
+						{
+							"text": "10:30–11:00 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Coffee"
+						},
+						{
+							"text": " · Foyer"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "EventTitle",
+					"runs": [
+						{
+							"text": "19:00–22:00 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Dinner"
+						},
+						{
+							"text": " · Sala 2"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "EventText",
+					"runs": [
+						{
+							"text": "Old town"
+						}
+					]
+				}
+			]
+		},
+		{
+			"page": {
+				"size": "A4",
+				"orientation": "portrait"
+			},
+			"columns": 1,
+			"start": "nextPage",
+			"footer": "Polymers 2026",
+			"blocks": [
+				{
+					"type": "paragraph",
+					"style": "DayHeading",
+					"runs": [
+						{
+							"text": "Wtorek, 15 września"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionHeading",
+					"runs": [
+						{
+							"text": "2X1 ",
+							"charStyle": "Code"
+						},
+						{
+							"text": "Posters"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SessionMeta",
+					"runs": [
+						{
+							"text": "12:00–14:00"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotTitle",
+					"runs": [
+						{
+							"text": "P1 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Chain growth in composites p5"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotAuthors",
+					"runs": [
+						{
+							"text": "E. Zając",
+							"charStyle": "Presenter"
+						},
+						{
+							"text": ", "
+						},
+						{
+							"text": "Ł. Żak"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotTitle",
+					"runs": [
+						{
+							"text": "P2 ",
+							"charStyle": "Time"
+						},
+						{
+							"text": "Chain growth in composites p6"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "SlotAuthors",
+					"runs": [
+						{
+							"text": "E. Zając",
+							"charStyle": "Presenter"
+						},
+						{
+							"text": ", "
+						},
+						{
+							"text": "Ł. Żak"
+						}
+					]
+				}
+			]
+		},
+		{
+			"page": {
+				"size": "A4",
+				"orientation": "portrait"
+			},
+			"columns": 2,
+			"start": "nextPage",
+			"footer": "Polymers 2026",
+			"blocks": [
+				{
+					"type": "paragraph",
+					"style": "PartHeading",
+					"runs": [
+						{
+							"text": "Indeks autorów"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexLetter",
+					"runs": [
+						{
+							"text": "L"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Lis, Adam — "
+						},
+						{
+							"text": "1A1"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexLetter",
+					"runs": [
+						{
+							"text": "Z"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Zając, Ewa — "
+						},
+						{
+							"text": "1A1",
+							"charStyle": "Presenting"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Zając, Ewa — "
+						},
+						{
+							"text": "1A1",
+							"charStyle": "Presenting"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Zając, Ewa — "
+						},
+						{
+							"text": "1B1",
+							"charStyle": "Presenting"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Zając, Ewa — "
+						},
+						{
+							"text": "1A2",
+							"charStyle": "Presenting"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Zając, Ewa — "
+						},
+						{
+							"text": "2X1",
+							"charStyle": "Presenting"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Zając, Ewa — "
+						},
+						{
+							"text": "2X1",
+							"charStyle": "Presenting"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexLetter",
+					"runs": [
+						{
+							"text": "Ż"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Żak, Łukasz — "
+						},
+						{
+							"text": "1A1"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Żak, Łukasz — "
+						},
+						{
+							"text": "1A1"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Żak, Łukasz — "
+						},
+						{
+							"text": "1B1"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Żak, Łukasz — "
+						},
+						{
+							"text": "1A2"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Żak, Łukasz — "
+						},
+						{
+							"text": "2X1"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
+					"style": "IndexEntry",
+					"runs": [
+						{
+							"text": "Żak, Łukasz — "
+						},
+						{
+							"text": "2X1"
+						}
+					]
+				}
+			]
+		}
+	]
+}

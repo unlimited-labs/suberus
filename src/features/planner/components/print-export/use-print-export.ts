@@ -18,13 +18,12 @@ export const FORMAT_META = {
 	xlsx: { label: "Excel", ext: "xlsx", hint: "Raw data, one sheet per day" },
 } satisfies Record<PrintFormat, { label: string; ext: string; hint: string }>;
 
-const AVAILABLE_FORMATS: ReadonlySet<PrintFormat> = new Set(["xlsx", "docx"]);
-
 interface ExportContext {
 	format: PrintFormat;
 	initialOptions: PrintOptions;
 	draft: boolean;
 	sessionCount: number;
+	idmlAvailable: boolean;
 }
 
 async function downloadFile(
@@ -56,10 +55,11 @@ function blockedReasonFor(
 	format: PrintFormat,
 	options: PrintOptions,
 	sessionCount: number,
+	idmlAvailable: boolean,
 ): string | null {
 	if (sessionCount === 0) return "The program has no sessions yet.";
-	if (!AVAILABLE_FORMATS.has(format))
-		return `${FORMAT_META[format].label} export is not available yet.`;
+	if (format === "idml" && !idmlAvailable)
+		return "InDesign export needs the document service (DOCX_API_URL).";
 	const validation = printOptionsSchema.safeParse(options);
 	return validation.success
 		? null
@@ -71,10 +71,16 @@ export function usePrintExport({
 	initialOptions,
 	draft,
 	sessionCount,
+	idmlAvailable,
 }: ExportContext) {
 	const [options, setOptions] = useState(initialOptions);
 	const fileName = `program${draft ? "-DRAFT" : ""}.${FORMAT_META[format].ext}`;
-	const blockedReason = blockedReasonFor(format, options, sessionCount);
+	const blockedReason = blockedReasonFor(
+		format,
+		options,
+		sessionCount,
+		idmlAvailable,
+	);
 
 	const download = useMutation({
 		mutationFn: () => downloadFile(format, options, fileName),

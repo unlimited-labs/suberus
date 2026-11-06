@@ -100,6 +100,7 @@ export const printDocumentSchema = z.object({
 	schemaVersion: z.literal(1),
 	draft: z.boolean(),
 	language: z.enum(PRINT_LANGUAGES),
+	swatches: z.array(z.object({ name: z.string(), color: hexColor })),
 	sections: z.array(sectionSchema),
 });
 

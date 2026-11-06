@@ -7,6 +7,7 @@ const doc: PrintDocument = {
 	schemaVersion: 1,
 	draft: true,
 	language: "en",
+	swatches: [{ name: "Polymers", color: "#ff0000" }],
 	sections: [
 		{
 			page: { size: "A4", orientation: "portrait" },
