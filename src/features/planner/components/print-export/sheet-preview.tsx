@@ -1,0 +1,63 @@
+import type { XlsxCell, XlsxSheetSpec } from "@/shared/server/xlsx-write";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+
+const PREVIEW_ROWS = 50;
+
+function cellText(cell: XlsxCell): string {
+	if (cell instanceof Date) return cell.toISOString().slice(0, 10);
+	if (cell === true) return "TRUE";
+	if (cell === false) return "FALSE";
+	return cell === null ? "" : String(cell);
+}
+
+export function SheetPreview({ sheets }: { sheets: XlsxSheetSpec[] }) {
+	const first = sheets[0]?.name;
+	if (!first) return null;
+	return (
+		<Tabs className="min-w-0" defaultValue={first}>
+			<TabsList
+				className="max-w-full justify-start overflow-x-auto"
+				variant="line"
+			>
+				{sheets.map((s) => (
+					<TabsTrigger key={s.name} value={s.name}>
+						{s.name}
+					</TabsTrigger>
+				))}
+			</TabsList>
+			{sheets.map((s) => (
+				<TabsContent key={s.name} value={s.name}>
+					<div
+						className="bg-background max-h-[calc(100vh-14rem)] overflow-auto rounded-md border text-xs"
+						data-testid="print-sheet-preview"
+					>
+						<table className="border-collapse">
+							<tbody>
+								{s.rows.slice(0, PREVIEW_ROWS).map((row, r) => (
+									<tr
+										className={r === 0 ? "bg-muted font-medium" : undefined}
+										key={`${s.name}-${r}`}
+									>
+										{row.map((cell, c) => (
+											<td
+												className="max-w-56 truncate border px-2 py-1"
+												key={`${r}-${c}`}
+											>
+												{cellText(cell)}
+											</td>
+										))}
+									</tr>
+								))}
+							</tbody>
+						</table>
+						{s.rows.length > PREVIEW_ROWS && (
+							<p className="text-muted-foreground p-2">
+								First {PREVIEW_ROWS - 1} of {s.rows.length - 1} rows
+							</p>
+						)}
+					</div>
+				</TabsContent>
+			))}
+		</Tabs>
+	);
+}

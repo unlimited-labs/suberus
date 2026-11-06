@@ -1,0 +1,188 @@
+import { describe, expect, it } from "vitest";
+import { buildPrintDocument, chooseGlanceLayout } from "./print-document-rules";
+import { printOptionsSchema } from "./print-options-schema";
+import { buildPrintProgram, type PrintSource } from "./print-program-rules";
+
+describe("chooseGlanceLayout", () => {
+	it("keeps A4 grids portrait up to 4 rooms, landscape up to 8, a spread up to 14 and transposes beyond", () => {
+		expect(
+			[3, 5, 8, 9, 14, 15].map((n) => chooseGlanceLayout(n, "A4", "auto")),
+		).toEqual([
+			{ layout: "columns", orientation: "portrait" },
+			{ layout: "columns", orientation: "landscape" },
+			{ layout: "columns", orientation: "landscape" },
+			{ layout: "spread", orientation: "portrait" },
+			{ layout: "spread", orientation: "portrait" },
+			{ layout: "transposed", orientation: "landscape" },
+		]);
+	});
+
+	it("goes landscape from 4 rooms in an A5 book", () => {
+		expect(chooseGlanceLayout(4, "A5", "auto")).toEqual({
+			layout: "columns",
+			orientation: "landscape",
+		});
+	});
+
+	it("applies a manual override to every day", () => {
+		expect(chooseGlanceLayout(3, "A4", "list")).toEqual({
+			layout: "list",
+			orientation: "portrait",
+		});
+	});
+});
+
+const src: PrintSource = {
+	conferenceName: "Polymers 2026",
+	startDate: "2026-09-14",
+	endDate: "2026-09-15",
+	timeZone: "Europe/Warsaw",
+	timeFormat: "24h",
+	draft: true,
+	rooms: [
+		{ id: "a", name: "Aula", order: 0 },
+		{ id: "b", name: "Sala 2", order: 1 },
+	],
+	badges: [],
+	sessions: [
+		{
+			id: "s1",
+			title: "Opening",
+			startAt: new Date("2026-09-14T08:00:00Z"),
+			endAt: new Date("2026-09-14T09:00:00Z"),
+			untimedSlots: false,
+			roomId: "a",
+			track: { name: "Polymers", color: "#ff0000" },
+			chairs: [
+				{ userId: "u9", email: "c@x.org", firstName: "Adam", lastName: "Lis" },
+			],
+			slots: [
+				{
+					id: "p1",
+					order: 0,
+					durationMin: 20,
+					cancelled: false,
+					badgeId: null,
+					submission: {
+						id: "sub1",
+						sequentialNumber: 7,
+						title: "Chain growth",
+						type: "ABSTRACT",
+						presenterId: "au1",
+						authors: [
+							{
+								id: "au1",
+								userId: null,
+								email: "e@x.org",
+								firstName: "Ewa",
+								lastName: "Zając",
+								orderIndex: 0,
+								isPresenter: true,
+							},
+						],
+					},
+				},
+			],
+		},
+		{
+			id: "s2",
+			title: "Parallel",
+			startAt: new Date("2026-09-14T08:00:00Z"),
+			endAt: new Date("2026-09-14T09:00:00Z"),
+			untimedSlots: false,
+			roomId: "b",
+			track: null,
+			chairs: [],
+			slots: [],
+		},
+		{
+			id: "s3",
+			title: "Day two",
+			startAt: new Date("2026-09-15T08:00:00Z"),
+			endAt: new Date("2026-09-15T09:00:00Z"),
+			untimedSlots: false,
+			roomId: "a",
+			track: null,
+			chairs: [],
+			slots: [],
+		},
+	],
+	items: [],
+};
+
+const options = printOptionsSchema.parse({});
+const docFor = (o = options) =>
+	buildPrintDocument(buildPrintProgram(src, o), o, { logo: null });
+const text = (p: { runs: { text: string }[] }) =>
+	p.runs.map((r) => r.text).join("");
+
+describe("buildPrintDocument", () => {
+	it("orders the Parts as title, glance, detailed program and author index, each day of a Part on a new page", () => {
+		const doc = docFor();
+		const firstHeadings = doc.sections.map((s) => {
+			const p = s.blocks.find((b) => b.type === "paragraph");
+			return p?.type === "paragraph" ? `${p.style}: ${text(p)}` : "";
+		});
+		expect(firstHeadings).toEqual([
+			"Title: Polymers 2026",
+			"PartHeading: Program at a glance",
+			"DayHeading: Tuesday 15 September",
+			"PartHeading: Detailed program",
+			"DayHeading: Tuesday 15 September",
+			"PartHeading: Author index",
+		]);
+		expect(doc.draft).toBe(true);
+		expect(doc.sections[5]?.columns).toBe(2);
+	});
+
+	it("keeps the first day under its Part heading instead of breaking the page twice", () => {
+		const detailed = docFor().sections[3];
+		const styles = detailed?.blocks
+			.flatMap((b) => (b.type === "paragraph" ? [b.style] : []))
+			.slice(0, 2);
+		expect(styles).toEqual(["PartHeading", "DayHeading"]);
+	});
+
+	it("prints the session code and presenter with their character styles", () => {
+		const detailed = docFor().sections[3];
+		const paras =
+			detailed?.blocks.flatMap((b) => (b.type === "paragraph" ? [b] : [])) ??
+			[];
+		const heading = paras.find((p) => p.style === "SessionHeading");
+		const authors = paras.find((p) => p.style === "SlotAuthors");
+		expect(heading?.runs[0]).toEqual({ text: "1A1 ", charStyle: "Code" });
+		expect(authors?.runs).toEqual([
+			{ text: "E. Zając", charStyle: "Presenter" },
+		]);
+	});
+
+	it("builds the day grid as a table with a header row, rooms as columns and the track accent", () => {
+		const glance = docFor().sections[1];
+		const table = glance?.blocks.find((b) => b.type === "table");
+		expect(table?.type === "table" && table.headerRows).toBe(1);
+		expect(table?.type === "table" && table.columns.length).toBe(3);
+		const opening =
+			table?.type === "table" ? table.cells.find((c) => c.accent) : undefined;
+		expect(opening).toMatchObject({ row: 1, col: 1, accent: "#ff0000" });
+	});
+
+	it("spans a day's only session across the grid when there are no room columns", () => {
+		const glanceDay2 = docFor().sections[2];
+		const table = glanceDay2?.blocks.find((b) => b.type === "table");
+		expect(table?.type === "table" && table.columns.length).toBe(2);
+		expect(
+			table?.type === "table" &&
+				table.cells.find((c) => c.row === 1 && c.col === 1)?.blocks[0]?.style,
+		).toBe("GridBand");
+	});
+
+	it("drops the Parts that are not included and the logo when there is none", () => {
+		const doc = docFor({ ...options, parts: ["detailed"] });
+		expect(doc.sections).toHaveLength(2);
+		expect(
+			doc.sections
+				.flatMap((s) => s.blocks)
+				.some((b) => b.type === "image" || b.type === "toc"),
+		).toBe(false);
+	});
+});

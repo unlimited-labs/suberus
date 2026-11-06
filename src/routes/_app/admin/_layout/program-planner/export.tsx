@@ -1,13 +1,19 @@
 import { IconFileExport } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { printExportDataQueryOptions } from "@/features/planner/api/print-export";
 import { scheduleIssuesQueryOptions } from "@/features/planner/api/schedule";
 import { ExportOptionsPanel } from "@/features/planner/components/print-export/export-options-panel";
+import { PrintPreview } from "@/features/planner/components/print-export/print-preview";
+import { SheetPreview } from "@/features/planner/components/print-export/sheet-preview";
 import { usePrintExport } from "@/features/planner/components/print-export/use-print-export";
+import { buildPrintDocument } from "@/features/planner/print/print-document-rules";
 import { PRINT_FORMATS } from "@/features/planner/print/print-options-schema";
+import { buildPrintProgram } from "@/features/planner/print/print-program-rules";
+import { buildXlsxSheets } from "@/features/planner/print/print-xlsx-rules";
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 const searchSchema = z.object({ format: z.enum(PRINT_FORMATS).catch("docx") });
@@ -38,6 +44,14 @@ function PrintExportPage() {
 		draft,
 		sessionCount: data.source.sessions.length,
 	});
+	const program = useMemo(
+		() => buildPrintProgram(data.source, exporter.options),
+		[data.source, exporter.options],
+	);
+	const doc = useMemo(
+		() => buildPrintDocument(program, exporter.options, { logo: null }),
+		[program, exporter.options],
+	);
 
 	return (
 		<>
@@ -61,10 +75,14 @@ function PrintExportPage() {
 					set={exporter.set}
 				/>
 				<section
-					className="bg-muted/50 text-muted-foreground flex min-h-64 min-w-0 flex-1 items-center justify-center rounded-xl p-4 text-sm md:p-6"
+					className="bg-muted/50 min-w-0 flex-1 rounded-xl p-3 md:p-6"
 					data-testid="print-preview"
 				>
-					Preview
+					{format === "xlsx" ? (
+						<SheetPreview sheets={buildXlsxSheets(program, exporter.options)} />
+					) : (
+						<PrintPreview doc={doc} />
+					)}
 				</section>
 			</div>
 		</>

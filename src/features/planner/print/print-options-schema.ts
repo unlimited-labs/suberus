@@ -13,6 +13,7 @@ export const PRINT_LANGUAGES = ["en", "pl"] as const;
 
 export type PrintFormat = (typeof PRINT_FORMATS)[number];
 export type PrintPart = (typeof PRINT_PARTS)[number];
+export type GlanceLayout = (typeof GLANCE_LAYOUTS)[number];
 export type PrintLanguage = (typeof PRINT_LANGUAGES)[number];
 
 export const printOptionsSchema = z
