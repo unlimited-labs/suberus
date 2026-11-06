@@ -34,8 +34,15 @@
     // erosion, so the two tools agree on what "too complex" means. The gate hook
     // audits changed code only, so the functions already above it do not block.
     "maxCyclomatic": 10,
+    // Ratchet: in `fallow audit` a long file that did not grow stays inherited, so only growth blocks.
+    "maxFileLines": 600,
     // CRAP here is inflated by estimated zero coverage; both paths are e2e-covered (bulk-email.spec.ts) and CC is trivial.
     "thresholdOverrides": [
+      {
+        "files": ["e2e/**"],
+        "maxFileLines": 1000,
+        "reason": "serial specs keep one flow per file; splitting them re-pays login and seeding"
+      },
       {
         "files": ["src/features/bulk-email/components/attachment-dropzone.tsx"],
         "functions": ["AttachmentDropzone"],
