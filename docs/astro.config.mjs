@@ -110,6 +110,7 @@ export default defineConfig({
 						},
 						{ label: 'Autoplanner', slug: 'planner/autoplanner' },
 						{ label: 'Publishing', slug: 'planner/publishing' },
+						{ label: 'Printed program', slug: 'planner/printed-program' },
 					],
 				},
 			],

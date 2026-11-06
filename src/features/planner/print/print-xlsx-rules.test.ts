@@ -118,6 +118,10 @@ describe("buildXlsxSheets", () => {
 		expect(program?.autofilter).toBe(true);
 	});
 
+	it("sizes the date column for a date, not for the text form of a JavaScript Date", () => {
+		expect(sheetsFor()[0]?.widths?.[0]).toBeLessThanOrEqual(12);
+	});
+
 	it("lays the day grid out with rooms as columns, code and title in a cell, and the break merged across rooms", () => {
 		const grid = sheetsFor()[1];
 		expect(grid?.rows).toEqual([
