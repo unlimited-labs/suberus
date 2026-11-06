@@ -1,0 +1,23 @@
+---
+title: Page not found
+template: splash
+editUrl: false
+pagefind: false
+# Keeps the entry out of the [...slug] paths (route collision); the /404 route still renders it.
+draft: true
+hero:
+  tagline: This page doesn't exist or has moved. Pick a section below, or use search to find what you need.
+  actions:
+    - text: Back to the manual
+      link: /
+      icon: left-arrow
+      variant: primary
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+	<LinkCard title="Settings" description="Set up the conference before you open it." href="/settings/quick-start/" />
+	<LinkCard title="Managing" description="Run submissions, reviews and people day to day." href="/managing/quick-start/" />
+	<LinkCard title="Planner" description="Build and publish the program." href="/planner/overview/" />
+</CardGrid>
