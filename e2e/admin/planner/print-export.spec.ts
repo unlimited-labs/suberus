@@ -62,6 +62,37 @@ test.describe.serial("Planner — Printed program export", () => {
 		expect(saved?.value).toMatchObject({ language: "pl", parts: ["title", "glance", "detailed"] });
 	});
 
+	test("previews the booklet as pages with a page counter, and Excel as sheets", async ({ page, testRun }) => {
+		const roomA = await createRoom(testRun.testRunId, "Aula");
+		const roomB = await createRoom(testRun.testRunId, "Sala B");
+		for (const [i, roomId] of [roomA, roomB, roomA].entries()) {
+			const sub = await createSubmission({
+				testRunId: testRun.testRunId,
+				title: `Previewed Talk ${i}`,
+				status: SubmissionStatus.ACCEPTED,
+			});
+			const sessionId = await createProgramSession({
+				testRunId: testRun.testRunId,
+				title: `Preview Session ${i}`,
+				startAt: isoDay(1 + i, 9),
+				endAt: isoDay(1 + i, 11),
+				roomId,
+			});
+			await addPresentationToSession(sessionId, sub.id, { durationMin: 20 });
+		}
+
+		await page.goto("/admin/program-planner/export?format=docx");
+		await expect(page.getByTestId("print-preview-page").first()).toBeVisible();
+		await expect(page.getByTestId("print-page-counter")).toContainText(/Page 1 \/ \d+/);
+		expect(await page.getByTestId("print-preview-page").count()).toBeGreaterThanOrEqual(4);
+		await page.getByRole("radio", { name: "Excel" }).click();
+		await expect(page.getByTestId("print-sheet-preview").first()).toBeVisible();
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.getByRole("radio", { name: "Word" }).click();
+		await expect(page.getByTestId("print-preview-page").first()).toBeVisible();
+	});
+
 	test("explains why a format cannot be downloaded yet", async ({ page, testRun }) => {
 		const roomId = await createRoom(testRun.testRunId, "Print Room 2");
 		await createProgramSession({
