@@ -1,12 +1,13 @@
-import type {
-	PrintBlock,
-	PrintDocument,
-	PrintParagraph,
-	PrintRun,
-	PrintSection,
-	PrintTable,
+import {
+	HEX_COLOR,
+	type PrintBlock,
+	type PrintDocument,
+	type PrintParagraph,
+	type PrintRun,
+	type PrintSection,
+	type PrintTable,
 } from "./print-document-schema";
-import { PRINT_LABELS } from "./print-labels";
+import { PRINT_LABELS, type PrintLabels } from "./print-labels";
 import type { GlanceLayout, PrintOptions } from "./print-options-schema";
 import type {
 	DayGrid,
@@ -17,7 +18,7 @@ import type {
 
 type BookSize = PrintOptions["bookSize"];
 type Orientation = PrintSection["page"]["orientation"];
-type Labels = (typeof PRINT_LABELS)["en"];
+type Labels = PrintLabels;
 
 const GLANCE_LIMITS = {
 	A4: { landscapeFrom: 5, maxColumns: 8, maxSpread: 14 },
@@ -28,8 +29,6 @@ const GLANCE_LIMITS = {
 	{ landscapeFrom: number; maxColumns: number; maxSpread: number }
 >;
 
-const HEX = /^#[0-9a-fA-F]{6}$/;
-
 export const PAGE_MM = {
 	A4: [210, 297],
 	B5: [176, 250],
@@ -37,6 +36,12 @@ export const PAGE_MM = {
 } satisfies Record<BookSize, [number, number]>;
 export const MARGIN_MM = 15;
 export const FOOTER_MM = 10;
+export const PX_PER_MM = 3.7795;
+
+export function pageSizeMm(page: PrintSection["page"]): [number, number] {
+	const [w, h] = PAGE_MM[page.size];
+	return page.orientation === "landscape" ? [h, w] : [w, h];
+}
 
 export interface GlanceChoice {
 	layout: GlanceLayout;
@@ -69,11 +74,10 @@ export function chooseGlanceLayout(
 }
 
 export interface DocumentContext {
-	logo: {
-		mime: "image/png" | "image/jpeg";
-		dataBase64: string;
-		aspectRatio: number;
-	} | null;
+	logo: Omit<
+		Extract<PrintBlock, { type: "image" }>,
+		"type" | "widthFraction"
+	> | null;
 }
 
 const para = (
@@ -87,7 +91,7 @@ const para = (
 const run = (text: string, charStyle?: PrintRun["charStyle"]): PrintRun =>
 	charStyle ? { text, charStyle } : { text };
 const accentOf = (color: string | null | undefined, on: boolean) =>
-	on && color && HEX.test(color) ? color : null;
+	on && color && HEX_COLOR.test(color) ? color : null;
 
 interface TableCellInput {
 	row: number;
@@ -121,10 +125,12 @@ function table(
 }
 
 function cellParagraph(cell: DayGrid["cells"][number]): PrintParagraph {
-	if (cell.band) return para("GridBand", run(cell.title));
+	const paragraphStyle: PrintParagraph["style"] = cell.band
+		? "GridBand"
+		: "GridCell";
 	return cell.code
-		? para("GridCell", run(`${cell.code} `, "Code"), run(cell.title))
-		: para("GridCell", run(cell.title));
+		? para(paragraphStyle, run(`${cell.code} `, "Code"), run(cell.title))
+		: para(paragraphStyle, run(cell.title));
 }
 
 function columnsTable(
@@ -155,30 +161,26 @@ function columnsTable(
 		col: 0,
 		block: para("GridTime", run(`${r.start}–${r.end}`)),
 	}));
-	const width = Math.max(1, cols.length);
-	if (cols.length === 0)
-		header.push({ row: 0, col: 1, block: para("GridHeader", run("")) });
 	const body = grid.cells.flatMap((c): TableCellInput[] => {
 		const start = c.band ? from : c.col;
-		const end = c.band ? from + width : c.col + c.colSpan;
-		if (end <= from || start >= from + width) return [];
+		const end = c.band ? to : c.col + c.colSpan;
+		if (end <= from || start >= to) return [];
 		return [
 			{
 				row: c.row + 1,
 				col: Math.max(start, from) - from + 1,
 				rowSpan: c.rowSpan,
-				colSpan: Math.min(end, from + width) - Math.max(start, from),
+				colSpan: Math.min(end, to) - Math.max(start, from),
 				accent: c.band ? null : accentOf(c.trackColor, colorOn),
 				block: cellParagraph(c),
 			},
 		];
 	});
-	return table(
-		[0.6, ...Array.from({ length: width }, () => 1)],
-		1,
-		grid.rows.length + 1,
-		[...header, ...times, ...body],
-	);
+	return table([0.6, ...cols.map(() => 1)], 1, grid.rows.length + 1, [
+		...header,
+		...times,
+		...body,
+	]);
 }
 
 function transposedTable(
@@ -205,7 +207,7 @@ function transposedTable(
 	const body = grid.cells.map((c) => ({
 		row: c.band ? 1 : c.col + 1,
 		col: c.row + 1,
-		rowSpan: c.band ? Math.max(1, grid.columns.length) : 1,
+		rowSpan: c.band ? grid.columns.length : 1,
 		colSpan: c.rowSpan,
 		accent: c.band ? null : accentOf(c.trackColor, colorOn),
 		block: cellParagraph(c),
@@ -244,23 +246,24 @@ function splitPoint(grid: DayGrid): number {
 	return at;
 }
 
-function legend(
+function swatchesOf(
 	program: PrintProgram,
 	options: PrintOptions,
-): PrintParagraph[] {
-	const colored = program.tracks.filter((t) =>
-		accentOf(t.color, options.trackColor),
-	);
-	if (colored.length === 0) return [];
+): PrintDocument["swatches"] {
+	return program.tracks.flatMap((t) => {
+		const color = accentOf(t.color, options.trackColor);
+		return color ? [{ name: t.name, color }] : [];
+	});
+}
+
+function legend(swatches: PrintDocument["swatches"]): PrintParagraph[] {
+	if (swatches.length === 0) return [];
 	return [
 		para(
 			"Legend",
-			...colored.flatMap((t, i): PrintRun[] => [
-				{
-					text: `${i > 0 ? "   " : ""}■ `,
-					color: accentOf(t.color, true) ?? undefined,
-				},
-				run(t.name),
+			...swatches.flatMap((s, i): PrintRun[] => [
+				{ text: `${i > 0 ? "   " : ""}■ `, color: s.color },
+				run(s.name),
 			]),
 		),
 	];
@@ -290,14 +293,12 @@ function glanceSections(
 	program: PrintProgram,
 	options: PrintOptions,
 	l: Labels,
+	swatches: PrintDocument["swatches"],
 ): PrintSection[] {
 	return program.days.flatMap((day, i): PrintSection[] => {
 		const lead: PrintBlock[] =
 			i === 0
-				? [
-						para("PartHeading", run(l.parts.glance)),
-						...legend(program, options),
-					]
+				? [para("PartHeading", run(l.parts.glance)), ...legend(swatches)]
 				: [];
 		const heading = para("DayHeading", run(day.label));
 		const choice = chooseGlanceLayout(
@@ -378,31 +379,21 @@ function dayBlocks(day: PrintDay, l: Labels): PrintParagraph[] {
 		})),
 		...day.items.map((x) => ({
 			at: x.startAt,
-			blocks:
-				x.kind === "EVENT"
-					? [
-							para(
-								"EventTitle",
-								run(`${x.timeLabel} `, "Time"),
-								run(x.title),
-								run(x.place ? ` · ${x.place}` : ""),
-							),
-							...(x.description ? [para("EventText", run(x.description))] : []),
-						]
-					: [
-							para(
-								"BreakLine",
-								run(`${x.timeLabel} `, "Time"),
-								run(x.title),
-								run(x.place ? ` · ${x.place}` : ""),
-							),
-						],
+			blocks: [
+				para(
+					x.kind === "EVENT" ? "EventTitle" : "BreakLine",
+					run(`${x.timeLabel} `, "Time"),
+					run(x.title),
+					run(x.place ? ` · ${x.place}` : ""),
+				),
+				...(x.description ? [para("EventText", run(x.description))] : []),
+			],
 		})),
 	];
 	return [
 		para("DayHeading", run(day.label)),
 		...entries
-			.toSorted((a, b) => a.at.localeCompare(b.at))
+			.toSorted((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
 			.flatMap((e) => e.blocks),
 	];
 }
@@ -432,6 +423,7 @@ export function buildPrintDocument(
 	const l = PRINT_LABELS[options.language];
 	const has = (part: PrintOptions["parts"][number]) =>
 		options.parts.includes(part);
+	const swatches = swatchesOf(program, options);
 	const sections: PrintSection[] = [];
 	if (has("title")) {
 		const logo: PrintBlock[] =
@@ -449,7 +441,8 @@ export function buildPrintDocument(
 			]),
 		);
 	}
-	if (has("glance")) sections.push(...glanceSections(program, options, l));
+	if (has("glance"))
+		sections.push(...glanceSections(program, options, l, swatches));
 	if (has("detailed"))
 		sections.push(
 			...program.days.map((day, i) =>
@@ -463,10 +456,6 @@ export function buildPrintDocument(
 		sections.push(
 			section(program, options, indexBlocks(program, l), { columns: 2 }),
 		);
-	const swatches = program.tracks.flatMap((t) => {
-		const color = accentOf(t.color, options.trackColor);
-		return color ? [{ name: t.name, color }] : [];
-	});
 	return {
 		schemaVersion: 1,
 		draft: program.draft,

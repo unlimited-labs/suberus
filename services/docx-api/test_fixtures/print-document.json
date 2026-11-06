@@ -466,6 +466,10 @@
 									"style": "GridBand",
 									"runs": [
 										{
+											"text": "2X1 ",
+											"charStyle": "Code"
+										},
+										{
 											"text": "Posters"
 										}
 									]

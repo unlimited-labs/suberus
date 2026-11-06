@@ -40,9 +40,7 @@ export function ExportMenu() {
 							<div>
 								<div>
 									{FORMAT_META[format].label}{" "}
-									<span className="text-muted-foreground">
-										.{FORMAT_META[format].ext}
-									</span>
+									<span className="text-muted-foreground">.{format}</span>
 								</div>
 								<div className="text-muted-foreground text-xs">
 									{FORMAT_META[format].hint}

@@ -9,9 +9,9 @@ import type {
 import { cn } from "@/shared/lib/utils";
 
 const PARAGRAPH_CLASS = {
-	Title: "text-[20pt] font-bold leading-tight",
-	Subtitle: "mb-[4mm] text-[12pt]",
-	PartHeading: "mb-[3mm] text-[16pt] font-bold",
+	Title: "text-[22pt] font-bold leading-tight",
+	Subtitle: "mb-[4mm] text-[13pt]",
+	PartHeading: "mb-[3mm] text-[17pt] font-bold",
 	DayHeading: "mt-[1mm] mb-[2mm] text-[13pt] font-bold",
 	SessionHeading: "mt-[3mm] text-[10.5pt] font-bold",
 	SessionMeta: "text-[8.5pt]",
@@ -115,7 +115,9 @@ export function TableSlice({
 			</colgroup>
 			<tbody>
 				{ranges.flatMap(([a, b]) => {
-					const cells = visibleCells(table, a, b);
+					const cells = new Map(
+						visibleCells(table, a, b).map((c) => [`${c.row}:${c.col}`, c]),
+					);
 					const taken = occupied(table, a, b);
 					return Array.from(
 						{ length: Math.max(0, b - a) },
@@ -123,7 +125,7 @@ export function TableSlice({
 					).map((r) => (
 						<tr data-row={r} key={r}>
 							{table.columns.flatMap((_, col) => {
-								const cell = cells.find((c) => c.row === r && c.col === col);
+								const cell = cells.get(`${r}:${col}`);
 								if (cell)
 									return [
 										<td
@@ -191,7 +193,7 @@ export function Block({
 				<p
 					className={cn(
 						"flex gap-[2mm]",
-						e.level === 1 ? "text-[10pt]" : "pl-[4mm] text-[9pt]",
+						PARAGRAPH_CLASS[e.level === 1 ? "TocEntry1" : "TocEntry2"],
 					)}
 					key={`${e.level}-${e.text}-${e.page}`}
 				>

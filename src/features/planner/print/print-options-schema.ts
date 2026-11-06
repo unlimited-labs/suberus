@@ -12,6 +12,12 @@ export const GLANCE_LAYOUTS = [
 export const PRINT_LANGUAGES = ["en", "pl"] as const;
 
 export type PrintFormat = (typeof PRINT_FORMATS)[number];
+
+export const IDML_UNAVAILABLE =
+	"InDesign export needs the document service (DOCX_API_URL).";
+
+export const printFileName = (format: PrintFormat, draft: boolean) =>
+	`program${draft ? "-DRAFT" : ""}.${format}`;
 export type PrintPart = (typeof PRINT_PARTS)[number];
 export type GlanceLayout = (typeof GLANCE_LAYOUTS)[number];
 export type PrintLanguage = (typeof PRINT_LANGUAGES)[number];

@@ -1,10 +1,20 @@
-import { slotStartAt } from "@/features/planner/server/slot-timing";
 import type {
 	ScheduleItemKind,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { PRINT_LABELS } from "./print-labels";
+import { zonedDateString } from "@/shared/lib/zoned";
+import {
+	capitalizeFirst,
+	PRINT_LABELS,
+	PRINT_LOCALE,
+	utcDate,
+} from "./print-labels";
 import type { PrintLanguage, PrintOptions } from "./print-options-schema";
+
+export type ProgramOptions = Pick<
+	PrintOptions,
+	"language" | "includeCancelled"
+>;
 import { assignSessionCodes } from "./session-code-rules";
 
 export interface SourceRoom {
@@ -181,11 +191,6 @@ export interface PrintProgram {
 	tracks: { name: string; color: string | null }[];
 }
 
-const LOCALE = { en: "en-GB", pl: "pl-PL" } satisfies Record<
-	PrintLanguage,
-	string
->;
-
 interface Formatters {
 	dayKey: (d: Date) => string;
 	dayLabel: (d: Date) => string;
@@ -193,12 +198,8 @@ interface Formatters {
 }
 
 function formatters(src: PrintSource, language: PrintLanguage): Formatters {
-	const locale = LOCALE[language];
+	const locale = PRINT_LOCALE[language];
 	const tz = src.timeZone;
-	const key = new Intl.DateTimeFormat("en-CA", {
-		timeZone: tz,
-		dateStyle: "short",
-	});
 	const label = new Intl.DateTimeFormat(locale, {
 		timeZone: tz,
 		weekday: "long",
@@ -212,35 +213,28 @@ function formatters(src: PrintSource, language: PrintLanguage): Formatters {
 		hourCycle: src.timeFormat === "24h" ? "h23" : "h12",
 	});
 	return {
-		dayKey: (d) => key.format(d),
-		dayLabel: (d) => {
-			const text = label.format(d);
-			return text.charAt(0).toLocaleUpperCase(LOCALE[language]) + text.slice(1);
-		},
+		dayKey: (d) => zonedDateString(d, tz),
+		dayLabel: (d) => capitalizeFirst(label.format(d), language),
 		time: (d) => time.format(d),
 	};
 }
 
-export const shortName = (p: {
-	firstName: string | null;
-	lastName: string | null;
-}) =>
+const shortName = (p: { firstName: string | null; lastName: string | null }) =>
 	[p.firstName ? `${p.firstName.charAt(0)}.` : "", p.lastName ?? ""]
 		.filter(Boolean)
 		.join(" ");
 
 function datesLabel(src: PrintSource, language: PrintLanguage): string {
 	if (!src.startDate) return "";
-	const toUtc = (iso: string) => new Date(`${iso}T00:00:00Z`);
-	const fmt = new Intl.DateTimeFormat(LOCALE[language], {
+	const fmt = new Intl.DateTimeFormat(PRINT_LOCALE[language], {
 		timeZone: "UTC",
 		day: "numeric",
 		month: "long",
 		year: "numeric",
 	});
 	return fmt.formatRange(
-		toUtc(src.startDate),
-		toUtc(src.endDate || src.startDate),
+		utcDate(src.startDate),
+		utcDate(src.endDate || src.startDate),
 	);
 }
 
@@ -300,19 +294,20 @@ function buildGrid(
 		marked.filter((e) => !e.band),
 		roomOrder,
 	);
-	const columns = rooms.flatMap((roomId) =>
+	const laneColumns = rooms.flatMap((roomId) =>
 		Array.from({ length: laneCount.get(roomId) ?? 0 }, (_, i) => ({
 			room: roomName(roomId),
 			lane: i + 1,
 			lanes: laneCount.get(roomId) ?? 0,
 		})),
 	);
-	const colOf = (roomId: string | null, lane: number) =>
-		rooms
-			.slice(0, rooms.indexOf(roomId))
-			.reduce((n, r) => n + (laneCount.get(r) ?? 0), 0) +
-		lane -
-		1;
+	const columns =
+		laneColumns.length > 0 ? laneColumns : [{ room: "", lane: 1, lanes: 1 }];
+	const firstCol = new Map<string | null, number>();
+	rooms.reduce((at, r) => {
+		firstCol.set(r, at);
+		return at + (laneCount.get(r) ?? 0);
+	}, 0);
 
 	const bounds = [...new Set(marked.flatMap((e) => [e.start, e.end]))].toSorted(
 		(a, b) => a - b,
@@ -321,16 +316,20 @@ function buildGrid(
 		.slice(0, -1)
 		.map((start, i) => ({ start, end: bounds[i + 1] ?? start }))
 		.filter((r) => marked.some((e) => e.start <= r.start && e.end >= r.end));
+	const rowIndex = new Map(rows.map((r, i) => [r.start, i]));
 
 	const cells = marked
 		.map((e): GridCell => {
 			const lane = laneOf.get(e);
 			return {
-				row: rows.findIndex((r) => r.start === e.start),
-				col: e.band || !lane ? 0 : colOf(lane.roomId, lane.lane),
+				row: rowIndex.get(e.start) ?? 0,
+				col:
+					e.band || !lane
+						? 0
+						: (firstCol.get(lane.roomId) ?? 0) + lane.lane - 1,
 				rowSpan: rows.filter((r) => r.start >= e.start && r.end <= e.end)
 					.length,
-				colSpan: e.band ? Math.max(1, columns.length) : 1,
+				colSpan: e.band ? columns.length : 1,
 				band: e.band,
 				code: e.code,
 				title: e.title,
@@ -358,38 +357,46 @@ function isPresenting(slot: SourceSlot, a: SourceAuthor): boolean {
 function buildSlots(
 	s: SourceSession,
 	f: Formatters,
-	options: PrintOptions,
+	options: ProgramOptions,
 	badgeLabels: ReadonlyMap<string, string>,
 ): PrintSlot[] {
-	const all = s.slots.toSorted((a, b) => a.order - b.order);
-	return all.flatMap((slot, i): PrintSlot[] => {
-		if (slot.cancelled && !options.includeCancelled) return [];
-		const start = slotStartAt(s.startAt, all, slot.order);
-		const end = new Date(start.getTime() + slot.durationMin * 60_000);
-		return [
-			{
-				id: slot.id,
-				submissionId: slot.submission.id,
-				submissionNumber: slot.submission.sequentialNumber,
-				submissionType: slot.submission.type,
-				title: slot.submission.title,
-				timeLabel: s.untimedSlots ? null : `${f.time(start)}–${f.time(end)}`,
-				start: s.untimedSlots ? null : f.time(start),
-				end: s.untimedSlots ? null : f.time(end),
-				board: s.untimedSlots ? `P${i + 1}` : null,
-				authors: slot.submission.authors
-					.toSorted((a, b) => a.orderIndex - b.orderIndex)
-					.map((a) => ({
-						name: shortName(a),
-						fullName: `${a.firstName} ${a.lastName}`,
-						presenting: isPresenting(slot, a),
-					})),
-				badge: slot.badgeId ? (badgeLabels.get(slot.badgeId) ?? null) : null,
-				invited: slot.submission.type === "INVITED",
-				cancelled: slot.cancelled,
-			},
-		];
-	});
+	let offsetMin = 0;
+	return s.slots
+		.toSorted((a, b) => a.order - b.order)
+		.flatMap((slot, i): PrintSlot[] => {
+			const startMin = offsetMin;
+			offsetMin += slot.durationMin;
+			if (slot.cancelled && !options.includeCancelled) return [];
+			const start = s.untimedSlots
+				? null
+				: f.time(new Date(s.startAt.getTime() + startMin * 60_000));
+			const end = s.untimedSlots
+				? null
+				: f.time(new Date(s.startAt.getTime() + offsetMin * 60_000));
+			return [
+				{
+					id: slot.id,
+					submissionId: slot.submission.id,
+					submissionNumber: slot.submission.sequentialNumber,
+					submissionType: slot.submission.type,
+					title: slot.submission.title,
+					timeLabel: start && end ? `${start}–${end}` : null,
+					start,
+					end,
+					board: s.untimedSlots ? `P${i + 1}` : null,
+					authors: slot.submission.authors
+						.toSorted((a, b) => a.orderIndex - b.orderIndex)
+						.map((a) => ({
+							name: shortName(a),
+							fullName: `${a.firstName} ${a.lastName}`,
+							presenting: isPresenting(slot, a),
+						})),
+					badge: slot.badgeId ? (badgeLabels.get(slot.badgeId) ?? null) : null,
+					invited: slot.submission.type === "INVITED",
+					cancelled: slot.cancelled,
+				},
+			];
+		});
 }
 
 interface KeyedAppearance extends Appearance {
@@ -417,7 +424,7 @@ function appearanceOf(
 function sessionAppearances(
 	s: SourceSession,
 	code: string,
-	options: PrintOptions,
+	options: ProgramOptions,
 ): KeyedAppearance[] {
 	const slots = s.slots
 		.filter((slot) => options.includeCancelled || !slot.cancelled)
@@ -442,7 +449,7 @@ function sessionAppearances(
 function buildAuthorIndex(
 	sessions: readonly SourceSession[],
 	codes: ReadonlyMap<string, string>,
-	options: PrintOptions,
+	options: ProgramOptions,
 	collator: Intl.Collator,
 ): Pick<PrintProgram, "authorIndex" | "appearances"> {
 	const keyed = sessions.flatMap((s) =>
@@ -475,13 +482,13 @@ function buildAuthorIndex(
 
 export function buildPrintProgram(
 	src: PrintSource,
-	options: PrintOptions,
+	options: ProgramOptions,
 ): PrintProgram {
 	const f = formatters(src, options.language);
 	const roomsById = new Map(src.rooms.map((r) => [r.id, r]));
 	const badgeLabels = new Map(src.badges.map((b) => [b.id, b.label]));
 	const labels = PRINT_LABELS[options.language];
-	const collator = new Intl.Collator(LOCALE[options.language]);
+	const collator = new Intl.Collator(PRINT_LOCALE[options.language]);
 	const roomName = (id: string | null) =>
 		(id ? roomsById.get(id)?.name : undefined) ?? labels.noRoom;
 	const roomOrder = (id: string | null) =>
@@ -511,8 +518,7 @@ export function buildPrintProgram(
 	const sessions = src.sessions.toSorted(
 		(a, b) =>
 			a.startAt.getTime() - b.startAt.getTime() ||
-			(roomRank.get(a.roomId ?? "") ?? Number.MAX_SAFE_INTEGER) -
-				(roomRank.get(b.roomId ?? "") ?? Number.MAX_SAFE_INTEGER),
+			roomOrder(a.roomId) - roomOrder(b.roomId),
 	);
 
 	const people = buildAuthorIndex(sessions, codes, options, collator);
@@ -545,39 +551,45 @@ export function buildPrintProgram(
 				trackColor: null,
 			})),
 		];
-		const first =
-			daySessions[0]?.startAt ??
-			src.items.find((x) => f.dayKey(x.startAt) === key)?.startAt;
+		const first = daySessions[0]?.startAt ?? dayItems[0]?.startAt;
 		return {
 			index: i + 1,
 			date: key,
 			label: first ? f.dayLabel(first) : key,
-			sessions: daySessions.map((s): PrintSession => ({
-				id: s.id,
-				code: codes.get(s.id) ?? "",
-				title: s.title,
-				startAt: s.startAt.toISOString(),
-				endAt: s.endAt.toISOString(),
-				timeLabel: `${f.time(s.startAt)}–${f.time(s.endAt)}`,
-				start: f.time(s.startAt),
-				end: f.time(s.endAt),
-				room: s.roomId ? (roomsById.get(s.roomId)?.name ?? null) : null,
-				track: s.track,
-				chairs: s.chairs.map(shortName),
-				untimed: s.untimedSlots,
-				slots: buildSlots(s, f, options, badgeLabels),
-			})),
-			items: dayItems.map((x): PrintItem => ({
-				id: x.id,
-				kind: x.kind,
-				title: x.title,
-				startAt: x.startAt.toISOString(),
-				timeLabel: `${f.time(x.startAt)}–${f.time(x.endAt)}`,
-				start: f.time(x.startAt),
-				end: f.time(x.endAt),
-				place: x.location ?? (x.roomId ? roomName(x.roomId) : null),
-				description: x.kind === "EVENT" ? x.description : null,
-			})),
+			sessions: daySessions.map((s): PrintSession => {
+				const start = f.time(s.startAt);
+				const end = f.time(s.endAt);
+				return {
+					id: s.id,
+					code: codes.get(s.id) ?? "",
+					title: s.title,
+					startAt: s.startAt.toISOString(),
+					endAt: s.endAt.toISOString(),
+					timeLabel: `${start}–${end}`,
+					start,
+					end,
+					room: s.roomId ? (roomsById.get(s.roomId)?.name ?? null) : null,
+					track: s.track,
+					chairs: s.chairs.map(shortName),
+					untimed: s.untimedSlots,
+					slots: buildSlots(s, f, options, badgeLabels),
+				};
+			}),
+			items: dayItems.map((x): PrintItem => {
+				const start = f.time(x.startAt);
+				const end = f.time(x.endAt);
+				return {
+					id: x.id,
+					kind: x.kind,
+					title: x.title,
+					startAt: x.startAt.toISOString(),
+					timeLabel: `${start}–${end}`,
+					start,
+					end,
+					place: x.location ?? (x.roomId ? roomName(x.roomId) : null),
+					description: x.kind === "EVENT" ? x.description : null,
+				};
+			}),
 			grid: buildGrid(entries, f, roomName, roomOrder),
 		};
 	});

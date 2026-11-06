@@ -4,8 +4,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { savePrintOptionsFn } from "@/features/planner/api/print-export";
 import {
+	IDML_UNAVAILABLE,
 	type PrintFormat,
 	type PrintOptions,
+	printFileName,
 	printOptionsSchema,
 } from "@/features/planner/print/print-options-schema";
 import { getErrorMessage } from "@/shared/lib/error-message";
@@ -13,10 +15,10 @@ import { getErrorMessage } from "@/shared/lib/error-message";
 const errorBody = z.object({ error: z.string() });
 
 export const FORMAT_META = {
-	docx: { label: "Word", ext: "docx", hint: "Ready booklet, lightly editable" },
-	idml: { label: "InDesign", ext: "idml", hint: "Handoff to a designer" },
-	xlsx: { label: "Excel", ext: "xlsx", hint: "Raw data, one sheet per day" },
-} satisfies Record<PrintFormat, { label: string; ext: string; hint: string }>;
+	docx: { label: "Word", hint: "Ready booklet, lightly editable" },
+	idml: { label: "InDesign", hint: "Handoff to a designer" },
+	xlsx: { label: "Excel", hint: "Raw data, one sheet per day" },
+} satisfies Record<PrintFormat, { label: string; hint: string }>;
 
 interface ExportContext {
 	format: PrintFormat;
@@ -31,12 +33,14 @@ async function downloadFile(
 	options: PrintOptions,
 	fileName: string,
 ) {
-	await savePrintOptionsFn({ data: options });
 	const params = new URLSearchParams({
 		format,
 		options: JSON.stringify(options),
 	});
-	const res = await fetch(`/api/admin/program/print?${params}`);
+	const [res] = await Promise.all([
+		fetch(`/api/admin/program/print?${params}`),
+		savePrintOptionsFn({ data: options }),
+	]);
 	if (!res.ok) {
 		const body = errorBody.safeParse(await res.json().catch(() => null));
 		throw new Error(
@@ -58,8 +62,7 @@ function blockedReasonFor(
 	idmlAvailable: boolean,
 ): string | null {
 	if (sessionCount === 0) return "The program has no sessions yet.";
-	if (format === "idml" && !idmlAvailable)
-		return "InDesign export needs the document service (DOCX_API_URL).";
+	if (format === "idml" && !idmlAvailable) return IDML_UNAVAILABLE;
 	const validation = printOptionsSchema.safeParse(options);
 	return validation.success
 		? null
@@ -74,7 +77,7 @@ export function usePrintExport({
 	idmlAvailable,
 }: ExportContext) {
 	const [options, setOptions] = useState(initialOptions);
-	const fileName = `program${draft ? "-DRAFT" : ""}.${FORMAT_META[format].ext}`;
+	const fileName = printFileName(format, draft);
 	const blockedReason = blockedReasonFor(
 		format,
 		options,

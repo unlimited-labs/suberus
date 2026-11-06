@@ -1,23 +1,20 @@
 import type { XlsxCell, XlsxSheetSpec } from "@/shared/server/xlsx-write";
-import { PRINT_LABELS } from "./print-labels";
-import type { PrintLanguage, PrintOptions } from "./print-options-schema";
+import {
+	capitalizeFirst,
+	PRINT_LABELS,
+	PRINT_LOCALE,
+	type PrintLabels,
+	utcDate,
+} from "./print-labels";
+import type { PrintOptions } from "./print-options-schema";
 import type {
-	DayGrid,
 	PrintDay,
 	PrintProgram,
 	PrintSession,
 	PrintSlot,
 } from "./print-program-rules";
 
-type Labels = (typeof PRINT_LABELS)["en"];
-
-const LOCALE = { en: "en-GB", pl: "pl-PL" } satisfies Record<
-	PrintLanguage,
-	string
->;
 const SHEET_NAME_FORBIDDEN = /[[\]:*?/\\]/g;
-
-const utcDate = (isoDate: string) => new Date(`${isoDate}T00:00:00Z`);
 
 const cellLength = (cell: XlsxCell) =>
 	cell instanceof Date ? 10 : String(cell ?? "").length;
@@ -29,7 +26,7 @@ function widths(rows: XlsxCell[][]): number[] {
 	);
 }
 
-type ColumnKey = keyof (typeof PRINT_LABELS)["en"]["columns"];
+type ColumnKey = keyof PrintLabels["columns"];
 type ProgramRow = Partial<Record<ColumnKey, XlsxCell>>;
 
 const PROGRAM_COLUMNS: ColumnKey[] = [
@@ -86,11 +83,11 @@ function slotPart(slot: PrintSlot, type: string) {
 
 function dayRows(
 	day: PrintDay,
-	l: Labels,
-	weekday: Intl.DateTimeFormat,
+	l: PrintLabels,
+	weekday: (d: Date) => string,
 ): { at: string; row: ProgramRow }[] {
 	const date = utcDate(day.date);
-	const base = { date, weekday: weekday.format(date) } satisfies ProgramRow;
+	const base = { date, weekday: weekday(date) } satisfies ProgramRow;
 	const sessionRows = day.sessions.flatMap((s) =>
 		(s.slots.length > 0
 			? s.slots.map((slot) => slotPart(slot, l.rowTypes.slot))
@@ -119,16 +116,21 @@ function programSheet(
 	options: PrintOptions,
 ): XlsxSheetSpec {
 	const l = PRINT_LABELS[options.language];
-	const weekday = new Intl.DateTimeFormat(LOCALE[options.language], {
-		timeZone: "UTC",
-		weekday: "long",
-	});
+	const weekdayFormat = new Intl.DateTimeFormat(
+		PRINT_LOCALE[options.language],
+		{
+			timeZone: "UTC",
+			weekday: "long",
+		},
+	);
+	const weekday = (d: Date) =>
+		capitalizeFirst(weekdayFormat.format(d), options.language);
 	const columns: ColumnKey[] = options.includeCancelled
 		? [...PROGRAM_COLUMNS, "cancelled"]
 		: PROGRAM_COLUMNS;
 	const body = program.days
 		.flatMap((d) => dayRows(d, l, weekday))
-		.toSorted((a, b) => a.at.localeCompare(b.at))
+		.toSorted((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
 		.map(({ row }) => columns.map((key) => row[key] ?? ""));
 	const all = [columns.map((key) => l.columns[key]), ...body];
 	return {
@@ -139,13 +141,10 @@ function programSheet(
 	};
 }
 
-function gridSheet(
-	day: PrintDay,
-	grid: DayGrid,
-	options: PrintOptions,
-): XlsxSheetSpec {
+function gridSheet(day: PrintDay, options: PrintOptions): XlsxSheetSpec {
+	const grid = day.grid;
 	const l = PRINT_LABELS[options.language];
-	const short = new Intl.DateTimeFormat(LOCALE[options.language], {
+	const short = new Intl.DateTimeFormat(PRINT_LOCALE[options.language], {
 		timeZone: "UTC",
 		weekday: "short",
 		day: "numeric",
@@ -221,7 +220,7 @@ export function buildXlsxSheets(
 			? [programSheet(program, options)]
 			: []),
 		...(options.parts.includes("glance")
-			? program.days.map((d) => gridSheet(d, d.grid, options))
+			? program.days.map((d) => gridSheet(d, options))
 			: []),
 		...(options.parts.includes("index")
 			? [authorsSheet(program, options)]

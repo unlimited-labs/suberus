@@ -1,7 +1,7 @@
 import { IconFileExport } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { printExportDataQueryOptions } from "@/features/planner/api/print-export";
@@ -45,13 +45,16 @@ function PrintExportPage() {
 		sessionCount: data.source.sessions.length,
 		idmlAvailable: data.idmlAvailable,
 	});
+	const { language, includeCancelled } = exporter.options;
 	const program = useMemo(
-		() => buildPrintProgram(data.source, exporter.options),
-		[data.source, exporter.options],
+		() => buildPrintProgram(data.source, { language, includeCancelled }),
+		[data.source, language, includeCancelled],
 	);
-	const doc = useMemo(
-		() => buildPrintDocument(program, exporter.options, { logo: data.logo }),
-		[program, exporter.options, data.logo],
+	const doc = useDeferredValue(
+		useMemo(
+			() => buildPrintDocument(program, exporter.options, { logo: data.logo }),
+			[program, exporter.options, data.logo],
+		),
 	);
 
 	return (

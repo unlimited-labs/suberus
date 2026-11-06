@@ -1,7 +1,12 @@
-import { buildPrintDocument } from "@/features/planner/print/print-document-rules";
-import type {
-	PrintFormat,
-	PrintOptions,
+import {
+	buildPrintDocument,
+	type DocumentContext,
+} from "@/features/planner/print/print-document-rules";
+import {
+	IDML_UNAVAILABLE,
+	type PrintFormat,
+	type PrintOptions,
+	printFileName,
 } from "@/features/planner/print/print-options-schema";
 import {
 	buildPrintProgram,
@@ -27,9 +32,7 @@ export interface PrintFile {
 
 export class PrintFormatUnavailableError extends Error {}
 
-async function documentFor(program: PrintProgram, options: PrintOptions) {
-	return buildPrintDocument(program, options, { logo: await loadPrintLogo() });
-}
+type Logo = DocumentContext["logo"];
 
 const RENDERERS = {
 	xlsx: async (program, options) =>
@@ -37,29 +40,34 @@ const RENDERERS = {
 			buildXlsxSheets(program, options),
 			`${program.conferenceName}${program.draft ? " (DRAFT)" : ""}`,
 		),
-	docx: async (program, options) =>
-		renderDocx(await documentFor(program, options)),
-	idml: async (program, options) => {
+	docx: async (program, options, logo) =>
+		renderDocx(buildPrintDocument(program, options, { logo })),
+	idml: async (program, options, logo) => {
 		if (!isIdmlAvailable())
-			throw new PrintFormatUnavailableError(
-				"InDesign export needs the document service (DOCX_API_URL).",
-			);
-		return renderIdml(await documentFor(program, options));
+			throw new PrintFormatUnavailableError(IDML_UNAVAILABLE);
+		return renderIdml(buildPrintDocument(program, options, { logo }));
 	},
 } satisfies Record<
 	PrintFormat,
-	(program: PrintProgram, options: PrintOptions) => Promise<Buffer>
+	(program: PrintProgram, options: PrintOptions, logo: Logo) => Promise<Buffer>
 >;
+
+const usesLogo = (format: PrintFormat, options: PrintOptions) =>
+	format !== "xlsx" && options.showLogo && options.parts.includes("title");
 
 export async function buildPrintFile(
 	format: PrintFormat,
 	options: PrintOptions,
 ): Promise<PrintFile> {
-	const program = buildPrintProgram(await loadPrintSource(), options);
-	const body = await RENDERERS[format](program, options);
+	const [source, logo] = await Promise.all([
+		loadPrintSource(),
+		usesLogo(format, options) ? loadPrintLogo() : null,
+	]);
+	const program = buildPrintProgram(source, options);
+	const body = await RENDERERS[format](program, options, logo);
 	return {
 		body: new Uint8Array(body),
-		filename: `program${program.draft ? "-DRAFT" : ""}.${format}`,
+		filename: printFileName(format, program.draft),
 		contentType: CONTENT_TYPES[format],
 	};
 }

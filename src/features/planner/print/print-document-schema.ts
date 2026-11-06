@@ -37,7 +37,9 @@ export const CHARACTER_STYLES = [
 
 export type ParagraphStyle = (typeof PARAGRAPH_STYLES)[number];
 
-const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+const hexColor = z.string().regex(HEX_COLOR);
 
 const runSchema = z.object({
 	text: z.string(),

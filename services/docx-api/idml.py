@@ -143,8 +143,8 @@ def graphic_xml(doc: PrintDocument) -> bytes:
     return to_bytes(pkg_root("Graphic", *colors))
 
 
-def margin(columns: int = 1) -> etree._Element:
-    return el("MarginPreference", {"ColumnCount": columns, "ColumnGutter": mm(6),
+def margin() -> etree._Element:
+    return el("MarginPreference", {"ColumnCount": 1, "ColumnGutter": mm(6),
                                    "Top": mm(MARGIN_MM), "Bottom": mm(MARGIN_MM + FOOTER_MM),
                                    "Left": mm(MARGIN_MM), "Right": mm(MARGIN_MM)})
 
@@ -166,7 +166,7 @@ def preferences_xml(doc: PrintDocument) -> bytes:
 
 def paragraph_range(p: Paragraph, swatch: Callable[[str], str], last: bool = False):
     psr = el("ParagraphStyleRange", {"AppliedParagraphStyle": f"ParagraphStyle/{p.style}"})
-    for r in p.runs or []:
+    for r in p.runs:
         attrs: dict[str, object] = {
             "AppliedCharacterStyle": f"CharacterStyle/{r.charStyle}" if r.charStyle else NO_CHAR}
         if r.color:
@@ -347,9 +347,11 @@ def logo_frame(doc: PrintDocument, x: float, w: float, h: float):
 
 def build_spreads(doc: PrintDocument, pages: list[PlannedPage], masters: dict[str, str]):
     frames: dict[int, list[str]] = {}
+    position: dict[int, int] = {}
     for i, p in enumerate(pages):
         if p.section is not None:
-            frames.setdefault(p.section, []).append(f"utf{i}")
+            position[i] = len(frames.setdefault(p.section, []))
+            frames[p.section].append(f"utf{i}")
     files = {}
     for g, group in enumerate(spreads_of(pages)):
         spread = el("Spread", {"Self": f"usp{g}", "PageCount": len(group),
@@ -361,7 +363,7 @@ def build_spreads(doc: PrintDocument, pages: list[PlannedPage], masters: dict[st
             if p.section is None:
                 continue
             chain = frames[p.section]
-            k = chain.index(f"utf{i}")
+            k = position[i]
             offset = 0.0
             if p.section == 0 and k == 0:
                 logo, offset = logo_frame(doc, x, p.width, p.height)

@@ -94,7 +94,7 @@ export function isoWeekday(d: Date, zone: string | undefined): number {
 	return plainDay(d, zone).dayOfWeek;
 }
 
-function zonedDateString(d: Date, zone: string | undefined): string {
+export function zonedDateString(d: Date, zone: string | undefined): string {
 	return plainDay(d, zone).toString();
 }
 
