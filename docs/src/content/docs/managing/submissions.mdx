@@ -160,6 +160,21 @@ How many reviewers a type needs and whether **you** or the **reviewer** decides 
 set on **[Submission Types](/settings/submission-types/)**.
 </Aside>
 
+## When an author withdraws
+
+Authors can withdraw their own submission from its page (**Withdraw Submission**,
+with an optional reason) at any stage except `REJECTED` — including after it was
+`ACCEPTED` or `CONDITIONALLY_ACCEPTED`. Co-authors cannot withdraw. Withdrawal is
+final; there is no override back.
+
+| Effect | Details |
+|---|---|
+| **Status** | Becomes `WITHDRAWN`; the reason is kept in the activity history. |
+| **Reviews** | Pending and overdue review assignments are cancelled. |
+| **Program** | If the talk is scheduled, its slot is marked **cancelled** — it stays in place, struck-through, on the Planner and the public program. Remove it in the [session editor](/planner/manual-scheduling/) if you want the time back. |
+| **Exhibitors** | A *pending* exhibitor application linked to the presentation is withdrawn with it; an *approved* one stays approved. |
+| **E-mail** | The handling editor and every active administrator get **Submission Withdrawn** — except for drafts and submissions not yet handled (`SUBMITTED`). |
+
 ## Camera-ready files
 
 A **camera-ready file** is the final, print-ready PDF of an accepted talk — typically

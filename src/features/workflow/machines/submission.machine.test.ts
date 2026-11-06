@@ -71,3 +71,33 @@ describe("desk decisions from RESUBMITTED", () => {
 		expect(can("DESK_REJECT")).toBe(true);
 	});
 });
+
+describe("WITHDRAW", () => {
+	const canWithdraw = (value: string): boolean => {
+		const actor = createActor(submissionMachine, {
+			snapshot: submissionMachine.resolveState({ value, context: ctx({}) }),
+		});
+		actor.start();
+		const ok = actor.getSnapshot().can({ type: "WITHDRAW" });
+		actor.stop();
+		return ok;
+	};
+
+	it.each([
+		"DRAFT",
+		"SUBMITTED",
+		"UNDER_REVIEW",
+		"REVIEWS_COMPLETE",
+		"AWAITING_DECISION",
+		"REVISE_REQUIRED",
+		"RESUBMITTED",
+		"ACCEPTED",
+		"CONDITIONALLY_ACCEPTED",
+	])("allows withdrawal from %s", (state) => {
+		expect(canWithdraw(state)).toBe(true);
+	});
+
+	it.each(["REJECTED", "WITHDRAWN"])("blocks withdrawal from %s", (state) => {
+		expect(canWithdraw(state)).toBe(false);
+	});
+});

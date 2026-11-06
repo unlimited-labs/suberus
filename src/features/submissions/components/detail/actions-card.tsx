@@ -62,6 +62,18 @@ export function ActionsCard({
 		setIsLoading(false);
 	};
 
+	const withdrawButton = (
+		<Button
+			className="w-full gap-2"
+			disabled={isLoading}
+			onClick={() => setWithdrawOpen(true)}
+			variant="destructive"
+		>
+			<IconX className="size-4" />
+			Withdraw Submission
+		</Button>
+	);
+
 	const renderActions = () => {
 		switch (status) {
 			case "DRAFT":
@@ -84,15 +96,7 @@ export function ActionsCard({
 							<IconSend className="size-4" />
 							Submit
 						</Button>
-						<Button
-							className="w-full gap-2"
-							disabled={isLoading}
-							onClick={() => setWithdrawOpen(true)}
-							variant="destructive"
-						>
-							<IconX className="size-4" />
-							Withdraw Submission
-						</Button>
+						{withdrawButton}
 					</>
 				);
 			case "REVISE_REQUIRED":
@@ -102,40 +106,26 @@ export function ActionsCard({
 							<IconEdit className="size-4" />
 							Make Revisions
 						</Button>
-						<Button
-							className="w-full gap-2"
-							disabled={isLoading}
-							onClick={() => setWithdrawOpen(true)}
-							variant="destructive"
-						>
-							<IconX className="size-4" />
-							Withdraw Submission
-						</Button>
+						{withdrawButton}
 					</>
 				);
 			case "CONDITIONALLY_ACCEPTED":
 				return (
-					<Button className="w-full gap-2" onClick={handleRevise}>
-						<IconEdit className="size-4" />
-						Upload Revised Version
-					</Button>
+					<>
+						<Button className="w-full gap-2" onClick={handleRevise}>
+							<IconEdit className="size-4" />
+							Upload Revised Version
+						</Button>
+						{withdrawButton}
+					</>
 				);
+			case "ACCEPTED":
 			case "SUBMITTED":
 			case "UNDER_REVIEW":
 			case "REVIEWS_COMPLETE":
 			case "AWAITING_DECISION":
 			case "RESUBMITTED":
-				return (
-					<Button
-						className="w-full gap-2"
-						disabled={isLoading}
-						onClick={() => setWithdrawOpen(true)}
-						variant="destructive"
-					>
-						<IconX className="size-4" />
-						Withdraw Submission
-					</Button>
-				);
+				return withdrawButton;
 			default:
 				return null;
 		}

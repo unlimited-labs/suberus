@@ -1,7 +1,10 @@
 import { test, expect } from "../helpers/base-fixtures";
 import {
+	addPresentationToSession,
+	createProgramSession,
 	createSubmission,
 	createSubmissionWithAssignment,
+	deleteProgramSession,
 	createSubmissionWithDecision,
 	createSubmissionWithReview,
 	getAssignmentStatus,
@@ -129,5 +132,51 @@ test.describe("Withdrawal from Extended States", () => {
 
 		const status = await getAssignmentStatus(assignmentId);
 		expect(status).toBe(AssignmentStatus.CANCELLED);
+	});
+
+	test("author withdraws ACCEPTED submission and its scheduled slot is cancelled", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Withdraw Accepted Test",
+			status: SubmissionStatus.ACCEPTED,
+		});
+		cleanup.track(id);
+		const sessionId = await createProgramSession({
+			testRunId: testRun.testRunId,
+			title: "Withdraw Accepted Session",
+			startAt: new Date("2030-01-01T10:00:00Z"),
+			endAt: new Date("2030-01-01T11:00:00Z"),
+		});
+		const slotId = await addPresentationToSession(sessionId, id);
+		await loginAs(page, TEST_USER, { clearCookies: true });
+		await page.goto(`/submissions/${id}`);
+
+		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
+
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
+		const slot = await getPrisma().presentationSlot.findUniqueOrThrow({ where: { id: slotId } });
+		expect(slot.cancelled).toBe(true);
+		await deleteProgramSession(sessionId);
+	});
+
+	test("author withdraws CONDITIONALLY_ACCEPTED submission", async ({ page, testRun, cleanup }) => {
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Withdraw Conditional Test",
+			status: SubmissionStatus.CONDITIONALLY_ACCEPTED,
+		});
+		cleanup.track(id);
+		await loginAs(page, TEST_USER, { clearCookies: true });
+		await page.goto(`/submissions/${id}`);
+
+		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
+
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
 	});
 });

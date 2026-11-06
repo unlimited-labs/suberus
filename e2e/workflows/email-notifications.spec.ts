@@ -151,6 +151,29 @@ test.describe("Workflow Emails", () => {
 		expect(email).toBeNull();
 	});
 
+	test("withdrawal of accepted submission without caretaker emails admins", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		test.slow();
+		const { id } = await createSubmission({
+			testRunId: testRun.testRunId,
+			title: "Withdraw_Accepted_Admin_Email",
+			status: SubmissionStatus.ACCEPTED,
+		});
+		cleanup.track(id);
+		await loginAs(page, TEST_USER, { clearCookies: true });
+		await page.goto(`/submissions/${id}`);
+
+		await page.getByRole("button", { name: "Withdraw Submission" }).click();
+		await page.locator("[role=dialog]").getByRole("button", { name: "Withdraw Submission" }).click();
+		await expect(page.locator('[data-testid="submission-status"]').first()).toContainText("Withdrawn", { timeout: 10000 });
+
+		const email = await waitForEmail(ADMIN_USER.email, testRun.testRunId, 15000);
+		expect(email).not.toBeNull();
+	});
+
 	test("reviewer assignment email sent", async ({ page, testRun, cleanup }) => {
 		await clearMailpitForAddress(REVIEWER_USER.email);
 		const { id } = await createSubmission({

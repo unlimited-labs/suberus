@@ -86,8 +86,9 @@ export function WithdrawDialog({
 						<IconAlertTriangle className="size-4" />
 						<AlertDescription>
 							This will withdraw your submission from the conference. All
-							pending reviewer assignments will be cancelled. This action cannot
-							be undone.
+							pending reviewer assignments will be cancelled, and a scheduled
+							presentation will be marked as cancelled in the program. This
+							action cannot be undone.
 						</AlertDescription>
 					</Alert>
 

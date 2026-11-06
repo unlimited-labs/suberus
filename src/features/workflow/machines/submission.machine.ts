@@ -162,12 +162,14 @@ export const submissionMachine = setup({
 		ACCEPTED: {
 			on: {
 				EDITOR_OVERRIDE: "AWAITING_DECISION",
+				WITHDRAW: "WITHDRAWN",
 			},
 		},
 		CONDITIONALLY_ACCEPTED: {
 			on: {
 				CONFIRM_CONDITIONS_MET: "ACCEPTED",
 				EDITOR_OVERRIDE: "AWAITING_DECISION",
+				WITHDRAW: "WITHDRAWN",
 			},
 		},
 		REJECTED: {

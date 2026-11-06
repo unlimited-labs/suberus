@@ -532,27 +532,32 @@ async function cancelActiveReviewAssignments(
 	}
 }
 
-async function notifyCaretakerOfWithdrawal(
-	submissionId: string,
-): Promise<void> {
-	const [submission, caretaker] = await Promise.all([
+async function notifyOfWithdrawal(submissionId: string): Promise<void> {
+	const [submission, caretaker, admins] = await Promise.all([
 		prisma.submission.findUniqueOrThrow({
 			where: { id: submissionId },
 			include: { authors: { where: { isPresenter: true }, take: 1 } },
 		}),
 		getCaretakerEditor(submissionId),
+		prisma.user.findMany({
+			where: { role: "ADMIN", isActive: true },
+			select: { email: true },
+		}),
 	]);
 
-	if (!caretaker) return;
+	const recipients = new Set(admins.map((a) => a.email));
+	if (caretaker) recipients.add(caretaker.email);
 
 	const presenter = submission.authors[0];
-	void sendEmail("SUBMISSION_WITHDRAWN", caretaker.email, {
-		authorName: presenter
-			? `${presenter.firstName} ${presenter.lastName}`
-			: "Author",
-		submissionTitle: submission.title,
-		submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
-	});
+	for (const email of recipients) {
+		void sendEmail("SUBMISSION_WITHDRAWN", email, {
+			authorName: presenter
+				? `${presenter.firstName} ${presenter.lastName}`
+				: "Author",
+			submissionTitle: submission.title,
+			submissionUrl: `${env.APP_BASE_URL}/admin/submissions/${submissionId}`,
+		});
+	}
 }
 
 export async function withdrawSubmission(
@@ -600,11 +605,15 @@ export async function withdrawSubmission(
 		});
 
 		await cancelActiveReviewAssignments(submissionId, userId);
+		await prisma.presentationSlot.updateMany({
+			where: { submissionId },
+			data: { cancelled: true },
+		});
 
 		const wasHandled =
 			result.fromState !== "DRAFT" && result.fromState !== "SUBMITTED";
 		if (wasHandled) {
-			await notifyCaretakerOfWithdrawal(submissionId);
+			await notifyOfWithdrawal(submissionId);
 		}
 	}
 
