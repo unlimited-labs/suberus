@@ -9,6 +9,7 @@ import {
 	buildPrintFile,
 	PrintFormatUnavailableError,
 } from "@/features/planner/server/print-export";
+import { contentDispositionAttachment } from "@/shared/server/file-names";
 
 const querySchema = z.object({
 	format: z.enum(PRINT_FORMATS),
@@ -46,7 +47,9 @@ export const Route = createFileRoute("/api/admin/program/print")({
 					return new Response(file.body, {
 						headers: {
 							"Content-Type": file.contentType,
-							"Content-Disposition": `attachment; filename="${file.filename}"`,
+							"Content-Disposition": contentDispositionAttachment(
+								file.filename,
+							),
 						},
 					});
 				} catch (error) {

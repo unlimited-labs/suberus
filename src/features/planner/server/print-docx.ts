@@ -28,6 +28,8 @@ import {
 	FOOTER_MM,
 	MARGIN_MM,
 	PAGE_MM,
+	pageSizeMm,
+	PX_PER_MM,
 } from "@/features/planner/print/print-document-rules";
 import type {
 	ParagraphStyle,
@@ -40,7 +42,6 @@ import type {
 
 const FONT = "Arial";
 const TWIP_PER_MM = 56.6929;
-const PX_PER_MM = 3.7795;
 
 const P = (
 	id: ParagraphStyle,
@@ -130,13 +131,9 @@ const CHARACTER_STYLES: ICharacterStyleOptions[] = [
 const hex = (color: string) => color.replace("#", "").toUpperCase();
 
 // Word toggles bold when a bold character style meets a bold paragraph; direct bold keeps it bold.
-const BOLD_CHARACTER_STYLES = new Set([
-	"Code",
-	"Time",
-	"Presenting",
-	"Badge",
-	"Invited",
-]);
+const BOLD_CHARACTER_STYLES = new Set(
+	CHARACTER_STYLES.filter((s) => s.run?.bold).map((s) => s.id),
+);
 
 function paragraph(p: PrintParagraph): Paragraph {
 	return new Paragraph({
@@ -157,8 +154,7 @@ function paragraph(p: PrintParagraph): Paragraph {
 }
 
 function contentWidthMm(section: PrintSection): number {
-	const [w, h] = PAGE_MM[section.page.size];
-	return (section.page.orientation === "landscape" ? h : w) - 2 * MARGIN_MM;
+	return pageSizeMm(section.page)[0] - 2 * MARGIN_MM;
 }
 
 function tableCell(cell: PrintTable["cells"][number] | undefined): TableCell {
@@ -194,10 +190,11 @@ function table(t: PrintTable, widthMm: number): Table {
 		for (let r = c.row; r < c.row + c.rowSpan; r++)
 			for (let k = c.col; k < c.col + c.colSpan; k++)
 				if (r !== c.row || k !== c.col) covered.add(`${r}:${k}`);
+	const anchors = new Map(t.cells.map((c) => [`${c.row}:${c.col}`, c]));
 	const rows = Array.from({ length: t.rowCount }, (_, r) => {
 		const cells = t.columns.flatMap((_, col) => {
 			if (covered.has(`${r}:${col}`)) return [];
-			return [tableCell(t.cells.find((c) => c.row === r && c.col === col))];
+			return [tableCell(anchors.get(`${r}:${col}`))];
 		});
 		return new TableRow({
 			tableHeader: r < t.headerRows,

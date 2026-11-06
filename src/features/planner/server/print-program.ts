@@ -10,6 +10,7 @@ import {
 	getSettings,
 	setSetting,
 } from "@/features/settings/server/settings";
+import { resolveZone } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
 import { getFileBuffer } from "@/shared/server/storage";
 
@@ -69,7 +70,7 @@ export async function loadPrintSource(): Promise<PrintSource> {
 		conferenceName: settings.CONFERENCE_NAME,
 		startDate: settings.CONFERENCE_DATE_START,
 		endDate: settings.CONFERENCE_DATE_END,
-		timeZone: settings.CONFERENCE_TIMEZONE || "UTC",
+		timeZone: resolveZone(settings.CONFERENCE_TIMEZONE),
 		timeFormat: settings.TIME_FORMAT,
 		draft: settings.SCHEDULE_STATE.status !== "PUBLISHED",
 		rooms,

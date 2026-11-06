@@ -7,23 +7,16 @@ import {
 import {
 	FOOTER_MM,
 	MARGIN_MM,
-	PAGE_MM,
+	pageSizeMm,
+	PX_PER_MM,
 } from "@/features/planner/print/print-document-rules";
-import type {
-	PrintDocument,
-	PrintSection,
-} from "@/features/planner/print/print-document-schema";
+import type { PrintDocument } from "@/features/planner/print/print-document-schema";
 import { cn } from "@/shared/lib/utils";
 import { Block, type TocEntry } from "./document-blocks";
 
 const PAGE_FONT = {
 	fontFamily: "Arial, 'Liberation Sans', Helvetica, sans-serif",
 };
-
-function pageSizeMm(section: PrintSection): [number, number] {
-	const [w, h] = PAGE_MM[section.page.size];
-	return section.page.orientation === "landscape" ? [h, w] : [w, h];
-}
 
 function measureSection(el: HTMLElement): MeasuredBlock[] {
 	return [...el.querySelectorAll<HTMLElement>(":scope > [data-block]")].map(
@@ -82,7 +75,7 @@ function MeasureLayer({
 			...el.querySelectorAll<HTMLElement>(":scope > [data-section]"),
 		].map((node, i) => {
 			const section = doc.sections[i];
-			const [, h] = section ? pageSizeMm(section) : [0, 297];
+			const [, h] = section ? pageSizeMm(section.page) : [0, 297];
 			return {
 				start: section?.start ?? "nextPage",
 				columns: section?.columns ?? 1,
@@ -101,7 +94,7 @@ function MeasureLayer({
 			<div ref={ruler} style={{ height: "1000mm" }} />
 			<div ref={root}>
 				{doc.sections.map((section, si) => {
-					const [w] = pageSizeMm(section);
+					const [w] = pageSizeMm(section.page);
 					return (
 						<div
 							className={cn(section.columns === 2 && "columns-2 gap-[6mm]")}
@@ -139,20 +132,20 @@ interface SheetProps {
 function Sheet({ doc, page, number, toc, width }: SheetProps) {
 	const section = doc.sections[page.section];
 	if (!section) return null;
-	const [w, h] = pageSizeMm(section);
-	const scale = width / (w * 3.7795);
+	const [w, h] = pageSizeMm(section.page);
+	const scale = width / (w * PX_PER_MM);
 	return (
 		<figure
 			className="shrink-0 [content-visibility:auto]"
 			data-page={number}
 			data-testid="print-preview-page"
 			style={{
-				containIntrinsicSize: `auto ${Math.round(h * 3.7795 * scale)}px`,
+				containIntrinsicSize: `auto ${Math.round(h * PX_PER_MM * scale)}px`,
 			}}
 		>
 			<div
 				className="relative overflow-hidden bg-white text-black shadow-md ring-1 ring-black/10"
-				style={{ width, height: h * 3.7795 * scale }}
+				style={{ width, height: h * PX_PER_MM * scale }}
 			>
 				<div
 					className="absolute top-0 left-0 origin-top-left"

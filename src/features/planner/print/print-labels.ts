@@ -53,6 +53,18 @@ const en = {
 	},
 };
 
+export type PrintLabels = typeof en;
+
+export const PRINT_LOCALE = { en: "en-GB", pl: "pl-PL" } satisfies Record<
+	PrintLanguage,
+	string
+>;
+
+export const capitalizeFirst = (text: string, language: PrintLanguage) =>
+	text.charAt(0).toLocaleUpperCase(PRINT_LOCALE[language]) + text.slice(1);
+
+export const utcDate = (isoDate: string) => new Date(`${isoDate}T00:00:00Z`);
+
 export const PRINT_LABELS = {
 	en,
 	pl: {

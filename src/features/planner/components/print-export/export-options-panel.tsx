@@ -1,6 +1,5 @@
 import { IconAlertTriangle, IconDownload } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import type { GLANCE_LAYOUTS } from "@/features/planner/print/print-options-schema";
 import {
 	BOOK_SIZES,
 	PRINT_FORMATS,
@@ -30,10 +29,7 @@ const LAYOUT_OPTIONS = [
 	{ value: "spread", label: "Spread" },
 	{ value: "transposed", label: "Transposed" },
 	{ value: "list", label: "List" },
-] satisfies {
-	value: "auto" | (typeof GLANCE_LAYOUTS)[number];
-	label: string;
-}[];
+] satisfies { value: PrintOptions["layoutOverride"]; label: string }[];
 
 const ON_OFF = [
 	{ value: "on", label: "On" },

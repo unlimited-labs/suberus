@@ -35,4 +35,5 @@ export const printExportDataQueryOptions = () =>
 	queryOptions({
 		queryKey: ["program", "print-export"],
 		queryFn: () => getPrintExportDataFn(),
+		refetchOnWindowFocus: false,
 	});
