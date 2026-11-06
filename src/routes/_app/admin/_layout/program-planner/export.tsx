@@ -1,7 +1,7 @@
 import { IconFileExport } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useDeferredValue, useMemo } from "react";
+import { useDeferredValue } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { printExportDataQueryOptions } from "@/features/planner/api/print-export";
@@ -46,15 +46,15 @@ function PrintExportPage() {
 		idmlAvailable: data.idmlAvailable,
 	});
 	const { language, includeCancelled } = exporter.options;
-	const program = useMemo(
-		() => buildPrintProgram(data.source, { language, includeCancelled }),
-		[data.source, language, includeCancelled],
-	);
+	const program = buildPrintProgram(data.source, {
+		language,
+		includeCancelled,
+	});
 	const doc = useDeferredValue(
-		useMemo(
-			() => buildPrintDocument(program, exporter.options, { logo: data.logo }),
-			[program, exporter.options, data.logo],
-		),
+		buildPrintDocument(program, exporter.options, data.logo),
+	);
+	const sheets = useDeferredValue(
+		format === "xlsx" ? buildXlsxSheets(program, exporter.options) : [],
 	);
 
 	return (
@@ -83,7 +83,7 @@ function PrintExportPage() {
 					data-testid="print-preview"
 				>
 					{format === "xlsx" ? (
-						<SheetPreview sheets={buildXlsxSheets(program, exporter.options)} />
+						<SheetPreview sheets={sheets} />
 					) : (
 						<PrintPreview doc={doc} />
 					)}

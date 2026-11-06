@@ -30,6 +30,7 @@ import {
 	PAGE_MM,
 	pageSizeMm,
 	PX_PER_MM,
+	coveredCells,
 } from "@/features/planner/print/print-document-rules";
 import type {
 	ParagraphStyle,
@@ -185,11 +186,7 @@ function tableCell(cell: PrintTable["cells"][number] | undefined): TableCell {
 
 function table(t: PrintTable, widthMm: number): Table {
 	const total = t.columns.reduce((a, c) => a + c.widthWeight, 0);
-	const covered = new Set<string>();
-	for (const c of t.cells)
-		for (let r = c.row; r < c.row + c.rowSpan; r++)
-			for (let k = c.col; k < c.col + c.colSpan; k++)
-				if (r !== c.row || k !== c.col) covered.add(`${r}:${k}`);
+	const covered = coveredCells(t.cells);
 	const anchors = new Map(t.cells.map((c) => [`${c.row}:${c.col}`, c]));
 	const rows = Array.from({ length: t.rowCount }, (_, r) => {
 		const cells = t.columns.flatMap((_, col) => {

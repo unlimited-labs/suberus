@@ -275,7 +275,7 @@ describe("buildPrintProgram: at-a-glance grid and items", () => {
 			{ room: "Aula", lane: 2, lanes: 2 },
 			{ room: "Sala 2", lane: 1, lanes: 1 },
 		]);
-		expect(grid?.rows.map((r) => `${r.start}–${r.end}`)).toEqual([
+		expect(grid?.rows).toEqual([
 			"10:00–10:30",
 			"10:30–11:00",
 			"11:00–11:30",

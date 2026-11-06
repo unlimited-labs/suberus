@@ -112,7 +112,7 @@ const src: PrintSource = {
 
 const options = printOptionsSchema.parse({});
 const docFor = (o = options) =>
-	buildPrintDocument(buildPrintProgram(src, o), o, { logo: null });
+	buildPrintDocument(buildPrintProgram(src, o), o, null);
 const text = (p: { runs: { text: string }[] }) =>
 	p.runs.map((r) => r.text).join("");
 
