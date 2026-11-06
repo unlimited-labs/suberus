@@ -5,6 +5,7 @@ import {
 	refineSheetCreate,
 	sheetCreateShape,
 } from "@/shared/lib/sheet-mapping";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 
 export const announcementIdInput = z.object({ id: z.uuid() });
 
@@ -13,7 +14,10 @@ export const announcementRecipientIdInput = z.object({
 });
 
 export const announcementCreateInput = z.object({
-	userIds: z.array(z.uuid()).min(1, "No recipients selected"),
+	userIds: z
+		.array(z.uuid())
+		.min(1, "No recipients selected")
+		.max(MAX_BULK_ITEMS),
 });
 
 export const announcementDraftInput = z.object({

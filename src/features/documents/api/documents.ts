@@ -33,6 +33,7 @@ import {
 	documentDeliverySchema,
 	uploadedDocumentMetaSchema,
 } from "@/features/documents/validations";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
 const documentStatus = z.enum(["PENDING", "READY", "FAILED"]);
@@ -163,7 +164,10 @@ export const documentUploadLinkFn = createServerFn({ method: "POST" })
 export const previewBulkFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
-		z.object({ templateId: z.uuid(), userIds: z.array(z.uuid()).min(1) }),
+		z.object({
+			templateId: z.uuid(),
+			userIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
+		}),
 	)
 	.handler(({ data }) => previewBulk(data.templateId, data.userIds));
 
@@ -172,7 +176,7 @@ export const startBulkFn = createServerFn({ method: "POST" })
 	.validator(
 		z.object({
 			templateId: z.uuid(),
-			userIds: z.array(z.uuid()).min(1),
+			userIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
 			name: z.string().max(200).optional(),
 		}),
 	)

@@ -15,3 +15,9 @@ export const authorSchema = z.object({
 	affiliationName: z.string().min(1, "Affiliation is required"),
 	isPresenter: z.boolean(),
 }) satisfies z.ZodType<Author>;
+
+export const MAX_AUTHORS = 50;
+
+export const authorListSchema = z
+	.array(authorSchema)
+	.max(MAX_AUTHORS, `At most ${MAX_AUTHORS} authors`);

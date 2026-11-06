@@ -4,7 +4,7 @@ import type {
 	UserSubmissionAuthor,
 	UserSubmissionFile,
 } from "@/features/submissions/server/submissions";
-import { authorSchema } from "@/shared/lib/author-schema";
+import { authorListSchema } from "@/shared/lib/author-schema";
 import type { Author } from "@/shared/types/author";
 
 export interface RevisionFormData {
@@ -200,8 +200,7 @@ export const revisionFormSchema = z.object({
 	title: z.string().trim().min(1, "Title is required"),
 	content: z.string(),
 	comment: z.string(),
-	authors: z
-		.array(authorSchema)
+	authors: authorListSchema
 		.min(1, "At least one author is required")
 		.refine(
 			(authors) => authors.filter((a) => a.isPresenter).length === 1,

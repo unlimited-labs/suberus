@@ -26,6 +26,7 @@ import {
 	submissionIdInput,
 	submissionStatusFilterSchema,
 } from "@/features/submissions/validations";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 
 export const getAdminSubmissionsFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
@@ -82,7 +83,7 @@ export const bulkUpdateSubmissionTrackFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
 		z.object({
-			submissionIds: z.array(z.uuid()).min(1),
+			submissionIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
 			trackId: z.uuid().nullable(),
 		}),
 	)
@@ -94,7 +95,7 @@ export const bulkChangeStatusFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
 		z.object({
-			submissionIds: z.array(z.uuid()).min(1),
+			submissionIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
 			status: submissionStatusFilterSchema,
 		}),
 	)
@@ -123,7 +124,7 @@ export const bulkAssignReviewerFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(
 		z.object({
-			submissionIds: z.array(z.uuid()).min(1),
+			submissionIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
 			reviewerId: z.uuid(),
 		}),
 	)

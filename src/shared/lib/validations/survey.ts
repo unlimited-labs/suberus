@@ -31,6 +31,10 @@ export const surveyQuestionFormSchema = z
 		}
 	});
 
+export const surveyAnswersSchema = z
+	.array(z.object({ questionId: z.uuid(), value: z.string().max(500) }))
+	.max(200);
+
 export type SurveyQuestionFormValues = z.infer<typeof surveyQuestionFormSchema>;
 
 /**

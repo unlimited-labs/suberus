@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { acknowledgmentSchema } from "@/features/submissions/validations";
+import { MAX_AUTHORS } from "@/shared/lib/author-schema";
 import type { ValidationSettings } from "./submission-form-types";
 
 /**
@@ -41,6 +42,7 @@ export function buildSubmissionFormSchema(
 						isPresenter: z.boolean(),
 					}),
 				)
+				.max(MAX_AUTHORS, `At most ${MAX_AUTHORS} authors`)
 				.refine(
 					(authors) => authors.every((a) => a.firstName.length > 0),
 					"First name is required for all authors",

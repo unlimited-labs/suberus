@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { authorSchema } from "@/shared/lib/author-schema";
+import { authorListSchema } from "@/shared/lib/author-schema";
 
 export const exhibitorPresentationSchema = z.object({
 	title: z
@@ -7,8 +7,7 @@ export const exhibitorPresentationSchema = z.object({
 		.min(3, "Title must be at least 3 characters")
 		.max(300, "Title must be at most 300 characters"),
 	content: z.string().min(10, "Content must be at least 10 characters"),
-	authors: z
-		.array(authorSchema)
+	authors: authorListSchema
 		.min(1, "At least one author is required")
 		.refine(
 			(authors) => authors.filter((a) => a.isPresenter).length === 1,

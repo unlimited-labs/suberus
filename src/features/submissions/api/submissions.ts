@@ -36,9 +36,10 @@ import {
 import {
 	submissionCreateInput,
 	submissionIdInput,
+	keywordListSchema,
 } from "@/features/submissions/validations";
 import { logger } from "@/logger";
-import { authorSchema } from "@/shared/lib/author-schema";
+import { authorListSchema } from "@/shared/lib/author-schema";
 import { prisma } from "@/shared/server/db.server";
 import { getUploadedFile } from "@/shared/server/form-upload";
 
@@ -244,8 +245,8 @@ const revisionInputSchema = z.object({
 	title: z.string(),
 	content: z.string(),
 	comment: z.string().optional(),
-	authors: z.array(authorSchema),
-	keywords: z.array(z.string()),
+	authors: authorListSchema,
+	keywords: keywordListSchema,
 	// A revision always carries its new file (FormData); required for FILE types.
 	file: z.instanceof(File).nullish(),
 });

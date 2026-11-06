@@ -1,18 +1,20 @@
 import { z } from "zod";
-import { authorSchema } from "@/shared/lib/author-schema";
+import { authorListSchema } from "@/shared/lib/author-schema";
 
 /**
  * replaceSubmissionAuthors deletes and recreates the whole list, so an empty
  * array wipes the authors and a presenter count other than one leaves
  * presenterId dangling.
  */
-export const submissionAuthorsSchema = z
-	.array(authorSchema)
+export const submissionAuthorsSchema = authorListSchema
 	.min(1, "At least one author is required")
 	.refine(
 		(authors) => authors.filter((a) => a.isPresenter).length === 1,
 		"Exactly one presenter is required",
 	);
+
+// Absolute ceiling above the MAX_KEYWORDS setting range (max 20), which the form schema enforces.
+export const keywordListSchema = z.array(z.string()).max(100);
 
 export const ACKNOWLEDGMENT_MAX_LENGTH = 2000;
 
@@ -37,8 +39,8 @@ export const submissionCreateInput = z.object({
 	title: z.string(),
 	content: z.string(),
 	acknowledgment: acknowledgmentSchema.nullish(),
-	authors: z.array(authorSchema),
-	keywords: z.array(z.string()),
+	authors: authorListSchema,
+	keywords: keywordListSchema,
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	trackId: z.uuid().nullish(),
 	isDraft: z.boolean().optional(),
@@ -66,8 +68,8 @@ const adminSubmissionEditFields = z.object({
 	title: z.string(),
 	content: z.string(),
 	acknowledgment: acknowledgmentSchema.nullish(),
-	authors: z.array(authorSchema),
-	keywords: z.array(z.string()),
+	authors: authorListSchema,
+	keywords: keywordListSchema,
 	contentFormat: z.enum(["TEXT", "FILE"]),
 	trackId: z.uuid().nullish(),
 });

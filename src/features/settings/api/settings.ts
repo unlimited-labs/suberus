@@ -49,6 +49,7 @@ import {
 } from "@/features/settings/validations";
 import { isDeadlinePassed } from "@/shared/lib/deadline";
 import { lookup } from "@/shared/lib/lookup";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 import { prisma } from "@/shared/server/db.server";
 import { fileToBuffer, getUploadedFile } from "@/shared/server/form-upload";
 
@@ -687,7 +688,11 @@ const feeTypeItemSchema = z.object({
 
 export const updateFeeTypesFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(z.object({ feeTypes: z.array(feeTypeItemSchema).min(1) }))
+	.validator(
+		z.object({
+			feeTypes: z.array(feeTypeItemSchema).min(1).max(MAX_BULK_ITEMS),
+		}),
+	)
 	.handler(async ({ data }) => {
 		await setSetting("FEE_TYPES", data.feeTypes);
 		return { success: true };
@@ -712,7 +717,9 @@ const vatRateItemSchema = z.object({
 
 export const updateFinancesVatRatesFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
-	.validator(z.object({ vatRates: z.array(vatRateItemSchema) }))
+	.validator(
+		z.object({ vatRates: z.array(vatRateItemSchema).max(MAX_BULK_ITEMS) }),
+	)
 	.handler(async ({ data }) => {
 		await setSetting("FINANCES_VAT_RATES", data.vatRates);
 		return { success: true };

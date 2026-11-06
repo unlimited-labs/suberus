@@ -5,6 +5,7 @@ import { env } from "@/env";
 import { adminMiddleware } from "@/features/auth/server/middleware";
 import { getSetting } from "@/features/settings/server/settings";
 import { EmailEventType } from "@/generated/prisma/enums";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 import { sendTestEmail } from "@/shared/server/email";
 import {
 	getEmailTemplates,
@@ -32,8 +33,8 @@ export const updateEmailTemplateFn = createServerFn({ method: "POST" })
 			eventType: emailEventTypeEnum,
 			subject: z.string().min(1).max(200),
 			body: z.string().min(1),
-			ccEmails: z.array(z.string()),
-			bccEmails: z.array(z.string()),
+			ccEmails: z.array(z.string()).max(MAX_BULK_ITEMS),
+			bccEmails: z.array(z.string()).max(MAX_BULK_ITEMS),
 			isEnabled: z.boolean(),
 		}),
 	)

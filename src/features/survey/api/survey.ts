@@ -18,6 +18,8 @@ import {
 	upsertSurveyAnswers,
 	visibleAudiences,
 } from "@/features/survey/server/survey";
+import { surveyAnswersSchema } from "@/shared/lib/validations/survey";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 
 export const activeSurveyQuestionsQueryOptions = () =>
 	queryOptions({
@@ -113,7 +115,7 @@ export const importSurveyTemplateFn = createServerFn({ method: "POST" })
 
 export const reorderSurveyQuestionsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(z.object({ orderedIds: z.array(z.uuid()) }))
+	.validator(z.object({ orderedIds: z.array(z.uuid()).max(MAX_BULK_ITEMS) }))
 	.handler(async ({ data }) => {
 		await reorderSurveyQuestions(data.orderedIds);
 		return { success: true };
@@ -135,9 +137,7 @@ export const saveUserSurveyAnswersFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(
 		z.object({
-			answers: z.array(
-				z.object({ questionId: z.uuid(), value: z.string().max(500) }),
-			),
+			answers: surveyAnswersSchema,
 		}),
 	)
 	.handler(async ({ context, data }) => {
@@ -150,9 +150,7 @@ export const saveAdminUserSurveyAnswersFn = createServerFn({ method: "POST" })
 	.validator(
 		z.object({
 			userId: z.uuid(),
-			answers: z.array(
-				z.object({ questionId: z.uuid(), value: z.string().max(500) }),
-			),
+			answers: surveyAnswersSchema,
 		}),
 	)
 	.handler(async ({ data }) => {

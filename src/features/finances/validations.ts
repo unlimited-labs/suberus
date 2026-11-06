@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 
 export const financeRowSchema = z.object({
 	label: z.string().trim().min(1).max(200),
@@ -12,8 +13,8 @@ export const financeRowSchema = z.object({
 });
 
 export const saveFinancesSchema = z.object({
-	expenses: z.array(financeRowSchema),
-	income: z.array(financeRowSchema),
+	expenses: z.array(financeRowSchema).max(MAX_BULK_ITEMS),
+	income: z.array(financeRowSchema).max(MAX_BULK_ITEMS),
 });
 
 export type SaveFinancesInput = z.infer<typeof saveFinancesSchema>;

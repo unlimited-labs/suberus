@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { UserRole } from "@/generated/prisma/enums";
+import { surveyAnswersSchema } from "@/shared/lib/validations/survey";
 import {
 	contactInfoSchema,
 	personalInfoSchema,
 } from "@/shared/lib/validations/user";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 
 // EXHIBITOR is granted by the exhibitor flow, never by a role change; the
 // filter below still spans every role.
@@ -21,15 +23,11 @@ export const usersListInput = z.object({
 	skip: z.number().int().nonnegative().optional(),
 });
 
-const surveyAnswersInput = z.array(
-	z.object({ questionId: z.uuid(), value: z.string().max(500) }),
-);
-
 export const userCreateInput = personalInfoSchema
 	.omit({ orcid: true })
 	.extend(contactInfoSchema.shape)
 	.extend({
-		answers: surveyAnswersInput,
+		answers: surveyAnswersSchema,
 		sendSetPasswordEmail: z.boolean().default(true),
 	});
 
@@ -55,7 +53,7 @@ export const feeMarkPaidInput = userIdInput.extend({
 
 export const userBulkActionInput = z.object({
 	action: z.enum(["mark_fee", "change_role"]),
-	userIds: z.array(z.string()).min(1, "No users selected"),
+	userIds: z.array(z.string()).min(1, "No users selected").max(MAX_BULK_ITEMS),
 	feeType: z.string().optional(),
 	feeAmount: z.number().optional(),
 	feeCurrency: z.string().optional(),

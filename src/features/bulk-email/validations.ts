@@ -4,6 +4,7 @@ import {
 	refineSheetCreate,
 	sheetCreateShape,
 } from "@/shared/lib/sheet-mapping";
+import { MAX_BULK_ITEMS } from "@/shared/lib/validations/zod-helpers";
 
 export const campaignFormatSchema = z.enum(["PLAIN", "MARKDOWN", "MJML"]);
 
@@ -12,7 +13,10 @@ export const campaignIdInput = z.object({ id: z.uuid() });
 export const recipientIdInput = z.object({ recipientId: z.uuid() });
 
 export const campaignCreateInput = z.object({
-	userIds: z.array(z.uuid()).min(1, "No recipients selected"),
+	userIds: z
+		.array(z.uuid())
+		.min(1, "No recipients selected")
+		.max(MAX_BULK_ITEMS),
 });
 
 export const campaignDraftInput = z.object({

@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { zDateString } from "@/shared/lib/validations/zod-helpers";
+import {
+	MAX_BULK_ITEMS,
+	zDateString,
+} from "@/shared/lib/validations/zod-helpers";
 
 export const sessionFormSchema = z.object({
 	title: z.string().max(300, "Title must be at most 300 characters"),
@@ -251,7 +254,7 @@ export const sessionChairInput = z.object({
 
 export const sessionWithPresentationsInput = sessionCreateInput.extend({
 	slotDurationMin: z.number().int().min(1).max(480),
-	submissionIds: z.array(z.uuid()).min(1),
+	submissionIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
 });
 
 export const sessionIdInput = z.object({ sessionId: z.uuid() });
@@ -333,7 +336,7 @@ export const presentationBadgeInput = z.object({
 
 export const presentationReorderInput = z.object({
 	sessionId: z.uuid(),
-	orderedIds: z.array(z.uuid()).min(1),
+	orderedIds: z.array(z.uuid()).min(1).max(MAX_BULK_ITEMS),
 });
 
 export const breakCreateInput = z.object({
