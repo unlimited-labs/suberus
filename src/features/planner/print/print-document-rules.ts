@@ -463,10 +463,15 @@ export function buildPrintDocument(
 		sections.push(
 			section(program, options, indexBlocks(program, l), { columns: 2 }),
 		);
+	const swatches = program.tracks.flatMap((t) => {
+		const color = accentOf(t.color, options.trackColor);
+		return color ? [{ name: t.name, color }] : [];
+	});
 	return {
 		schemaVersion: 1,
 		draft: program.draft,
 		language: options.language,
+		swatches,
 		sections,
 	};
 }

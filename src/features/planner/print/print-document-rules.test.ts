@@ -176,6 +176,11 @@ describe("buildPrintDocument", () => {
 		).toBe("GridBand");
 	});
 
+	it("lists a named swatch for every coloured track, none when track colour is off", () => {
+		expect(docFor().swatches).toEqual([{ name: "Polymers", color: "#ff0000" }]);
+		expect(docFor({ ...options, trackColor: false }).swatches).toEqual([]);
+	});
+
 	it("drops the Parts that are not included and the logo when there is none", () => {
 		const doc = docFor({ ...options, parts: ["detailed"] });
 		expect(doc.sections).toHaveLength(2);

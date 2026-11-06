@@ -99,7 +99,7 @@ test.describe.serial("Planner — Printed program export", () => {
 		await expect(page.getByTestId("print-preview-page").first()).toBeVisible();
 	});
 
-	test("explains why a format cannot be downloaded yet", async ({ page, testRun }) => {
+	test("blocks the download when neither glance nor detailed program is included", async ({ page, testRun }) => {
 		const roomId = await createRoom(testRun.testRunId, "Print Room 2");
 		await createProgramSession({
 			testRunId: testRun.testRunId,
@@ -108,8 +108,11 @@ test.describe.serial("Planner — Printed program export", () => {
 			endAt: isoDay(1, 10),
 			roomId,
 		});
-		await page.goto("/admin/program-planner/export?format=idml");
+		await page.goto("/admin/program-planner/export?format=docx");
+		const parts = page.getByTestId("print-parts");
+		await parts.getByText("Program at a glance").click();
+		await parts.getByText("Detailed program").click();
 		await expect(page.getByTestId("print-download")).toBeDisabled();
-		await expect(page.getByTestId("print-download-note")).toContainText("not available");
+		await expect(page.getByTestId("print-download-note")).toContainText("Include Program at a glance or Detailed program");
 	});
 });

@@ -5,6 +5,7 @@ import {
 	adminOnlyMiddleware,
 } from "@/features/auth/server/middleware";
 import { printOptionsSchema } from "@/features/planner/print/print-options-schema";
+import { isIdmlAvailable } from "@/features/planner/server/print-idml-client";
 import {
 	getPrintOptions,
 	loadPrintLogo,
@@ -20,7 +21,7 @@ export const getPrintExportDataFn = createServerFn({ method: "GET" })
 			getPrintOptions(),
 			loadPrintLogo(),
 		]);
-		return { source, options, logo };
+		return { source, options, logo, idmlAvailable: isIdmlAvailable() };
 	});
 
 export const savePrintOptionsFn = createServerFn({ method: "POST" })

@@ -11,6 +11,7 @@ Layout:
                   diff     /v1/normalize /v1/diff       (submission version-diff)
                   render   /v1/render-pdf               (document generation)
                   signing  /v1/gen-cert …/verify-pdf    (PAdES via pyHanko)
+                  idml     /v1/idml                     (printed program for InDesign)
   domain      — omml, mathtype, stylecss, diffhtml, ooxml, htmlesc, signing
 
 Functional endpoints stay under /v1 (behind a shared-secret token) so a future contract
@@ -21,7 +22,7 @@ import os
 
 from fastapi import FastAPI
 
-from routers import diff, editor, health, render, signing
+from routers import diff, editor, health, idml, render, signing
 
 app = FastAPI()
 app.include_router(health.router)
@@ -29,6 +30,7 @@ app.include_router(editor.router)
 app.include_router(diff.router)
 app.include_router(render.router)
 app.include_router(signing.router)
+app.include_router(idml.router)
 
 
 if __name__ == "__main__":

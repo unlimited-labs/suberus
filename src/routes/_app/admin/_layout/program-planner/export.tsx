@@ -43,6 +43,7 @@ function PrintExportPage() {
 		initialOptions: data.options,
 		draft,
 		sessionCount: data.source.sessions.length,
+		idmlAvailable: data.idmlAvailable,
 	});
 	const program = useMemo(
 		() => buildPrintProgram(data.source, exporter.options),
