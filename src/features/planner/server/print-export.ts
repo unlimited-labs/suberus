@@ -1,3 +1,4 @@
+import { buildPrintDocument } from "@/features/planner/print/print-document-rules";
 import type {
 	PrintFormat,
 	PrintOptions,
@@ -5,7 +6,8 @@ import type {
 import { buildPrintProgram } from "@/features/planner/print/print-program-rules";
 import { buildXlsxSheets } from "@/features/planner/print/print-xlsx-rules";
 import { writeXlsxWorkbook } from "@/shared/server/xlsx-write";
-import { loadPrintSource } from "./print-program";
+import { renderDocx } from "./print-docx";
+import { loadPrintLogo, loadPrintSource } from "./print-program";
 
 const CONTENT_TYPES = {
 	xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -28,6 +30,16 @@ export async function buildPrintFile(
 	const source = await loadPrintSource();
 	const program = buildPrintProgram(source, options);
 	const filename = `program${program.draft ? "-DRAFT" : ""}.${format}`;
+	if (format === "docx") {
+		const doc = buildPrintDocument(program, options, {
+			logo: await loadPrintLogo(),
+		});
+		return {
+			body: new Uint8Array(await renderDocx(doc)),
+			filename,
+			contentType: CONTENT_TYPES.docx,
+		};
+	}
 	if (format !== "xlsx")
 		throw new PrintFormatUnavailableError(
 			`${format} export is not available yet`,

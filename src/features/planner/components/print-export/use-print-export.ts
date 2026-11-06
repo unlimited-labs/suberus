@@ -18,7 +18,7 @@ export const FORMAT_META = {
 	xlsx: { label: "Excel", ext: "xlsx", hint: "Raw data, one sheet per day" },
 } satisfies Record<PrintFormat, { label: string; ext: string; hint: string }>;
 
-const AVAILABLE_FORMATS: ReadonlySet<PrintFormat> = new Set(["xlsx"]);
+const AVAILABLE_FORMATS: ReadonlySet<PrintFormat> = new Set(["xlsx", "docx"]);
 
 interface ExportContext {
 	format: PrintFormat;

@@ -7,10 +7,10 @@ import {
 import { printOptionsSchema } from "@/features/planner/print/print-options-schema";
 import {
 	getPrintOptions,
+	loadPrintLogo,
 	loadPrintSource,
 	savePrintOptions,
 } from "@/features/planner/server/print-program";
-import { getSettings } from "@/features/settings/server/settings";
 
 export const getPrintExportDataFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
@@ -18,13 +18,9 @@ export const getPrintExportDataFn = createServerFn({ method: "GET" })
 		const [source, options, logo] = await Promise.all([
 			loadPrintSource(),
 			getPrintOptions(),
-			getSettings(["BRANDING_LOGO_KEY", "BRANDING_LOGO_URL"]),
+			loadPrintLogo(),
 		]);
-		return {
-			source,
-			options,
-			hasLogo: Boolean(logo.BRANDING_LOGO_KEY || logo.BRANDING_LOGO_URL),
-		};
+		return { source, options, logo };
 	});
 
 export const savePrintOptionsFn = createServerFn({ method: "POST" })

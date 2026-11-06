@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import AdmZip from "adm-zip";
 import * as XLSX from "xlsx";
 import { SubmissionStatus } from "../../../src/generated/prisma/enums";
 import {
@@ -85,6 +86,11 @@ test.describe.serial("Planner — Printed program export", () => {
 		await expect(page.getByTestId("print-preview-page").first()).toBeVisible();
 		await expect(page.getByTestId("print-page-counter")).toContainText(/Page 1 \/ \d+/);
 		expect(await page.getByTestId("print-preview-page").count()).toBeGreaterThanOrEqual(4);
+		const docxDownload = page.waitForEvent("download");
+		await page.getByTestId("print-download").click();
+		const docx = new AdmZip(readFileSync(await (await docxDownload).path()));
+		expect(docx.getEntry("word/document.xml")?.getData().toString("utf8")).toContain("Preview Session 0");
+
 		await page.getByRole("radio", { name: "Excel" }).click();
 		await expect(page.getByTestId("print-sheet-preview").first()).toBeVisible();
 

@@ -125,7 +125,7 @@ function IncludeList({
 				checked={hasLogo && options.showLogo}
 				disabled={excel || !hasLogo}
 				id="print-part-logo"
-				label={hasLogo ? "Logo" : "Logo (no logo set)"}
+				label={hasLogo ? "Logo" : "Logo (no PNG or JPEG logo set)"}
 				onChange={(on) => set("showLogo", on)}
 			/>
 		</div>
