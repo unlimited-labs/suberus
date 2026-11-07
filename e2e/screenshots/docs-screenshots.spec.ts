@@ -930,6 +930,69 @@ test.describe("docs screenshots", () => {
 		await shot(page, "25-managing-program-planner.png");
 	});
 
+	test("72 printed program export", async ({ page }) => {
+		const db = getPrisma();
+		const roomNames = ["Aula Magna", "Room 2.14", "Room 3.01"];
+		const existingRooms = await db.room.findMany({ where: { name: { in: roomNames } } });
+		const rooms = await Promise.all(
+			roomNames.map((name, order) =>
+				db.room.upsert({ where: { name }, create: { name, order: 200 + order }, update: {} }),
+			),
+		);
+		const createdRoomIds = rooms
+			.filter((r) => !existingRooms.some((e) => e.id === r.id))
+			.map((r) => r.id);
+		const tracks = await Promise.all(
+			[
+				["Metals", "#1971c2"],
+				["Polymers", "#d9480f"],
+				["Modelling", "#2f9e44"],
+			].map(([name, color]) => db.programTrack.create({ data: { name, color } })),
+		);
+		const titles = [
+			"Grain boundary engineering in additively manufactured superalloys",
+			"Machine-learned interatomic potentials for high-entropy alloys",
+			"In situ synchrotron study of recrystallisation kinetics",
+		];
+		const sessionIds: string[] = [];
+		const submissionIds: string[] = [];
+		try {
+			for (const [i, room] of rooms.entries()) {
+				for (const [start, end] of [
+					["09:00", "10:30"],
+					["11:00", "12:30"],
+				] as const) {
+					const session = await db.programSession.create({
+						data: {
+							title: `${tracks[i]?.name ?? "Session"} ${start}`,
+							startAt: day(14, start),
+							endAt: day(14, end),
+							roomId: room.id,
+							trackId: tracks[i]?.id ?? null,
+						},
+					});
+					sessionIds.push(session.id);
+					for (const [order, title] of titles.entries()) {
+						const sub = await createSubmission({ title, status: SubmissionStatus.ACCEPTED });
+						submissionIds.push(sub.id);
+						await db.presentationSlot.create({
+							data: { sessionId: session.id, submissionId: sub.id, order, durationMin: 25 },
+						});
+					}
+				}
+			}
+			await page.goto("/admin/program-planner/export?format=docx");
+			await expect(page.getByTestId("print-preview-page").first()).toBeVisible({ timeout: 15000 });
+			await page.waitForTimeout(1500);
+			await shot(page, "72-planner-printed-program-export.png", { full: false });
+		} finally {
+			await db.programSession.deleteMany({ where: { id: { in: sessionIds } } });
+			await db.submission.deleteMany({ where: { id: { in: submissionIds } } });
+			await db.room.deleteMany({ where: { id: { in: createdRoomIds } } });
+			await db.programTrack.deleteMany({ where: { id: { in: tracks.map((t) => t.id) } } });
+		}
+	});
+
 	test("26 extraction status on submission", async ({ page }) => {
 		await page.goto(`/admin/submissions/${ctx.docxId}`);
 		await shot(page, "26-managing-extraction-status.png", { height: 1300 });

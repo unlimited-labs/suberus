@@ -18,7 +18,7 @@ The **Export ▾** button in the planner header, next to **Publish**. Pick a for
 the export page.
 </Aside>
 
-🖼️ [Screenshot placeholder: export page with the options panel and the page preview]
+![Export page: options on the left, Word page preview on the right, Download in the header](../../../assets/screenshots/72-planner-printed-program-export.png)
 
 ## How to export
 
@@ -27,19 +27,22 @@ the export page.
 1. In the planner header, open **Export ▾** and choose **Word**, **InDesign** or **Excel**.
 
 2. Set the options in the left panel (see the table below). The preview on the right
-   updates as you change them; scroll it to see further pages — the counter at the top
-   shows the current page.
+   updates as you change them; scroll it to see further pages — the bar at the top
+   shows the current page and has zoom buttons for checking small grid text.
 
-3. Check the **schedule issues** box, if shown. Export still works, but the file prints
-   the schedule exactly as it is.
+3. If a **schedule issues** note is shown, open it to see the full list. Export still
+   works, but the file prints the schedule exactly as it is; **Fix in the planner** takes
+   you back.
 
-4. Click **Download**. The options you used are saved and pre-filled next time.
+4. Click **Download** in the page header. The top of the panel shows the file name
+   (e.g. `iccms-2026-program-DRAFT.docx`) or, when the download is blocked, the reason.
+   The options you used are saved and pre-filled next time.
 
 </Steps>
 
 <Aside type="caution" title="Draft programs">
 Until the schedule is **Published**, files are marked as drafts: the file name ends in
-`-DRAFT`, Word and the preview show a diagonal **DRAFT** watermark, and InDesign puts
+`-DRAFT`, the panel says so, Word and the preview show a diagonal **DRAFT** watermark, and InDesign puts
 the mark on its own layer (**Draft mark**) behind the content so a designer can hide it.
 </Aside>
 
@@ -48,10 +51,10 @@ the mark on its own layer (**Draft mark**) behind the content so a designer can 
 | Option | What it does | Excel |
 |---|---|---|
 | **Format** | Word (`.docx`), InDesign (`.idml`) or Excel (`.xlsx`). | — |
-| **Include** | Which parts go into the file: *Title & contents*, *Program at a glance*, *Detailed program*, *Author index*, and the conference *Logo*. At least *Program at a glance* or *Detailed program* must stay on. | Parts become sheets; title and logo are not used |
-| **Book size** | Page size of the booklet: A4, B5 or A5. | Not used |
-| **At-a-glance layout** | *Auto* picks a layout per day from the number of rooms: rooms as columns (landscape from 5 rooms on A4, 4 on A5), a two-page spread, or a transposed grid for very many rooms. Pick one to use it for every day; *List* prints a time-block list instead of a grid. | Always rooms as columns |
-| **Track colour** | Adds a coloured bar to each session in the grid and a legend. | Not used |
+| **Include** | Which parts go into the file: *Title & contents*, *Program at a glance*, *Detailed program*, *Author index*, and the conference *Logo*. At least *Program at a glance* or *Detailed program* must stay on; otherwise the group is marked and Download is disabled. | Parts become sheets; title and logo are not used |
+| **Book size** | Page size of the booklet: A4, B5 or A5. | Hidden |
+| **At-a-glance layout** | *Auto* picks a layout per day from the number of rooms: rooms as columns (landscape from 5 rooms on A4, 4 on A5), a two-page spread, or a transposed grid for very many rooms. Pick one to use it for every day; *List* prints a time-block list instead of a grid. The hint under the control explains the selected layout. | Hidden; always rooms as columns |
+| **Track colour** | *Colour sessions by track, with a legend*: a coloured bar on each session in the grid. | A coloured left edge on each session in the day grids |
 | **Cancelled talks** | *Hide* leaves cancelled talks out; *Include* prints them struck through. | Adds a *Cancelled* column |
 | **Labels language** | Language of fixed labels (Room, Chair, weekdays, headings, column names). Titles and names are printed as entered. | Column and sheet names |
 
@@ -66,11 +69,13 @@ another format the *Logo* box is disabled.
 |---|---|
 | **Word** | Title and contents (with page numbers), *Program at a glance* grids, *Detailed program* day by day, *Author index* in two columns. Named paragraph and character styles (e.g. *SessionHeading*, *Presenter*) so you can restyle the whole booklet at once. |
 | **InDesign** | The same parts as threaded stories with named paragraph, character, table and cell styles, one swatch per track (*Track: name*) and a ready **Program TOC** style — run *Layout › Table of Contents* to build the contents. InDesign adds pages as text flows. |
-| **Excel** | *Program* (one row per talk, empty session or break, with filters), one grid sheet per day, and *Authors* (one row per appearance: author, presenter or chair). |
+| **Excel** | *Program* (one row per talk, empty session or break, with filters), one grid sheet per day, and *Authors* (one row per appearance: author, presenter or chair). Header rows are bold and stay in view while scrolling; day grids keep the time column in view too. |
 
 <Aside type="caution" title="InDesign needs the document service">
 InDesign export runs in the document service (`DOCX_API_URL`). Without it the
-*InDesign* format is disabled with a reason on the export page.
+*InDesign* format is disabled with a reason on the export page. The preview shows Word's
+page breaks, so for InDesign the page count is marked as approximate: InDesign reflows
+the text and adds pages itself.
 </Aside>
 
 ## Session codes

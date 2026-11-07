@@ -18,6 +18,7 @@ interface ExportContext {
 	format: PrintFormat;
 	initialOptions: PrintOptions;
 	draft: boolean;
+	conferenceName: string;
 	sessionCount: number;
 	idmlAvailable: boolean;
 }
@@ -49,35 +50,45 @@ async function downloadFile(
 	URL.revokeObjectURL(url);
 }
 
+function optionsError(options: PrintOptions) {
+	const validation = printOptionsSchema.safeParse(options);
+	if (validation.success) return null;
+	const issue = validation.error.issues[0];
+	return {
+		message: issue?.message ?? "Check the options.",
+		onParts: issue?.path[0] === "parts",
+	};
+}
+
 function blockedReasonFor(
 	format: PrintFormat,
-	options: PrintOptions,
+	error: ReturnType<typeof optionsError>,
 	sessionCount: number,
 	idmlAvailable: boolean,
 ): string | null {
 	if (sessionCount === 0) return "The program has no sessions yet.";
 	if (format === "idml" && !idmlAvailable) return IDML_UNAVAILABLE;
-	const validation = printOptionsSchema.safeParse(options);
-	return validation.success
-		? null
-		: (validation.error.issues[0]?.message ?? "Check the options.");
+	return error?.message ?? null;
 }
 
 export function usePrintExport({
 	format,
 	initialOptions,
 	draft,
+	conferenceName,
 	sessionCount,
 	idmlAvailable,
 }: ExportContext) {
 	const [options, setOptions] = useState(initialOptions);
-	const fileName = printFileName(format, draft);
+	const fileName = printFileName(format, draft, conferenceName);
+	const error = optionsError(options);
 	const blockedReason = blockedReasonFor(
 		format,
-		options,
+		error,
 		sessionCount,
 		idmlAvailable,
 	);
+	const partsError = error?.onParts ? error.message : null;
 
 	const download = useMutation({
 		mutationFn: () => downloadFile(format, options, fileName),
@@ -87,5 +98,5 @@ export function usePrintExport({
 	const set = <K extends keyof PrintOptions>(key: K, value: PrintOptions[K]) =>
 		setOptions((o) => ({ ...o, [key]: value }));
 
-	return { options, set, fileName, blockedReason, download };
+	return { options, set, fileName, blockedReason, partsError, download };
 }

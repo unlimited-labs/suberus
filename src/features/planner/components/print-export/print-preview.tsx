@@ -1,3 +1,4 @@
+import { IconZoomIn, IconZoomOut } from "@tabler/icons-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
 	type MeasuredBlock,
@@ -12,6 +13,7 @@ import {
 } from "@/features/planner/print/print-document-rules";
 import type { PrintDocument } from "@/features/planner/print/print-document-schema";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { Block, type TocEntry } from "./document-blocks";
 
 const PAGE_FONT = {
@@ -136,7 +138,7 @@ function Sheet({ doc, page, number, toc, width }: SheetProps) {
 	const scale = width / (w * PX_PER_MM);
 	return (
 		<figure
-			className="shrink-0 [content-visibility:auto]"
+			className="mx-auto shrink-0 [content-visibility:auto]"
 			data-page={number}
 			data-testid="print-preview-page"
 			style={{
@@ -218,7 +220,7 @@ function usePageCounter(
 	return current;
 }
 
-const THUMBNAIL_BELOW_PX = 520;
+const ZOOMS: readonly number[] = [1, 1.5, 2];
 
 function useWidth(ref: React.RefObject<HTMLDivElement | null>) {
 	const [width, setWidth] = useState(0);
@@ -234,38 +236,87 @@ function useWidth(ref: React.RefObject<HTMLDivElement | null>) {
 	return width;
 }
 
-export function PrintPreview({ doc }: { doc: PrintDocument }) {
+function PreviewBar({
+	current,
+	count,
+	approximate,
+	zoom,
+	onZoom,
+}: {
+	current: number;
+	count: number;
+	approximate: boolean;
+	zoom: number;
+	onZoom: (zoom: number) => void;
+}) {
+	const at = ZOOMS.indexOf(zoom);
+	return (
+		<div className="text-muted-foreground bg-muted/80 sticky top-0 z-10 mb-3 flex items-center justify-between gap-2 rounded-md px-2 py-1 text-xs backdrop-blur">
+			<span data-testid="print-page-counter">
+				{count === 0
+					? "Laying out pages…"
+					: `${approximate ? "About page" : "Page"} ${Math.min(current, count)} / ${count}`}
+				{approximate && count > 0 && " · InDesign reflows the text"}
+			</span>
+			<span className="flex items-center gap-1">
+				<Button
+					aria-label="Zoom out"
+					disabled={at <= 0}
+					onClick={() => onZoom(ZOOMS[at - 1] ?? 1)}
+					size="icon-xs"
+					variant="ghost"
+				>
+					<IconZoomOut />
+				</Button>
+				<span className="w-9 text-center tabular-nums">
+					{zoom === 1 ? "Fit" : `${zoom * 100}%`}
+				</span>
+				<Button
+					aria-label="Zoom in"
+					disabled={at >= ZOOMS.length - 1}
+					onClick={() => onZoom(ZOOMS[at + 1] ?? zoom)}
+					size="icon-xs"
+					variant="ghost"
+				>
+					<IconZoomIn />
+				</Button>
+			</span>
+		</div>
+	);
+}
+
+export function PrintPreview({
+	doc,
+	approximate,
+}: {
+	doc: PrintDocument;
+	approximate: boolean;
+}) {
 	const [pages, setPages] = useState<Page[]>([]);
+	const [zoom, setZoom] = useState(1);
 	const scroller = useRef<HTMLDivElement>(null);
 	const current = usePageCounter(scroller, pages.length);
 	const available = useWidth(scroller);
-	const thumbnails = available > 0 && available < THUMBNAIL_BELOW_PX;
-	const pageWidth = thumbnails
-		? (available - 16) / 2
-		: Math.min(available - 16, 620);
+	const pageWidth = Math.min(available - 16, 620) * zoom;
 	const toc = tocEntries(doc, pages);
 	return (
 		<div className="relative">
 			<MeasureLayer doc={doc} onMeasured={setPages} />
+			<PreviewBar
+				approximate={approximate}
+				count={pages.length}
+				current={current}
+				onZoom={setZoom}
+				zoom={zoom}
+			/>
 			<div
-				className="text-muted-foreground bg-muted/80 sticky top-0 z-10 mb-3 rounded-md px-2 py-1 text-xs backdrop-blur"
-				data-testid="print-page-counter"
-			>
-				Page {Math.min(current, pages.length)} / {pages.length}
-			</div>
-			<div
-				className={cn(
-					"max-h-[calc(100vh-12rem)] overflow-y-auto pb-8",
-					thumbnails
-						? "grid grid-cols-2 gap-4"
-						: "flex flex-col items-center gap-4",
-				)}
+				className="flex max-h-[calc(100vh-12rem)] flex-col gap-4 overflow-auto pb-8"
 				ref={scroller}
 			>
 				{pages.map((page, i) =>
 					page.blank ? (
 						<div
-							className="text-muted-foreground shrink-0 text-xs"
+							className="text-muted-foreground shrink-0 text-center text-xs"
 							data-page={i + 1}
 							key={`blank-${i}`}
 						>

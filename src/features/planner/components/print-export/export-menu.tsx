@@ -19,7 +19,12 @@ export function ExportMenu() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button data-testid="print-export-menu" type="button" variant="outline">
+				<Button
+					aria-label="Export printed program"
+					data-testid="print-export-menu"
+					type="button"
+					variant="outline"
+				>
 					<IconFileExport />
 					<span className="hidden sm:inline">Export</span>
 					<IconChevronDown />

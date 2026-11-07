@@ -4,25 +4,28 @@ import { cn } from "@/shared/lib/utils";
 import { buttonVariants } from "@/shared/ui/button";
 
 interface SegmentedControlProps<T extends string> {
-	label: string;
+	labelledBy: string;
 	value: T;
-	options: ReadonlyArray<{ value: T; label: string }>;
+	options: ReadonlyArray<{ value: T; label: string; disabled?: boolean }>;
 	onChange: (value: T) => void;
 	disabled?: boolean;
+	describedBy?: string;
 	testId?: string;
 }
 
 export function SegmentedControl<T extends string>({
-	label,
+	labelledBy,
 	value,
 	options,
 	onChange,
 	disabled,
+	describedBy,
 	testId,
 }: SegmentedControlProps<T>) {
 	return (
 		<RadioGroup<T>
-			aria-label={label}
+			aria-describedby={describedBy}
+			aria-labelledby={labelledBy}
 			className="bg-muted inline-flex flex-wrap gap-0.5 rounded-lg p-0.5"
 			data-testid={testId}
 			disabled={disabled}
@@ -33,8 +36,9 @@ export function SegmentedControl<T extends string>({
 				<Radio.Root
 					className={cn(
 						buttonVariants({ size: "sm", variant: "ghost" }),
-						"text-muted-foreground data-checked:border-border data-checked:bg-background data-checked:text-foreground cursor-pointer border border-transparent data-disabled:pointer-events-none data-disabled:opacity-50",
+						"text-muted-foreground data-checked:border-border data-checked:bg-background data-checked:text-foreground cursor-pointer border border-transparent data-disabled:cursor-not-allowed data-disabled:opacity-50",
 					)}
+					disabled={o.disabled}
 					key={o.value}
 					value={o.value}
 				>
