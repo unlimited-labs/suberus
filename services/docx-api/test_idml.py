@@ -84,6 +84,12 @@ def test_drops_characters_xml_cannot_carry_from_text_and_swatch_names(doc):
     assert "TrackA" in xml and "Polymers" in xml
 
 
+def test_embeds_the_logo_bytes_as_cdata(doc, package):
+    logo = next(b for b in doc.sections[0].blocks if b.type == "image")
+    spread = text(package, "Spreads/Spread_usp0.xml")
+    assert f"<Contents><![CDATA[{logo.dataBase64}]]></Contents>" in spread
+
+
 def test_draft_layer_is_listed_first_so_it_sits_behind_content(package):
     layers = re.findall(r'<Layer [^>]*Name="([^"]+)"', text(package, "designmap.xml"))
     assert layers == ["Draft mark", "Content"]

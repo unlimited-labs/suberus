@@ -12,6 +12,7 @@ import {
 	paginate,
 } from "@/features/planner/print/paginate-rules";
 import {
+	rowBreaks,
 	contentSizeMm,
 	MARGIN_MM,
 	pageSizeMm,
@@ -40,15 +41,10 @@ function measureSection(
 		const rows = [
 			...node.querySelectorAll<HTMLTableRowElement>("tr[data-row]"),
 		];
-		const spans = new Set<number>();
-		rows.forEach((tr, r) => {
-			for (const td of tr.cells)
-				for (let k = 1; k < td.rowSpan; k++) spans.add(r + k);
-		});
 		return {
 			headerRows: block.headerRows,
 			rows: rows.map((tr) => tr.offsetHeight),
-			breakable: rows.map((_, r) => !spans.has(r + 1)),
+			breakable: rowBreaks(block.cells, block.rowCount),
 		};
 	});
 }
@@ -120,7 +116,11 @@ function MeasureLayer({
 							style={{ width: `${w}mm` }}
 						>
 							{section.blocks.map((block, bi) => (
-								<div data-block={bi} key={`${bi}-${block.type}`}>
+								<div
+									className="flow-root"
+									data-block={bi}
+									key={`${bi}-${block.type}`}
+								>
 									<Block block={block} toc={[]} />
 								</div>
 							))}

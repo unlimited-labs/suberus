@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildPrintDocument, chooseGlanceLayout } from "./print-document-rules";
+import {
+	buildPrintDocument,
+	chooseGlanceLayout,
+	rowBreaks,
+	tableRows,
+} from "./print-document-rules";
 import { printOptionsSchema } from "./print-options-schema";
 import { buildPrintProgram, type PrintSource } from "./print-program-rules";
 
@@ -189,6 +194,53 @@ describe("buildPrintDocument", () => {
 		expect(tables.map((t) => t.columns.length)).toEqual([2, 2, 2]);
 	});
 
+	it("prints one index letter for surnames that differ only by an accent, but keeps Polish Ł apart", () => {
+		const names = ["Edwards", "Émile", "Ezra", "Lis", "Łukasik"];
+		const [first] = src.sessions;
+		const [talk] = first?.slots ?? [];
+		if (!first || !talk) throw new Error("fixture has a first talk");
+		const withNames: PrintSource = {
+			...src,
+			sessions: [
+				{
+					...first,
+					chairs: [],
+					slots: [
+						{
+							...talk,
+							submission: {
+								...talk.submission,
+								authors: names.map((lastName, i) => ({
+									id: `n${i}`,
+									userId: null,
+									email: `n${i}@x.org`,
+									firstName: "A",
+									lastName,
+									orderIndex: i,
+									isPresenter: i === 0,
+								})),
+							},
+						},
+					],
+				},
+			],
+		};
+		const letters = (language: "en" | "pl") => {
+			const o = {
+				...options,
+				language,
+				parts: ["index" as const, "detailed" as const],
+			};
+			return buildPrintDocument(buildPrintProgram(withNames, o), o, null)
+				.sections.flatMap((x) => x.blocks)
+				.flatMap((b) =>
+					b.type === "paragraph" && b.style === "IndexLetter" ? [text(b)] : [],
+				);
+		};
+		expect(letters("en")).toEqual(["E", "L"]);
+		expect(letters("pl")).toEqual(["E", "L", "Ł"]);
+	});
+
 	it("drops the Parts that are not included and the logo when there is none", () => {
 		const doc = docFor({ ...options, parts: ["detailed"] });
 		expect(doc.sections).toHaveLength(2);
@@ -197,5 +249,28 @@ describe("buildPrintDocument", () => {
 				.flatMap((s) => s.blocks)
 				.some((b) => b.type === "image" || b.type === "toc"),
 		).toBe(false);
+	});
+});
+
+describe("table layout helpers", () => {
+	const cells = [
+		{ row: 0, col: 0, rowSpan: 2, colSpan: 1 },
+		{ row: 0, col: 1, rowSpan: 1, colSpan: 2 },
+		{ row: 1, col: 2, rowSpan: 1, colSpan: 1 },
+	];
+
+	it("lists each row's anchor cells, empty cells as null, and skips covered ones", () => {
+		expect(
+			tableRows(cells, 3, 0, 2).map((r) =>
+				r.slots.map((s) => (s.cell ? `${s.cell.row}:${s.cell.col}` : null)),
+			),
+		).toEqual([
+			["0:0", "0:1"],
+			[null, "1:2"],
+		]);
+	});
+
+	it("never breaks a page inside a row span", () => {
+		expect(rowBreaks(cells, 3)).toEqual([false, true, true]);
 	});
 });
