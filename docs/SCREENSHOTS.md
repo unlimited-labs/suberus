@@ -121,6 +121,7 @@ Settings tabs deep-link via `?tab=<id>`.
 - [ ] **69** — `managing/announcements.mdx` — *Announcements card on the participant dashboard* (one unread, one read) — `/` as a recipient
 - [ ] **70** — `managing/announcements.mdx` — *Announcements section on a user profile* (Read/Unread badge, Preview + Edit) — `/admin/users/<id>`
 - [ ] **71** — `managing/bulk-email.mdx` — *In-app copy panel* (**Save in user profile** turned on) — `/admin/bulk-email/<id>` while DRAFT
+- [ ] **72** — `planner/printed-program.mdx` — *Export page* (options panel, Word page preview, Download in the header) — `/admin/program-planner/export?format=docx`
 
 ---
 

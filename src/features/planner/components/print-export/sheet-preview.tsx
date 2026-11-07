@@ -11,6 +11,11 @@ function cellText(cell: XlsxCell): string {
 	return cell === null ? "" : String(cell);
 }
 
+function accentStyle(sheet: XlsxSheetSpec, r: number, c: number) {
+	const color = sheet.accents?.find((a) => a.r === r && a.c === c)?.color;
+	return color ? { borderLeft: `3px solid ${color}` } : undefined;
+}
+
 export function SheetPreview({ sheets }: { sheets: XlsxSheetSpec[] }) {
 	const [tab, setTab] = useState<string | null>(null);
 	const first = sheets[0]?.name;
@@ -45,6 +50,7 @@ export function SheetPreview({ sheets }: { sheets: XlsxSheetSpec[] }) {
 											<td
 												className="max-w-56 truncate border px-2 py-1"
 												key={`${r}-${c}`}
+												style={accentStyle(s, r, c)}
 											>
 												{cellText(cell)}
 											</td>

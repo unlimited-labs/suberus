@@ -49,7 +49,7 @@ test.describe.serial("Planner — Printed program export", () => {
 		const downloadPromise = page.waitForEvent("download");
 		await page.getByTestId("print-download").click();
 		const download = await downloadPromise;
-		expect(download.suggestedFilename()).toMatch(/^program(-DRAFT)?\.xlsx$/);
+		expect(download.suggestedFilename()).toMatch(/^([a-z0-9-]+-)?program(-DRAFT)?\.xlsx$/);
 
 		const wb = XLSX.read(readFileSync(await download.path()), { type: "buffer" });
 		expect(wb.SheetNames[0]).toBe("Program");

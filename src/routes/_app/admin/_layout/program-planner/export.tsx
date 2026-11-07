@@ -1,6 +1,10 @@
-import { IconFileExport } from "@tabler/icons-react";
+import {
+	IconArrowLeft,
+	IconDownload,
+	IconFileExport,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useDeferredValue } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
@@ -15,6 +19,7 @@ import { PRINT_FORMATS } from "@/features/planner/print/print-options-schema";
 import { buildPrintProgram } from "@/features/planner/print/print-program-rules";
 import { buildXlsxSheets } from "@/features/planner/print/print-xlsx-rules";
 import { PageHeader } from "@/shared/components/layout/page-header";
+import { Button } from "@/shared/ui/button";
 
 const searchSchema = z.object({ format: z.enum(PRINT_FORMATS).catch("docx") });
 
@@ -42,6 +47,7 @@ function PrintExportPage() {
 		format,
 		initialOptions: data.options,
 		draft,
+		conferenceName: data.source.conferenceName,
 		sessionCount: data.source.sessions.length,
 		idmlAvailable: data.idmlAvailable,
 	});
@@ -60,24 +66,40 @@ function PrintExportPage() {
 	);
 
 	return (
-		<>
-			<PageHeader
-				icon={IconFileExport}
-				title={`Export printed program${draft ? " (draft)" : ""}`}
-			/>
-			<div className="flex flex-col gap-6 p-4 md:flex-row md:p-6">
+		<div className="flex h-full flex-col">
+			<PageHeader icon={IconFileExport} title="Export printed program">
+				<Button asChild size="sm" variant="ghost">
+					<Link aria-label="Back to planner" to="/admin/program-planner">
+						<IconArrowLeft />
+						<span className="hidden sm:inline">Back to planner</span>
+					</Link>
+				</Button>
+				<Button
+					data-testid="print-download"
+					disabled={
+						exporter.blockedReason !== null || exporter.download.isPending
+					}
+					onClick={() => exporter.download.mutate()}
+					size="sm"
+				>
+					<IconDownload />
+					{exporter.download.isPending ? "Generating…" : "Download"}
+				</Button>
+			</PageHeader>
+			<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4 md:flex-row md:p-6">
 				<ExportOptionsPanel
 					blockedReason={exporter.blockedReason}
-					downloading={exporter.download.isPending}
+					draft={draft}
 					fileName={exporter.fileName}
 					format={format}
 					hasLogo={data.logo !== null}
+					idmlAvailable={data.idmlAvailable}
 					issues={issues}
-					onDownload={() => exporter.download.mutate()}
 					onFormatChange={(f) =>
 						void navigate({ search: { format: f }, replace: true })
 					}
 					options={exporter.options}
+					partsError={exporter.partsError}
 					set={exporter.set}
 				/>
 				<section
@@ -87,10 +109,10 @@ function PrintExportPage() {
 					{format === "xlsx" ? (
 						<SheetPreview sheets={sheets} />
 					) : (
-						doc && <PrintPreview doc={doc} />
+						doc && <PrintPreview approximate={format === "idml"} doc={doc} />
 					)}
 				</section>
 			</div>
-		</>
+		</div>
 	);
 }

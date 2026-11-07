@@ -69,7 +69,7 @@ export async function buildPrintFile(
 	const body = await RENDERERS[format](program, options, logo);
 	return {
 		body: new Uint8Array(body),
-		filename: printFileName(format, program.draft),
+		filename: printFileName(format, program.draft, program.conferenceName),
 		contentType: CONTENT_TYPES[format],
 	};
 }

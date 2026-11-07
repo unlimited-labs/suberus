@@ -1,3 +1,4 @@
+import latinize from "latinize";
 import { z } from "zod";
 
 export const PRINT_FORMATS = ["docx", "idml", "xlsx"] as const;
@@ -15,14 +16,26 @@ export type PrintLanguage = (typeof PRINT_LANGUAGES)[number];
 export const FORMAT_META = {
 	docx: { label: "Word", hint: "Ready booklet, lightly editable" },
 	idml: { label: "InDesign", hint: "Handoff to a designer" },
-	xlsx: { label: "Excel", hint: "Raw data, one sheet per day" },
+	xlsx: { label: "Excel", hint: "Data workbook: program, day grids, authors" },
 } satisfies Record<PrintFormat, { label: string; hint: string }>;
 
 export const IDML_UNAVAILABLE =
 	"InDesign export needs the document service (DOCX_API_URL).";
 
-export const printFileName = (format: PrintFormat, draft: boolean) =>
-	`program${draft ? "-DRAFT" : ""}.${format}`;
+const fileSlug = (text: string) =>
+	latinize(text)
+		.toLowerCase()
+		.replaceAll(/[^a-z0-9]+/g, "-")
+		.replaceAll(/^-|-$/g, "");
+
+export function printFileName(
+	format: PrintFormat,
+	draft: boolean,
+	conferenceName: string,
+): string {
+	const name = [fileSlug(conferenceName), "program", draft ? "DRAFT" : ""];
+	return `${name.filter((part) => part !== "").join("-")}.${format}`;
+}
 
 export const printOptionsSchema = z
 	.object({
