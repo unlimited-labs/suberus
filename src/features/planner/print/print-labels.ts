@@ -120,3 +120,5 @@ export const PRINT_LABELS = {
 		},
 	} satisfies typeof en,
 } satisfies Record<PrintLanguage, typeof en>;
+
+export const timeRange = (start: string, end: string) => `${start}–${end}`;

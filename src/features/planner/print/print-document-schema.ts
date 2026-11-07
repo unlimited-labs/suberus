@@ -2,7 +2,7 @@ import { z } from "zod";
 import { HEX_COLOR } from "@/features/planner/validations";
 import { BOOK_SIZES, PRINT_LANGUAGES } from "./print-options-schema";
 
-export const PARAGRAPH_STYLES = [
+const PARAGRAPH_STYLES = [
 	"Title",
 	"Subtitle",
 	"PartHeading",
@@ -26,7 +26,7 @@ export const PARAGRAPH_STYLES = [
 	"TocEntry2",
 ] as const;
 
-export const CHARACTER_STYLES = [
+const CHARACTER_STYLES = [
 	"Code",
 	"Time",
 	"Presenter",

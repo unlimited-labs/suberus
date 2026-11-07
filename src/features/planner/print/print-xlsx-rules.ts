@@ -148,7 +148,6 @@ function gridSheet(
 	day: PrintDay,
 	l: PrintLabels,
 	short: Intl.DateTimeFormat,
-	trackColor: boolean,
 ): XlsxSheetSpec {
 	const grid = day.grid;
 	const name = `D${day.index} ${short.format(utcDate(day.date))}`
@@ -174,7 +173,7 @@ function gridSheet(
 			row[cell.col + 1] = cell.code
 				? `${cell.code} — ${cell.title}`
 				: cell.title;
-		if (trackColor && cell.trackColor && !cell.band)
+		if (cell.trackColor)
 			accents.push({
 				r: cell.row + 1,
 				c: cell.col + 1,
@@ -231,7 +230,7 @@ function gridSheets(
 		day: "numeric",
 		month: "short",
 	});
-	return program.days.map((d) => gridSheet(d, l, short, options.trackColor));
+	return program.days.map((d) => gridSheet(d, l, short));
 }
 
 export function buildXlsxSheets(

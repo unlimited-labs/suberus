@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
-import { tableRows } from "@/features/planner/print/print-document-rules";
+import {
+	columnFractions,
+	tableRows,
+} from "@/features/planner/print/print-document-rules";
 import type {
 	ParagraphStyle,
 	PrintBlock,
@@ -88,18 +91,14 @@ function TableSlice({
 		[0, table.headerRows],
 		[from, to],
 	];
-	const total = table.columns.reduce((a, c) => a + c.widthWeight, 0);
 	return (
 		<table
 			className="mb-[2mm] w-full table-fixed border-collapse"
 			data-testid="print-preview-table"
 		>
 			<colgroup>
-				{table.columns.map((c, i) => (
-					<col
-						key={`${i}-${c.widthWeight}`}
-						style={{ width: `${(c.widthWeight / total) * 100}%` }}
-					/>
+				{columnFractions(table).map((f, i) => (
+					<col key={`${i}-${f}`} style={{ width: `${f * 100}%` }} />
 				))}
 			</colgroup>
 			<tbody>

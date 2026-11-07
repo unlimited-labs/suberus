@@ -4,6 +4,7 @@ import {
 	GetObjectCommand,
 	HeadBucketCommand,
 	HeadObjectCommand,
+	NoSuchKey,
 	PutObjectCommand,
 	S3Client,
 } from "@aws-sdk/client-s3";
@@ -130,6 +131,17 @@ export async function getFileBuffer(key: string): Promise<Buffer> {
 	if (!response.Body) throw new Error(`S3 returned empty body for key: ${key}`);
 	const bytes = await response.Body.transformToByteArray();
 	return Buffer.from(bytes);
+}
+
+export async function getFileBufferIfExists(
+	key: string,
+): Promise<Buffer | null> {
+	try {
+		return await getFileBuffer(key);
+	} catch (error) {
+		if (error instanceof NoSuchKey) return null;
+		throw error;
+	}
 }
 
 export async function deleteFile(key: string): Promise<void> {

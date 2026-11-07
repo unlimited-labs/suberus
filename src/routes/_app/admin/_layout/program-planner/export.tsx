@@ -58,6 +58,7 @@ function PrintExportPage() {
 	const program = buildPrintProgram(data.source, {
 		language: options.language,
 		includeCancelled: options.includeCancelled,
+		trackColor: options.trackColor,
 	});
 	const doc = sheet ? null : buildPrintDocument(program, options, data.logo);
 	const sheets = sheet ? buildXlsxSheets(program, options) : [];

@@ -2,8 +2,7 @@ import { SUPPORTED_IMAGE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting, setSetting } from "@/features/settings/server/settings";
 import {
 	deleteFile,
-	fileExists,
-	getFileBuffer,
+	getFileBufferIfExists,
 	getFileContent,
 	uploadFile,
 } from "@/shared/server/storage";
@@ -75,8 +74,7 @@ export async function getBrandingImageContent(name: BrandingImageName) {
 
 export async function getBrandingLogoBuffer(): Promise<Buffer | null> {
 	const key = await getSetting(BRANDING_IMAGES.logo.settingKey);
-	if (!key || !(await fileExists(key))) return null;
-	return getFileBuffer(key);
+	return key ? getFileBufferIfExists(key) : null;
 }
 
 export const uploadAuthBackground = (buffer: Buffer) =>

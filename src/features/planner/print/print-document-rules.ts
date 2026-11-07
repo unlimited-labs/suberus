@@ -88,7 +88,7 @@ interface Span {
 	colSpan: number;
 }
 
-export function coveredCells(cells: readonly Span[]): Set<string> {
+function coveredCells(cells: readonly Span[]): Set<string> {
 	const covered = new Set<string>();
 	for (const c of cells)
 		for (let r = c.row; r < c.row + c.rowSpan; r++)
@@ -140,8 +140,17 @@ const para = (
 });
 const run = (text: string, charStyle?: PrintRun["charStyle"]): PrintRun =>
 	charStyle ? { text, charStyle } : { text };
-const accentOf = (color: string | null | undefined, on: boolean) =>
-	on && color ? color : null;
+
+const commaRuns = <T>(items: readonly T[], toRun: (item: T) => PrintRun) =>
+	items.flatMap((item, i): PrintRun[] => [
+		...(i > 0 ? [run(", ")] : []),
+		toRun(item),
+	]);
+
+export const columnFractions = (table: PrintTable) => {
+	const total = table.columns.reduce((a, c) => a + c.widthWeight, 0);
+	return table.columns.map((c) => c.widthWeight / total);
+};
 
 interface TableCellInput {
 	row: number;
@@ -193,7 +202,6 @@ function cellParagraph(
 function columnsTable(
 	grid: DayGrid,
 	l: PrintLabels,
-	colorOn: boolean,
 	from = 0,
 	to = grid.columns.length,
 ): PrintTable {
@@ -228,7 +236,7 @@ function columnsTable(
 				col: Math.max(start, from) - from + 1,
 				rowSpan: c.rowSpan,
 				colSpan: Math.min(end, to) - Math.max(start, from),
-				accent: c.band ? null : accentOf(c.trackColor, colorOn),
+				accent: c.trackColor,
 				block: cellParagraph(c),
 			},
 		];
@@ -240,11 +248,7 @@ function columnsTable(
 	]);
 }
 
-function transposedTable(
-	grid: DayGrid,
-	l: PrintLabels,
-	colorOn: boolean,
-): PrintTable {
+function transposedTable(grid: DayGrid, l: PrintLabels): PrintTable {
 	const header: TableCellInput[] = [
 		{ row: 0, col: 0, block: para("GridHeader", run(l.room)) },
 		...grid.rows.map((r, i) => ({
@@ -266,7 +270,7 @@ function transposedTable(
 		col: c.row + 1,
 		rowSpan: c.colSpan,
 		colSpan: c.rowSpan,
-		accent: c.band ? null : accentOf(c.trackColor, colorOn),
+		accent: c.trackColor,
 		block: cellParagraph(c),
 	}));
 	return table([1.2, ...grid.rows.map(() => 1)], 1, grid.columns.length + 1, [
@@ -298,14 +302,10 @@ function splitPoint(grid: DayGrid): number | null {
 	return roomStarts.find((i) => i >= half) ?? roomStarts.at(-1) ?? null;
 }
 
-function swatchesOf(
-	program: PrintProgram,
-	options: PrintOptions,
-): PrintDocument["swatches"] {
-	return program.tracks.flatMap((t) => {
-		const color = accentOf(t.color, options.trackColor);
-		return color ? [{ name: t.name, color }] : [];
-	});
+function swatchesOf(program: PrintProgram): PrintDocument["swatches"] {
+	return program.tracks.flatMap((t) =>
+		t.color ? [{ name: t.name, color: t.color }] : [],
+	);
 }
 
 function legend(swatches: PrintDocument["swatches"]): PrintParagraph[] {
@@ -356,24 +356,21 @@ function glanceSections(
 			options.bookSize,
 			options.layoutOverride,
 		);
-		const color = options.trackColor;
 		const at = choice.layout === "spread" ? splitPoint(day.grid) : null;
 		if (at !== null) {
 			return [
-				section(
-					options,
-					[...lead, heading, columnsTable(day.grid, l, color, 0, at)],
-					{ start: "evenPage" },
-				),
-				section(options, [columnsTable(day.grid, l, color, at)]),
+				section(options, [...lead, heading, columnsTable(day.grid, l, 0, at)], {
+					start: "evenPage",
+				}),
+				section(options, [columnsTable(day.grid, l, at)]),
 			];
 		}
 		const body: PrintBlock[] =
 			choice.layout === "transposed"
-				? [transposedTable(day.grid, l, color)]
+				? [transposedTable(day.grid, l)]
 				: choice.layout === "list"
 					? listBlocks(day.grid)
-					: [columnsTable(day.grid, l, color)];
+					: [columnsTable(day.grid, l)];
 		return [
 			section(options, [...lead, heading, ...body], {
 				orientation: choice.orientation,
@@ -403,10 +400,9 @@ function sessionBlocks(s: PrintSession, l: PrintLabels): PrintParagraph[] {
 			...(slot.invited ? [run(` ${l.invited}`, "Invited")] : []),
 			...(slot.badge ? [run(` ${slot.badge}`, "Badge")] : []),
 		];
-		const authorRuns = slot.authors.flatMap((a, i): PrintRun[] => [
-			...(i > 0 ? [run(", ")] : []),
+		const authorRuns = commaRuns(slot.authors, (a) =>
 			run(a.name, a.presenting ? "Presenter" : undefined),
-		]);
+		);
 		return [
 			para("SlotTitle", ...titleRuns),
 			...(authorRuns.length > 0 ? [para("SlotAuthors", ...authorRuns)] : []),
@@ -461,10 +457,9 @@ function indexBlocks(
 			const isNew = letter === "" || sameLetter.compare(first, letter) !== 0;
 			const head = isNew ? [para("IndexLetter", run(first))] : [];
 			if (isNew) letter = first;
-			const refs = e.refs.flatMap((r, i): PrintRun[] => [
-				...(i > 0 ? [run(", ")] : []),
+			const refs = commaRuns(e.refs, (r) =>
 				run(r.code, r.presenting ? "Presenting" : undefined),
-			]);
+			);
 			return [...head, para("IndexEntry", run(`${e.name} — `), ...refs)];
 		}),
 	];
@@ -481,7 +476,7 @@ export function buildPrintDocument(
 	const l = PRINT_LABELS[options.language];
 	const has = (part: PrintOptions["parts"][number]) =>
 		options.parts.includes(part);
-	const swatches = swatchesOf(program, options);
+	const swatches = swatchesOf(program);
 	const sections: PrintSection[] = [];
 	if (has("title")) {
 		const logoBlock: PrintBlock[] =
