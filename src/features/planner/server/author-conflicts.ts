@@ -1,3 +1,4 @@
+import { slotStartAt } from "@/features/planner/slot-timing";
 import {
 	authorKey,
 	type NamedPerson,
@@ -5,7 +6,6 @@ import {
 	personName,
 	type ScheduleIssue,
 } from "./schedule-issues";
-import { slotStartAt } from "./slot-timing";
 
 interface ConflictAuthor extends NamedPerson {
 	userId: string | null;
