@@ -41,6 +41,22 @@ const nitroConfig: NitroPluginConfig = {
 	traceDeps: ["jsdom*"],
 	output: outputDir ? { dir: outputDir } : undefined,
 	experimental: { tasks: true },
+	hooks: {
+		// Extra Nitro entry so the docx build can run in a worker_threads worker
+		// (src/features/planner/server/print-docx-thread.ts).
+		"build:config"(nitro, config) {
+			const bundle = config.rolldown ?? config.rollup;
+			if (!bundle) return;
+			bundle.input = {
+				index: nitro.options.entry,
+				"print-docx-worker": "src/server/workers/print-docx.ts",
+			};
+			bundle.output = {
+				...bundle.output,
+				entryFileNames: (chunk: { name: string }) => `${chunk.name}.mjs`,
+			};
+		},
+	},
 	scheduledTasks: {
 		"* * * * *": isE2E ? [] : ["program:reminders"],
 		"*/5 * * * *": isE2E

@@ -14,7 +14,7 @@ import {
 } from "@/features/planner/print/print-program-rules";
 import { buildXlsxSheets } from "@/features/planner/print/print-xlsx-rules";
 import { writeXlsxWorkbook } from "@/shared/server/xlsx-write";
-import { renderDocx } from "./print-docx";
+import { renderDocxOffThread } from "./print-docx-thread";
 import { isIdmlAvailable, renderIdml } from "./print-idml-client";
 import { loadPrintLogo, loadPrintSource } from "./print-program";
 
@@ -39,7 +39,7 @@ const RENDERERS = {
 			`${program.conferenceName}${program.draft ? " (DRAFT)" : ""}`,
 		),
 	docx: async (program, options, logo) =>
-		renderDocx(buildPrintDocument(program, options, logo)),
+		renderDocxOffThread(buildPrintDocument(program, options, logo)),
 	idml: async (program, options, logo) => {
 		if (!isIdmlAvailable())
 			throw new PrintFormatUnavailableError(IDML_UNAVAILABLE);

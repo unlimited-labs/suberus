@@ -6,6 +6,7 @@
     "src/start.ts", // TanStack Start
     "src/server/plugins/**/*.ts", // nitro plugins
     "src/server/tasks/**/*.ts", // nitro tasks
+    "src/server/workers/**/*.ts", // worker_threads entries bundled by nitro
     "src/shared/ui/**/*.{ts,tsx}",
     "src/integrations/**/*.{ts,tsx}",
     "src/features/dashboard/index.ts",
