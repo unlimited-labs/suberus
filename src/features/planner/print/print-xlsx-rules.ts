@@ -1,4 +1,5 @@
 import type { XlsxCell, XlsxSheetSpec } from "@/shared/lib/xlsx-types";
+import { HEX_COLOR } from "./print-document-schema";
 import { byAt } from "./print-grid-rules";
 import {
 	capitalizeFirst,
@@ -141,6 +142,7 @@ function programSheet(
 		rows: all,
 		widths: widths(all),
 		autofilter: true,
+		headerRows: 1,
 	};
 }
 
@@ -148,6 +150,7 @@ function gridSheet(
 	day: PrintDay,
 	l: PrintLabels,
 	short: Intl.DateTimeFormat,
+	trackColor: boolean,
 ): XlsxSheetSpec {
 	const grid = day.grid;
 	const name = `D${day.index} ${short.format(utcDate(day.date))}`
@@ -162,6 +165,7 @@ function gridSheet(
 		...grid.columns.map((): XlsxCell => null),
 	]);
 	const merges: XlsxSheetSpec["merges"] = [];
+	const accents: XlsxSheetSpec["accents"] = [];
 	grid.columns.forEach((col, i) => {
 		if (col.lane === 1 && col.lanes > 1)
 			merges.push({ s: { r: 0, c: i + 1 }, e: { r: 0, c: i + col.lanes } });
@@ -172,6 +176,12 @@ function gridSheet(
 			row[cell.col + 1] = cell.code
 				? `${cell.code} — ${cell.title}`
 				: cell.title;
+		if (trackColor && cell.trackColor && HEX_COLOR.test(cell.trackColor))
+			accents.push({
+				r: cell.row + 1,
+				c: cell.col + 1,
+				color: cell.trackColor,
+			});
 		if (cell.rowSpan > 1 || cell.colSpan > 1)
 			merges.push({
 				s: { r: cell.row + 1, c: cell.col + 1 },
@@ -183,7 +193,11 @@ function gridSheet(
 		name,
 		rows,
 		merges,
+		accents,
 		widths: widths(rows, 40),
+		headerRows: 1,
+		frozenColumns: 1,
+		wrap: true,
 	};
 }
 
@@ -204,6 +218,7 @@ function authorsSheet(program: PrintProgram, l: PrintLabels): XlsxSheetSpec {
 		rows,
 		widths: widths(rows),
 		autofilter: true,
+		headerRows: 1,
 	};
 }
 
@@ -218,7 +233,7 @@ function gridSheets(
 		day: "numeric",
 		month: "short",
 	});
-	return program.days.map((d) => gridSheet(d, l, short));
+	return program.days.map((d) => gridSheet(d, l, short, options.trackColor));
 }
 
 export function buildXlsxSheets(
