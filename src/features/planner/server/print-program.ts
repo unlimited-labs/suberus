@@ -12,7 +12,7 @@ import {
 } from "@/features/settings/server/settings";
 import { resolveZone } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
-import { getFileBuffer } from "@/shared/server/storage";
+import { fileExists, getFileBuffer } from "@/shared/server/storage";
 
 export async function loadPrintSource(): Promise<PrintSource> {
 	const [settings, rooms, sessions, items] = await Promise.all([
@@ -117,7 +117,7 @@ export async function loadPrintSource(): Promise<PrintSource> {
 
 export async function loadPrintLogo(): Promise<PrintLogo | null> {
 	const key = await getSetting("BRANDING_LOGO_KEY");
-	if (!key) return null;
+	if (!key || !(await fileExists(key))) return null;
 	const buffer = await getFileBuffer(key);
 	const info = printImageInfo(buffer);
 	if (!info || info.height === 0) return null;
