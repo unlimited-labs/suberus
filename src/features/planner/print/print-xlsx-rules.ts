@@ -26,7 +26,7 @@ function widths(rows: XlsxCell[][], max = 60): number[] {
 		row.forEach((cell, c) => {
 			w[c] = Math.max(w[c] ?? 6, cellLength(cell) + 2);
 		});
-	return w.map((x) => Math.min(max, x ?? 6));
+	return w.map((x) => Math.min(max, x));
 }
 
 type ColumnKey = keyof PrintLabels["columns"];

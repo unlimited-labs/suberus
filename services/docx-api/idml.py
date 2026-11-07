@@ -214,9 +214,8 @@ def table_ranges(t: Table, sid: str, swatch: Callable[[str], str], width_pt: flo
             if (r, k) in covered:
                 continue
             tab.append(table_cell(sid, r, k, anchors.get((r, k)), swatch))
-    wrap = el("ParagraphStyleRange", {"AppliedParagraphStyle": "ParagraphStyle/GridCell"},
+    return el("ParagraphStyleRange", {"AppliedParagraphStyle": "ParagraphStyle/GridCell"},
               el("CharacterStyleRange", {"AppliedCharacterStyle": NO_CHAR}, tab, el("Br")))
-    return wrap
 
 
 def table_cell(sid, r, k, cell, swatch):

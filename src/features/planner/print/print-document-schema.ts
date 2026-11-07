@@ -39,6 +39,11 @@ const CHARACTER_STYLES = [
 export type ParagraphStyle = (typeof PARAGRAPH_STYLES)[number];
 export type CharacterStyle = (typeof CHARACTER_STYLES)[number];
 
+export const TOC_LEVELS = {
+	PartHeading: 1,
+	DayHeading: 2,
+} as const satisfies Partial<Record<ParagraphStyle, 1 | 2>>;
+
 const hexColor = z.string().regex(HEX_COLOR);
 
 const runSchema = z.object({

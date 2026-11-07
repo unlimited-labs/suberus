@@ -5,7 +5,7 @@ import {
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useDeferredValue } from "react";
+import { Activity, useDeferredValue } from "react";
 import { z } from "zod";
 import { adminRouteMiddleware } from "@/features/auth/server/middleware";
 import { printExportDataQueryOptions } from "@/features/planner/api/print-export";
@@ -60,7 +60,7 @@ function PrintExportPage() {
 		includeCancelled: options.includeCancelled,
 		trackColor: options.trackColor,
 	});
-	const doc = sheet ? null : buildPrintDocument(program, options, data.logo);
+	const doc = buildPrintDocument(program, options, data.logo);
 	const sheets = sheet ? buildXlsxSheets(program, options) : [];
 
 	return (
@@ -104,11 +104,10 @@ function PrintExportPage() {
 					className="bg-muted/50 min-w-0 flex-1 rounded-xl p-3 md:p-6"
 					data-testid="print-preview"
 				>
-					{sheet ? (
-						<SheetPreview sheets={sheets} />
-					) : (
-						doc && <PrintPreview approximate={format === "idml"} doc={doc} />
-					)}
+					{sheet && <SheetPreview sheets={sheets} />}
+					<Activity mode={sheet ? "hidden" : "visible"}>
+						<PrintPreview approximate={format === "idml"} doc={doc} />
+					</Activity>
 				</section>
 			</div>
 		</div>
