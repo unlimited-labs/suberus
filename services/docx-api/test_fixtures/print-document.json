@@ -1,6 +1,7 @@
 {
 	"schemaVersion": 1,
 	"draft": true,
+	"footer": "Polymers 2026",
 	"language": "pl",
 	"swatches": [
 		{
@@ -20,7 +21,6 @@
 			},
 			"columns": 1,
 			"start": "nextPage",
-			"footer": "Polymers 2026",
 			"blocks": [
 				{
 					"type": "image",
@@ -60,7 +60,6 @@
 			},
 			"columns": 1,
 			"start": "nextPage",
-			"footer": "Polymers 2026",
 			"blocks": [
 				{
 					"type": "paragraph",
@@ -376,7 +375,6 @@
 			},
 			"columns": 1,
 			"start": "nextPage",
-			"footer": "Polymers 2026",
 			"blocks": [
 				{
 					"type": "paragraph",
@@ -487,7 +485,6 @@
 			},
 			"columns": 1,
 			"start": "nextPage",
-			"footer": "Polymers 2026",
 			"blocks": [
 				{
 					"type": "paragraph",
@@ -757,7 +754,6 @@
 			},
 			"columns": 1,
 			"start": "nextPage",
-			"footer": "Polymers 2026",
 			"blocks": [
 				{
 					"type": "paragraph",
@@ -857,7 +853,6 @@
 			},
 			"columns": 2,
 			"start": "nextPage",
-			"footer": "Polymers 2026",
 			"blocks": [
 				{
 					"type": "paragraph",

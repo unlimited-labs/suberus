@@ -7,13 +7,13 @@ const doc: PrintDocument = {
 	schemaVersion: 1,
 	draft: true,
 	language: "en",
+	footer: "Polymers 2026",
 	swatches: [{ name: "Polymers", color: "#ff0000" }],
 	sections: [
 		{
 			page: { size: "A4", orientation: "portrait" },
 			columns: 1,
 			start: "nextPage",
-			footer: "Polymers 2026",
 			blocks: [
 				{
 					type: "paragraph",
@@ -37,7 +37,6 @@ const doc: PrintDocument = {
 			page: { size: "A4", orientation: "landscape" },
 			columns: 1,
 			start: "evenPage",
-			footer: "Polymers 2026",
 			blocks: [
 				{
 					type: "table",
@@ -140,6 +139,32 @@ describe("renderDocx", () => {
 		expect(document).toContain(
 			"TOC \\h \\t &quot;PartHeading,1,DayHeading,2&quot;",
 		);
+	});
+
+	it("drops characters XML cannot carry, pasted from Word into a title or the footer", async () => {
+		const dirty: PrintDocument = {
+			...doc,
+			footer: "Poly\x0bmers",
+			sections: doc.sections.map((s) => ({
+				...s,
+				blocks: [
+					{
+						type: "paragraph",
+						style: "Title",
+						runs: [{ text: "Open\x01ing" }],
+					},
+					...s.blocks,
+				],
+			})),
+		};
+		const zip = new AdmZip(await renderDocx(dirty));
+		const xml = zip
+			.getEntries()
+			.map((e) => e.getData().toString("utf8"))
+			.join("");
+		expect(xml).not.toContain("\x0b");
+		expect(xml).not.toContain("\x01");
+		expect(xml).toContain("Opening");
 	});
 
 	it("marks a draft with a watermark in every section header", async () => {

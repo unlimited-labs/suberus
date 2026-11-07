@@ -12,7 +12,7 @@ import {
 	type PrintPart,
 } from "@/features/planner/print/print-options-schema";
 import type { ScheduleIssue } from "@/features/planner/server/schedule-issues";
-import { cn } from "@/shared/lib/utils";
+import { cn, pluralize } from "@/shared/lib/utils";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Label } from "@/shared/ui/label";
 import { SegmentedControl } from "@/shared/ui/segmented-control";
@@ -111,7 +111,7 @@ function CheckItem({
 	id: string;
 	label: string;
 	checked: boolean;
-	disabled: boolean;
+	disabled?: boolean;
 	onChange: (on: boolean) => void;
 }) {
 	return (
@@ -122,10 +122,7 @@ function CheckItem({
 				id={id}
 				onCheckedChange={(v) => onChange(v === true)}
 			/>
-			<Label
-				className={cn("font-normal", disabled && "opacity-50")}
-				htmlFor={id}
-			>
+			<Label className="font-normal" htmlFor={id}>
 				{label}
 			</Label>
 		</div>
@@ -235,7 +232,6 @@ function ContentRows({
 				{() => (
 					<CheckItem
 						checked={options.trackColor}
-						disabled={false}
 						id="print-track-colour"
 						label="Colour sessions by track, with a legend"
 						onChange={(on) => set("trackColor", on)}
@@ -277,13 +273,12 @@ function ContentRows({
 
 function IssuesNote({ issues }: { issues: ScheduleIssue[] }) {
 	if (issues.length === 0) return null;
-	const noun = issues.length === 1 ? "issue" : "issues";
 	return (
 		<details className="rounded-md border border-amber-200 bg-amber-50/60 px-3 py-2 text-sm dark:border-amber-900/40 dark:bg-amber-950/20">
 			<summary className="cursor-pointer text-amber-700 dark:text-amber-400">
 				<IconAlertTriangle className="mr-1.5 inline size-4 -translate-y-px" />
-				{issues.length} schedule {noun}. Export still works and prints the
-				schedule as it is.
+				{issues.length} schedule {pluralize(issues.length, "issue")}. Export
+				still works and prints the schedule as it is.
 			</summary>
 			<ul className="mt-2 max-h-48 list-disc space-y-1 overflow-y-auto pl-5 text-xs">
 				{issues.map((i) => (

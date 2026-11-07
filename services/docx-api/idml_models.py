@@ -78,7 +78,6 @@ class Section(Model):
     page: Page
     columns: Literal[1, 2]
     start: Literal["nextPage", "evenPage"]
-    footer: str
     blocks: list[Block]
 
 
@@ -91,5 +90,6 @@ class PrintDocument(Model):
     schemaVersion: Literal[1]
     draft: bool
     language: Literal["en", "pl"]
+    footer: str
     swatches: list[Swatch]
     sections: list[Section]

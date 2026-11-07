@@ -73,6 +73,17 @@ def test_draft_mark_uses_its_own_large_tinted_style(package):
     assert style and 'FillTint="20"' in style.group(0)
 
 
+def test_drops_characters_xml_cannot_carry_from_text_and_swatch_names(doc):
+    dirty = doc.model_copy(deep=True)
+    dirty.footer = "Poly\x0bmers"
+    dirty.swatches[0].name = "Track\x01A"
+    dirty.sections[0].blocks[1].runs[0].text = "Open\x0bing"
+    built = zipfile.ZipFile(BytesIO(build_idml(dirty)))
+    xml = "".join(text(built, n) for n in built.namelist() if n.endswith(".xml"))
+    assert "\x0b" not in xml and "\x01" not in xml
+    assert "TrackA" in xml and "Polymers" in xml
+
+
 def test_draft_layer_is_listed_first_so_it_sits_behind_content(package):
     layers = re.findall(r'<Layer [^>]*Name="([^"]+)"', text(package, "designmap.xml"))
     assert layers == ["Draft mark", "Content"]

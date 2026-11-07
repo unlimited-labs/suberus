@@ -1,4 +1,6 @@
 import { z } from "zod";
+
+export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 import {
 	MAX_BULK_ITEMS,
 	zDateString,
@@ -131,7 +133,7 @@ export const trackSchema = z.object({
 		.max(200, "Name must be at most 200 characters"),
 	color: z.union([
 		z.literal(""),
-		z.string().regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB"),
+		z.string().regex(HEX_COLOR, "Color must be #RRGGBB"),
 	]),
 });
 
@@ -175,7 +177,7 @@ export const programBadgeSchema = z.object({
 		.string()
 		.min(1, "Label is required")
 		.max(24, "Label must be at most 24 characters"),
-	color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB"),
+	color: z.string().regex(HEX_COLOR, "Color must be #RRGGBB"),
 	style: z.enum(["badge", "ribbon"]),
 });
 
@@ -206,7 +208,7 @@ export const roomUpdateInput = roomCreateInput.partial().extend({
 
 const trackColorInput = z
 	.string()
-	.regex(/^#[0-9a-fA-F]{6}$/, "Color must be #RRGGBB")
+	.regex(HEX_COLOR, "Color must be #RRGGBB")
 	.nullable()
 	.optional();
 

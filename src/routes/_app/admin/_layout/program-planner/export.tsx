@@ -51,19 +51,14 @@ function PrintExportPage() {
 		sessionCount: data.source.sessions.length,
 		idmlAvailable: data.idmlAvailable,
 	});
-	const { language, includeCancelled } = exporter.options;
+	const options = useDeferredValue(exporter.options);
+	const sheet = useDeferredValue(format === "xlsx");
 	const program = buildPrintProgram(data.source, {
-		language,
-		includeCancelled,
+		language: options.language,
+		includeCancelled: options.includeCancelled,
 	});
-	const doc = useDeferredValue(
-		format === "xlsx"
-			? null
-			: buildPrintDocument(program, exporter.options, data.logo),
-	);
-	const sheets = useDeferredValue(
-		format === "xlsx" ? buildXlsxSheets(program, exporter.options) : [],
-	);
+	const doc = sheet ? null : buildPrintDocument(program, options, data.logo);
+	const sheets = sheet ? buildXlsxSheets(program, options) : [];
 
 	return (
 		<div className="flex h-full flex-col">
@@ -106,7 +101,7 @@ function PrintExportPage() {
 					className="bg-muted/50 min-w-0 flex-1 rounded-xl p-3 md:p-6"
 					data-testid="print-preview"
 				>
-					{format === "xlsx" ? (
+					{sheet ? (
 						<SheetPreview sheets={sheets} />
 					) : (
 						doc && <PrintPreview approximate={format === "idml"} doc={doc} />

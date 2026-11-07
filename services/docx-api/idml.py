@@ -5,6 +5,7 @@ cells only, no PagesPerDocument, Smart Text Reflow fixes the estimated page coun
 
 import io
 import math
+import re
 import zipfile
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -63,10 +64,17 @@ CHARACTER_STYLES = {
 CELL_STYLES = ["GridHeader", "GridTime", "GridCell", "GridBand"]
 
 
+XML_ILLEGAL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+
+
+def xml_safe(value: object) -> str:
+    return XML_ILLEGAL.sub("", str(value))
+
+
 def el(tag: str, attrs: Mapping[str, object] | None = None, *children, text: str | None = None):
-    node = etree.Element(tag, {k: str(v) for k, v in (attrs or {}).items()})
+    node = etree.Element(tag, {k: xml_safe(v) for k, v in (attrs or {}).items()})
     if text is not None:
-        node.text = text
+        node.text = xml_safe(text)
     for child in children:
         node.append(child)
     return node
@@ -386,8 +394,9 @@ def build_spreads(doc: PrintDocument, pages: list[PlannedPage], masters: dict[st
 
 def build_masters(doc: PrintDocument, pages: list[PlannedPage]):
     masters: dict[str, str] = {}
-    files: dict[str, bytes] = {}
-    footer = doc.sections[0].footer
+    spreads: dict[str, bytes] = {}
+    stories: dict[str, bytes] = {}
+    footer = doc.footer
     for n, key in enumerate(dict.fromkeys(p.master for p in pages)):
         sample = next(p for p in pages if p.master == key)
         mid = f"um{n}"
@@ -401,17 +410,17 @@ def build_masters(doc: PrintDocument, pages: list[PlannedPage]):
             y1 = sample.height / 2 - mm(MARGIN_MM)
             rect = (x + mm(MARGIN_MM), y1 - mm(6), x + sample.width - mm(MARGIN_MM), y1)
             spread.append(text_frame(fid, f"u_{fid}", rect))
-            files[f"Stories/Story_u_{fid}.xml"] = small_story(
+            stories[f"Stories/Story_u_{fid}.xml"] = small_story(
                 f"u_{fid}", "Legend", el("Content", text=f"{footer} · "),
                 el("Content", None, etree.ProcessingInstruction("ACE", "18")))
             if doc.draft:
                 did = f"{mid}d{slot}"
                 drect = (x + mm(MARGIN_MM), -mm(30), x + sample.width - mm(MARGIN_MM), mm(30))
                 spread.append(text_frame(did, f"u_{did}", drect, layer="ulayer_draft"))
-                files[f"Stories/Story_u_{did}.xml"] = small_story(
+                stories[f"Stories/Story_u_{did}.xml"] = small_story(
                     f"u_{did}", "DraftMark", el("Content", text="DRAFT"))
-        files[f"MasterSpreads/MasterSpread_{mid}.xml"] = to_bytes(pkg_root("MasterSpread", spread))
-    return masters, files
+        spreads[f"MasterSpreads/MasterSpread_{mid}.xml"] = to_bytes(pkg_root("MasterSpread", spread))
+    return masters, spreads, stories
 
 
 # --- package ----------------------------------------------------------------------------
@@ -455,12 +464,11 @@ def build_idml(doc: PrintDocument) -> bytes:
         return colors.get(hex_color.lower(), "Color/Black")
 
     pages = plan_pages(doc)
-    masters, master_files = build_masters(doc, pages)
+    masters, master_spreads, master_stories = build_masters(doc, pages)
     spread_files = build_spreads(doc, pages, masters)
     stories = {f"Stories/Story_u_story{i}.xml": story_xml(f"u_story{i}", s, swatch)
                for i, s in enumerate(doc.sections)}
-    stories |= {k: v for k, v in master_files.items() if k.startswith("Stories/")}
-    master_spreads = {k: v for k, v in master_files.items() if k.startswith("MasterSpreads/")}
+    stories |= master_stories
     story_ids = [k.removeprefix("Stories/Story_").removesuffix(".xml") for k in stories]
     parts = {
         "designmap.xml": designmap_xml(pages, list(spread_files), list(master_spreads), story_ids),
