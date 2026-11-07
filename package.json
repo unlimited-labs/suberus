@@ -87,6 +87,7 @@
     "dompurify": "^3.4.17",
     "dotenv": "^18.0.9",
     "easy-template-x": "^8.0.0",
+    "exceljs": "^4.4.0",
     "expr-eval-fork": "^3.0.3",
     "file-type": "^22.3.0",
     "filenamify": "^7.0.3",

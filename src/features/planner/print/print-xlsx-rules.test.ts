@@ -132,6 +132,20 @@ describe("buildXlsxSheets", () => {
 		expect(grid?.merges).toEqual([{ s: { r: 2, c: 1 }, e: { r: 2, c: 2 } }]);
 	});
 
+	it("marks a coloured session in the day grid with its track colour, unless track colour is off", () => {
+		const coloured: PrintSource = {
+			...src,
+			sessions: src.sessions.map((x) =>
+				x.track ? { ...x, track: { ...x.track, color: "#d9480f" } } : x,
+			),
+		};
+		const grid = (o = options) =>
+			buildXlsxSheets(buildPrintProgram(coloured, o), o)[1];
+		expect(grid()?.accents).toEqual([{ r: 1, c: 1, color: "#d9480f" }]);
+		expect(grid({ ...options, trackColor: false })?.accents).toEqual([]);
+		expect(grid()).toMatchObject({ headerRows: 1, frozenColumns: 1 });
+	});
+
 	it("writes one Authors row per appearance, chairs included, in Polish when asked", () => {
 		const authors = sheetsFor({ ...options, language: "pl" })[2];
 		expect(authors?.name).toBe("Autorzy");
