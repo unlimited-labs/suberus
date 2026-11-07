@@ -181,6 +181,29 @@ describe("buildPrintDocument", () => {
 		expect(docFor({ ...options, trackColor: false }).swatches).toEqual([]);
 	});
 
+	it("falls back to a single grid when a forced spread has no room boundary to split at", () => {
+		const doc = docFor({ ...options, layoutOverride: "spread" });
+		const tables = doc.sections.flatMap((s) =>
+			s.blocks.flatMap((b) => (b.type === "table" ? [b] : [])),
+		);
+		expect(tables.map((t) => t.columns.length)).toEqual([2, 2, 2]);
+	});
+
+	it("strips characters XML cannot carry from every text", () => {
+		const dirty: PrintSource = {
+			...src,
+			conferenceName: "Poly\x0bmers",
+			sessions: src.sessions.map((s) => ({ ...s, title: `${s.title}\x01` })),
+		};
+		const doc = buildPrintDocument(
+			buildPrintProgram(dirty, options),
+			options,
+			null,
+		);
+		expect(JSON.stringify(doc)).not.toMatch(/\\u00(0[0-8bcef]|1[0-9a-f])/);
+		expect(doc.sections[0]?.footer).toBe("Polymers");
+	});
+
 	it("drops the Parts that are not included and the logo when there is none", () => {
 		const doc = docFor({ ...options, parts: ["detailed"] });
 		expect(doc.sections).toHaveLength(2);

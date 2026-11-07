@@ -107,8 +107,14 @@ const para = (
 	style,
 	runs,
 });
-const run = (text: string, charStyle?: PrintRun["charStyle"]): PrintRun =>
-	charStyle ? { text, charStyle } : { text };
+// XML 1.0 forbids these; one pasted from Word corrupts the docx and fails the IDML build.
+const XML_ALLOWED_CONTROLS = new Set(["\t", "\n", "\r"]);
+const xmlSafe = (text: string) =>
+	[...text].filter((c) => c >= " " || XML_ALLOWED_CONTROLS.has(c)).join("");
+const run = (raw: string, charStyle?: PrintRun["charStyle"]): PrintRun => {
+	const text = xmlSafe(raw);
+	return charStyle ? { text, charStyle } : { text };
+};
 const accentOf = (color: string | null | undefined, on: boolean) =>
 	on && color && HEX_COLOR.test(color) ? color : null;
 
@@ -259,11 +265,12 @@ function listBlocks(grid: DayGrid): PrintParagraph[] {
 	});
 }
 
-function splitPoint(grid: DayGrid): number {
+function splitPoint(grid: DayGrid): number | null {
 	const half = Math.ceil(grid.columns.length / 2);
-	let at = half;
-	while (at < grid.columns.length && (grid.columns[at]?.lane ?? 1) > 1) at++;
-	return at;
+	const roomStarts = grid.columns.flatMap((c, i) =>
+		i > 0 && c.lane === 1 ? [i] : [],
+	);
+	return roomStarts.find((i) => i >= half) ?? roomStarts.at(-1) ?? null;
 }
 
 function swatchesOf(
@@ -304,7 +311,7 @@ function section(
 		},
 		columns: extra.columns ?? 1,
 		start: extra.start ?? "nextPage",
-		footer: program.conferenceName,
+		footer: xmlSafe(program.conferenceName),
 		blocks,
 	};
 }
@@ -327,8 +334,8 @@ function glanceSections(
 			options.layoutOverride,
 		);
 		const color = options.trackColor;
-		if (choice.layout === "spread") {
-			const at = splitPoint(day.grid);
+		const at = choice.layout === "spread" ? splitPoint(day.grid) : null;
+		if (at !== null) {
 			return [
 				section(
 					program,
