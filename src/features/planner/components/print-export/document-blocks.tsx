@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { coveredCells } from "@/features/planner/print/print-document-rules";
+import { tableRows } from "@/features/planner/print/print-document-rules";
 import type {
 	ParagraphStyle,
 	PrintBlock,
@@ -103,19 +103,12 @@ function TableSlice({
 				))}
 			</colgroup>
 			<tbody>
-				{ranges.flatMap(([a, b]) => {
-					const visible = visibleCells(table, a, b);
-					const cells = new Map(visible.map((c) => [`${c.row}:${c.col}`, c]));
-					const taken = coveredCells(visible);
-					return Array.from(
-						{ length: Math.max(0, b - a) },
-						(_, i) => a + i,
-					).map((r) => (
-						<tr data-row={r} key={r}>
-							{table.columns.flatMap((_, col) => {
-								const cell = cells.get(`${r}:${col}`);
-								if (cell)
-									return [
+				{ranges.flatMap(([a, b]) =>
+					tableRows(visibleCells(table, a, b), table.columns.length, a, b).map(
+						({ row, slots }) => (
+							<tr data-row={row} key={row}>
+								{slots.map(({ col, cell }) =>
+									cell ? (
 										<td
 											className="border border-black/40 p-[1mm] align-top"
 											colSpan={cell.colSpan}
@@ -130,19 +123,18 @@ function TableSlice({
 											{cell.blocks.map((b, bi) => (
 												<Paragraph block={b} key={`${bi}-${b.style}`} />
 											))}
-										</td>,
-									];
-								if (taken.has(`${r}:${col}`)) return [];
-								return [
-									<td
-										className="border border-black/40 bg-[repeating-linear-gradient(45deg,transparent_0_3px,var(--color-border)_3px_5px)]"
-										key={col}
-									/>,
-								];
-							})}
-						</tr>
-					));
-				})}
+										</td>
+									) : (
+										<td
+											className="border border-black/40 bg-[repeating-linear-gradient(45deg,transparent_0_3px,var(--color-border)_3px_5px)]"
+											key={col}
+										/>
+									),
+								)}
+							</tr>
+						),
+					),
+				)}
 			</tbody>
 		</table>
 	);

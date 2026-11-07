@@ -58,8 +58,9 @@ function assignLanes(
 	const rooms = [...byRoom.keys()].toSorted(
 		(a, b) => roomOrder(a) - roomOrder(b),
 	);
-	const laneOf = new Map<GridEntry, { roomId: string | null; lane: number }>();
+	const columnOf = new Map<GridEntry, number>();
 	const laneCount = new Map<string | null, number>();
+	let next = 0;
 	for (const roomId of rooms) {
 		const laneEnds: number[] = [];
 		for (const e of (byRoom.get(roomId) ?? []).toSorted(
@@ -68,11 +69,12 @@ function assignLanes(
 			const free = laneEnds.findIndex((end) => end <= e.start);
 			const lane = free === -1 ? laneEnds.length : free;
 			laneEnds[lane] = e.end;
-			laneOf.set(e, { roomId, lane: lane + 1 });
+			columnOf.set(e, next + lane);
 		}
 		laneCount.set(roomId, laneEnds.length);
+		next += laneEnds.length;
 	}
-	return { rooms, laneOf, laneCount };
+	return { rooms, columnOf, laneCount };
 }
 
 export function buildGrid(
@@ -85,24 +87,20 @@ export function buildGrid(
 		...e,
 		band: !entries.some((o) => o !== e && overlaps(o, e)),
 	}));
-	const { rooms, laneOf, laneCount } = assignLanes(
+	const { rooms, columnOf, laneCount } = assignLanes(
 		marked.filter((e) => !e.band),
 		roomOrder,
 	);
-	const laneColumns = rooms.flatMap((roomId) =>
-		Array.from({ length: laneCount.get(roomId) ?? 0 }, (_, i) => ({
+	const laneColumns = rooms.flatMap((roomId) => {
+		const lanes = laneCount.get(roomId) ?? 0;
+		return Array.from({ length: lanes }, (_, i) => ({
 			room: roomName(roomId),
 			lane: i + 1,
-			lanes: laneCount.get(roomId) ?? 0,
-		})),
-	);
+			lanes,
+		}));
+	});
 	const columns =
 		laneColumns.length > 0 ? laneColumns : [{ room: "", lane: 1, lanes: 1 }];
-	const firstCol = new Map<string | null, number>();
-	rooms.reduce((at, r) => {
-		firstCol.set(r, at);
-		return at + (laneCount.get(r) ?? 0);
-	}, 0);
 
 	const bounds = [...new Set(marked.flatMap((e) => [e.start, e.end]))].toSorted(
 		(a, b) => a - b,
@@ -115,13 +113,9 @@ export function buildGrid(
 
 	const cells = marked
 		.map((e): GridCell => {
-			const lane = laneOf.get(e);
 			return {
 				row: rowIndex.get(e.start) ?? 0,
-				col:
-					e.band || !lane
-						? 0
-						: (firstCol.get(lane.roomId) ?? 0) + lane.lane - 1,
+				col: e.band ? 0 : (columnOf.get(e) ?? 0),
 				rowSpan: rows.filter((r) => r.start >= e.start && r.end <= e.end)
 					.length,
 				colSpan: e.band ? columns.length : 1,

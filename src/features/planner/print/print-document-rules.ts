@@ -8,8 +8,12 @@ import {
 } from "./print-document-schema";
 import type { DayGrid } from "./print-grid-rules";
 import { byAt, groupBy } from "./print-grid-rules";
-import { PRINT_LABELS, type PrintLabels } from "./print-labels";
-import type { GlanceLayout, PrintOptions } from "./print-options-schema";
+import { PRINT_LABELS, PRINT_LOCALE, type PrintLabels } from "./print-labels";
+import type {
+	GlanceLayout,
+	PrintLanguage,
+	PrintOptions,
+} from "./print-options-schema";
 import type {
 	PrintDay,
 	PrintProgram,
@@ -77,14 +81,14 @@ export function chooseGlanceLayout(
 	return { layout, orientation };
 }
 
-export function coveredCells(
-	cells: readonly {
-		row: number;
-		col: number;
-		rowSpan: number;
-		colSpan: number;
-	}[],
-): Set<string> {
+interface Span {
+	row: number;
+	col: number;
+	rowSpan: number;
+	colSpan: number;
+}
+
+export function coveredCells(cells: readonly Span[]): Set<string> {
 	const covered = new Set<string>();
 	for (const c of cells)
 		for (let r = c.row; r < c.row + c.rowSpan; r++)
@@ -92,6 +96,34 @@ export function coveredCells(
 				if (r !== c.row || k !== c.col) covered.add(`${r}:${k}`);
 	return covered;
 }
+
+/** Rows `from..to`: each column's anchor cell, `null` for an empty cell, nothing where a span covers it. */
+export function tableRows<C extends Span>(
+	cells: readonly C[],
+	columns: number,
+	from: number,
+	to: number,
+) {
+	const covered = coveredCells(cells);
+	const anchors = new Map(cells.map((c) => [`${c.row}:${c.col}`, c]));
+	return Array.from({ length: Math.max(0, to - from) }, (_, i) => {
+		const row = from + i;
+		const slots = Array.from({ length: columns }, (_, col) => col).flatMap(
+			(col) =>
+				covered.has(`${row}:${col}`)
+					? []
+					: [{ col, cell: anchors.get(`${row}:${col}`) ?? null }],
+		);
+		return { row, slots };
+	});
+}
+
+/** A page may break after row `r` unless a cell spans across it. */
+export const rowBreaks = (cells: readonly Span[], rowCount: number) =>
+	Array.from(
+		{ length: rowCount },
+		(_, r) => !cells.some((c) => c.row <= r && r + 1 < c.row + c.rowSpan),
+	);
 
 export type PrintLogo = Omit<
 	Extract<PrintBlock, { type: "image" }>,
@@ -413,14 +445,22 @@ function dayBlocks(day: PrintDay, l: PrintLabels): PrintParagraph[] {
 	];
 }
 
-function indexBlocks(program: PrintProgram, l: PrintLabels): PrintParagraph[] {
+function indexBlocks(
+	program: PrintProgram,
+	l: PrintLabels,
+	language: PrintLanguage,
+): PrintParagraph[] {
+	const sameLetter = new Intl.Collator(PRINT_LOCALE[language], {
+		sensitivity: "base",
+	});
 	let letter = "";
 	return [
 		para("PartHeading", run(l.parts.index)),
 		...program.authorIndex.flatMap((e) => {
-			const first = e.name.charAt(0).toLocaleUpperCase();
-			const head = first !== letter ? [para("IndexLetter", run(first))] : [];
-			letter = first;
+			const first = e.name.charAt(0).toLocaleUpperCase(PRINT_LOCALE[language]);
+			const isNew = letter === "" || sameLetter.compare(first, letter) !== 0;
+			const head = isNew ? [para("IndexLetter", run(first))] : [];
+			if (isNew) letter = first;
 			const refs = e.refs.flatMap((r, i): PrintRun[] => [
 				...(i > 0 ? [run(", ")] : []),
 				run(r.code, r.presenting ? "Presenting" : undefined),
@@ -471,7 +511,11 @@ export function buildPrintDocument(
 			),
 		);
 	if (has("index"))
-		sections.push(section(options, indexBlocks(program, l), { columns: 2 }));
+		sections.push(
+			section(options, indexBlocks(program, l, options.language), {
+				columns: 2,
+			}),
+		);
 	return {
 		schemaVersion: 1,
 		draft: program.draft,

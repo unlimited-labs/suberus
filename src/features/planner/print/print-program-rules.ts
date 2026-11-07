@@ -402,6 +402,16 @@ export function buildPrintProgram(
 			roomOrder(a.roomId) - roomOrder(b.roomId),
 	);
 
+	const timing = (startAt: Date, endAt: Date) => {
+		const start = f.time(startAt);
+		const end = f.time(endAt);
+		return {
+			startAt: startAt.toISOString(),
+			timeLabel: `${start}–${end}`,
+			start,
+			end,
+		};
+	};
 	const trackById = new Map(sessions.map((s) => [s.id, trackOf(s)]));
 	const people = buildAuthorIndex(sessions, codes, options, collator);
 	const items = src.items.toSorted(
@@ -436,37 +446,23 @@ export function buildPrintProgram(
 			index: i + 1,
 			date: key,
 			label: first ? f.dayLabel(first) : key,
-			sessions: daySessions.map((s): PrintSession => {
-				const start = f.time(s.startAt);
-				const end = f.time(s.endAt);
-				return {
-					id: s.id,
-					code: codes.get(s.id) ?? "",
-					title: s.title,
-					startAt: s.startAt.toISOString(),
-					timeLabel: `${start}–${end}`,
-					start,
-					end,
-					room: s.roomId ? roomName(s.roomId) : null,
-					track: trackById.get(s.id) ?? null,
-					chairs: s.chairs.map(shortName),
-					slots: buildSlots(s, f, options, badgeLabels),
-				};
-			}),
-			items: dayItems.map((x): PrintItem => {
-				const start = f.time(x.startAt);
-				const end = f.time(x.endAt);
-				return {
-					kind: x.kind,
-					title: x.title,
-					startAt: x.startAt.toISOString(),
-					timeLabel: `${start}–${end}`,
-					start,
-					end,
-					place: x.location ?? (x.roomId ? roomName(x.roomId) : null),
-					description: x.kind === "EVENT" ? x.description : null,
-				};
-			}),
+			sessions: daySessions.map((s): PrintSession => ({
+				id: s.id,
+				code: codes.get(s.id) ?? "",
+				title: s.title,
+				...timing(s.startAt, s.endAt),
+				room: s.roomId ? roomName(s.roomId) : null,
+				track: trackById.get(s.id) ?? null,
+				chairs: s.chairs.map(shortName),
+				slots: buildSlots(s, f, options, badgeLabels),
+			})),
+			items: dayItems.map((x): PrintItem => ({
+				kind: x.kind,
+				title: x.title,
+				...timing(x.startAt, x.endAt),
+				place: x.location ?? (x.roomId ? roomName(x.roomId) : null),
+				description: x.kind === "EVENT" ? x.description : null,
+			})),
 			grid: buildGrid(entries, f.time, roomName, roomOrder),
 		};
 	});

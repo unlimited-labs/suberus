@@ -91,15 +91,14 @@ function dayRows(
 ): { at: string; row: ProgramRow }[] {
 	const date = utcDate(day.date);
 	const base = { date, weekday: weekday(date) } satisfies ProgramRow;
-	const sessionRows = day.sessions.flatMap((s) =>
-		(s.slots.length > 0
-			? s.slots.map((slot) => slotPart(slot, l.rowTypes.slot))
-			: [{ type: l.rowTypes.session, start: s.start, end: s.end }]
-		).map((part) => ({
-			at: s.startAt,
-			row: { ...base, ...sessionPart(s), ...part },
-		})),
-	);
+	const sessionRows = day.sessions.flatMap((s) => {
+		const head = { ...base, ...sessionPart(s) };
+		return (
+			s.slots.length > 0
+				? s.slots.map((slot) => slotPart(slot, l.rowTypes.slot))
+				: [{ type: l.rowTypes.session, start: s.start, end: s.end }]
+		).map((part) => ({ at: s.startAt, row: { ...head, ...part } }));
+	});
 	const itemRows = day.items.map((x) => ({
 		at: x.startAt,
 		row: {
@@ -175,7 +174,7 @@ function gridSheet(
 			row[cell.col + 1] = cell.code
 				? `${cell.code} — ${cell.title}`
 				: cell.title;
-		if (trackColor && cell.trackColor)
+		if (trackColor && cell.trackColor && !cell.band)
 			accents.push({
 				r: cell.row + 1,
 				c: cell.col + 1,

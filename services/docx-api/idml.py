@@ -71,10 +71,11 @@ def xml_safe(value: object) -> str:
     return XML_ILLEGAL.sub("", str(value))
 
 
-def el(tag: str, attrs: Mapping[str, object] | None = None, *children, text: str | None = None):
+def el(tag: str, attrs: Mapping[str, object] | None = None, *children,
+       text: str | etree.CDATA | None = None):
     node = etree.Element(tag, {k: xml_safe(v) for k, v in (attrs or {}).items()})
     if text is not None:
-        node.text = xml_safe(text)
+        node.text = text if isinstance(text, etree.CDATA) else xml_safe(text)
     for child in children:
         node.append(child)
     return node
@@ -252,9 +253,7 @@ def story_xml(sid: str, section: Section, swatch) -> bytes:
 
 
 def small_story(sid: str, style: str, *contents) -> bytes:
-    csr = el("CharacterStyleRange", {"AppliedCharacterStyle": NO_CHAR})
-    for c in contents:
-        csr.append(c)
+    csr = el("CharacterStyleRange", {"AppliedCharacterStyle": NO_CHAR}, *contents)
     psr = el("ParagraphStyleRange", {"AppliedParagraphStyle": f"ParagraphStyle/{style}"}, csr)
     return to_bytes(pkg_root("Story", el("Story", {"Self": sid, "AppliedTOCStyle": "n",
                                                    "StoryTitle": "$ID/"}, psr)))
@@ -361,12 +360,10 @@ def logo_frame(doc: PrintDocument, x: float, w: float, h: float):
 
 
 def build_spreads(doc: PrintDocument, pages: list[PlannedPage], masters: dict[str, str]):
-    frames: dict[int, list[str]] = {}
-    position: dict[int, int] = {}
-    for i, p in enumerate(pages):
-        if p.section is not None:
-            position[i] = len(frames.setdefault(p.section, []))
-            frames[p.section].append(f"utf{i}")
+    def link(j: int, section: int) -> str:
+        # plan_pages lays each section's pages out consecutively
+        return f"utf{j}" if 0 <= j < len(pages) and pages[j].section == section else "n"
+
     files = {}
     for g, group in enumerate(spreads_of(pages)):
         spread = el("Spread", {"Self": f"usp{g}", "PageCount": len(group),
@@ -377,16 +374,15 @@ def build_spreads(doc: PrintDocument, pages: list[PlannedPage], masters: dict[st
             spread.append(page_element(f"upg{i}", str(i + 1), p, x, masters[p.master]))
             if p.section is None:
                 continue
-            chain = frames[p.section]
-            k = position[i]
+            prev, nxt = link(i - 1, p.section), link(i + 1, p.section)
             offset = 0.0
-            if p.section == 0 and k == 0:
+            if p.section == 0 and prev == "n":
                 logo, offset = logo_frame(doc, x, p.width, p.height)
                 if logo is not None:
                     spread.append(logo)
             spread.append(text_frame(
                 f"utf{i}", f"u_story{p.section}", text_rect(x, p.width, p.height, offset),
-                prev=chain[k - 1] if k > 0 else "n", nxt=chain[k + 1] if k + 1 < len(chain) else "n",
+                prev=prev, nxt=nxt,
                 columns=doc.sections[p.section].columns))
         files[f"Spreads/Spread_usp{g}.xml"] = to_bytes(pkg_root("Spread", spread))
     return files
@@ -410,20 +406,24 @@ def build_masters(doc: PrintDocument, pages: list[PlannedPage]):
             y1 = sample.height / 2 - mm(MARGIN_MM)
             rect = (x + mm(MARGIN_MM), y1 - mm(6), x + sample.width - mm(MARGIN_MM), y1)
             spread.append(text_frame(fid, f"u_{fid}", rect))
-            stories[f"Stories/Story_u_{fid}.xml"] = small_story(
+            stories[f"u_{fid}"] = small_story(
                 f"u_{fid}", "Legend", el("Content", text=f"{footer} · "),
                 el("Content", None, etree.ProcessingInstruction("ACE", "18")))
             if doc.draft:
                 did = f"{mid}d{slot}"
                 drect = (x + mm(MARGIN_MM), -mm(30), x + sample.width - mm(MARGIN_MM), mm(30))
                 spread.append(text_frame(did, f"u_{did}", drect, layer="ulayer_draft"))
-                stories[f"Stories/Story_u_{did}.xml"] = small_story(
+                stories[f"u_{did}"] = small_story(
                     f"u_{did}", "DraftMark", el("Content", text="DRAFT"))
         spreads[f"MasterSpreads/MasterSpread_{mid}.xml"] = to_bytes(pkg_root("MasterSpread", spread))
     return masters, spreads, stories
 
 
 # --- package ----------------------------------------------------------------------------
+
+
+def story_path(sid: str) -> str:
+    return f"Stories/Story_{sid}.xml"
 
 
 def designmap_xml(pages, spread_files, master_files, story_ids) -> bytes:
@@ -445,7 +445,7 @@ def designmap_xml(pages, spread_files, master_files, story_ids) -> bytes:
                                "ContinueNumbering": "true", "IncludeSectionPrefix": "false",
                                "PageStart": "upg0", "SectionPrefix": "", "Marker": ""}))
     for sid in story_ids:
-        root.append(el(f"{{{PKG}}}Story", {"src": f"Stories/Story_{sid}.xml"}))
+        root.append(el(f"{{{PKG}}}Story", {"src": story_path(sid)}))
     root.addprevious(etree.ProcessingInstruction("aid", AID_MARKER))
     return etree.tostring(root.getroottree(), xml_declaration=True, encoding="UTF-8",
                           standalone=True)
@@ -466,10 +466,10 @@ def build_idml(doc: PrintDocument) -> bytes:
     pages = plan_pages(doc)
     masters, master_spreads, master_stories = build_masters(doc, pages)
     spread_files = build_spreads(doc, pages, masters)
-    stories = {f"Stories/Story_u_story{i}.xml": story_xml(f"u_story{i}", s, swatch)
+    stories = {f"u_story{i}": story_xml(f"u_story{i}", s, swatch)
                for i, s in enumerate(doc.sections)}
     stories |= master_stories
-    story_ids = [k.removeprefix("Stories/Story_").removesuffix(".xml") for k in stories]
+    story_ids = list(stories)
     parts = {
         "designmap.xml": designmap_xml(pages, list(spread_files), list(master_spreads), story_ids),
         "META-INF/container.xml": CONTAINER,
@@ -478,7 +478,7 @@ def build_idml(doc: PrintDocument) -> bytes:
         "Resources/Preferences.xml": preferences_xml(doc),
         **master_spreads,
         **spread_files,
-        **stories,
+        **{story_path(sid): data for sid, data in stories.items()},
     }
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as z:

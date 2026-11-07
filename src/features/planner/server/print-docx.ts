@@ -30,7 +30,7 @@ import {
 	PAGE_MM,
 	PX_PER_MM,
 	contentSizeMm,
-	coveredCells,
+	tableRows,
 } from "@/features/planner/print/print-document-rules";
 import type {
 	CharacterStyle,
@@ -43,7 +43,7 @@ import type {
 } from "@/features/planner/print/print-document-schema";
 
 const FONT = "Arial";
-const TWIP_PER_MM = 56.6929;
+const twip = (mm: number) => Math.round(mm * 56.6929);
 
 type StyleSpec<T> = Omit<T, "id" | "name">;
 
@@ -159,7 +159,7 @@ function contentWidthMm(section: PrintSection): number {
 	return contentSizeMm(section.page)[0];
 }
 
-function tableCell(cell: PrintTable["cells"][number] | undefined): TableCell {
+function tableCell(cell: PrintTable["cells"][number] | null): TableCell {
 	if (!cell)
 		return new TableCell({
 			shading: {
@@ -187,24 +187,17 @@ function tableCell(cell: PrintTable["cells"][number] | undefined): TableCell {
 
 function table(t: PrintTable, widthMm: number): Table {
 	const total = t.columns.reduce((a, c) => a + c.widthWeight, 0);
-	const covered = coveredCells(t.cells);
-	const anchors = new Map(t.cells.map((c) => [`${c.row}:${c.col}`, c]));
-	const rows = Array.from({ length: t.rowCount }, (_, r) => {
-		const cells = t.columns.flatMap((_, col) => {
-			if (covered.has(`${r}:${col}`)) return [];
-			return [tableCell(anchors.get(`${r}:${col}`))];
-		});
-		return new TableRow({
-			tableHeader: r < t.headerRows,
-			cantSplit: true,
-			children: cells,
-		});
-	});
+	const rows = tableRows(t.cells, t.columns.length, 0, t.rowCount).map(
+		({ row, slots }) =>
+			new TableRow({
+				tableHeader: row < t.headerRows,
+				cantSplit: true,
+				children: slots.map((s) => tableCell(s.cell)),
+			}),
+	);
 	return new Table({
 		width: { size: 100, type: WidthType.PERCENTAGE },
-		columnWidths: t.columns.map((c) =>
-			Math.round((c.widthWeight / total) * widthMm * TWIP_PER_MM),
-		),
+		columnWidths: t.columns.map((c) => twip((c.widthWeight / total) * widthMm)),
 		rows,
 	});
 }
@@ -252,26 +245,26 @@ function block(
 
 function section(s: PrintSection, doc: PrintDocument) {
 	const [w, h] = PAGE_MM[s.page.size];
-	const tabAt = Math.round(contentWidthMm(s) * TWIP_PER_MM);
+	const tabAt = twip(contentWidthMm(s));
 	return {
 		properties: {
 			type:
 				s.start === "evenPage" ? SectionType.EVEN_PAGE : SectionType.NEXT_PAGE,
 			page: {
 				size: {
-					width: Math.round(w * TWIP_PER_MM),
-					height: Math.round(h * TWIP_PER_MM),
+					width: twip(w),
+					height: twip(h),
 					orientation:
 						s.page.orientation === "landscape"
 							? PageOrientation.LANDSCAPE
 							: PageOrientation.PORTRAIT,
 				},
 				margin: {
-					top: Math.round(MARGIN_MM * TWIP_PER_MM),
-					bottom: Math.round((MARGIN_MM + FOOTER_MM) * TWIP_PER_MM),
-					left: Math.round(MARGIN_MM * TWIP_PER_MM),
-					right: Math.round(MARGIN_MM * TWIP_PER_MM),
-					footer: Math.round(MARGIN_MM * 0.6 * TWIP_PER_MM),
+					top: twip(MARGIN_MM),
+					bottom: twip(MARGIN_MM + FOOTER_MM),
+					left: twip(MARGIN_MM),
+					right: twip(MARGIN_MM),
+					footer: twip(MARGIN_MM * 0.6),
 				},
 			},
 			column: s.columns === 2 ? { count: 2, space: 340 } : undefined,
