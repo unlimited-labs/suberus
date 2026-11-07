@@ -18,9 +18,11 @@ import {
 	pageSizeMm,
 	PX_PER_MM,
 } from "@/features/planner/print/print-document-rules";
-import type {
-	PrintDocument,
-	PrintSection,
+import {
+	type PrintBlock,
+	type PrintDocument,
+	type PrintSection,
+	TOC_LEVELS,
 } from "@/features/planner/print/print-document-schema";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -49,23 +51,28 @@ function measureSection(
 	});
 }
 
+const isTocLevel = (style: string): style is keyof typeof TOC_LEVELS =>
+	style in TOC_LEVELS;
+
+function tocEntry(block: PrintBlock | undefined, page: number): TocEntry[] {
+	if (block?.type !== "paragraph" || !isTocLevel(block.style)) return [];
+	const text = block.runs.map((r) => r.text).join("");
+	return [{ level: TOC_LEVELS[block.style], text, page }];
+}
+
 function tocEntries(doc: PrintDocument, pages: Page[]): TocEntry[] {
 	return pages.flatMap((page, i) =>
-		page.items.flatMap((item): TocEntry[] => {
-			const block = doc.sections[page.section]?.blocks[item.block];
-			if (block?.type !== "paragraph" || item.rows) return [];
-			if (block.style !== "PartHeading" && block.style !== "DayHeading")
-				return [];
-			return [
-				{
-					level: block.style === "PartHeading" ? 1 : 2,
-					text: block.runs.map((r) => r.text).join(""),
-					page: i + 1,
-				},
-			];
-		}),
+		page.items.flatMap((item) =>
+			item.rows
+				? []
+				: tocEntry(doc.sections[page.section]?.blocks[item.block], i + 1),
+		),
 	);
 }
+
+// Measured with three-digit page numbers so the real contents takes no more room than measured.
+const draftToc = (doc: PrintDocument) =>
+	doc.sections.flatMap((s) => s.blocks.flatMap((b) => tocEntry(b, 888)));
 
 interface Measured {
 	doc: PrintDocument;
@@ -81,6 +88,7 @@ function MeasureLayer({
 }) {
 	const root = useRef<HTMLDivElement>(null);
 	const ruler = useRef<HTMLDivElement>(null);
+	const toc = draftToc(doc);
 	useLayoutEffect(() => {
 		const el = root.current;
 		const mm = (ruler.current?.offsetHeight ?? 1000) / 1000;
@@ -121,7 +129,7 @@ function MeasureLayer({
 									data-block={bi}
 									key={`${bi}-${block.type}`}
 								>
-									<Block block={block} toc={[]} />
+									<Block block={block} toc={toc} />
 								</div>
 							))}
 						</div>

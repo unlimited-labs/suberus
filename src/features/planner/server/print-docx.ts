@@ -33,14 +33,15 @@ import {
 	columnFractions,
 	tableRows,
 } from "@/features/planner/print/print-document-rules";
-import type {
-	CharacterStyle,
-	ParagraphStyle,
-	PrintBlock,
-	PrintDocument,
-	PrintParagraph,
-	PrintSection,
-	PrintTable,
+import {
+	type CharacterStyle,
+	type ParagraphStyle,
+	type PrintBlock,
+	type PrintDocument,
+	type PrintParagraph,
+	type PrintSection,
+	type PrintTable,
+	TOC_LEVELS,
 } from "@/features/planner/print/print-document-schema";
 
 const FONT = "Arial";
@@ -221,8 +222,9 @@ function block(
 			new TableOfContents(b.title, {
 				hyperlink: true,
 				stylesWithLevels: [
-					new StyleLevel("PartHeading", 1),
-					new StyleLevel("DayHeading", 2),
+					...Object.entries(TOC_LEVELS).map(
+						([style, level]) => new StyleLevel(style, level),
+					),
 				],
 			}),
 		];
@@ -303,7 +305,11 @@ function section(s: PrintSection, doc: PrintDocument) {
 
 export async function renderDocx(doc: PrintDocument): Promise<Buffer> {
 	const document = new Document({
-		pageNumbers: estimatePageNumbers,
+		pageNumbers: doc.sections.some((s) =>
+			s.blocks.some((b) => b.type === "toc"),
+		)
+			? estimatePageNumbers
+			: undefined,
 		styles: {
 			default: { document: { run: { font: FONT, size: 18 } } },
 			paragraphStyles: PARAGRAPH_STYLES,

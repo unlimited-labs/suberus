@@ -480,7 +480,7 @@ export function buildPrintDocument(
 	const sections: PrintSection[] = [];
 	if (has("title")) {
 		const logoBlock: PrintBlock[] =
-			logo && wantsLogo(options)
+			logo && options.showLogo
 				? [{ type: "image", ...logo, widthFraction: 0.35 }]
 				: [];
 		sections.push(
