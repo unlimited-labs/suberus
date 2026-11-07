@@ -1,5 +1,3 @@
-"""IDML API: the app's PrintDocument JSON -> InDesign package for a designer."""
-
 from fastapi import APIRouter, Depends, Response
 
 from core.security import require_token
