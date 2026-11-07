@@ -92,4 +92,4 @@ class PrintDocument(Model):
     language: Literal["en", "pl"]
     footer: str
     swatches: list[Swatch]
-    sections: list[Section]
+    sections: list[Section] = Field(min_length=1)

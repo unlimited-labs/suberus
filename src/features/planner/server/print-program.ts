@@ -115,7 +115,7 @@ export async function loadPrintLogo(): Promise<PrintLogo | null> {
 	const buffer = await getBrandingLogoBuffer();
 	if (!buffer) return null;
 	const info = printImageInfo(buffer);
-	if (!info || info.height === 0) return null;
+	if (!info || info.width === 0 || info.height === 0) return null;
 	return {
 		mime: info.mime,
 		dataBase64: buffer.toString("base64"),

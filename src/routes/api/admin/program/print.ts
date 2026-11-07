@@ -7,7 +7,7 @@ import {
 } from "@/features/planner/print/print-options-schema";
 import {
 	buildPrintFile,
-	PrintFormatUnavailableError,
+	PrintExportError,
 } from "@/features/planner/server/print-export";
 import { contentDispositionAttachment } from "@/shared/server/file-names";
 
@@ -53,8 +53,11 @@ export const Route = createFileRoute("/api/admin/program/print")({
 						},
 					});
 				} catch (error) {
-					if (error instanceof PrintFormatUnavailableError)
-						return Response.json({ error: error.message }, { status: 501 });
+					if (error instanceof PrintExportError)
+						return Response.json(
+							{ error: error.message },
+							{ status: error.status },
+						);
 					throw error;
 				}
 			},

@@ -5,6 +5,7 @@ import {
 } from "@/features/planner/print/print-document-rules";
 import {
 	IDML_UNAVAILABLE,
+	NO_SESSIONS,
 	type PrintFormat,
 	type PrintOptions,
 	printFileName,
@@ -30,7 +31,14 @@ interface PrintFile {
 	contentType: string;
 }
 
-export class PrintFormatUnavailableError extends Error {}
+export class PrintExportError extends Error {
+	constructor(
+		message: string,
+		readonly status: 422 | 501,
+	) {
+		super(message);
+	}
+}
 
 const RENDERERS = {
 	xlsx: async (program, options) =>
@@ -45,8 +53,7 @@ const RENDERERS = {
 			doc: buildPrintDocument(program, options, logo),
 		}),
 	idml: async (program, options, logo) => {
-		if (!isIdmlAvailable())
-			throw new PrintFormatUnavailableError(IDML_UNAVAILABLE);
+		if (!isIdmlAvailable()) throw new PrintExportError(IDML_UNAVAILABLE, 501);
 		return renderIdml(buildPrintDocument(program, options, logo));
 	},
 } satisfies Record<
@@ -69,6 +76,8 @@ export async function buildPrintFile(
 		loadPrintSource(),
 		usesLogo(format, options) ? loadPrintLogo() : null,
 	]);
+	if (source.sessions.length === 0)
+		throw new PrintExportError(NO_SESSIONS, 422);
 	const program = buildPrintProgram(source, options);
 	const body = await RENDERERS[format](program, options, logo);
 	return {
