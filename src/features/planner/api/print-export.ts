@@ -1,9 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import {
-	adminMiddleware,
-	adminOnlyMiddleware,
-} from "@/features/auth/server/middleware";
+import { adminMiddleware } from "@/features/auth/server/middleware";
 import { printOptionsSchema } from "@/features/planner/print/print-options-schema";
 import { isIdmlAvailable } from "@/features/planner/server/print-idml-client";
 import {
@@ -25,7 +22,7 @@ export const getPrintExportDataFn = createServerFn({ method: "GET" })
 	});
 
 export const savePrintOptionsFn = createServerFn({ method: "POST" })
-	.middleware([adminOnlyMiddleware])
+	.middleware([adminMiddleware])
 	.validator(printOptionsSchema)
 	.handler(async ({ data }) => {
 		await savePrintOptions(data);

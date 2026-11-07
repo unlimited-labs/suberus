@@ -1,5 +1,7 @@
+import { Radio } from "@base-ui/react/radio";
+import { RadioGroup } from "@base-ui/react/radio-group";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
+import { buttonVariants } from "@/shared/ui/button";
 
 interface SegmentedControlProps<T extends string> {
 	label: string;
@@ -19,27 +21,26 @@ export function SegmentedControl<T extends string>({
 	testId,
 }: SegmentedControlProps<T>) {
 	return (
-		<div
+		<RadioGroup<T>
 			aria-label={label}
 			className="bg-muted inline-flex flex-wrap gap-0.5 rounded-lg p-0.5"
 			data-testid={testId}
-			role="radiogroup"
+			disabled={disabled}
+			onValueChange={onChange}
+			value={value}
 		>
 			{options.map((o) => (
-				<Button
-					aria-checked={value === o.value}
-					className={cn(value !== o.value && "text-muted-foreground")}
-					disabled={disabled}
+				<Radio.Root
+					className={cn(
+						buttonVariants({ size: "sm", variant: "ghost" }),
+						"text-muted-foreground data-checked:border-border data-checked:bg-background data-checked:text-foreground cursor-pointer border border-transparent data-disabled:pointer-events-none data-disabled:opacity-50",
+					)}
 					key={o.value}
-					onClick={() => onChange(o.value)}
-					role="radio"
-					size="sm"
-					type="button"
-					variant={value === o.value ? "outline" : "ghost"}
+					value={o.value}
 				>
 					{o.label}
-				</Button>
+				</Radio.Root>
 			))}
-		</div>
+		</RadioGroup>
 	);
 }

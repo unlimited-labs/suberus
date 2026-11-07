@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { XlsxCell, XlsxSheetSpec } from "@/shared/lib/xlsx-types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
@@ -11,10 +12,12 @@ function cellText(cell: XlsxCell): string {
 }
 
 export function SheetPreview({ sheets }: { sheets: XlsxSheetSpec[] }) {
+	const [tab, setTab] = useState<string | null>(null);
 	const first = sheets[0]?.name;
 	if (!first) return null;
+	const value = sheets.some((s) => s.name === tab) ? tab : first;
 	return (
-		<Tabs className="min-w-0" defaultValue={first}>
+		<Tabs className="min-w-0" onValueChange={setTab} value={value}>
 			<TabsList
 				className="max-w-full justify-start overflow-x-auto"
 				variant="line"
