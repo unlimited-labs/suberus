@@ -56,6 +56,23 @@ def test_every_reference_resolves(package):
     assert srcs - set(package.namelist()) == set()
 
 
+def test_designmap_carries_the_aid_marker_indesign_requires_to_open_it(package):
+    head = text(package, "designmap.xml").split("<Document", 1)[0]
+    assert '<?aid style="50" type="document"' in head
+
+
+def test_footer_page_number_marker_sits_inside_content(package):
+    footers = [n for n in package.namelist() if re.search(r"Story_u_um\d+f\d+\.xml$", n)]
+    assert footers and all("<Content><?ACE 18?></Content>" in text(package, n) for n in footers)
+
+
+def test_draft_mark_uses_its_own_large_tinted_style(package):
+    drafts = [n for n in package.namelist() if re.search(r"Story_u_um\d+d\d+\.xml$", n)]
+    assert drafts and all("ParagraphStyle/DraftMark" in text(package, n) for n in drafts)
+    style = re.search(r'<ParagraphStyle [^>]*Name="DraftMark"[^>]*>', text(package, "Resources/Styles.xml"))
+    assert style and 'FillTint="20"' in style.group(0)
+
+
 def test_draft_layer_is_listed_first_so_it_sits_behind_content(package):
     layers = re.findall(r'<Layer [^>]*Name="([^"]+)"', text(package, "designmap.xml"))
     assert layers == ["Draft mark", "Content"]

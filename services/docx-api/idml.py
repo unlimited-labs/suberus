@@ -46,6 +46,11 @@ PARAGRAPH_STYLES: dict[str, tuple[float, str, dict[str, str]]] = {
     "TocEntry1": (10, "Regular", {}),
     "TocEntry2": (9, "Regular", {"LeftIndent": "12"}),
 }
+DRAFT_STYLE = {"Self": "ParagraphStyle/DraftMark", "Name": "DraftMark", "PointSize": 110,
+               "FontStyle": "Bold", "FillColor": "Color/Black", "FillTint": 20,
+               "Justification": "CenterAlign"}
+# Without this marker InDesign refuses the package as an unsupported format.
+AID_MARKER = 'style="50" type="document" readerVersion="6.0" featureSet="257" product="8.0(370)"'
 CHARACTER_STYLES = {
     "Code": {"FontStyle": "Bold"},
     "Time": {"FontStyle": "Bold"},
@@ -109,6 +114,8 @@ def styles_xml(language: str) -> bytes:
                    el("BasedOn", {"type": "string"}, text="$ID/[No paragraph style]"),
                    el("AppliedFont", {"type": "string"}, text=FONT))
         paras.append(el("ParagraphStyle", attrs, props))
+    paras.append(el("ParagraphStyle", {**DRAFT_STYLE, "AppliedLanguage": lang},
+                    el("Properties", None, el("AppliedFont", {"type": "string"}, text=FONT))))
     toc = el("TOCStyle", {"Self": "TOCStyle/Program TOC", "Name": "Program TOC", "Title": "",
                           "TitleStyle": "ParagraphStyle/TocEntry1"})
     for level, (source, fmt) in enumerate([("PartHeading", "TocEntry1"),
@@ -396,13 +403,13 @@ def build_masters(doc: PrintDocument, pages: list[PlannedPage]):
             spread.append(text_frame(fid, f"u_{fid}", rect))
             files[f"Stories/Story_u_{fid}.xml"] = small_story(
                 f"u_{fid}", "Legend", el("Content", text=f"{footer} · "),
-                etree.ProcessingInstruction("ACE", "18"))
+                el("Content", None, etree.ProcessingInstruction("ACE", "18")))
             if doc.draft:
                 did = f"{mid}d{slot}"
                 drect = (x + mm(MARGIN_MM), -mm(30), x + sample.width - mm(MARGIN_MM), mm(30))
                 spread.append(text_frame(did, f"u_{did}", drect, layer="ulayer_draft"))
                 files[f"Stories/Story_u_{did}.xml"] = small_story(
-                    f"u_{did}", "Title", el("Content", text="DRAFT"))
+                    f"u_{did}", "DraftMark", el("Content", text="DRAFT"))
         files[f"MasterSpreads/MasterSpread_{mid}.xml"] = to_bytes(pkg_root("MasterSpread", spread))
     return masters, files
 
@@ -430,7 +437,9 @@ def designmap_xml(pages, spread_files, master_files, story_ids) -> bytes:
                                "PageStart": "upg0", "SectionPrefix": "", "Marker": ""}))
     for sid in story_ids:
         root.append(el(f"{{{PKG}}}Story", {"src": f"Stories/Story_{sid}.xml"}))
-    return to_bytes(root)
+    root.addprevious(etree.ProcessingInstruction("aid", AID_MARKER))
+    return etree.tostring(root.getroottree(), xml_declaration=True, encoding="UTF-8",
+                          standalone=True)
 
 
 CONTAINER = (b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
