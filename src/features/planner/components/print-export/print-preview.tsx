@@ -12,7 +12,7 @@ import {
 	paginate,
 } from "@/features/planner/print/paginate-rules";
 import {
-	rowBreaks,
+	breakableAfterRow,
 	contentSizeMm,
 	MARGIN_MM,
 	pageSizeMm,
@@ -46,7 +46,7 @@ function measureSection(
 		return {
 			headerRows: block.headerRows,
 			rows: rows.map((tr) => tr.offsetHeight),
-			breakable: rowBreaks(block.cells, block.rowCount),
+			breakable: breakableAfterRow(block.cells, block.rowCount),
 		};
 	});
 }
@@ -70,9 +70,11 @@ function tocEntries(doc: PrintDocument, pages: Page[]): TocEntry[] {
 	);
 }
 
-// Measured with three-digit page numbers so the real contents takes no more room than measured.
+const WIDEST_PAGE_NUMBER = 888;
 const draftToc = (doc: PrintDocument) =>
-	doc.sections.flatMap((s) => s.blocks.flatMap((b) => tocEntry(b, 888)));
+	doc.sections.flatMap((s) =>
+		s.blocks.flatMap((b) => tocEntry(b, WIDEST_PAGE_NUMBER)),
+	);
 
 interface Measured {
 	doc: PrintDocument;

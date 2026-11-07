@@ -1,7 +1,5 @@
-"""IDML generator: PrintDocument -> InDesign package (UCF zip), built from scratch with lxml.
-Mechanics validated in real InDesign (map #94): margins = text area so reflow-added pages
-clear the footer, DRAFT layer listed first (behind content), anchor + unoccupied table
-cells only, no PagesPerDocument, Smart Text Reflow fixes the estimated page count."""
+"""InDesign-verified (GH #94): margins = text area so reflow pages clear the footer, DRAFT layer
+first, anchor + unoccupied cells only, no PagesPerDocument (Smart Text Reflow fixes the count)."""
 
 import io
 import math
@@ -104,9 +102,6 @@ def color_self(name: str) -> str:
     return f"Color/Track: {name}"
 
 
-# --- styles, colours, preferences -------------------------------------------------
-
-
 def styles_xml(language: str) -> bytes:
     lang = LANGUAGE[language]
     chars = el("RootCharacterStyleGroup", {"Self": "u_rcsg"})
@@ -175,9 +170,6 @@ def preferences_xml(doc: PrintDocument) -> bytes:
                               "LimitToMasterTextFrames": "false",
                               "PreserveFacingPageSpreads": "false", "DeleteEmptyPages": "true"}),
     ))
-
-
-# --- stories ----------------------------------------------------------------------
 
 
 def paragraph_range(p: Paragraph, swatch: Callable[[str], str], last: bool = False):
@@ -256,9 +248,6 @@ def small_story(sid: str, style: str, *contents) -> bytes:
     psr = el("ParagraphStyleRange", {"AppliedParagraphStyle": f"ParagraphStyle/{style}"}, csr)
     return to_bytes(pkg_root("Story", el("Story", {"Self": sid, "AppliedTOCStyle": "n",
                                                    "StoryTitle": "$ID/"}, psr)))
-
-
-# --- pages, spreads, masters ----------------------------------------------------------
 
 
 @dataclass
@@ -416,9 +405,6 @@ def build_masters(doc: PrintDocument, pages: list[PlannedPage]):
                     f"u_{did}", "DraftMark", el("Content", text="DRAFT"))
         spreads[f"MasterSpreads/MasterSpread_{mid}.xml"] = to_bytes(pkg_root("MasterSpread", spread))
     return masters, spreads, stories
-
-
-# --- package ----------------------------------------------------------------------------
 
 
 def story_path(sid: str) -> str:

@@ -204,7 +204,6 @@ export type AppSettingsMap = {
 	PROGRAM_SHOW_AUTHOR_INFO: boolean;
 	PROGRAM_QR: ProgramQrSettings;
 	PROGRAM_BADGES: ProgramBadge[];
-	/** Raw JSON; validated by planner `printOptionsSchema` on read. */
 	PRINT_EXPORT_OPTIONS: Record<string, string | boolean | string[]>;
 	PROGRAM_FOOTER_HTML: string;
 

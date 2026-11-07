@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	buildPrintDocument,
 	chooseGlanceLayout,
-	rowBreaks,
+	breakableAfterRow,
 	tableRows,
 } from "./print-document-rules";
 import { printOptionsSchema } from "./print-options-schema";
@@ -271,6 +271,6 @@ describe("table layout helpers", () => {
 	});
 
 	it("never breaks a page inside a row span", () => {
-		expect(rowBreaks(cells, 3)).toEqual([false, true, true]);
+		expect(breakableAfterRow(cells, 3)).toEqual([false, true, true]);
 	});
 });

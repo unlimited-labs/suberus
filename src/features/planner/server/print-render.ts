@@ -12,7 +12,6 @@ const workerEntry = () =>
 	);
 
 // Docx TOC estimation and large workbooks are seconds of sync CPU; off the request loop in prod.
-// docx and exceljs load only inside the worker (or lazily in dev), never in the server bundle.
 export async function renderOffThread(job: PrintRenderJob): Promise<Buffer> {
 	if (import.meta.env.DEV) {
 		const { renderJob } = await import("./print-render-job");

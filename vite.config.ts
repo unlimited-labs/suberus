@@ -42,8 +42,6 @@ const nitroConfig: NitroPluginConfig = {
 	output: outputDir ? { dir: outputDir } : undefined,
 	experimental: { tasks: true },
 	hooks: {
-		// Extra Nitro entry so the docx/xlsx build can run in a worker_threads worker
-		// (src/features/planner/server/print-render.ts).
 		"build:config"(nitro, config) {
 			const bundle = config.rolldown ?? config.rollup;
 			if (!bundle) return;

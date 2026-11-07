@@ -97,7 +97,6 @@ function coveredCells(cells: readonly Span[]): Set<string> {
 	return covered;
 }
 
-/** Rows `from..to`: each column's anchor cell, `null` for an empty cell, nothing where a span covers it. */
 export function tableRows<C extends Span>(
 	cells: readonly C[],
 	columns: number,
@@ -118,8 +117,7 @@ export function tableRows<C extends Span>(
 	});
 }
 
-/** A page may break after row `r` unless a cell spans across it. */
-export const rowBreaks = (cells: readonly Span[], rowCount: number) =>
+export const breakableAfterRow = (cells: readonly Span[], rowCount: number) =>
 	Array.from(
 		{ length: rowCount },
 		(_, r) => !cells.some((c) => c.row <= r && r + 1 < c.row + c.rowSpan),
