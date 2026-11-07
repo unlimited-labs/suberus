@@ -27,7 +27,9 @@ export const Route = createFileRoute(
 	"/_app/admin/_layout/program-planner/export",
 )({
 	server: { middleware: [adminRouteMiddleware] },
+	// The preview measures a hidden copy of the whole booklet; rendering it on the server is wasted.
 	validateSearch: searchSchema,
+	ssr: "data-only",
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.ensureQueryData(printExportDataQueryOptions()),

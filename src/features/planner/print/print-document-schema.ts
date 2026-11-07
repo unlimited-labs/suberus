@@ -37,6 +37,7 @@ export const CHARACTER_STYLES = [
 ] as const;
 
 export type ParagraphStyle = (typeof PARAGRAPH_STYLES)[number];
+export type CharacterStyle = (typeof CHARACTER_STYLES)[number];
 
 const hexColor = z.string().regex(HEX_COLOR);
 

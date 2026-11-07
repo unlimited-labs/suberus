@@ -215,6 +215,13 @@ function datesLabel(src: PrintSource, language: PrintLanguage): string {
 	);
 }
 
+const slotsInOrder = (s: SourceSession) =>
+	s.slots.toSorted((a, b) => a.order - b.order);
+const isShown = (slot: SourceSlot, options: ProgramOptions) =>
+	options.includeCancelled || !slot.cancelled;
+const authorsInOrder = (slot: SourceSlot) =>
+	slot.submission.authors.toSorted((a, b) => a.orderIndex - b.orderIndex);
+
 function trackOf(s: SourceSession): PrintSession["track"] {
 	if (!s.track) return null;
 	const { name, color } = s.track;
@@ -233,38 +240,34 @@ function buildSlots(
 	options: ProgramOptions,
 	badgeLabels: ReadonlyMap<string, string>,
 ): PrintSlot[] {
-	return s.slots
-		.toSorted((a, b) => a.order - b.order)
-		.flatMap((slot, i): PrintSlot[] => {
-			if (slot.cancelled && !options.includeCancelled) return [];
-			const startAt = slotStartAt(s.startAt, s.slots, slot.order);
-			const start = s.untimedSlots ? null : f.time(startAt);
-			const end = s.untimedSlots
-				? null
-				: f.time(new Date(startAt.getTime() + slot.durationMin * 60_000));
-			return [
-				{
-					id: slot.id,
-					submissionNumber: slot.submission.sequentialNumber,
-					submissionType: slot.submission.type,
-					title: slot.submission.title,
-					timeLabel: start && end ? `${start}–${end}` : null,
-					start,
-					end,
-					board: s.untimedSlots ? `P${i + 1}` : null,
-					authors: slot.submission.authors
-						.toSorted((a, b) => a.orderIndex - b.orderIndex)
-						.map((a) => ({
-							name: shortName(a),
-							fullName: `${a.firstName} ${a.lastName}`,
-							presenting: isPresenting(slot, a),
-						})),
-					badge: slot.badgeId ? (badgeLabels.get(slot.badgeId) ?? null) : null,
-					invited: slot.submission.type === "INVITED",
-					cancelled: slot.cancelled,
-				},
-			];
-		});
+	return slotsInOrder(s).flatMap((slot, i): PrintSlot[] => {
+		if (!isShown(slot, options)) return [];
+		const startAt = slotStartAt(s.startAt, s.slots, slot.order);
+		const start = s.untimedSlots ? null : f.time(startAt);
+		const end = s.untimedSlots
+			? null
+			: f.time(new Date(startAt.getTime() + slot.durationMin * 60_000));
+		return [
+			{
+				id: slot.id,
+				submissionNumber: slot.submission.sequentialNumber,
+				submissionType: slot.submission.type,
+				title: slot.submission.title,
+				timeLabel: start && end ? `${start}–${end}` : null,
+				start,
+				end,
+				board: s.untimedSlots ? `P${i + 1}` : null,
+				authors: authorsInOrder(slot).map((a) => ({
+					name: shortName(a),
+					fullName: `${a.firstName} ${a.lastName}`,
+					presenting: isPresenting(slot, a),
+				})),
+				badge: slot.badgeId ? (badgeLabels.get(slot.badgeId) ?? null) : null,
+				invited: slot.submission.type === "INVITED",
+				cancelled: slot.cancelled,
+			},
+		];
+	});
 }
 
 interface KeyedAppearance extends Appearance {
@@ -296,22 +299,18 @@ function sessionAppearances(
 	code: string,
 	options: ProgramOptions,
 ): KeyedAppearance[] {
-	const slots = s.slots
-		.filter((slot) => options.includeCancelled || !slot.cancelled)
-		.toSorted((a, b) => a.order - b.order);
+	const slots = slotsInOrder(s).filter((slot) => isShown(slot, options));
 	return [
 		...s.chairs.map((chair) => appearanceOf(chair, code, "chair", null)),
 		...slots.flatMap((slot) =>
-			slot.submission.authors
-				.toSorted((x, y) => x.orderIndex - y.orderIndex)
-				.map((a) =>
-					appearanceOf(
-						a,
-						code,
-						isPresenting(slot, a) ? "presenter" : "author",
-						slot.submission.title,
-					),
+			authorsInOrder(slot).map((a) =>
+				appearanceOf(
+					a,
+					code,
+					isPresenting(slot, a) ? "presenter" : "author",
+					slot.submission.title,
 				),
+			),
 		),
 	];
 }
@@ -326,14 +325,20 @@ function buildAuthorIndex(
 		sessionAppearances(s, codes.get(s.id) ?? "", options),
 	);
 	const userByEmail = new Map(
-		keyed.flatMap((a) => (a.userId ? [[a.email, a.userId] as const] : [])),
+		keyed.flatMap((a) =>
+			a.userId && a.email ? [[a.email, a.userId] as const] : [],
+		),
 	);
+	// Invited speakers often have neither an account nor an email; their name is all there is.
+	const keyOf = (a: KeyedAppearance) =>
+		a.userId ??
+		(a.email ? (userByEmail.get(a.email) ?? a.email) : `name:${a.indexName}`);
 	const people = new Map<
 		string,
 		{ name: string; refs: Map<string, boolean> }
 	>();
 	for (const a of keyed) {
-		const key = a.userId ?? userByEmail.get(a.email) ?? a.email;
+		const key = keyOf(a);
 		const entry = people.get(key) ?? {
 			name: a.indexName,
 			refs: new Map<string, boolean>(),
@@ -397,6 +402,7 @@ export function buildPrintProgram(
 			roomOrder(a.roomId) - roomOrder(b.roomId),
 	);
 
+	const trackById = new Map(sessions.map((s) => [s.id, trackOf(s)]));
 	const people = buildAuthorIndex(sessions, codes, options, collator);
 	const items = src.items.toSorted(
 		(a, b) => a.startAt.getTime() - b.startAt.getTime(),
@@ -414,7 +420,7 @@ export function buildPrintProgram(
 				roomId: s.roomId,
 				code: codes.get(s.id) ?? null,
 				title: s.title,
-				trackColor: trackOf(s)?.color ?? null,
+				trackColor: trackById.get(s.id)?.color ?? null,
 			})),
 			...dayItems.map((x) => ({
 				start: x.startAt.getTime(),
@@ -442,7 +448,7 @@ export function buildPrintProgram(
 					start,
 					end,
 					room: s.roomId ? roomName(s.roomId) : null,
-					track: trackOf(s),
+					track: trackById.get(s.id) ?? null,
 					chairs: s.chairs.map(shortName),
 					slots: buildSlots(s, f, options, badgeLabels),
 				};
@@ -473,10 +479,7 @@ export function buildPrintProgram(
 		...people,
 		tracks: [
 			...new Map(
-				sessions.flatMap((x) => {
-					const track = trackOf(x);
-					return track ? [[track.name, track]] : [];
-				}),
+				[...trackById.values()].flatMap((t) => (t ? [[t.name, t]] : [])),
 			).values(),
 		].toSorted((a, b) => collator.compare(a.name, b.name)),
 	};

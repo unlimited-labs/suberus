@@ -33,6 +33,7 @@ import {
 	coveredCells,
 } from "@/features/planner/print/print-document-rules";
 import type {
+	CharacterStyle,
 	ParagraphStyle,
 	PrintBlock,
 	PrintDocument,
@@ -44,27 +45,26 @@ import type {
 const FONT = "Arial";
 const TWIP_PER_MM = 56.6929;
 
+type StyleSpec<T> = Omit<T, "id" | "name">;
+
 const P = (
-	id: ParagraphStyle,
 	size: number,
-	extra: Partial<IParagraphStyleOptions> = {},
-): IParagraphStyleOptions => ({
-	id,
-	name: id,
+	extra: StyleSpec<IParagraphStyleOptions> = {},
+): StyleSpec<IParagraphStyleOptions> => ({
 	basedOn: "Normal",
 	quickFormat: true,
 	...extra,
 	run: { font: FONT, size: size * 2, ...extra.run },
 });
 
-const PARAGRAPH_STYLES: IParagraphStyleOptions[] = [
-	P("Title", 22, { run: { bold: true } }),
-	P("Subtitle", 13, { paragraph: { spacing: { after: 240 } } }),
-	P("PartHeading", 17, {
+const PARAGRAPH_STYLES = Object.entries({
+	Title: P(22, { run: { bold: true } }),
+	Subtitle: P(13, { paragraph: { spacing: { after: 240 } } }),
+	PartHeading: P(17, {
 		run: { bold: true },
 		paragraph: { outlineLevel: 0, spacing: { after: 160 } },
 	}),
-	P("DayHeading", 13, {
+	DayHeading: P(13, {
 		run: { bold: true },
 		paragraph: {
 			outlineLevel: 1,
@@ -72,62 +72,63 @@ const PARAGRAPH_STYLES: IParagraphStyleOptions[] = [
 			keepNext: true,
 		},
 	}),
-	P("SessionHeading", 10.5, {
+	SessionHeading: P(10.5, {
 		run: { bold: true },
 		paragraph: { spacing: { before: 180 }, keepNext: true },
 	}),
-	P("SessionMeta", 8.5, { paragraph: { keepNext: true } }),
-	P("ChairLine", 8.5, {
+	SessionMeta: P(8.5, { paragraph: { keepNext: true } }),
+	ChairLine: P(8.5, {
 		run: { italics: true },
 		paragraph: { keepNext: true },
 	}),
-	P("SlotTitle", 9, { paragraph: { spacing: { before: 60 }, keepNext: true } }),
-	P("SlotAuthors", 8, { run: { color: "444444" } }),
-	P("BreakLine", 9, {
+	SlotTitle: P(9, { paragraph: { spacing: { before: 60 }, keepNext: true } }),
+	SlotAuthors: P(8, { run: { color: "444444" } }),
+	BreakLine: P(9, {
 		run: { italics: true },
 		paragraph: { spacing: { before: 120 } },
 	}),
-	P("EventTitle", 9, {
+	EventTitle: P(9, {
 		run: { bold: true },
 		paragraph: { spacing: { before: 120 }, keepNext: true },
 	}),
-	P("EventText", 8.5),
-	P("GridHeader", 7.5, { run: { bold: true } }),
-	P("GridTime", 7),
-	P("GridCell", 7),
-	P("GridBand", 7.5, {
+	EventText: P(8.5),
+	GridHeader: P(7.5, { run: { bold: true } }),
+	GridTime: P(7),
+	GridCell: P(7),
+	GridBand: P(7.5, {
 		run: { bold: true },
 		paragraph: { alignment: AlignmentType.CENTER },
 	}),
-	P("Legend", 7.5, { paragraph: { spacing: { after: 120 } } }),
-	P("IndexLetter", 11, {
+	Legend: P(7.5, { paragraph: { spacing: { after: 120 } } }),
+	IndexLetter: P(11, {
 		run: { bold: true },
 		paragraph: { spacing: { before: 120 }, keepNext: true },
 	}),
-	P("IndexEntry", 8),
-	P("TocEntry1", 10),
-	P("TocEntry2", 9, { paragraph: { indent: { left: 240 } } }),
-];
+	IndexEntry: P(8),
+	TocEntry1: P(10),
+	TocEntry2: P(9, { paragraph: { indent: { left: 240 } } }),
+} satisfies Record<ParagraphStyle, StyleSpec<IParagraphStyleOptions>>).map(
+	([id, style]): IParagraphStyleOptions => ({ id, name: id, ...style }),
+);
 
 const C = (
-	id: string,
 	run: ICharacterStyleOptions["run"],
-): ICharacterStyleOptions => ({
-	id,
-	name: id,
+): StyleSpec<ICharacterStyleOptions> => ({
 	basedOn: "DefaultParagraphFont",
 	run,
 });
 
-const CHARACTER_STYLES: ICharacterStyleOptions[] = [
-	C("Code", { bold: true }),
-	C("Time", { bold: true }),
-	C("Presenter", { underline: {} }),
-	C("Presenting", { bold: true }),
-	C("Cancelled", { strike: true }),
-	C("Badge", { bold: true, smallCaps: true }),
-	C("Invited", { bold: true, smallCaps: true }),
-];
+const CHARACTER_STYLES = Object.entries({
+	Code: C({ bold: true }),
+	Time: C({ bold: true }),
+	Presenter: C({ underline: {} }),
+	Presenting: C({ bold: true }),
+	Cancelled: C({ strike: true }),
+	Badge: C({ bold: true, smallCaps: true }),
+	Invited: C({ bold: true, smallCaps: true }),
+} satisfies Record<CharacterStyle, StyleSpec<ICharacterStyleOptions>>).map(
+	([id, style]): ICharacterStyleOptions => ({ id, name: id, ...style }),
+);
 
 const hex = (color: string) => color.replace("#", "").toUpperCase();
 
