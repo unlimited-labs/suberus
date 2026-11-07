@@ -338,6 +338,53 @@ describe("buildPrintProgram: at-a-glance grid and items", () => {
 		});
 	});
 
+	const item = (id: string, startIso: string, endIso: string) => ({
+		id,
+		kind: "BREAK" as const,
+		title: id,
+		description: null,
+		location: null,
+		roomId: null,
+		startAt: new Date(startIso),
+		endAt: new Date(endIso),
+	});
+
+	it("keeps a break that overlaps a lone session as its own cell instead of a band over it", () => {
+		const grid = buildPrintProgram(
+			source({
+				sessions: [
+					session("plenary", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z"),
+				],
+				items: [item("Coffee", "2026-09-14T08:30:00Z", "2026-09-14T09:30:00Z")],
+			}),
+			options,
+		).days[0]?.grid;
+		expect(grid?.cells.map((c) => [c.title, c.col, c.colSpan, c.band])).toEqual(
+			[
+				["Session plenary", 0, 1, false],
+				["Coffee", 1, 1, false],
+			],
+		);
+	});
+
+	it("never makes two overlapping breaks full-width bands", () => {
+		const grid = buildPrintProgram(
+			source({
+				items: [
+					item("Coffee", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z"),
+					item("Posters", "2026-09-14T08:30:00Z", "2026-09-14T09:30:00Z"),
+				],
+			}),
+			options,
+		).days[0]?.grid;
+		expect(grid?.cells.map((c) => [c.title, c.col, c.colSpan, c.band])).toEqual(
+			[
+				["Coffee", 0, 1, false],
+				["Posters", 1, 1, false],
+			],
+		);
+	});
+
 	it("lists breaks and events with time and place, describing only events", () => {
 		const items = buildPrintProgram(day, options).days[0]?.items;
 		expect(
@@ -408,6 +455,58 @@ describe("buildPrintProgram: author index and track legend", () => {
 			{ name: "Lis, Adam", refs: [{ code: "1A2", presenting: false }] },
 			{
 				name: "Łukasik, Ewa",
+				refs: [
+					{ code: "1A1", presenting: false },
+					{ code: "1A2", presenting: false },
+				],
+			},
+		]);
+	});
+
+	it("merges a linked user with an unlinked co-author who has the same email", () => {
+		const linked = session(
+			"s1",
+			"2026-09-14T08:00:00Z",
+			"2026-09-14T09:00:00Z",
+			{
+				slots: [
+					slot("a", 0, {
+						submission: {
+							...slot("a", 0).submission,
+							authors: [
+								author("a-1", "Jan", "Kowalski", {
+									userId: "u1",
+									email: "jan@x.org",
+								}),
+							],
+						},
+					}),
+				],
+			},
+		);
+		const unlinked = session(
+			"s2",
+			"2026-09-14T10:00:00Z",
+			"2026-09-14T11:00:00Z",
+			{
+				slots: [
+					slot("b", 0, {
+						submission: {
+							...slot("b", 0).submission,
+							authors: [
+								author("b-1", "Jan", "Kowalski", { email: "Jan@X.org" }),
+							],
+						},
+					}),
+				],
+			},
+		);
+		expect(
+			buildPrintProgram(source({ sessions: [unlinked, linked] }), options)
+				.authorIndex,
+		).toEqual([
+			{
+				name: "Kowalski, Jan",
 				refs: [
 					{ code: "1A1", presenting: false },
 					{ code: "1A2", presenting: false },

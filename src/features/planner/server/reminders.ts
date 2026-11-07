@@ -1,10 +1,10 @@
 import webpush from "web-push";
 import { env } from "@/env";
+import { isReminderDue, slotStartAt } from "@/features/planner/slot-timing";
 import { getSetting } from "@/features/settings/server/settings";
 import { logger } from "@/logger";
 import { prisma } from "@/shared/server/db.server";
 import { getScheduleState } from "./schedule";
-import { isReminderDue, slotStartAt } from "./slot-timing";
 
 let vapidConfigured = false;
 

@@ -1,3 +1,4 @@
+import { slotStartAt } from "@/features/planner/slot-timing";
 import type {
 	ScheduleItemKind,
 	SubmissionType,
@@ -226,19 +227,15 @@ function buildSlots(
 	options: ProgramOptions,
 	badgeLabels: ReadonlyMap<string, string>,
 ): PrintSlot[] {
-	let offsetMin = 0;
 	return s.slots
 		.toSorted((a, b) => a.order - b.order)
 		.flatMap((slot, i): PrintSlot[] => {
-			const startMin = offsetMin;
-			offsetMin += slot.durationMin;
 			if (slot.cancelled && !options.includeCancelled) return [];
-			const start = s.untimedSlots
-				? null
-				: f.time(new Date(s.startAt.getTime() + startMin * 60_000));
+			const startAt = slotStartAt(s.startAt, s.slots, slot.order);
+			const start = s.untimedSlots ? null : f.time(startAt);
 			const end = s.untimedSlots
 				? null
-				: f.time(new Date(s.startAt.getTime() + offsetMin * 60_000));
+				: f.time(new Date(startAt.getTime() + slot.durationMin * 60_000));
 			return [
 				{
 					id: slot.id,
@@ -265,7 +262,8 @@ function buildSlots(
 }
 
 interface KeyedAppearance extends Appearance {
-	key: string;
+	userId: string | null;
+	email: string;
 	indexName: string;
 }
 
@@ -276,7 +274,8 @@ function appearanceOf(
 	slotTitle: string | null,
 ): KeyedAppearance {
 	return {
-		key: p.userId ?? p.email.toLowerCase(),
+		userId: p.userId,
+		email: p.email.toLowerCase(),
 		indexName: [p.lastName, p.firstName].filter(Boolean).join(", ") || p.email,
 		lastName: p.lastName ?? "",
 		firstName: p.firstName ?? "",
@@ -320,12 +319,16 @@ function buildAuthorIndex(
 	const keyed = sessions.flatMap((s) =>
 		sessionAppearances(s, codes.get(s.id) ?? "", options),
 	);
+	const userByEmail = new Map(
+		keyed.flatMap((a) => (a.userId ? [[a.email, a.userId] as const] : [])),
+	);
 	const people = new Map<
 		string,
 		{ name: string; refs: Map<string, boolean> }
 	>();
 	for (const a of keyed) {
-		const entry = people.get(a.key) ?? {
+		const key = a.userId ?? userByEmail.get(a.email) ?? a.email;
+		const entry = people.get(key) ?? {
 			name: a.indexName,
 			refs: new Map<string, boolean>(),
 		};
@@ -333,7 +336,7 @@ function buildAuthorIndex(
 			a.code,
 			(entry.refs.get(a.code) ?? false) || a.role === "presenter",
 		);
-		people.set(a.key, entry);
+		people.set(key, entry);
 	}
 	const authorIndex = [...people.values()]
 		.map((e) => ({
@@ -341,7 +344,9 @@ function buildAuthorIndex(
 			refs: [...e.refs].map(([code, presenting]) => ({ code, presenting })),
 		}))
 		.toSorted((a, b) => collator.compare(a.name, b.name));
-	const appearances = keyed.map(({ key: _key, indexName: _name, ...a }) => a);
+	const appearances = keyed.map(
+		({ userId: _userId, email: _email, indexName: _name, ...a }) => a,
+	);
 	return { authorIndex, appearances };
 }
 
@@ -401,7 +406,6 @@ export function buildPrintProgram(
 				start: s.startAt.getTime(),
 				end: s.endAt.getTime(),
 				roomId: s.roomId,
-				session: true,
 				code: codes.get(s.id) ?? null,
 				title: s.title,
 				trackColor: s.track?.color ?? null,
@@ -410,7 +414,6 @@ export function buildPrintProgram(
 				start: x.startAt.getTime(),
 				end: x.endAt.getTime(),
 				roomId: x.roomId,
-				session: false,
 				code: null,
 				title: x.title,
 				trackColor: null,
