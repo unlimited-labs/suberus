@@ -17,7 +17,10 @@ import {
 	pageSizeMm,
 	PX_PER_MM,
 } from "@/features/planner/print/print-document-rules";
-import type { PrintDocument } from "@/features/planner/print/print-document-schema";
+import type {
+	PrintDocument,
+	PrintSection,
+} from "@/features/planner/print/print-document-schema";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Block, type TocEntry } from "./document-blocks";
@@ -26,26 +29,28 @@ const PAGE_FONT = {
 	fontFamily: "Arial, 'Liberation Sans', Helvetica, sans-serif",
 };
 
-function measureSection(el: HTMLElement): MeasuredBlock[] {
-	return [...el.querySelectorAll<HTMLElement>(":scope > [data-block]")].map(
-		(node) => {
-			const rows = [
-				...node.querySelectorAll<HTMLTableRowElement>("tr[data-row]"),
-			];
-			if (rows.length === 0) return { height: node.offsetHeight };
-			const spans = new Set<number>();
-			rows.forEach((tr, r) => {
-				for (const td of tr.cells)
-					for (let k = 1; k < td.rowSpan; k++) spans.add(r + k);
-			});
-			return {
-				height: 0,
-				headerRows: Number(node.dataset.headerRows ?? 0),
-				rows: rows.map((tr) => tr.offsetHeight),
-				breakable: rows.map((_, r) => !spans.has(r + 1)),
-			};
-		},
-	);
+function measureSection(
+	el: Element,
+	blocks: PrintSection["blocks"],
+): MeasuredBlock[] {
+	const nodes = el.querySelectorAll<HTMLElement>(":scope > [data-block]");
+	return [...nodes].map((node, i) => {
+		const block = blocks[i];
+		if (block?.type !== "table") return { height: node.offsetHeight };
+		const rows = [
+			...node.querySelectorAll<HTMLTableRowElement>("tr[data-row]"),
+		];
+		const spans = new Set<number>();
+		rows.forEach((tr, r) => {
+			for (const td of tr.cells)
+				for (let k = 1; k < td.rowSpan; k++) spans.add(r + k);
+		});
+		return {
+			headerRows: block.headerRows,
+			rows: rows.map((tr) => tr.offsetHeight),
+			breakable: rows.map((_, r) => !spans.has(r + 1)),
+		};
+	});
 }
 
 function tocEntries(doc: PrintDocument, pages: Page[]): TocEntry[] {
@@ -66,12 +71,17 @@ function tocEntries(doc: PrintDocument, pages: Page[]): TocEntry[] {
 	);
 }
 
+interface Measured {
+	doc: PrintDocument;
+	pages: Page[];
+}
+
 function MeasureLayer({
 	doc,
 	onMeasured,
 }: {
 	doc: PrintDocument;
-	onMeasured: (pages: Page[]) => void;
+	onMeasured: (measured: Measured) => void;
 }) {
 	const root = useRef<HTMLDivElement>(null);
 	const ruler = useRef<HTMLDivElement>(null);
@@ -79,20 +89,18 @@ function MeasureLayer({
 		const el = root.current;
 		const mm = (ruler.current?.offsetHeight ?? 1000) / 1000;
 		if (!el) return;
-		const sections = [
-			...el.querySelectorAll<HTMLElement>(":scope > [data-section]"),
-		].map((node, i) => {
-			const section = doc.sections[i];
-			const [, h] = section ? contentSizeMm(section.page) : [0, 0];
+		const nodes = el.querySelectorAll(":scope > [data-section]");
+		const sections = doc.sections.map((section, i) => {
+			const node = nodes.item(i);
 			return {
-				start: section?.start ?? "nextPage",
-				columns: section?.columns ?? 1,
-				blocks: measureSection(node),
-				pageHeight: h * mm,
+				start: section.start,
+				columns: section.columns,
+				blocks: node ? measureSection(node, section.blocks) : [],
+				pageHeight: contentSizeMm(section.page)[1] * mm,
 			};
 		});
 		const pages = paginate(sections);
-		startTransition(() => onMeasured(pages));
+		startTransition(() => onMeasured({ doc, pages }));
 	}, [doc, onMeasured]);
 	return (
 		<div
@@ -112,13 +120,7 @@ function MeasureLayer({
 							style={{ width: `${w}mm` }}
 						>
 							{section.blocks.map((block, bi) => (
-								<div
-									data-block={bi}
-									data-header-rows={
-										block.type === "table" ? block.headerRows : undefined
-									}
-									key={`${bi}-${block.type}`}
-								>
+								<div data-block={bi} key={`${bi}-${block.type}`}>
 									<Block block={block} toc={[]} />
 								</div>
 							))}
@@ -292,6 +294,36 @@ function PreviewBar({
 	);
 }
 
+function MeasuredPages({
+	measured: { doc, pages },
+	pageWidth,
+}: {
+	measured: Measured;
+	pageWidth: number;
+}) {
+	const toc = tocEntries(doc, pages);
+	return pages.map((page, i) =>
+		page.blank ? (
+			<div
+				className="text-muted-foreground shrink-0 text-center text-xs"
+				data-page={i + 1}
+				key={`blank-${i}`}
+			>
+				Blank page {i + 1}
+			</div>
+		) : (
+			<Sheet
+				doc={doc}
+				key={`${page.section}-${i}`}
+				number={i + 1}
+				page={page}
+				toc={toc}
+				width={pageWidth}
+			/>
+		),
+	);
+}
+
 export function PrintPreview({
 	doc,
 	approximate,
@@ -299,16 +331,18 @@ export function PrintPreview({
 	doc: PrintDocument;
 	approximate: boolean;
 }) {
-	const [pages, setPages] = useState<Page[]>([]);
+	const [measured, setMeasured] = useState<Measured | null>(null);
 	const [zoom, setZoom] = useState(1);
 	const scroller = useRef<HTMLDivElement>(null);
+	const pages = measured?.pages ?? [];
 	const current = usePageCounter(scroller, pages.length);
 	const available = useWidth(scroller);
 	const pageWidth = Math.min(available - 16, 620) * zoom;
-	const toc = tocEntries(doc, pages);
 	return (
 		<div className="relative">
-			<MeasureLayer doc={doc} onMeasured={setPages} />
+			{measured?.doc !== doc && (
+				<MeasureLayer doc={doc} onMeasured={setMeasured} />
+			)}
 			<PreviewBar
 				approximate={approximate}
 				count={pages.length}
@@ -320,25 +354,8 @@ export function PrintPreview({
 				className="flex max-h-[calc(100vh-12rem)] flex-col gap-4 overflow-auto pb-8"
 				ref={scroller}
 			>
-				{pages.map((page, i) =>
-					page.blank ? (
-						<div
-							className="text-muted-foreground shrink-0 text-center text-xs"
-							data-page={i + 1}
-							key={`blank-${i}`}
-						>
-							Blank page {i + 1}
-						</div>
-					) : (
-						<Sheet
-							doc={doc}
-							key={`${page.section}-${i}`}
-							number={i + 1}
-							page={page}
-							toc={toc}
-							width={pageWidth}
-						/>
-					),
+				{measured && (
+					<MeasuredPages measured={measured} pageWidth={pageWidth} />
 				)}
 			</div>
 			<div className="from-muted/80 pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t to-transparent" />

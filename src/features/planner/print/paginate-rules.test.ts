@@ -47,7 +47,6 @@ describe("paginate", () => {
 				pageHeight: 100,
 				blocks: [
 					{
-						height: 0,
 						headerRows: 1,
 						rows: [20, 40, 40, 40],
 						breakable: [true, true, true, true],
@@ -69,7 +68,6 @@ describe("paginate", () => {
 				pageHeight: 100,
 				blocks: [
 					{
-						height: 0,
 						headerRows: 1,
 						rows: [20, 30, 30, 30],
 						breakable: [true, true, false, true],

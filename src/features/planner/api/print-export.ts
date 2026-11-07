@@ -7,8 +7,8 @@ import {
 	getPrintOptions,
 	loadPrintLogo,
 	loadPrintSource,
-	savePrintOptions,
 } from "@/features/planner/server/print-program";
+import { setSetting } from "@/features/settings/server/settings";
 
 export const getPrintExportDataFn = createServerFn({ method: "GET" })
 	.middleware([adminMiddleware])
@@ -25,7 +25,7 @@ export const savePrintOptionsFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
 	.validator(printOptionsSchema)
 	.handler(async ({ data }) => {
-		await savePrintOptions(data);
+		await setSetting("PRINT_EXPORT_OPTIONS", data);
 	});
 
 export const printExportDataQueryOptions = () =>

@@ -5,14 +5,10 @@ import {
 	printOptionsSchema,
 } from "@/features/planner/print/print-options-schema";
 import type { PrintSource } from "@/features/planner/print/print-program-rules";
-import {
-	getSetting,
-	getSettings,
-	setSetting,
-} from "@/features/settings/server/settings";
+import { getBrandingLogoBuffer } from "@/features/settings/server/branding";
+import { getSetting, getSettings } from "@/features/settings/server/settings";
 import { resolveZone } from "@/shared/lib/zoned";
 import { prisma } from "@/shared/server/db.server";
-import { fileExists, getFileBuffer } from "@/shared/server/storage";
 
 export async function loadPrintSource(): Promise<PrintSource> {
 	const [settings, rooms, sessions, items] = await Promise.all([
@@ -116,9 +112,8 @@ export async function loadPrintSource(): Promise<PrintSource> {
 }
 
 export async function loadPrintLogo(): Promise<PrintLogo | null> {
-	const key = await getSetting("BRANDING_LOGO_KEY");
-	if (!key || !(await fileExists(key))) return null;
-	const buffer = await getFileBuffer(key);
+	const buffer = await getBrandingLogoBuffer();
+	if (!buffer) return null;
 	const info = printImageInfo(buffer);
 	if (!info || info.height === 0) return null;
 	return {
@@ -134,8 +129,4 @@ export async function getPrintOptions(): Promise<PrintOptions> {
 		await getSetting("PRINT_EXPORT_OPTIONS"),
 	);
 	return parsed.success ? parsed.data : printOptionsSchema.parse({});
-}
-
-export async function savePrintOptions(options: PrintOptions): Promise<void> {
-	await setSetting("PRINT_EXPORT_OPTIONS", options);
 }

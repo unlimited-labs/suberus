@@ -1,13 +1,14 @@
-export interface MeasuredBlock {
-	height: number;
-	headerRows?: number;
-	rows?: number[];
-	breakable?: boolean[];
+import type { PrintSection } from "./print-document-schema";
+
+interface MeasuredTable {
+	rows: number[];
+	headerRows: number;
+	breakable: boolean[];
 }
 
-interface MeasuredSection {
-	start: "nextPage" | "evenPage";
-	columns: 1 | 2;
+export type MeasuredBlock = { height: number } | MeasuredTable;
+
+interface MeasuredSection extends Pick<PrintSection, "start" | "columns"> {
 	blocks: MeasuredBlock[];
 	pageHeight: number;
 }
@@ -60,12 +61,9 @@ function fitRows(
 function placeTable(
 	c: Cursor,
 	index: number,
-	block: MeasuredBlock,
+	{ rows, breakable, headerRows }: MeasuredTable,
 	capacity: number,
 ) {
-	const rows = block.rows ?? [];
-	const breakable = block.breakable ?? rows.map(() => true);
-	const headerRows = block.headerRows ?? 0;
 	const header = rows.slice(0, headerRows).reduce((a, b) => a + b, 0);
 	let from = headerRows;
 	while (from < rows.length) {
@@ -97,7 +95,7 @@ export function paginate(sections: readonly MeasuredSection[]): Page[] {
 		newPage(c);
 		const capacity = section.pageHeight * section.columns;
 		section.blocks.forEach((block, bi) => {
-			if (block.rows) return placeTable(c, bi, block, capacity);
+			if ("rows" in block) return placeTable(c, bi, block, capacity);
 			if (c.used > 0 && c.used + block.height > capacity) newPage(c);
 			current(c).items.push({ block: bi });
 			c.used += block.height;

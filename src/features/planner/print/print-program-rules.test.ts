@@ -515,6 +515,38 @@ describe("buildPrintProgram: author index and track legend", () => {
 		]);
 	});
 
+	it("keeps invited speakers without an account or email apart, merging only by name", () => {
+		const invited = (id: string, first: string, last: string) =>
+			author(id, first, last, { email: "" });
+		const talk = (id: string, ...authors: SourceAuthor[]) =>
+			slot(id, 0, { submission: { ...slot(id, 0).submission, authors } });
+		const program = buildPrintProgram(
+			source({
+				sessions: [
+					session("s1", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+						slots: [talk("a", invited("i1", "Anna", "Nowak"))],
+					}),
+					session("s2", "2026-09-14T10:00:00Z", "2026-09-14T11:00:00Z", {
+						slots: [
+							talk(
+								"b",
+								invited("i2", "Piotr", "Wolski"),
+								invited("i3", "Anna", "Nowak"),
+							),
+						],
+					}),
+				],
+			}),
+			options,
+		);
+		expect(
+			program.authorIndex.map((e) => [e.name, e.refs.map((r) => r.code)]),
+		).toEqual([
+			["Nowak, Anna", ["1A1", "1A2"]],
+			["Wolski, Piotr", ["1A2"]],
+		]);
+	});
+
 	it("collects the tracks used, for the colour legend", () => {
 		expect(
 			buildPrintProgram(source({ sessions: [s1, s2] }), options).tracks,

@@ -1,6 +1,7 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useId } from "react";
+import { PRINT_LABELS } from "@/features/planner/print/print-labels";
 import {
 	BOOK_SIZES,
 	FORMAT_META,
@@ -17,11 +18,12 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { Label } from "@/shared/ui/label";
 import { SegmentedControl } from "@/shared/ui/segmented-control";
 
+const { parts: partLabels } = PRINT_LABELS.en;
 const PART_LABELS = {
 	title: "Title & contents",
-	glance: "Program at a glance",
-	detailed: "Detailed program",
-	index: "Author index",
+	glance: partLabels.glance,
+	detailed: partLabels.detailed,
+	index: partLabels.index,
 } satisfies Record<PrintPart, string>;
 
 type Layout = PrintOptions["layoutOverride"];

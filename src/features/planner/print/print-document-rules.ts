@@ -430,6 +430,9 @@ function indexBlocks(program: PrintProgram, l: PrintLabels): PrintParagraph[] {
 	];
 }
 
+export const wantsLogo = (options: PrintOptions) =>
+	options.showLogo && options.parts.includes("title");
+
 export function buildPrintDocument(
 	program: PrintProgram,
 	options: PrintOptions,
@@ -442,7 +445,7 @@ export function buildPrintDocument(
 	const sections: PrintSection[] = [];
 	if (has("title")) {
 		const logoBlock: PrintBlock[] =
-			logo && options.showLogo
+			logo && wantsLogo(options)
 				? [{ type: "image", ...logo, widthFraction: 0.35 }]
 				: [];
 		sections.push(

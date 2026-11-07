@@ -1,6 +1,7 @@
 import {
 	buildPrintDocument,
 	type PrintLogo,
+	wantsLogo,
 } from "@/features/planner/print/print-document-rules";
 import {
 	IDML_UNAVAILABLE,
@@ -13,10 +14,9 @@ import {
 	type PrintProgram,
 } from "@/features/planner/print/print-program-rules";
 import { buildXlsxSheets } from "@/features/planner/print/print-xlsx-rules";
-import { writeXlsxWorkbook } from "@/shared/server/xlsx-write";
-import { renderDocxOffThread } from "./print-docx-thread";
 import { isIdmlAvailable, renderIdml } from "./print-idml-client";
 import { loadPrintLogo, loadPrintSource } from "./print-program";
+import { renderOffThread } from "./print-render";
 
 const CONTENT_TYPES = {
 	xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -34,12 +34,16 @@ export class PrintFormatUnavailableError extends Error {}
 
 const RENDERERS = {
 	xlsx: async (program, options) =>
-		writeXlsxWorkbook(
-			buildXlsxSheets(program, options),
-			`${program.conferenceName}${program.draft ? " (DRAFT)" : ""}`,
-		),
+		renderOffThread({
+			kind: "xlsx",
+			sheets: buildXlsxSheets(program, options),
+			title: `${program.conferenceName}${program.draft ? " (DRAFT)" : ""}`,
+		}),
 	docx: async (program, options, logo) =>
-		renderDocxOffThread(buildPrintDocument(program, options, logo)),
+		renderOffThread({
+			kind: "docx",
+			doc: buildPrintDocument(program, options, logo),
+		}),
 	idml: async (program, options, logo) => {
 		if (!isIdmlAvailable())
 			throw new PrintFormatUnavailableError(IDML_UNAVAILABLE);
@@ -55,7 +59,7 @@ const RENDERERS = {
 >;
 
 const usesLogo = (format: PrintFormat, options: PrintOptions) =>
-	format !== "xlsx" && options.showLogo && options.parts.includes("title");
+	format !== "xlsx" && wantsLogo(options);
 
 export async function buildPrintFile(
 	format: PrintFormat,
