@@ -1,4 +1,3 @@
-import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { buildPrintDocument } from "./print-document-rules";
 import { printDocumentSchema } from "./print-document-schema";
@@ -12,43 +11,8 @@ import {
 const FIXTURE =
 	"../../../../services/docx-api/test_fixtures/print-document.json";
 
-const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
-	let c = n;
-	for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-	return c >>> 0;
-});
-
-function crc32(bytes: Buffer): number {
-	let c = 0xffffffff;
-	for (const b of bytes) c = (CRC_TABLE[(c ^ b) & 255] ?? 0) ^ (c >>> 8);
-	return (c ^ 0xffffffff) >>> 0;
-}
-
-function pngChunk(type: string, data: Buffer): Buffer {
-	const body = Buffer.concat([Buffer.from(type), data]);
-	const len = Buffer.alloc(4);
-	len.writeUInt32BE(data.length);
-	const crc = Buffer.alloc(4);
-	crc.writeUInt32BE(crc32(body));
-	return Buffer.concat([len, body, crc]);
-}
-
-function greyPng(width: number, height: number): Buffer {
-	const header = Buffer.alloc(13);
-	header.writeUInt32BE(width, 0);
-	header.writeUInt32BE(height, 4);
-	header.set([8, 2, 0, 0, 0], 8);
-	const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(width * 3, 0x33)]);
-	return Buffer.concat([
-		Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-		pngChunk("IHDR", header),
-		pngChunk(
-			"IDAT",
-			deflateSync(Buffer.concat(Array.from({ length: height }, () => row))),
-		),
-		pngChunk("IEND", Buffer.alloc(0)),
-	]);
-}
+const LOGO_PNG_BASE64 =
+	"iVBORw0KGgoAAAANSUhEUgAAAAgAAAACCAIAAADq9gq6AAAAD0lEQVR4nGMwxgEYcEkAAO9CCZH40j2xAAAAAElFTkSuQmCC";
 
 const at = (iso: string) => new Date(iso);
 const author = (id: string, firstName: string, lastName: string, i = 0) => ({
@@ -186,7 +150,7 @@ describe("shared PrintDocument fixture", () => {
 			options,
 			{
 				mime: "image/png",
-				dataBase64: greyPng(8, 2).toString("base64"),
+				dataBase64: LOGO_PNG_BASE64,
 				aspectRatio: 4,
 			},
 		);

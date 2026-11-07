@@ -1,5 +1,6 @@
 import type { NamedPerson } from "@/features/planner/server/schedule-issues";
 import { slotStartAt } from "@/features/planner/slot-timing";
+import { addMinutes } from "@/features/planner/tz-datetime";
 import { HEX_COLOR } from "@/features/planner/validations";
 import type { AppSettingsMap, ProgramBadge } from "@/features/settings/types";
 import type {
@@ -18,11 +19,15 @@ import {
 	PRINT_LABELS,
 	PRINT_LOCALE,
 	utcDate,
+	timeRange,
 } from "./print-labels";
 import type { PrintLanguage, PrintOptions } from "./print-options-schema";
 import { assignSessionCodes } from "./session-code-rules";
 
-type ProgramOptions = Pick<PrintOptions, "language" | "includeCancelled">;
+type ProgramOptions = Pick<
+	PrintOptions,
+	"language" | "includeCancelled" | "trackColor"
+>;
 
 interface SourceRoom {
 	id: string;
@@ -222,10 +227,11 @@ const isShown = (slot: SourceSlot, options: ProgramOptions) =>
 const authorsInOrder = (slot: SourceSlot) =>
 	slot.submission.authors.toSorted((a, b) => a.orderIndex - b.orderIndex);
 
-function trackOf(s: SourceSession): PrintSession["track"] {
+function trackOf(s: SourceSession, coloured: boolean): PrintSession["track"] {
 	if (!s.track) return null;
 	const { name, color } = s.track;
-	return { name, color: color && HEX_COLOR.test(color) ? color : null };
+	const valid = coloured && color && HEX_COLOR.test(color);
+	return { name, color: valid ? color : null };
 }
 
 function isPresenting(slot: SourceSlot, a: SourceAuthor): boolean {
@@ -246,14 +252,14 @@ function buildSlots(
 		const start = s.untimedSlots ? null : f.time(startAt);
 		const end = s.untimedSlots
 			? null
-			: f.time(new Date(startAt.getTime() + slot.durationMin * 60_000));
+			: f.time(addMinutes(startAt, slot.durationMin));
 		return [
 			{
 				id: slot.id,
 				submissionNumber: slot.submission.sequentialNumber,
 				submissionType: slot.submission.type,
 				title: slot.submission.title,
-				timeLabel: start && end ? `${start}–${end}` : null,
+				timeLabel: start && end ? timeRange(start, end) : null,
 				start,
 				end,
 				board: s.untimedSlots ? `P${i + 1}` : null,
@@ -407,12 +413,14 @@ export function buildPrintProgram(
 		const end = f.time(endAt);
 		return {
 			startAt: startAt.toISOString(),
-			timeLabel: `${start}–${end}`,
+			timeLabel: timeRange(start, end),
 			start,
 			end,
 		};
 	};
-	const trackById = new Map(sessions.map((s) => [s.id, trackOf(s)]));
+	const trackById = new Map(
+		sessions.map((s) => [s.id, trackOf(s, options.trackColor)]),
+	);
 	const people = buildAuthorIndex(sessions, codes, options, collator);
 	const items = src.items.toSorted(
 		(a, b) => a.startAt.getTime() - b.startAt.getTime(),

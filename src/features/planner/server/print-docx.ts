@@ -30,6 +30,7 @@ import {
 	PAGE_MM,
 	PX_PER_MM,
 	contentSizeMm,
+	columnFractions,
 	tableRows,
 } from "@/features/planner/print/print-document-rules";
 import type {
@@ -186,7 +187,6 @@ function tableCell(cell: PrintTable["cells"][number] | null): TableCell {
 }
 
 function table(t: PrintTable, widthMm: number): Table {
-	const total = t.columns.reduce((a, c) => a + c.widthWeight, 0);
 	const rows = tableRows(t.cells, t.columns.length, 0, t.rowCount).map(
 		({ row, slots }) =>
 			new TableRow({
@@ -197,7 +197,7 @@ function table(t: PrintTable, widthMm: number): Table {
 	);
 	return new Table({
 		width: { size: 100, type: WidthType.PERCENTAGE },
-		columnWidths: t.columns.map((c) => twip((c.widthWeight / total) * widthMm)),
+		columnWidths: columnFractions(t).map((f) => twip(f * widthMm)),
 		rows,
 	});
 }

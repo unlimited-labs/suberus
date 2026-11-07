@@ -1,3 +1,5 @@
+import { timeRange } from "./print-labels";
+
 interface GridColumn {
 	room: string;
 	lane: number;
@@ -122,15 +124,15 @@ export function buildGrid(
 				band: e.band,
 				code: e.code,
 				title: e.title,
-				trackColor: e.trackColor,
+				trackColor: e.band ? null : e.trackColor,
 			};
 		})
 		.toSorted((a, b) => a.row - b.row || a.col - b.col);
 
 	return {
 		columns,
-		rows: rows.map(
-			(r) => `${time(new Date(r.start))}–${time(new Date(r.end))}`,
+		rows: rows.map((r) =>
+			timeRange(time(new Date(r.start)), time(new Date(r.end))),
 		),
 		cells,
 	};
