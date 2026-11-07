@@ -231,7 +231,7 @@ function usePageCounter(
 				);
 				if (top.length > 0) setCurrent(Math.min(...top));
 			},
-			{ root, threshold: 0.5 },
+			{ root, rootMargin: "-50% 0px -50% 0px" },
 		);
 		for (const el of root.querySelectorAll("[data-page]")) observer.observe(el);
 		return () => observer.disconnect();

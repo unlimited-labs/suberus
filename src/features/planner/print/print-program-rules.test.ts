@@ -110,6 +110,39 @@ describe("buildPrintProgram: days", () => {
 	});
 });
 
+describe("buildPrintProgram: day numbers", () => {
+	it("numbers days from the conference start, so an empty first day keeps later codes stable", () => {
+		const program = buildPrintProgram(
+			source({
+				sessions: [
+					session("d2", "2026-09-15T08:00:00Z", "2026-09-15T09:00:00Z"),
+					session("d3", "2026-09-16T08:00:00Z", "2026-09-16T09:00:00Z"),
+				],
+			}),
+			options,
+		);
+		expect(
+			program.days.map((d) => [d.index, d.sessions.map((s) => s.code)]),
+		).toEqual([
+			[2, ["2A1"]],
+			[3, ["3A1"]],
+		]);
+	});
+
+	it("falls back to counting days that appear when something is scheduled before the start date", () => {
+		const program = buildPrintProgram(
+			source({
+				sessions: [
+					session("pre", "2026-09-12T08:00:00Z", "2026-09-12T09:00:00Z"),
+					session("d1", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z"),
+				],
+			}),
+			options,
+		);
+		expect(program.days.map((d) => d.index)).toEqual([1, 2]);
+	});
+});
+
 describe("buildPrintProgram: day headings", () => {
 	it("capitalises the Polish weekday that starts a day heading", () => {
 		const program = buildPrintProgram(

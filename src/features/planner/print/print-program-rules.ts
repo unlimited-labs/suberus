@@ -7,7 +7,7 @@ import type {
 	ScheduleItemKind,
 	SubmissionType,
 } from "@/generated/prisma/enums";
-import { zonedDateString } from "@/shared/lib/zoned";
+import { calendarDaysBetween, zonedDateString } from "@/shared/lib/zoned";
 import {
 	buildGrid,
 	type DayGrid,
@@ -227,6 +227,18 @@ const isShown = (slot: SourceSlot, options: ProgramOptions) =>
 const authorsInOrder = (slot: SourceSlot) =>
 	slot.submission.authors.toSorted((a, b) => a.orderIndex - b.orderIndex);
 
+function dayNumber(
+	src: PrintSource,
+	dayKeys: readonly string[],
+	key: string,
+	position: number,
+): number {
+	const start = src.startDate;
+	return start && dayKeys.every((k) => k >= start)
+		? calendarDaysBetween(start, key, src.timeZone) + 1
+		: position + 1;
+}
+
 function trackOf(s: SourceSession, coloured: boolean): PrintSession["track"] {
 	if (!s.track) return null;
 	const { name, color } = s.track;
@@ -390,7 +402,9 @@ export function buildPrintProgram(
 		[...src.sessions, ...src.items].map((x) => [x, f.dayKey(x.startAt)]),
 	);
 	const dayKeys = [...new Set(keyOf.values())].toSorted();
-	const dayIndex = new Map(dayKeys.map((k, i) => [k, i + 1]));
+	const dayIndex = new Map(
+		dayKeys.map((k, i) => [k, dayNumber(src, dayKeys, k, i)]),
+	);
 
 	const codes = assignSessionCodes(
 		src.sessions.map((s) => ({
@@ -451,7 +465,7 @@ export function buildPrintProgram(
 		];
 		const first = daySessions[0]?.startAt ?? dayItems[0]?.startAt;
 		return {
-			index: i + 1,
+			index: dayNumber(src, dayKeys, key, i),
 			date: key,
 			label: first ? f.dayLabel(first) : key,
 			sessions: daySessions.map((s): PrintSession => ({

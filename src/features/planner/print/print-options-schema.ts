@@ -19,6 +19,8 @@ export const FORMAT_META = {
 	xlsx: { label: "Excel", hint: "Data workbook: program, day grids, authors" },
 } satisfies Record<PrintFormat, { label: string; hint: string }>;
 
+export const NO_SESSIONS = "The program has no sessions yet.";
+
 export const IDML_UNAVAILABLE =
 	"InDesign export needs the document service (DOCX_API_URL).";
 

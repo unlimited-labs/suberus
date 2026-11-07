@@ -108,7 +108,7 @@ export const printDocumentSchema = z.object({
 	language: z.enum(PRINT_LANGUAGES),
 	footer: z.string(),
 	swatches: z.array(z.object({ name: z.string(), color: hexColor })),
-	sections: z.array(sectionSchema),
+	sections: z.array(sectionSchema).min(1),
 });
 
 export type PrintDocument = z.infer<typeof printDocumentSchema>;

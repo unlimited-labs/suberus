@@ -5,6 +5,7 @@ import { z } from "zod";
 import { savePrintOptionsFn } from "@/features/planner/api/print-export";
 import {
 	IDML_UNAVAILABLE,
+	NO_SESSIONS,
 	type PrintFormat,
 	type PrintOptions,
 	printFileName,
@@ -32,10 +33,7 @@ async function downloadFile(
 		format,
 		options: JSON.stringify(options),
 	});
-	const [res] = await Promise.all([
-		fetch(`/api/admin/program/print?${params}`),
-		savePrintOptionsFn({ data: options }),
-	]);
+	const res = await fetch(`/api/admin/program/print?${params}`);
 	if (!res.ok) {
 		const body = errorBody.safeParse(await res.json().catch(() => null));
 		throw new Error(
@@ -47,7 +45,15 @@ async function downloadFile(
 	link.href = url;
 	link.download = fileName;
 	link.click();
-	URL.revokeObjectURL(url);
+	// Safari starts reading the blob after click() returns; revoking at once can cancel it.
+	setTimeout(() => URL.revokeObjectURL(url), 60_000);
+	try {
+		await savePrintOptionsFn({ data: options });
+	} catch (error) {
+		toast.error(
+			`File downloaded, but the options were not saved: ${getErrorMessage(error)}`,
+		);
+	}
 }
 
 function optionsError(options: PrintOptions) {
@@ -66,7 +72,7 @@ function blockedReasonFor(
 	sessionCount: number,
 	idmlAvailable: boolean,
 ): string | null {
-	if (sessionCount === 0) return "The program has no sessions yet.";
+	if (sessionCount === 0) return NO_SESSIONS;
 	if (format === "idml" && !idmlAvailable) return IDML_UNAVAILABLE;
 	return error?.message ?? null;
 }

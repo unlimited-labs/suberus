@@ -1,10 +1,10 @@
 import { z } from "zod";
-
-export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 import {
 	MAX_BULK_ITEMS,
 	zDateString,
 } from "@/shared/lib/validations/zod-helpers";
+
+export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 export const sessionFormSchema = z.object({
 	title: z.string().max(300, "Title must be at most 300 characters"),
