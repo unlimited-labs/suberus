@@ -1,5 +1,4 @@
 import type { XlsxCell, XlsxSheetSpec } from "@/shared/lib/xlsx-types";
-import { HEX_COLOR } from "./print-document-schema";
 import { byAt } from "./print-grid-rules";
 import {
 	capitalizeFirst,
@@ -176,7 +175,7 @@ function gridSheet(
 			row[cell.col + 1] = cell.code
 				? `${cell.code} — ${cell.title}`
 				: cell.title;
-		if (trackColor && cell.trackColor && HEX_COLOR.test(cell.trackColor))
+		if (trackColor && cell.trackColor)
 			accents.push({
 				r: cell.row + 1,
 				c: cell.col + 1,

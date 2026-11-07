@@ -249,7 +249,7 @@ function block(
 	];
 }
 
-function section(s: PrintSection, draft: boolean) {
+function section(s: PrintSection, doc: PrintDocument) {
 	const [w, h] = PAGE_MM[s.page.size];
 	const tabAt = Math.round(contentWidthMm(s) * TWIP_PER_MM);
 	return {
@@ -275,7 +275,7 @@ function section(s: PrintSection, draft: boolean) {
 			},
 			column: s.columns === 2 ? { count: 2, space: 340 } : undefined,
 		},
-		headers: draft
+		headers: doc.draft
 			? {
 					default: new Header({
 						children: [
@@ -292,7 +292,7 @@ function section(s: PrintSection, draft: boolean) {
 					new Paragraph({
 						tabStops: [{ type: TabStopType.RIGHT, position: tabAt }],
 						children: [
-							new TextRun({ text: s.footer, font: FONT, size: 14 }),
+							new TextRun({ text: doc.footer, font: FONT, size: 14 }),
 							new TextRun({
 								children: ["\t", PageNumber.CURRENT],
 								font: FONT,
@@ -315,7 +315,7 @@ export async function renderDocx(doc: PrintDocument): Promise<Buffer> {
 			paragraphStyles: PARAGRAPH_STYLES,
 			characterStyles: CHARACTER_STYLES,
 		},
-		sections: doc.sections.map((s) => section(s, doc.draft)),
+		sections: doc.sections.map((s) => section(s, doc)),
 	});
 	return Packer.toBuffer(document);
 }

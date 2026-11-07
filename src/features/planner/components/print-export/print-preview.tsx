@@ -1,5 +1,11 @@
 import { IconZoomIn, IconZoomOut } from "@tabler/icons-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	startTransition,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import {
 	type MeasuredBlock,
 	type Page,
@@ -85,7 +91,8 @@ function MeasureLayer({
 				pageHeight: h * mm,
 			};
 		});
-		onMeasured(paginate(sections));
+		const pages = paginate(sections);
+		startTransition(() => onMeasured(pages));
 	}, [doc, onMeasured]);
 	return (
 		<div
@@ -186,7 +193,7 @@ function Sheet({ doc, page, number, toc, width }: SheetProps) {
 						className="absolute bottom-[8mm] flex justify-between text-[7pt] opacity-60"
 						style={{ left: `${MARGIN_MM}mm`, right: `${MARGIN_MM}mm` }}
 					>
-						<span>{section.footer}</span>
+						<span>{doc.footer}</span>
 						<span>{number}</span>
 					</div>
 				</div>

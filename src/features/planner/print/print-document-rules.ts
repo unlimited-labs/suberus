@@ -1,5 +1,4 @@
 import {
-	HEX_COLOR,
 	type PrintBlock,
 	type PrintDocument,
 	type PrintParagraph,
@@ -107,16 +106,10 @@ const para = (
 	style,
 	runs,
 });
-// XML 1.0 forbids these; one pasted from Word corrupts the docx and fails the IDML build.
-const XML_ALLOWED_CONTROLS = new Set(["\t", "\n", "\r"]);
-const xmlSafe = (text: string) =>
-	[...text].filter((c) => c >= " " || XML_ALLOWED_CONTROLS.has(c)).join("");
-const run = (raw: string, charStyle?: PrintRun["charStyle"]): PrintRun => {
-	const text = xmlSafe(raw);
-	return charStyle ? { text, charStyle } : { text };
-};
+const run = (text: string, charStyle?: PrintRun["charStyle"]): PrintRun =>
+	charStyle ? { text, charStyle } : { text };
 const accentOf = (color: string | null | undefined, on: boolean) =>
-	on && color && HEX_COLOR.test(color) ? color : null;
+	on && color ? color : null;
 
 interface TableCellInput {
 	row: number;
@@ -297,7 +290,6 @@ function legend(swatches: PrintDocument["swatches"]): PrintParagraph[] {
 }
 
 function section(
-	program: PrintProgram,
 	options: PrintOptions,
 	blocks: PrintBlock[],
 	extra: Partial<Pick<PrintSection, "columns" | "start">> & {
@@ -311,7 +303,6 @@ function section(
 		},
 		columns: extra.columns ?? 1,
 		start: extra.start ?? "nextPage",
-		footer: xmlSafe(program.conferenceName),
 		blocks,
 	};
 }
@@ -338,12 +329,11 @@ function glanceSections(
 		if (at !== null) {
 			return [
 				section(
-					program,
 					options,
 					[...lead, heading, columnsTable(day.grid, l, color, 0, at)],
 					{ start: "evenPage" },
 				),
-				section(program, options, [columnsTable(day.grid, l, color, at)]),
+				section(options, [columnsTable(day.grid, l, color, at)]),
 			];
 		}
 		const body: PrintBlock[] =
@@ -353,7 +343,7 @@ function glanceSections(
 					? listBlocks(day.grid)
 					: [columnsTable(day.grid, l, color)];
 		return [
-			section(program, options, [...lead, heading, ...body], {
+			section(options, [...lead, heading, ...body], {
 				orientation: choice.orientation,
 			}),
 		];
@@ -456,7 +446,7 @@ export function buildPrintDocument(
 				? [{ type: "image", ...logo, widthFraction: 0.35 }]
 				: [];
 		sections.push(
-			section(program, options, [
+			section(options, [
 				...logoBlock,
 				para("Title", run(program.conferenceName)),
 				...(program.datesLabel
@@ -471,19 +461,18 @@ export function buildPrintDocument(
 	if (has("detailed"))
 		sections.push(
 			...program.days.map((day, i) =>
-				section(program, options, [
+				section(options, [
 					...(i === 0 ? [para("PartHeading", run(l.parts.detailed))] : []),
 					...dayBlocks(day, l),
 				]),
 			),
 		);
 	if (has("index"))
-		sections.push(
-			section(program, options, indexBlocks(program, l), { columns: 2 }),
-		);
+		sections.push(section(options, indexBlocks(program, l), { columns: 2 }));
 	return {
 		schemaVersion: 1,
 		draft: program.draft,
+		footer: program.conferenceName,
 		language: options.language,
 		swatches,
 		sections,

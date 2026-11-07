@@ -11,9 +11,50 @@ function cellText(cell: XlsxCell): string {
 	return cell === null ? "" : String(cell);
 }
 
-function accentStyle(sheet: XlsxSheetSpec, r: number, c: number) {
-	const color = sheet.accents?.find((a) => a.r === r && a.c === c)?.color;
-	return color ? { borderLeft: `3px solid ${color}` } : undefined;
+function accentStyles(sheet: XlsxSheetSpec) {
+	const accents = new Map(
+		(sheet.accents ?? []).map((a) => [`${a.r}:${a.c}`, a.color]),
+	);
+	return (r: number, c: number) => {
+		const color = accents.get(`${r}:${c}`);
+		return color ? { borderLeft: `3px solid ${color}` } : undefined;
+	};
+}
+
+function SheetTable({ sheet }: { sheet: XlsxSheetSpec }) {
+	const accentOf = accentStyles(sheet);
+	return (
+		<div
+			className="bg-background max-h-[calc(100vh-14rem)] overflow-auto rounded-md border text-xs"
+			data-testid="print-sheet-preview"
+		>
+			<table className="border-collapse">
+				<tbody>
+					{sheet.rows.slice(0, PREVIEW_ROWS).map((row, r) => (
+						<tr
+							className={r === 0 ? "bg-muted font-medium" : undefined}
+							key={`${sheet.name}-${r}`}
+						>
+							{row.map((cell, c) => (
+								<td
+									className="max-w-56 truncate border px-2 py-1"
+									key={`${r}-${c}`}
+									style={accentOf(r, c)}
+								>
+									{cellText(cell)}
+								</td>
+							))}
+						</tr>
+					))}
+				</tbody>
+			</table>
+			{sheet.rows.length > PREVIEW_ROWS && (
+				<p className="text-muted-foreground p-2">
+					First {PREVIEW_ROWS - 1} of {sheet.rows.length - 1} rows
+				</p>
+			)}
+		</div>
+	);
 }
 
 export function SheetPreview({ sheets }: { sheets: XlsxSheetSpec[] }) {
@@ -35,36 +76,7 @@ export function SheetPreview({ sheets }: { sheets: XlsxSheetSpec[] }) {
 			</TabsList>
 			{sheets.map((s) => (
 				<TabsContent key={s.name} value={s.name}>
-					<div
-						className="bg-background max-h-[calc(100vh-14rem)] overflow-auto rounded-md border text-xs"
-						data-testid="print-sheet-preview"
-					>
-						<table className="border-collapse">
-							<tbody>
-								{s.rows.slice(0, PREVIEW_ROWS).map((row, r) => (
-									<tr
-										className={r === 0 ? "bg-muted font-medium" : undefined}
-										key={`${s.name}-${r}`}
-									>
-										{row.map((cell, c) => (
-											<td
-												className="max-w-56 truncate border px-2 py-1"
-												key={`${r}-${c}`}
-												style={accentStyle(s, r, c)}
-											>
-												{cellText(cell)}
-											</td>
-										))}
-									</tr>
-								))}
-							</tbody>
-						</table>
-						{s.rows.length > PREVIEW_ROWS && (
-							<p className="text-muted-foreground p-2">
-								First {PREVIEW_ROWS - 1} of {s.rows.length - 1} rows
-							</p>
-						)}
-					</div>
+					<SheetTable sheet={s} />
 				</TabsContent>
 			))}
 		</Tabs>

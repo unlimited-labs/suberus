@@ -7,7 +7,7 @@ interface XlsxAddress {
 	c: number;
 }
 
-export interface XlsxRange {
+interface XlsxRange {
 	s: XlsxAddress;
 	e: XlsxAddress;
 }

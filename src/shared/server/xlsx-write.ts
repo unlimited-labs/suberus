@@ -73,10 +73,10 @@ function addSheet(wb: ExcelJS.Workbook, spec: XlsxSheetSpec) {
 
 export async function writeXlsxWorkbook(
 	sheets: readonly XlsxSheetSpec[],
-	title?: string,
+	title: string,
 ): Promise<Buffer> {
 	const wb = new ExcelJS.Workbook();
-	if (title) wb.title = title;
+	wb.title = title;
 	for (const spec of sheets) addSheet(wb, spec);
 	return Buffer.from(await wb.xlsx.writeBuffer());
 }

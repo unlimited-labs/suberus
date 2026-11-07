@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HEX_COLOR } from "@/features/planner/validations";
 import { BOOK_SIZES, PRINT_LANGUAGES } from "./print-options-schema";
 
 export const PARAGRAPH_STYLES = [
@@ -36,8 +37,6 @@ export const CHARACTER_STYLES = [
 ] as const;
 
 export type ParagraphStyle = (typeof PARAGRAPH_STYLES)[number];
-
-export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 const hexColor = z.string().regex(HEX_COLOR);
 
@@ -94,7 +93,6 @@ const sectionSchema = z.object({
 	}),
 	columns: z.union([z.literal(1), z.literal(2)]),
 	start: z.enum(["nextPage", "evenPage"]),
-	footer: z.string(),
 	blocks: z.array(blockSchema),
 });
 
@@ -102,6 +100,7 @@ export const printDocumentSchema = z.object({
 	schemaVersion: z.literal(1),
 	draft: z.boolean(),
 	language: z.enum(PRINT_LANGUAGES),
+	footer: z.string(),
 	swatches: z.array(z.object({ name: z.string(), color: hexColor })),
 	sections: z.array(sectionSchema),
 });

@@ -8,7 +8,6 @@ interface SegmentedControlProps<T extends string> {
 	value: T;
 	options: ReadonlyArray<{ value: T; label: string; disabled?: boolean }>;
 	onChange: (value: T) => void;
-	disabled?: boolean;
 	describedBy?: string;
 	testId?: string;
 }
@@ -18,7 +17,6 @@ export function SegmentedControl<T extends string>({
 	value,
 	options,
 	onChange,
-	disabled,
 	describedBy,
 	testId,
 }: SegmentedControlProps<T>) {
@@ -28,7 +26,6 @@ export function SegmentedControl<T extends string>({
 			aria-labelledby={labelledBy}
 			className="bg-muted inline-flex flex-wrap gap-0.5 rounded-lg p-0.5"
 			data-testid={testId}
-			disabled={disabled}
 			onValueChange={onChange}
 			value={value}
 		>

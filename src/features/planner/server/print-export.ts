@@ -24,7 +24,7 @@ const CONTENT_TYPES = {
 	idml: "application/vnd.adobe.indesign-idml-package",
 } satisfies Record<PrintFormat, string>;
 
-export interface PrintFile {
+interface PrintFile {
 	body: Uint8Array<ArrayBuffer>;
 	filename: string;
 	contentType: string;

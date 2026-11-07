@@ -1,4 +1,7 @@
+import type { NamedPerson } from "@/features/planner/server/schedule-issues";
 import { slotStartAt } from "@/features/planner/slot-timing";
+import { HEX_COLOR } from "@/features/planner/validations";
+import type { AppSettingsMap, ProgramBadge } from "@/features/settings/types";
 import type {
 	ScheduleItemKind,
 	SubmissionType,
@@ -27,11 +30,8 @@ interface SourceRoom {
 	order: number;
 }
 
-interface SourcePerson {
+interface SourcePerson extends NamedPerson {
 	userId: string | null;
-	email: string;
-	firstName: string | null;
-	lastName: string | null;
 }
 
 export interface SourceAuthor extends SourcePerson {
@@ -86,10 +86,10 @@ export interface PrintSource {
 	startDate: string;
 	endDate: string;
 	timeZone: string;
-	timeFormat: "24h" | "12h";
+	timeFormat: AppSettingsMap["TIME_FORMAT"];
 	draft: boolean;
 	rooms: SourceRoom[];
-	badges: { id: string; label: string }[];
+	badges: Pick<ProgramBadge, "id" | "label">[];
 	sessions: SourceSession[];
 	items: SourceItem[];
 }
@@ -213,6 +213,12 @@ function datesLabel(src: PrintSource, language: PrintLanguage): string {
 		utcDate(src.startDate),
 		utcDate(src.endDate || src.startDate),
 	);
+}
+
+function trackOf(s: SourceSession): PrintSession["track"] {
+	if (!s.track) return null;
+	const { name, color } = s.track;
+	return { name, color: color && HEX_COLOR.test(color) ? color : null };
 }
 
 function isPresenting(slot: SourceSlot, a: SourceAuthor): boolean {
@@ -408,7 +414,7 @@ export function buildPrintProgram(
 				roomId: s.roomId,
 				code: codes.get(s.id) ?? null,
 				title: s.title,
-				trackColor: s.track?.color ?? null,
+				trackColor: trackOf(s)?.color ?? null,
 			})),
 			...dayItems.map((x) => ({
 				start: x.startAt.getTime(),
@@ -436,7 +442,7 @@ export function buildPrintProgram(
 					start,
 					end,
 					room: s.roomId ? roomName(s.roomId) : null,
-					track: s.track,
+					track: trackOf(s),
 					chairs: s.chairs.map(shortName),
 					slots: buildSlots(s, f, options, badgeLabels),
 				};
@@ -467,7 +473,10 @@ export function buildPrintProgram(
 		...people,
 		tracks: [
 			...new Map(
-				sessions.flatMap((x) => (x.track ? [[x.track.name, x.track]] : [])),
+				sessions.flatMap((x) => {
+					const track = trackOf(x);
+					return track ? [[track.name, track]] : [];
+				}),
 			).values(),
 		].toSorted((a, b) => collator.compare(a.name, b.name)),
 	};
