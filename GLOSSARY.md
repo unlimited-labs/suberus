@@ -33,3 +33,13 @@ _Avoid_: Name index, participant list
 **Session code**:
 A short label such as `2B3` (day 2 of the conference counted from its start date, room B, third session in that room that day). Rooms are lettered in planner order, skipping `X`, which marks sessions without a room; after `Z` come `AA`, `AB`, … It is derived when the Printed program is produced and links the grid, the Detailed program and the Author index.
 _Avoid_: Session ID, session number
+
+### Deployment
+
+**Instance**:
+One conference's own deployment of Suberus: its app, its database, its file storage and its domain. Instances share nothing that holds conference data.
+_Avoid_: Tenant, engine, silnik, site
+
+**Shared service**:
+A stateless helper (document conversion, PDF extraction, session clustering) that runs once and serves every Instance. It keeps no conference data between requests.
+_Avoid_: Sidecar (they no longer sit beside one Instance), common service
