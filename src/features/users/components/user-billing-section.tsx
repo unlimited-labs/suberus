@@ -6,6 +6,7 @@ import {
 	BILLING_TEXT_NAME,
 	type BillingDetailsSettings,
 } from "@/features/settings/billing-details-schema";
+import { PreviousFormValues } from "@/features/settings/components/billing-details/previous-form-values";
 import { invoiceStateLabels, vatIdStatusLabels } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
@@ -121,30 +122,33 @@ export function UserBillingSection({ user }: { user: AdminUserDetail }) {
 	const registryOnVatRow = !rows.some((row) => row.note);
 
 	return (
-		<dl className="space-y-3" data-testid="user-billing-section">
-			<BillingRow
-				label="Invoice"
-				value={
-					user.invoiceState === "NONE"
-						? "Not needed"
-						: invoiceStateLabels[user.invoiceState]
-				}
-			/>
-			{rows.map((row) => (
+		<div className="space-y-3" data-testid="user-billing-section">
+			<dl className="space-y-3">
 				<BillingRow
-					key={row.key}
-					label={row.label}
-					note={row.note}
-					value={row.value}
+					label="Invoice"
+					value={
+						user.invoiceState === "NONE"
+							? "Not needed"
+							: invoiceStateLabels[user.invoiceState]
+					}
 				/>
-			))}
-			{config.fields.vatId.state !== "OFF" && (
-				<VatIdRow
-					label={config.fields.vatId.label || "VAT ID"}
-					showRegistry={registryOnVatRow}
-					user={user}
-				/>
-			)}
-		</dl>
+				{rows.map((row) => (
+					<BillingRow
+						key={row.key}
+						label={row.label}
+						note={row.note}
+						value={row.value}
+					/>
+				))}
+				{config.fields.vatId.state !== "OFF" && (
+					<VatIdRow
+						label={config.fields.vatId.label || "VAT ID"}
+						showRegistry={registryOnVatRow}
+						user={user}
+					/>
+				)}
+			</dl>
+			<PreviousFormValues config={config} values={user} />
+		</div>
 	);
 }

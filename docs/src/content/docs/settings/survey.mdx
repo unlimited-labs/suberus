@@ -49,6 +49,27 @@ labels and card later in **Profile › Contact & Invoice Information**, where th
 
 🖼️ [Screenshot placeholder: registration step 2 in Separate fields mode with the Buyer on your invoice card]
 
+### Switching between Simple and Separate fields
+
+Changing the kind of form — or switching a field **Off** — never deletes or converts
+anything. Every participant's data stays where it is.
+
+- **In the settings**, switching the kind shows *N participants entered details in the other
+  form. Their data is kept and shown to admins as previous.* Saving is not blocked.
+- **You** see such values on the user's page and in the user dialogs under **From previous
+  form settings** (read-only); the XLSX export always has all the columns.
+- **Simple → Separate fields:** a participant who only filled the text box sees it in their
+  profile as **Your previous billing details** above the empty fields. When an AI model is
+  configured for Suberus, **Fill fields from this text** splits it into the fields (the VAT ID
+  is found by its check digit, not by the AI); only empty fields are filled, and nothing is
+  saved until they click **Save**. The card disappears once they save filled fields.
+- **Separate fields → Simple:** the profile text box starts with the old fields joined into
+  lines, ready to edit; it is saved only when the participant clicks **Save**.
+- Details given only in the old form do not count towards Invoice required: such participants
+  are **Incomplete** until they fill the current form.
+
+🖼️ [Screenshot placeholder: "Your previous billing details" card in the participant profile]
+
 ### Incomplete Billing details
 
 A participant's Billing details are **Incomplete** when they need an invoice (they asked for

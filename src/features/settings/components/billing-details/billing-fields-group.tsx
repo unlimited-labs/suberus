@@ -3,6 +3,7 @@ import { useSelector } from "@tanstack/react-store";
 import { useState } from "react";
 import { vatIdCheckQueryOptions } from "@/features/settings/api/vat-id-check";
 import {
+	type BillingColumnValues,
 	billingFieldError,
 	billingTextError,
 	FILLABLE_BILLING_COLUMNS,
@@ -20,6 +21,8 @@ import {
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
 import { normalizeVatId } from "@/shared/lib/vat-id";
 import { BuyerSummaryCard } from "./buyer-summary-card";
+import { PreviousBillingCard } from "./previous-billing-card";
+import { PreviousFormValues } from "./previous-form-values";
 import { RegistryFillButton } from "./registry-fill-button";
 import { VatIdStatus } from "./vat-id-status";
 
@@ -83,8 +86,16 @@ function billingView(
 		showFields: showDetails && config.mode === "STRUCTURED",
 		showVat: showDetails && config.fields.vatId.state !== "OFF",
 		showBuyer: showDetails && !admin,
+		showPrevious: admin || (showDetails && config.mode === "STRUCTURED"),
 		required: !admin && invoiceNeeded(needInvoice, config),
 	};
+}
+
+function savedRevisionOf(state: {
+	isSubmitSuccessful: boolean;
+	submissionAttempts: number;
+}) {
+	return state.isSubmitSuccessful ? state.submissionAttempts : 0;
 }
 
 function withAsterisk(label: string, required: boolean) {
@@ -132,6 +143,29 @@ function vatIdError(value: string, required: boolean, country: string) {
 	);
 }
 
+function PreviousDetails({
+	admin,
+	config,
+	values,
+	onFill,
+}: {
+	admin: boolean;
+	config: BillingDetailsSettings;
+	values: BillingFields;
+	onFill: (fill: BillingColumnValues) => void;
+}) {
+	return admin ? (
+		<PreviousFormValues config={config} values={values} />
+	) : (
+		<PreviousBillingCard
+			config={config}
+			country={values.country}
+			onFill={onFill}
+			values={values}
+		/>
+	);
+}
+
 export const BillingFieldsGroup = withFieldGroup({
 	defaultValues,
 	props,
@@ -144,15 +178,23 @@ export const BillingFieldsGroup = withFieldGroup({
 		disabled,
 	}) {
 		const values = useSelector(group.store, (s) => s.values);
+		const savedRevision = useSelector(group.form.store, savedRevisionOf);
 		const [checkedVatId, setCheckedVatId] = useState(values.vatId);
 		const { data: vatCheck } = useQuery(
 			vatIdCheckQueryOptions(checkedVatId, values.country),
 		);
 		if (!config) throw new Error("BillingFieldsGroup needs a config");
-		const view = billingView(config, admin === true, values.needInvoice);
+		const isAdmin = admin === true;
+		const view = billingView(config, isAdmin, values.needInvoice);
 		const countryIsRequired = countryRequired === true;
 		const vatRow = catalogueRow(config, VAT_ID_FIELD, view.required);
 		const shownCheck = values.vatId === checkedVatId ? vatCheck : undefined;
+		const applyFill = (fill: BillingColumnValues) => {
+			for (const column of FILLABLE_BILLING_COLUMNS) {
+				const value = fill[column];
+				if (value) group.setFieldValue(column, value);
+			}
+		};
 
 		return (
 			<>
@@ -166,6 +208,17 @@ export const BillingFieldsGroup = withFieldGroup({
 							/>
 						)}
 					</group.AppField>
+				)}
+
+				{view.showPrevious && (
+					<PreviousDetails
+						admin={isAdmin}
+						config={config}
+						// Remount after each successful save so the card reflects what was saved.
+						key={savedRevision}
+						onFill={applyFill}
+						values={values}
+					/>
 				)}
 
 				{view.showText && (
@@ -215,42 +268,37 @@ export const BillingFieldsGroup = withFieldGroup({
 				)}
 
 				{view.showVat && (
-					<group.AppField
-						listeners={{
-							onBlur: ({ value, fieldApi }) => {
-								const result = normalizeVatId(value, values.country);
-								if ("value" in result && result.value !== value) {
-									fieldApi.setValue(result.value);
-								}
-								setCheckedVatId("value" in result ? result.value : "");
-							},
-						}}
-						name="vatId"
-						validators={{
-							onChange: ({ value }) =>
-								vatIdError(value, vatRow.required, values.country),
-						}}
-					>
-						{(field) => (
-							<field.InputField
-								description={vatRow.help}
-								disabled={disabled}
-								label={vatRow.label}
-							/>
-						)}
-					</group.AppField>
-				)}
-				{view.showVat && <VatIdStatus check={shownCheck} />}
-				{view.showVat && (
-					<RegistryFillButton
-						fill={registryFill(values, config, shownCheck)}
-						onApply={(fill) => {
-							for (const column of FILLABLE_BILLING_COLUMNS) {
-								const value = fill[column];
-								if (value) group.setFieldValue(column, value);
-							}
-						}}
-					/>
+					<>
+						<group.AppField
+							listeners={{
+								onBlur: ({ value, fieldApi }) => {
+									const result = normalizeVatId(value, values.country);
+									if ("value" in result && result.value !== value) {
+										fieldApi.setValue(result.value);
+									}
+									setCheckedVatId("value" in result ? result.value : "");
+								},
+							}}
+							name="vatId"
+							validators={{
+								onChange: ({ value }) =>
+									vatIdError(value, vatRow.required, values.country),
+							}}
+						>
+							{(field) => (
+								<field.InputField
+									description={vatRow.help}
+									disabled={disabled}
+									label={vatRow.label}
+								/>
+							)}
+						</group.AppField>
+						<VatIdStatus check={shownCheck} />
+						<RegistryFillButton
+							fill={registryFill(values, config, shownCheck)}
+							onApply={applyFill}
+						/>
+					</>
 				)}
 
 				<group.AppField

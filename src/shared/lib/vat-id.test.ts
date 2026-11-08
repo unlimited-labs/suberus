@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeVatId } from "./vat-id";
+import { findVatIdInText, normalizeVatId } from "./vat-id";
 
 describe("normalizeVatId", () => {
 	it("uppercases and strips spaces, dashes and dots, keeping the prefix", () => {
@@ -73,5 +73,25 @@ describe("normalizeVatId", () => {
 
 	it("returns an empty value for empty input", () => {
 		expect(normalizeVatId("  ")).toEqual({ value: "" });
+	});
+});
+
+describe("findVatIdInText", () => {
+	it("finds a prefixed VAT ID with a valid check digit inside free text", () => {
+		expect(
+			findVatIdInText(
+				"Uniwersytet Jagiellonski\nGolebia 24\nVAT: PL 675-000-22-36",
+			),
+		).toBe("PL6750002236");
+	});
+
+	it("finds a bare number using the country", () => {
+		expect(findVatIdInText("NIP 675-000-22-36", "Poland")).toBe("PL6750002236");
+	});
+
+	it("ignores numbers that fail the check digit, like postal codes and phones", () => {
+		expect(
+			findVatIdInText("30-059 Krakow, tel. +48 12 345 67 89"),
+		).toBeUndefined();
 	});
 });

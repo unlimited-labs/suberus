@@ -3,6 +3,8 @@ import type { VatIdCheck } from "@/generated/prisma/client";
 import {
 	activeBillingFields,
 	BILLING_FIELD_KEYS,
+	STRUCTURED_BILLING_FIELDS,
+	VAT_ID_FIELD,
 	type BillingCatalogueColumn,
 	type BillingDetailsSettings,
 	type BillingFieldState,
@@ -135,6 +137,7 @@ export const FILLABLE_BILLING_COLUMNS = [
 	"billingStreet",
 	"billingPostalCode",
 	"billingCity",
+	"vatId",
 ] as const;
 
 export function registryFill(
@@ -150,15 +153,36 @@ export function registryFill(
 	if (config.mode === "FREE_TEXT") {
 		return values.billingText?.trim() ? {} : { billingText: text };
 	}
-	const found: BillingColumnValues = {
+	return fillEmptyActiveFields(values, config, {
 		billingOrganization: registry.registryName ?? "",
 		...splitRegistryAddress(registry.registryAddress),
-	};
+	});
+}
+
+/** Only the active form's empty fields take a found value; nothing typed is overwritten. */
+export function fillEmptyActiveFields(
+	values: BillingColumnValues,
+	config: BillingDetailsSettings,
+	found: BillingColumnValues,
+): BillingColumnValues {
 	const fill: BillingColumnValues = {};
 	for (const { column } of activeBillingFields(config)) {
 		if (!values[column]?.trim() && found[column]) fill[column] = found[column];
 	}
 	return fill;
+}
+
+export function showsPreviousText(
+	values: BillingColumnValues,
+	config: BillingDetailsSettings,
+): boolean {
+	return (
+		config.mode === "STRUCTURED" &&
+		Boolean(values.billingText?.trim()) &&
+		STRUCTURED_BILLING_FIELDS.every(
+			(f) => config.fields[f.key].state === "OFF" || !values[f.column]?.trim(),
+		)
+	);
 }
 
 export function billingColumnsToForm(values: BillingColumnValues) {
@@ -213,6 +237,51 @@ export function requirednessOf(
 		},
 		organizerVatId: "",
 	};
+}
+
+const PREVIOUS_TEXT = {
+	column: "billingText",
+	name: "Billing details (text)",
+} as const;
+
+export function previousFormValues(
+	values: BillingColumnValues,
+	config: BillingDetailsSettings,
+) {
+	const active = new Set(activeBillingFields(config).map((f) => f.column));
+	const outside = [
+		...(config.mode === "STRUCTURED" ? [PREVIOUS_TEXT] : []),
+		...[...STRUCTURED_BILLING_FIELDS, VAT_ID_FIELD].filter(
+			(f) => !active.has(f.column),
+		),
+	];
+	return outside.flatMap(({ column, name }) => {
+		const value = values[column]?.trim();
+		return value ? [{ column, name, value }] : [];
+	});
+}
+
+export function composeBillingText(values: BillingColumnValues): string {
+	return [
+		values.billingOrganization,
+		values.billingStreet,
+		[values.billingPostalCode, values.billingCity].filter(Boolean).join(" "),
+	]
+		.map((line) => line?.trim())
+		.filter(Boolean)
+		.join("\n");
+}
+
+/** Simple mode with no text yet starts from the separate fields, so nothing typed earlier is lost. */
+export function initialBillingText(
+	values: BillingValues,
+	config: BillingDetailsSettings,
+): string {
+	if (values.billingText) return values.billingText;
+	return config.mode === "FREE_TEXT" &&
+		invoiceNeeded(values.needInvoice, config)
+		? composeBillingText(values)
+		: "";
 }
 
 export function applyBillingConfig<T extends z.ZodType<BillingValues>>(

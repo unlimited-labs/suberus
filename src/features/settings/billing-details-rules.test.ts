@@ -4,9 +4,13 @@ import {
 	applyBillingConfig,
 	becomesStricter,
 	buyerLines,
+	composeBillingText,
+	initialBillingText,
 	invoiceState,
+	previousFormValues,
 	registryFill,
 	requirednessOf,
+	showsPreviousText,
 	submittedBillingValues,
 } from "./billing-details-rules";
 import { DEFAULT_BILLING_DETAILS } from "./billing-details-schema";
@@ -405,5 +409,125 @@ describe("requirednessOf", () => {
 				city: { state: "REQUIRED", label: "", help: "" },
 			},
 		});
+	});
+});
+
+describe("previousFormValues", () => {
+	const values = {
+		billingText: "ACME\n1 Main St",
+		billingOrganization: "ACME Institute",
+		billingStreet: null,
+		billingCity: "Krakow",
+		vatId: "PL6750002236",
+	};
+
+	it("under Simple lists the separate fields, and the VAT ID when it is off", () => {
+		expect(previousFormValues(values, DEFAULT_BILLING_DETAILS)).toEqual([
+			{
+				column: "billingOrganization",
+				name: "Organization name",
+				value: "ACME Institute",
+			},
+			{ column: "billingCity", name: "City", value: "Krakow" },
+			{ column: "vatId", name: "VAT ID", value: "PL6750002236" },
+		]);
+	});
+
+	it("under Separate fields lists the text and the fields switched off", () => {
+		const structured = {
+			...DEFAULT_BILLING_DETAILS,
+			mode: "STRUCTURED" as const,
+			fields: {
+				...DEFAULT_BILLING_DETAILS.fields,
+				organizationName: { state: "REQUIRED" as const, label: "", help: "" },
+				vatId: { state: "OPTIONAL" as const, label: "", help: "" },
+			},
+		};
+		expect(previousFormValues(values, structured)).toEqual([
+			{
+				column: "billingText",
+				name: "Billing details (text)",
+				value: "ACME\n1 Main St",
+			},
+			{ column: "billingCity", name: "City", value: "Krakow" },
+		]);
+	});
+});
+
+describe("composeBillingText", () => {
+	it("joins organization, street and postal code + city into lines", () => {
+		expect(
+			composeBillingText({
+				billingOrganization: "ACME",
+				billingStreet: "1 Main St",
+				billingPostalCode: "30-059",
+				billingCity: "Krakow",
+			}),
+		).toBe("ACME\n1 Main St\n30-059 Krakow");
+	});
+});
+
+describe("showsPreviousText", () => {
+	const structured = {
+		...DEFAULT_BILLING_DETAILS,
+		mode: "STRUCTURED" as const,
+		fields: {
+			...DEFAULT_BILLING_DETAILS.fields,
+			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
+		},
+	};
+
+	it("shows the old text while the separate fields are still empty", () => {
+		expect(showsPreviousText({ billingText: "ACME" }, structured)).toBe(true);
+	});
+
+	it("hides it once a field is filled, and in Simple mode", () => {
+		expect(
+			showsPreviousText(
+				{ billingText: "ACME", billingOrganization: "ACME" },
+				structured,
+			),
+		).toBe(false);
+		expect(
+			showsPreviousText({ billingText: "ACME" }, DEFAULT_BILLING_DETAILS),
+		).toBe(false);
+	});
+});
+
+describe("initialBillingText", () => {
+	const fields = {
+		needInvoice: true,
+		billingOrganization: "ACME",
+		billingCity: "Krakow",
+	};
+
+	it("starts Simple mode from the separate fields when there is no text yet", () => {
+		expect(initialBillingText(fields, DEFAULT_BILLING_DETAILS)).toBe(
+			["ACME", "Krakow"].join(String.fromCharCode(10)),
+		);
+	});
+
+	it("leaves the hidden text empty when no invoice is wanted", () => {
+		expect(
+			initialBillingText(
+				{ ...fields, needInvoice: false },
+				DEFAULT_BILLING_DETAILS,
+			),
+		).toBe("");
+	});
+
+	it("keeps existing text, and stays empty under Separate fields", () => {
+		expect(
+			initialBillingText(
+				{ ...fields, billingText: "Mine" },
+				DEFAULT_BILLING_DETAILS,
+			),
+		).toBe("Mine");
+		expect(
+			initialBillingText(fields, {
+				...DEFAULT_BILLING_DETAILS,
+				mode: "STRUCTURED",
+			}),
+		).toBe("");
 	});
 });

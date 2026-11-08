@@ -131,3 +131,25 @@ export function isRegistryCheckable(normalizedVatId: string): boolean {
 	const prefix = normalizedVatId.slice(0, 2);
 	return VIES_PREFIXES.has(prefix) || prefix === "CH" || prefix === "NO";
 }
+
+const VAT_CANDIDATE =
+	/(\b[A-Z]{2,3}[\s-]?)?(\d[\d\s./-]{6,16}\d(?:\s?(?:MWST|TVA|IVA|MVA))?)/gi;
+
+/** First number in free text that passes a country check digit (prefixed, or bare with `countryName`). */
+export function findVatIdInText(
+	text: string,
+	countryName?: string | null,
+): string | undefined {
+	for (const [, prefix = "", number] of text.matchAll(VAT_CANDIDATE)) {
+		for (const candidate of [prefix + number, number]) {
+			const result = normalizeVatId(candidate, countryName);
+			if (
+				"value" in result &&
+				lookup(CHECKSUM_VALIDATORS, result.value.slice(0, 2))
+			) {
+				return result.value;
+			}
+		}
+	}
+	return undefined;
+}

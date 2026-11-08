@@ -30,6 +30,7 @@ import {
 	billingDetailsConfigQueryOptions,
 	getRegistrationStatusFn,
 } from "@/features/settings/api/settings";
+import { initialBillingText } from "@/features/settings/billing-details-rules";
 import { IncompleteBillingBanner } from "@/features/settings/components/billing-details/incomplete-billing-banner";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
@@ -220,7 +221,7 @@ function SettingsPage() {
 								initialData={{
 									email: user.email,
 									needInvoice: contactInfo.needInvoice,
-									billingText: contactInfo.billingText,
+									billingText: initialBillingText(contactInfo, billingConfig),
 									billingOrganization: contactInfo.billingOrganization,
 									billingStreet: contactInfo.billingStreet,
 									billingPostalCode: contactInfo.billingPostalCode,
