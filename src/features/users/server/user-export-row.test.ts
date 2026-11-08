@@ -23,6 +23,7 @@ const baseUser: ExportUser = {
 	billingStreet: null,
 	billingPostalCode: null,
 	billingCity: null,
+	vatId: null,
 	country: null,
 	createdAt: new Date("2026-01-02"),
 	lastLoginAt: null,
@@ -91,11 +92,13 @@ describe("buildUserExportRow", () => {
 				billingPostalCode: "30-059",
 				billingCity: "Krakow",
 				country: "Poland",
+				vatId: "PL6750002236",
 			},
 			[],
 			fmtDate,
 		);
 		expect(row).toMatchObject({
+			"VAT ID": "PL6750002236",
 			Organization: "ACME Institute",
 			"Street address": "1 Main St",
 			"Postal code": "30-059",

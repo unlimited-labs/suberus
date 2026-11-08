@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeVatId } from "@/shared/lib/vat-id";
 
 // ORCID format: 0000-0000-0000-000X (where X can be 0-9 or X)
 export const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
@@ -52,6 +53,14 @@ export const contactInfoSchema = z.object({
 		.string()
 		.max(100, "City must be at most 100 characters")
 		.optional(),
+	vatId: z
+		.string()
+		.optional()
+		.superRefine((value, ctx) => {
+			const result = normalizeVatId(value ?? "");
+			if ("error" in result)
+				ctx.addIssue({ code: "custom", message: result.error });
+		}),
 	country: z.string(),
 	contactConsent: z.boolean().optional(),
 });
@@ -62,6 +71,7 @@ export const BILLING_COLUMNS_IN_FORM = {
 	billingStreet: true,
 	billingPostalCode: true,
 	billingCity: true,
+	vatId: true,
 } as const;
 
 export const contactInfoFormSchema = contactInfoSchema.required(

@@ -20,6 +20,7 @@ export type ExportUser = Pick<
 	| "billingStreet"
 	| "billingPostalCode"
 	| "billingCity"
+	| "vatId"
 	| "country"
 	| "createdAt"
 	| "lastLoginAt"
@@ -77,6 +78,7 @@ export function buildUserExportRow(
 		"Postal code": user.billingPostalCode ?? "",
 		City: user.billingCity ?? "",
 		Country: user.country ?? "",
+		"VAT ID": user.vatId ?? "",
 		"Registration Date": fmtDate(user.createdAt),
 		"Last Login": fmtDate(user.lastLoginAt),
 		...buildSurveyColumns(user.surveyAnswers, questions),

@@ -162,6 +162,7 @@ function SettingsPage() {
 					billingStreet: data.billingStreet,
 					billingPostalCode: data.billingPostalCode,
 					billingCity: data.billingCity,
+					vatId: data.vatId,
 					country: data.country,
 					contactConsent: data.contactConsent,
 				},
@@ -219,6 +220,7 @@ function SettingsPage() {
 								billingStreet: contactInfo.billingStreet,
 								billingPostalCode: contactInfo.billingPostalCode,
 								billingCity: contactInfo.billingCity,
+								vatId: contactInfo.vatId,
 								country: contactInfo.country,
 								contactConsent: contactInfo.contactConsent,
 							}}

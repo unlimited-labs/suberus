@@ -156,3 +156,33 @@ describe("buyerLines", () => {
 		).toEqual(["ACME", "1 Main St"]);
 	});
 });
+
+describe("VAT ID in both modes", () => {
+	const vatRequired = {
+		...DEFAULT_BILLING_DETAILS,
+		fields: {
+			...DEFAULT_BILLING_DETAILS.fields,
+			vatId: { state: "REQUIRED" as const, label: "", help: "" },
+		},
+	};
+	const schema = applyBillingConfig(
+		base.extend({ vatId: z.string().optional() }),
+		vatRequired,
+	);
+
+	it("requires a REQUIRED VAT ID beside the Simple text box", () => {
+		const result = schema.safeParse({ needInvoice: true, billingText: "ACME" });
+		expect(
+			result.success ? [] : result.error.issues.map((i) => i.path[0]),
+		).toEqual(["vatId"]);
+	});
+
+	it("submits the VAT ID with the Simple text and prints it on the buyer card", () => {
+		const shown = submittedBillingValues(
+			{ needInvoice: true, billingText: "ACME", vatId: "PL6750002236" },
+			vatRequired,
+		);
+		expect(shown).toEqual({ billingText: "ACME", vatId: "PL6750002236" });
+		expect(buyerLines(shown)).toEqual(["ACME", "VAT ID: PL6750002236"]);
+	});
+});

@@ -19,6 +19,7 @@ import type {
 	UserRole,
 } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
+import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
@@ -67,6 +68,7 @@ export interface AdminUser {
 	billingStreet: string | null;
 	billingPostalCode: string | null;
 	billingCity: string | null;
+	vatId: string | null;
 	country: string | null;
 	needInvoice: boolean;
 	role: UserRole;
@@ -287,6 +289,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		billingStreet: u.billingStreet,
 		billingPostalCode: u.billingPostalCode,
 		billingCity: u.billingCity,
+		vatId: u.vatId,
 		country: u.country,
 		needInvoice: u.needInvoice,
 		role: u.role,
@@ -335,6 +338,7 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 		billingStreet: user.billingStreet,
 		billingPostalCode: user.billingPostalCode,
 		billingCity: user.billingCity,
+		vatId: user.vatId,
 		country: user.country,
 		needInvoice: user.needInvoice,
 		role: user.role,
@@ -716,7 +720,7 @@ export async function updateUserProfile(
 ): Promise<{ success: boolean }> {
 	const currentUser = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { email: true },
+		select: { email: true, country: true },
 	});
 
 	if (!currentUser) {
@@ -736,6 +740,9 @@ export async function updateUserProfile(
 		billingStreet: emptyToNull(data.billingStreet),
 		billingPostalCode: emptyToNull(data.billingPostalCode),
 		billingCity: emptyToNull(data.billingCity),
+		vatId: emptyToNull(
+			normalizeVatIdOrThrow(data.vatId, data.country ?? currentUser.country),
+		),
 		country: emptyToNull(data.country),
 	};
 

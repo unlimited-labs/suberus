@@ -7,10 +7,13 @@ import {
 import {
 	BILLING_TEXT_NAME,
 	type BillingDetailsSettings,
+	type BillingCatalogueField,
 	STRUCTURED_BILLING_FIELDS,
 	type StructuredBillingField,
+	VAT_ID_FIELD,
 } from "@/features/settings/billing-details-schema";
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
+import { normalizeVatId } from "@/shared/lib/vat-id";
 import { BuyerSummaryCard } from "./buyer-summary-card";
 
 type BillingFields = {
@@ -20,6 +23,7 @@ type BillingFields = {
 	billingStreet: string;
 	billingPostalCode: string;
 	billingCity: string;
+	vatId: string;
 	country: string;
 };
 
@@ -31,6 +35,7 @@ const defaultValues: BillingFields = {
 	billingStreet: "",
 	billingPostalCode: "",
 	billingCity: "",
+	vatId: "",
 	country: "",
 };
 
@@ -54,6 +59,7 @@ export const BILLING_FIELDS_MAP = {
 	billingStreet: "billingStreet",
 	billingPostalCode: "billingPostalCode",
 	billingCity: "billingCity",
+	vatId: "vatId",
 	country: "country",
 } as const;
 
@@ -68,6 +74,7 @@ function billingView(
 		showCheckbox: !invoiceRequired,
 		showText: showDetails && config.mode === "FREE_TEXT",
 		showFields: showDetails && config.mode === "STRUCTURED",
+		showVat: showDetails && config.fields.vatId.state !== "OFF",
 		showBuyer: showDetails && !admin,
 		required: !admin && invoiceNeeded(needInvoice, config),
 	};
@@ -84,24 +91,38 @@ const COLUMN_SPAN = {
 	city: "sm:col-span-2",
 } satisfies Record<StructuredBillingField["key"], string>;
 
+function catalogueRow(
+	config: BillingDetailsSettings,
+	f: BillingCatalogueField,
+	required: boolean,
+) {
+	const fieldConfig = config.fields[f.key];
+	const fieldRequired = required && fieldConfig.state === "REQUIRED";
+	return {
+		field: f,
+		required: fieldRequired,
+		label: withAsterisk(fieldConfig.label || f.name, fieldRequired),
+		help: fieldConfig.help || undefined,
+	};
+}
+
 function structuredRows(config: BillingDetailsSettings, required: boolean) {
 	const postalCodeOn = config.fields.postalCode.state !== "OFF";
 	return STRUCTURED_BILLING_FIELDS.filter(
 		(f) => config.fields[f.key].state !== "OFF",
-	).map((f) => {
-		const fieldConfig = config.fields[f.key];
-		const fieldRequired = required && fieldConfig.state === "REQUIRED";
-		return {
-			field: f,
-			required: fieldRequired,
-			label: withAsterisk(fieldConfig.label || f.name, fieldRequired),
-			help: fieldConfig.help || undefined,
-			span:
-				f.key === "city" && !postalCodeOn
-					? "sm:col-span-3"
-					: COLUMN_SPAN[f.key],
-		};
-	});
+	).map((f) => ({
+		...catalogueRow(config, f, required),
+		span:
+			f.key === "city" && !postalCodeOn ? "sm:col-span-3" : COLUMN_SPAN[f.key],
+	}));
+}
+
+function vatIdError(value: string, required: boolean, country: string) {
+	const result = normalizeVatId(value, country);
+	return (
+		billingFieldError(value, required) ??
+		("error" in result ? result.error : undefined)
+	);
 }
 
 export const BillingFieldsGroup = withFieldGroup({
@@ -119,6 +140,7 @@ export const BillingFieldsGroup = withFieldGroup({
 		if (!config) throw new Error("BillingFieldsGroup needs a config");
 		const view = billingView(config, admin === true, values.needInvoice);
 		const countryIsRequired = countryRequired === true;
+		const vatRow = catalogueRow(config, VAT_ID_FIELD, view.required);
 
 		return (
 			<>
@@ -178,6 +200,32 @@ export const BillingFieldsGroup = withFieldGroup({
 							</div>
 						))}
 					</div>
+				)}
+
+				{view.showVat && (
+					<group.AppField
+						listeners={{
+							onBlur: ({ value, fieldApi }) => {
+								const result = normalizeVatId(value, values.country);
+								if ("value" in result && result.value !== value) {
+									fieldApi.setValue(result.value);
+								}
+							},
+						}}
+						name="vatId"
+						validators={{
+							onChange: ({ value }) =>
+								vatIdError(value, vatRow.required, values.country),
+						}}
+					>
+						{(field) => (
+							<field.InputField
+								description={vatRow.help}
+								disabled={disabled}
+								label={vatRow.label}
+							/>
+						)}
+					</group.AppField>
 				)}
 
 				<group.AppField

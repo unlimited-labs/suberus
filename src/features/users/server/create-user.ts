@@ -7,6 +7,7 @@ import { auth } from "@/features/auth/server/auth.server";
 import { billingColumnsToDb } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
 import type { userCreateInput } from "@/features/users/validations";
+import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
@@ -57,7 +58,10 @@ export async function createUserByAdmin(
 				title: input.title || null,
 				affiliationId: affiliation?.id ?? null,
 				needInvoice: input.needInvoice,
-				...billingColumnsToDb(input),
+				...billingColumnsToDb({
+					...input,
+					vatId: normalizeVatIdOrThrow(input.vatId, input.country),
+				}),
 				country: input.country || null,
 				role: "AUTHOR",
 				isActive: true,

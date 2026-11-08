@@ -164,4 +164,55 @@ test.describe.serial("Registration - Billing details", () => {
 		await registerPage.clickContinue()
 		await expect(page.getByRole("checkbox", { name: /I agree to the/ })).toBeVisible()
 	})
+
+	test("VAT ID beside the Simple text box: prefix from Country, bad checksum blocks, stored normalized", async ({
+		registerPage,
+		testRun,
+	}) => {
+		test.setTimeout(120_000)
+		await setAppSetting("BILLING_DETAILS", {
+			...DEFAULT_BILLING_DETAILS,
+			invoiceRequired: true,
+			fields: {
+				...DEFAULT_BILLING_DETAILS.fields,
+				vatId: { state: "OPTIONAL", label: "", help: "With the country prefix, e.g. PL…" },
+			},
+		})
+		const email = `billing-vat-${testRun.testRunId}@e2e.local`
+		const page = registerPage.page
+
+		await registerPage.goto()
+		await registerPage.fillStep1({ email, ...STEP1 })
+		await registerPage.clickContinue()
+		await registerPage.waitForStep2()
+		await registerPage.fillStep2({ country: "Poland" })
+		await page.getByLabel("Billing details (organization) *").fill("ACME Institute")
+
+		const vat = page.getByLabel("VAT ID", { exact: true })
+		await vat.fill("PL 675-000-22-37")
+		await registerPage.clickContinue()
+		await expect(page.getByText("Not a valid PL VAT ID")).toBeVisible()
+
+		await vat.fill("675-000-22-36")
+		await vat.blur()
+		await expect(vat).toHaveValue("PL6750002236")
+		await registerPage.clickContinue()
+		await registerPage.fillStep3({ acceptTerms: true })
+		await registerPage.clickCreateAccount()
+		await expect(page).toHaveURL("/", { timeout: 15000 })
+
+		const storedVatId = async () =>
+			(await getPrisma().user.findUnique({ where: { email }, select: { vatId: true } }))?.vatId
+		expect(await storedVatId()).toBe("PL6750002236")
+
+		await page.goto("/profile")
+		await expect(page.getByLabel("VAT ID", { exact: true })).toHaveValue("PL6750002236")
+		await page
+			.locator("section")
+			.filter({ hasText: "Contact & Invoice Information" })
+			.getByRole("button", { name: "Save changes" })
+			.click()
+		await expect(page.getByText("Contact information updated successfully")).toBeVisible()
+		expect(await storedVatId()).toBe("PL6750002236")
+	})
 })

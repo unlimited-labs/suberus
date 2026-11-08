@@ -8,6 +8,7 @@ import {
 	invoiceNeeded,
 } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
+import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
 
 export async function getPersonalInfo(userId: string) {
@@ -81,6 +82,7 @@ export async function getContactInfo(userId: string) {
 			billingStreet: true,
 			billingPostalCode: true,
 			billingCity: true,
+			vatId: true,
 			country: true,
 			contactConsent: true,
 		},
@@ -106,7 +108,10 @@ export async function updateContactInfo(
 		where: { id: userId },
 		data: {
 			needInvoice,
-			...billingColumnsToDb(data),
+			...billingColumnsToDb({
+				...data,
+				vatId: normalizeVatIdOrThrow(data.vatId, data.country),
+			}),
 			country: data.country || null,
 			contactConsent: data.contactConsent,
 		},

@@ -68,6 +68,7 @@ export function UserCreateDialog({
 		billingStreet: "",
 		billingPostalCode: "",
 		billingCity: "",
+		vatId: "",
 		country: "",
 		surveyAnswers: Object.fromEntries(
 			questions.map((q) => [q.id, q.type === "CHECKBOX" ? "false" : ""]),
@@ -89,6 +90,7 @@ export function UserCreateDialog({
 					billingStreet: value.billingStreet,
 					billingPostalCode: value.billingPostalCode,
 					billingCity: value.billingCity,
+					vatId: value.vatId,
 					country: value.country,
 					answers: Object.entries(value.surveyAnswers).map(
 						([questionId, answer]) => ({ questionId, value: answer }),

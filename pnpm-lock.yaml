@@ -276,6 +276,9 @@ importers:
       sonner:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      stdnum:
+        specifier: ^1.12.6
+        version: 1.12.6
       tailwind-merge:
         specifier: ^3.7.0
         version: 3.7.0
@@ -8364,6 +8367,9 @@ packages:
   stdin-discarder@0.3.2:
     resolution: {integrity: sha512-eCPu1qRxPVkl5605OTWF8Wz40b4Mf45NY5LQmVPQ599knfs5QhASUm9GbJ5BDMDOXgrnh0wyEdvzmL//YMlw0A==}
     engines: {node: '>=18'}
+
+  stdnum@1.12.6:
+    resolution: {integrity: sha512-UhWlPQ0FCwMuNKEPvX42Hk0ddS/YivTvmJ8k7y0fxM0dea1Cx//AScKFNtT59lHCqYXIr3gfYI4EvqvH9DRrpQ==}
 
   stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
@@ -17856,6 +17862,8 @@ snapshots:
   stdin-discarder@0.2.2: {}
 
   stdin-discarder@0.3.2: {}
+
+  stdnum@1.12.6: {}
 
   stop-iteration-iterator@1.1.0:
     dependencies:

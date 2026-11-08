@@ -4,8 +4,9 @@ import { type ReactNode, useState } from "react";
 import {
 	BILLING_TEXT_NAME,
 	type BillingDetailsSettings,
+	type BillingCatalogueField,
 	STRUCTURED_BILLING_FIELDS,
-	type StructuredBillingField,
+	VAT_ID_FIELD,
 } from "@/features/settings/billing-details-schema";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { Form } from "@/shared/components/composable/form";
@@ -151,7 +152,7 @@ function FieldRow({
 	field: f,
 }: {
 	form: BillingDetailsSettingsForm;
-	field: StructuredBillingField;
+	field: BillingCatalogueField;
 }) {
 	const config = useSelector(form.store, (s) => s.values.fields[f.key]);
 	const stateLabelId = `billing-field-${f.key}-state`;
@@ -213,6 +214,7 @@ function FieldAccordion({ form }: { form: BillingDetailsSettingsForm }) {
 					<FieldRow field={f} form={form} key={f.key} />
 				))
 			)}
+			<FieldRow field={VAT_ID_FIELD} form={form} />
 		</Accordion>
 	);
 }

@@ -53,6 +53,7 @@ type RegisterField =
 	| "billingStreet"
 	| "billingPostalCode"
 	| "billingCity"
+	| "vatId"
 	| "country"
 	| "acceptTerms";
 
@@ -71,6 +72,7 @@ const STEP_FIELDS = {
 		"billingStreet",
 		"billingPostalCode",
 		"billingCity",
+		"vatId",
 		"country",
 	],
 	3: ["acceptTerms"],
@@ -206,6 +208,7 @@ export function useRegisterForm({
 			billingStreet: "",
 			billingPostalCode: "",
 			billingCity: "",
+			vatId: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
 			contactConsent: false,

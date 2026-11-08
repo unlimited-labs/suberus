@@ -13,8 +13,27 @@ export const STRUCTURED_BILLING_FIELDS = [
 	{ key: "city", column: "billingCity", name: "City" },
 ] as const;
 
+export const VAT_ID_FIELD = {
+	key: "vatId",
+	column: "vatId",
+	name: "VAT ID",
+} as const;
+
 export type StructuredBillingField = (typeof STRUCTURED_BILLING_FIELDS)[number];
-export type StructuredBillingColumn = StructuredBillingField["column"];
+export type BillingCatalogueField =
+	| StructuredBillingField
+	| typeof VAT_ID_FIELD;
+export type BillingCatalogueColumn = BillingCatalogueField["column"];
+
+export function activeBillingFields(
+	config: BillingDetailsSettings,
+): BillingCatalogueField[] {
+	const fields =
+		config.mode === "STRUCTURED"
+			? [...STRUCTURED_BILLING_FIELDS, VAT_ID_FIELD]
+			: [VAT_ID_FIELD];
+	return fields.filter((f) => config.fields[f.key].state !== "OFF");
+}
 
 const labelSchema = z
 	.string()

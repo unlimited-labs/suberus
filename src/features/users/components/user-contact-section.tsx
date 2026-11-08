@@ -18,6 +18,7 @@ export function UserContactSection({ user }: UserContactSectionProps) {
 		billingStreet: user.billingStreet,
 		billingPostalCode: user.billingPostalCode,
 		billingCity: user.billingCity,
+		vatId: user.vatId,
 	}).join("\n");
 
 	return (

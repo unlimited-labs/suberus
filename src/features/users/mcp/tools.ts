@@ -101,7 +101,7 @@ const updateUserProfile = defineTool({
 	name: "users_update_profile",
 	title: "Update user profile",
 	description:
-		"Update a user's personal and billing details. Only the fields you send change; an omitted field keeps its value and an empty string clears it. Billing details are billingText (free text) and billingOrganization, billingStreet, billingPostalCode, billingCity (separate fields); every column is accepted whatever the configured form.",
+		"Update a user's personal and billing details. Only the fields you send change; an omitted field keeps its value and an empty string clears it. Billing details are billingText (free text) and billingOrganization, billingStreet, billingPostalCode, billingCity (separate fields), and vatId (stored normalized with its country prefix; a bad checksum is rejected); every column is accepted whatever the configured form.",
 	input: userProfilePatchInput,
 	roles: ["ADMIN"],
 	scope: MCP_SCOPE_USERS_WRITE,

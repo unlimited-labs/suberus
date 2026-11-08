@@ -26,6 +26,7 @@ import { getSetting } from "@/features/settings/server/settings";
 import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
 import { contactInfoSchema } from "@/shared/lib/validations/user";
+import { normalizeVatId } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
@@ -47,6 +48,8 @@ type AuthUserExtras = {
 	billingStreet?: string;
 	billingPostalCode?: string;
 	billingCity?: string;
+	vatId?: string;
+	country?: string;
 };
 
 const billingColumnsSchema = contactInfoSchema
@@ -56,6 +59,7 @@ const billingColumnsSchema = contactInfoSchema
 		billingStreet: true,
 		billingPostalCode: true,
 		billingCity: true,
+		vatId: true,
 	})
 	.partial();
 
@@ -279,6 +283,12 @@ export const auth = betterAuth({
 				input: true,
 				returned: false,
 			},
+			vatId: {
+				type: "string",
+				required: false,
+				input: true,
+				returned: false,
+			},
 			country: {
 				type: "string",
 				required: false,
@@ -345,6 +355,10 @@ export const auth = betterAuth({
 							message: lengths.error.issues[0].message,
 						});
 					}
+					const vat = normalizeVatId(extUser.vatId ?? "", extUser.country);
+					if ("error" in vat) {
+						throw new APIError("BAD_REQUEST", { message: vat.error });
+					}
 					const needed = invoiceNeeded(extUser.needInvoice === true, config);
 					const [issue] = billingDetailsIssues(
 						{ ...extUser, needInvoice: needed },
@@ -353,7 +367,13 @@ export const auth = betterAuth({
 					if (issue) {
 						throw new APIError("BAD_REQUEST", { message: issue.message });
 					}
-					return { data: { ...user, needInvoice: needed } };
+					return {
+						data: {
+							...user,
+							needInvoice: needed,
+							vatId: vat.value || undefined,
+						},
+					};
 				},
 				after: async (user) => {
 					await logActivity({

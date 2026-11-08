@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import {
+	activeBillingFields,
+	type BillingCatalogueColumn,
 	type BillingDetailsSettings,
-	STRUCTURED_BILLING_FIELDS,
-	type StructuredBillingColumn,
 } from "./billing-details-schema";
 
 export interface BillingColumnValues {
@@ -11,6 +11,7 @@ export interface BillingColumnValues {
 	billingStreet?: string | null;
 	billingPostalCode?: string | null;
 	billingCity?: string | null;
+	vatId?: string | null;
 }
 
 interface BillingValues extends BillingColumnValues {
@@ -18,7 +19,7 @@ interface BillingValues extends BillingColumnValues {
 }
 
 interface BillingIssue {
-	path: "billingText" | StructuredBillingColumn;
+	path: "billingText" | BillingCatalogueColumn;
 	message: string;
 }
 
@@ -50,17 +51,21 @@ export function billingDetailsIssues(
 	config: BillingDetailsSettings,
 ): BillingIssue[] {
 	const needed = invoiceNeeded(values.needInvoice, config);
-	if (config.mode === "FREE_TEXT") {
-		const message = billingTextError(values.billingText, needed);
-		return message ? [{ path: "billingText", message }] : [];
-	}
-	return STRUCTURED_BILLING_FIELDS.flatMap(({ key, column }) => {
+	const textMessage =
+		config.mode === "FREE_TEXT"
+			? billingTextError(values.billingText, needed)
+			: undefined;
+	const issues: BillingIssue[] = textMessage
+		? [{ path: "billingText", message: textMessage }]
+		: [];
+	for (const { key, column } of activeBillingFields(config)) {
 		const message = billingFieldError(
 			values[column],
 			needed && config.fields[key].state === "REQUIRED",
 		);
-		return message ? [{ path: column, message }] : [];
-	});
+		if (message) issues.push({ path: column, message });
+	}
+	return issues;
 }
 
 export function submittedBillingValues(
@@ -68,14 +73,12 @@ export function submittedBillingValues(
 	config: BillingDetailsSettings,
 ): BillingColumnValues {
 	if (!invoiceNeeded(values.needInvoice, config)) return {};
-	if (config.mode === "FREE_TEXT") {
-		return { billingText: values.billingText || undefined };
-	}
-	const shown: BillingColumnValues = {};
-	for (const { key, column } of STRUCTURED_BILLING_FIELDS) {
-		if (config.fields[key].state !== "OFF") {
-			shown[column] = values[column] || undefined;
-		}
+	const shown: BillingColumnValues =
+		config.mode === "FREE_TEXT"
+			? { billingText: values.billingText || undefined }
+			: {};
+	for (const { column } of activeBillingFields(config)) {
+		shown[column] = values[column] || undefined;
 	}
 	return shown;
 }
@@ -89,6 +92,7 @@ export function buyerLines(
 		values.billingStreet,
 		[values.billingPostalCode, values.billingCity].filter(Boolean).join(" "),
 		values.country,
+		values.vatId ? `VAT ID: ${values.vatId}` : undefined,
 	]
 		.map((line) => line?.trim() ?? "")
 		.filter(Boolean);
@@ -101,6 +105,7 @@ export function billingColumnsToForm(values: BillingColumnValues) {
 		billingStreet: values.billingStreet ?? "",
 		billingPostalCode: values.billingPostalCode ?? "",
 		billingCity: values.billingCity ?? "",
+		vatId: values.vatId ?? "",
 	};
 }
 
@@ -111,6 +116,7 @@ export function billingColumnsToDb(values: BillingColumnValues) {
 		billingStreet: values.billingStreet || null,
 		billingPostalCode: values.billingPostalCode || null,
 		billingCity: values.billingCity || null,
+		vatId: values.vatId || null,
 	};
 }
 

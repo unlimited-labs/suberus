@@ -15,6 +15,7 @@ export function BillingDetailsPreview({
 			billingStreet: "",
 			billingPostalCode: "",
 			billingCity: "",
+			vatId: "",
 			country: "",
 		},
 	});
