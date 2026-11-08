@@ -97,7 +97,7 @@ describe("checkVatId", () => {
 	it("does not schedule another retry from inside the retry job", async () => {
 		registries.queryVies.mockResolvedValue(result("UNAVAILABLE"));
 
-		await checkVatId("DE136695976", { fromRetry: true });
+		await checkVatId("DE136695976", "retry");
 
 		expect(boss.send).not.toHaveBeenCalled();
 	});

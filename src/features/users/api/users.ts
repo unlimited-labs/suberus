@@ -16,6 +16,7 @@ import {
 	getUserById,
 	getUsers,
 	patchUser,
+	recheckUserVatId,
 } from "@/features/users/server/users";
 import {
 	userBulkActionInput,
@@ -104,6 +105,14 @@ export const updateAdminUserProfile = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		const { id, ...profileData } = data;
 		return adminUpdateProfile(id, profileData);
+	});
+
+export const recheckAdminUserVatId = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(userIdInput)
+	.handler(async ({ data }) => {
+		await recheckUserVatId(data.id);
+		return { success: true };
 	});
 
 export const checkAdminUserDeletable = createServerFn({ method: "GET" })

@@ -15,7 +15,7 @@ export async function handleVatIdRetry(
 	now = Date.now(),
 ): Promise<void> {
 	for (const { data } of jobs) {
-		const check = await checkVatId(data.vatId, { fromRetry: true });
+		const check = await checkVatId(data.vatId, "retry");
 		if (check.status !== "UNAVAILABLE") continue;
 		if (now - Date.parse(data.since) >= RETRY_WINDOW_MS) {
 			logger.info(`[vat-id] giving up on ${data.vatId.slice(0, 2)} after 72 h`);

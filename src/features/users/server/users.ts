@@ -5,8 +5,15 @@ import {
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import {
+	type InvoiceState,
+	invoiceState,
+} from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
-import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
+import {
+	checkVatId,
+	checkVatIdInBackground,
+} from "@/features/settings/server/vat-id-check";
 import type {
 	feeMarkPaidInput,
 	userBulkActionInput,
@@ -89,11 +96,12 @@ export interface AdminUser {
 	} | null;
 	submissionRoles: SubmissionRoleSummary[];
 	surveyAnswers: { questionId: string; value: string }[];
+	invoiceState: InvoiceState;
+	vatIdCheck: Pick<VatIdCheck, "status" | "checkedAt" | "registryName"> | null;
 }
 
 export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
-	vatIdCheck: Pick<VatIdCheck, "status" | "checkedAt" | "registryName"> | null;
 }
 
 export type UsersFilters = z.infer<typeof usersListInput>;
@@ -277,7 +285,9 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		prisma.user.count({ where }),
 	]);
 
+	const billing = await billingStatusLookup(users);
 	const mapped: AdminUser[] = users.map((u) => ({
+		...billing(u),
 		id: u.id,
 		email: u.email,
 		firstName: u.firstName,
@@ -318,6 +328,33 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 	return { users: mapped, total };
 }
 
+type BillingStatusSource = Parameters<typeof invoiceState>[0] & {
+	vatId: string | null;
+};
+
+async function billingStatusLookup(users: BillingStatusSource[]) {
+	const vatIds = users.flatMap((u) => (u.vatId ? [u.vatId] : []));
+	const [config, checks] = await Promise.all([
+		getSetting("BILLING_DETAILS"),
+		prisma.vatIdCheck.findMany({
+			where: { vatId: { in: vatIds } },
+			select: {
+				vatId: true,
+				status: true,
+				checkedAt: true,
+				registryName: true,
+			},
+		}),
+	]);
+	const checkByVatId = new Map(
+		checks.map(({ vatId, ...check }) => [vatId, check]),
+	);
+	return (user: BillingStatusSource) => ({
+		invoiceState: invoiceState(user, config),
+		vatIdCheck: (user.vatId && checkByVatId.get(user.vatId)) || null,
+	});
+}
+
 export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 	const user = await prisma.user.findUnique({
 		where: { id },
@@ -326,15 +363,10 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 
 	if (!user) return null;
 
-	const vatIdCheck = user.vatId
-		? await prisma.vatIdCheck.findUnique({
-				where: { vatId: user.vatId },
-				select: { status: true, checkedAt: true, registryName: true },
-			})
-		: null;
+	const billing = await billingStatusLookup([user]);
 
 	return {
-		vatIdCheck,
+		...billing(user),
 		id: user.id,
 		email: user.email,
 		firstName: user.firstName,
@@ -1024,6 +1056,15 @@ export async function adminUpdateProfile(
 	await updateUserProfile(userId, data);
 	logger.info(`[admin] updateProfile ${userId}`);
 	return getUserById(userId);
+}
+
+export async function recheckUserVatId(userId: string): Promise<void> {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { vatId: true },
+	});
+	if (!user?.vatId) throw new Response("User has no VAT ID", { status: 400 });
+	await checkVatId(user.vatId, "recheck");
 }
 
 export async function adminCheckDeletable(

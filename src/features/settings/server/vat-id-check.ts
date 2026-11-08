@@ -55,10 +55,11 @@ async function scheduleRetry(vatId: string) {
 	);
 }
 
-/** `vatId` must already be normalized; a fresh cached result is returned without a registry call. */
+/** `vatId` must be normalized. "cached" reuses a fresh result; "recheck" and "retry" always
+ * ask the registry, and only "retry" (the job itself) never schedules another retry. */
 export async function checkVatId(
 	vatId: string,
-	{ fromRetry = false } = {},
+	mode: "cached" | "recheck" | "retry" = "cached",
 ): Promise<VatIdCheck> {
 	if (!isRegistryCheckable(vatId)) {
 		return {
@@ -72,14 +73,14 @@ export async function checkVatId(
 		};
 	}
 	const cached = await prisma.vatIdCheck.findUnique({ where: { vatId } });
-	if (!fromRetry && cached && isFresh(cached, Date.now())) return cached;
+	if (mode === "cached" && cached && isFresh(cached, Date.now())) return cached;
 	const result = { ...(await lookupRegistry(vatId)), checkedAt: new Date() };
 	const row = await prisma.vatIdCheck.upsert({
 		where: { vatId },
 		create: { vatId, ...result },
 		update: result,
 	});
-	if (row.status === "UNAVAILABLE" && !fromRetry) {
+	if (row.status === "UNAVAILABLE" && mode !== "retry") {
 		void scheduleRetry(vatId).catch((error) => {
 			logger.warn("[vat-id] could not schedule a retry:", error);
 		});

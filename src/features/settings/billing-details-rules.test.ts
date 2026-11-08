@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
 	applyBillingConfig,
 	buyerLines,
+	invoiceState,
 	registryFill,
 	submittedBillingValues,
 } from "./billing-details-rules";
@@ -268,5 +269,73 @@ describe("registryFill", () => {
 				status: "NOT_FOUND" as const,
 			}),
 		).toEqual({});
+	});
+});
+
+describe("invoiceState", () => {
+	const structured = {
+		...DEFAULT_BILLING_DETAILS,
+		mode: "STRUCTURED" as const,
+		fields: {
+			...DEFAULT_BILLING_DETAILS.fields,
+			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
+			city: { state: "OPTIONAL" as const, label: "", help: "" },
+		},
+	};
+
+	it("is NONE when the participant needs no invoice", () => {
+		expect(invoiceState({ needInvoice: false }, structured)).toBe("NONE");
+	});
+
+	it("is INCOMPLETE when a REQUIRED field of the active form is empty", () => {
+		expect(
+			invoiceState(
+				{ needInvoice: true, billingOrganization: null },
+				structured,
+			),
+		).toBe("INCOMPLETE");
+	});
+
+	it("is REQUESTED when every REQUIRED field is filled, OPTIONAL ones may be empty", () => {
+		expect(
+			invoiceState(
+				{ needInvoice: true, billingOrganization: "ACME" },
+				structured,
+			),
+		).toBe("REQUESTED");
+	});
+
+	it("counts everyone under Invoice required, and ignores data from the other form", () => {
+		expect(
+			invoiceState(
+				{ needInvoice: false, billingText: "ACME, old text form" },
+				{ ...structured, invoiceRequired: true },
+			),
+		).toBe("INCOMPLETE");
+	});
+
+	it("is INCOMPLETE in Simple mode with an empty text box or a missing REQUIRED VAT ID", () => {
+		const simple = {
+			...DEFAULT_BILLING_DETAILS,
+			fields: {
+				...DEFAULT_BILLING_DETAILS.fields,
+				vatId: { state: "REQUIRED" as const, label: "", help: "" },
+			},
+		};
+		expect(
+			invoiceState(
+				{ needInvoice: true, billingText: " ", vatId: "PL6750002236" },
+				simple,
+			),
+		).toBe("INCOMPLETE");
+		expect(
+			invoiceState({ needInvoice: true, billingText: "ACME" }, simple),
+		).toBe("INCOMPLETE");
+		expect(
+			invoiceState(
+				{ needInvoice: true, billingText: "ACME", vatId: "PL6750002236" },
+				simple,
+			),
+		).toBe("REQUESTED");
 	});
 });

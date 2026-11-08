@@ -69,6 +69,18 @@ export function billingDetailsIssues(
 	return issues;
 }
 
+export type InvoiceState = "NONE" | "REQUESTED" | "INCOMPLETE";
+
+export function invoiceState(
+	values: BillingValues,
+	config: BillingDetailsSettings,
+): InvoiceState {
+	if (!invoiceNeeded(values.needInvoice, config)) return "NONE";
+	return billingDetailsIssues(values, config).length > 0
+		? "INCOMPLETE"
+		: "REQUESTED";
+}
+
 export function submittedBillingValues(
 	values: BillingValues,
 	config: BillingDetailsSettings,

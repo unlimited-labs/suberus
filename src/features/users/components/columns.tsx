@@ -6,8 +6,11 @@ import {
 import {
 	feeFilterOptions,
 	formatSubmissionRole,
+	invoiceFilterOptions,
 	roleFilterOptions,
 	roleLabels,
+	vatIdStatusFilterOptions,
+	vatIdStatusLabels,
 } from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
@@ -28,6 +31,7 @@ import type {
 } from "@/shared/ui/data-table/table-features";
 import { SubmissionsColumnHeader } from "./submissions-column-header";
 import { UserFeeBadgeCell } from "./user-fee-badge-cell";
+import { UserInvoiceCell, VatIdStatusIcon } from "./user-invoice-cells";
 
 export interface SurveyListColumn {
 	id: string;
@@ -130,6 +134,45 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 			/>
 		),
 		cell: ({ row }) => <UserFeeBadgeCell user={row.original} />,
+		filterFn: facetedFilterFn,
+	},
+	{
+		id: "invoice",
+		accessorFn: (row) => row.invoiceState,
+		header: ({ column }) => (
+			<DataTableColumnHeader
+				column={column}
+				filterOptions={[...invoiceFilterOptions]}
+				title="Invoice"
+			/>
+		),
+		cell: ({ row }) => <UserInvoiceCell user={row.original} />,
+		filterFn: facetedFilterFn,
+	},
+	{
+		id: "vatIdStatus",
+		accessorFn: (row) =>
+			row.vatIdCheck && row.vatIdCheck.status !== "NOT_CHECKABLE"
+				? row.vatIdCheck.status
+				: "NONE",
+		header: ({ column }) => (
+			<DataTableColumnHeader
+				column={column}
+				filterOptions={[...vatIdStatusFilterOptions]}
+				title="VAT ID"
+			/>
+		),
+		cell: ({ row }) => {
+			const check = row.original.vatIdCheck;
+			return check && check.status !== "NOT_CHECKABLE" ? (
+				<span className="text-muted-foreground flex items-center gap-1.5 text-sm">
+					<VatIdStatusIcon check={check} />
+					{vatIdStatusLabels[check.status]}
+				</span>
+			) : (
+				<span className="text-muted-foreground">—</span>
+			);
+		},
 		filterFn: facetedFilterFn,
 	},
 	{

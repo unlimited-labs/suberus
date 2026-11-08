@@ -3,6 +3,7 @@ import {
 	IconFileText,
 	IconMail,
 	IconPlus,
+	IconReceipt,
 	IconUserCircle,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -19,6 +20,7 @@ import { Button } from "@/shared/ui/button";
 import { SectionCard } from "@/shared/ui/section-card";
 import { useUserDetailMutations } from "./use-user-detail-mutations";
 import { UserAccountSection } from "./user-account-section";
+import { UserBillingSection } from "./user-billing-section";
 import { UserContactSection } from "./user-contact-section";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserDetailHeader } from "./user-detail-header";
@@ -107,6 +109,10 @@ export function UserDetailCard({ user }: UserDetailCardProps) {
 
 				<SectionCard icon={IconMail} title="Contact Information">
 					<UserContactSection user={user} />
+				</SectionCard>
+
+				<SectionCard icon={IconReceipt} title="Billing details">
+					<UserBillingSection user={user} />
 				</SectionCard>
 
 				<SectionCard icon={IconUserCircle} title="Account Information">

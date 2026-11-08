@@ -28,7 +28,7 @@ describe("handleVatIdRetry", () => {
 		checkVatId.mockResolvedValue({ status: "UNAVAILABLE" });
 
 		await expect(handleVatIdRetry(jobs, since + 60_000)).rejects.toThrow();
-		expect(checkVatId).toHaveBeenCalledWith("DE136695976", { fromRetry: true });
+		expect(checkVatId).toHaveBeenCalledWith("DE136695976", "retry");
 	});
 
 	it("completes once the registry answers", async () => {

@@ -24,6 +24,7 @@ const baseUser: ExportUser = {
 	billingPostalCode: null,
 	billingCity: null,
 	vatId: null,
+	vatIdCheck: null,
 	country: null,
 	createdAt: new Date("2026-01-02"),
 	lastLoginAt: null,
@@ -48,6 +49,9 @@ describe("buildUserExportRow", () => {
 			"Fee Paid At": "",
 			"Need Invoice": "False",
 			"Billing details (text)": "",
+			"VAT ID status": "",
+			"VAT ID checked at": "",
+			"Registry name": "",
 			"Registration Date": "FORMATTED",
 			"Last Login": "",
 		});
@@ -83,6 +87,24 @@ describe("buildUserExportRow", () => {
 		});
 	});
 
+	it("keeps the fixed billing column order whatever the form", () => {
+		const keys = Object.keys(buildUserExportRow(baseUser, [], fmtDate));
+		const start = keys.indexOf("Need Invoice");
+		expect(keys.slice(start, start + 11)).toEqual([
+			"Need Invoice",
+			"Billing details (text)",
+			"Organization",
+			"Street address",
+			"Postal code",
+			"City",
+			"Country",
+			"VAT ID",
+			"VAT ID status",
+			"VAT ID checked at",
+			"Registry name",
+		]);
+	});
+
 	it("exports the separate billing fields and the country", () => {
 		const row = buildUserExportRow(
 			{
@@ -93,12 +115,20 @@ describe("buildUserExportRow", () => {
 				billingCity: "Krakow",
 				country: "Poland",
 				vatId: "PL6750002236",
+				vatIdCheck: {
+					status: "VERIFIED",
+					checkedAt: new Date("2026-11-08"),
+					registryName: "UNIWERSYTET JAGIELLOŃSKI",
+				},
 			},
 			[],
 			fmtDate,
 		);
 		expect(row).toMatchObject({
 			"VAT ID": "PL6750002236",
+			"VAT ID status": "Verified",
+			"VAT ID checked at": "FORMATTED",
+			"Registry name": "UNIWERSYTET JAGIELLOŃSKI",
 			Organization: "ACME Institute",
 			"Street address": "1 Main St",
 			"Postal code": "30-059",

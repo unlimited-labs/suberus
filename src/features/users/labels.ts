@@ -1,8 +1,9 @@
+import type { InvoiceState } from "@/features/settings/billing-details-rules";
 import type {
 	SubmissionInvolvementRole,
 	SubmissionRoleSummary,
 } from "@/features/users/server/users";
-import type { UserRole } from "@/generated/prisma/enums";
+import type { UserRole, VatIdCheckStatus } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
 
 export { roleLabels } from "@/shared/lib/labels/user-role";
@@ -13,6 +14,32 @@ export const roleFilterOptions = [
 	{ label: "Reviewer", value: "REVIEWER" },
 	{ label: "Author", value: "AUTHOR" },
 	{ label: "Exhibitor", value: "EXHIBITOR" },
+] as const;
+
+export const invoiceStateLabels = {
+	NONE: "—",
+	REQUESTED: "Requested",
+	INCOMPLETE: "Incomplete",
+} satisfies Record<InvoiceState, string>;
+
+export const invoiceFilterOptions = [
+	{ label: "Not needed", value: "NONE" },
+	{ label: "Requested", value: "REQUESTED" },
+	{ label: "Incomplete", value: "INCOMPLETE" },
+] as const;
+
+export const vatIdStatusLabels = {
+	VERIFIED: "Verified",
+	NOT_FOUND: "Not found",
+	UNAVAILABLE: "Registry unavailable",
+	NOT_CHECKABLE: "Not checkable",
+} satisfies Record<VatIdCheckStatus, string>;
+
+export const vatIdStatusFilterOptions = [
+	{ label: "Verified", value: "VERIFIED" },
+	{ label: "Not found", value: "NOT_FOUND" },
+	{ label: "Registry unavailable", value: "UNAVAILABLE" },
+	{ label: "No VAT ID / not checked", value: "NONE" },
 ] as const;
 
 export const feeFilterOptions = [
