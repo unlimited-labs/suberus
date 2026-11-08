@@ -1,7 +1,9 @@
 import { logger } from "@/logger.ts";
 import {
 	mapViesResponse,
+	REGISTRY_TIMEOUT_MS,
 	type RegistryResult,
+	type Transport,
 	UNAVAILABLE_RESULT,
 	viesErrors,
 	viesResponseSchema,
@@ -9,12 +11,6 @@ import {
 
 export const VIES_URL =
 	"https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number";
-const TIMEOUT_MS = 3000;
-
-export type Transport = (
-	url: string,
-	init: RequestInit & { body: string },
-) => Promise<Response>;
 
 async function postVies(
 	vatId: string,
@@ -35,7 +31,7 @@ async function postVies(
 			vatNumber: vatId.slice(2),
 			...requester,
 		}),
-		signal: AbortSignal.timeout(TIMEOUT_MS),
+		signal: AbortSignal.timeout(REGISTRY_TIMEOUT_MS),
 	});
 	const body: unknown = response.ok ? await response.json() : undefined;
 	const parsed = viesResponseSchema.safeParse(body);

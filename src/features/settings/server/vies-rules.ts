@@ -1,6 +1,10 @@
 import { z } from "zod";
 import type { VatIdCheckStatus } from "@/generated/prisma/enums";
 
+export type Transport = (url: string, init: RequestInit) => Promise<Response>;
+
+export const REGISTRY_TIMEOUT_MS = 3000;
+
 export interface RegistryResult {
 	status: VatIdCheckStatus;
 	registryName: string | null;

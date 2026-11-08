@@ -1,10 +1,17 @@
 import { getSetting } from "@/features/settings/server/settings";
 import type { VatIdCheck } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
-import { isViesCheckable, normalizeVatId } from "@/shared/lib/vat-id";
+import { isRegistryCheckable, normalizeVatId } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
+import { getBoss } from "@/shared/server/queue";
+import {
+	queryBrreg,
+	queryMfWhiteList,
+	querySwissUid,
+} from "./national-registries";
 import { queryVies } from "./vies";
 
+export const VAT_ID_RETRY_QUEUE = "vat-id-retry";
 const FRESH_MS = 24 * 60 * 60 * 1000;
 
 function isFresh(check: VatIdCheck, now: number) {
@@ -13,9 +20,47 @@ function isFresh(check: VatIdCheck, now: number) {
 	);
 }
 
+async function lookupRegistry(vatId: string) {
+	const prefix = vatId.slice(0, 2);
+	if (prefix === "CH")
+		return { source: "UID", ...(await querySwissUid(vatId)) };
+	if (prefix === "NO") return { source: "BRREG", ...(await queryBrreg(vatId)) };
+	const { organizerVatId } = await getSetting("BILLING_DETAILS");
+	const vies = await queryVies(vatId, organizerVatId);
+	// A valid Polish NIP is often absent from VIES (no VAT-UE registration) yet active in the MF register.
+	if (prefix === "PL" && vies.status === "NOT_FOUND") {
+		const mf = await queryMfWhiteList(vatId);
+		if (mf.status === "VERIFIED") return { source: "MF", ...mf };
+	}
+	return { source: "VIES", ...vies };
+}
+
+export interface VatIdRetryJobData {
+	vatId: string;
+	since: string;
+}
+
+async function scheduleRetry(vatId: string) {
+	const boss = await getBoss();
+	await boss.send(
+		VAT_ID_RETRY_QUEUE,
+		{ vatId, since: new Date().toISOString() } satisfies VatIdRetryJobData,
+		{
+			singletonKey: vatId,
+			retryLimit: 40,
+			retryDelay: 300,
+			retryBackoff: true,
+			retryDelayMax: 6 * 60 * 60,
+		},
+	);
+}
+
 /** `vatId` must already be normalized; a fresh cached result is returned without a registry call. */
-export async function checkVatId(vatId: string): Promise<VatIdCheck> {
-	if (!isViesCheckable(vatId)) {
+export async function checkVatId(
+	vatId: string,
+	{ fromRetry = false } = {},
+): Promise<VatIdCheck> {
+	if (!isRegistryCheckable(vatId)) {
 		return {
 			vatId,
 			status: "NOT_CHECKABLE",
@@ -27,18 +72,19 @@ export async function checkVatId(vatId: string): Promise<VatIdCheck> {
 		};
 	}
 	const cached = await prisma.vatIdCheck.findUnique({ where: { vatId } });
-	if (cached && isFresh(cached, Date.now())) return cached;
-	const { organizerVatId } = await getSetting("BILLING_DETAILS");
-	const result = {
-		source: "VIES",
-		...(await queryVies(vatId, organizerVatId)),
-		checkedAt: new Date(),
-	};
-	return prisma.vatIdCheck.upsert({
+	if (!fromRetry && cached && isFresh(cached, Date.now())) return cached;
+	const result = { ...(await lookupRegistry(vatId)), checkedAt: new Date() };
+	const row = await prisma.vatIdCheck.upsert({
 		where: { vatId },
 		create: { vatId, ...result },
 		update: result,
 	});
+	if (row.status === "UNAVAILABLE" && !fromRetry) {
+		void scheduleRetry(vatId).catch((error) => {
+			logger.warn("[vat-id] could not schedule a retry:", error);
+		});
+	}
+	return row;
 }
 
 export function checkVatIdInBackground(vatId: string | null | undefined) {
@@ -51,8 +97,17 @@ export function checkVatIdInBackground(vatId: string | null | undefined) {
 export async function checkTypedVatId(raw: string, countryName?: string) {
 	const normalized = normalizeVatId(raw, countryName);
 	if ("error" in normalized || !normalized.value) return null;
-	const { status, registryName, registryAddress } = await checkVatId(
+	const { status, source, registryName, registryAddress } = await checkVatId(
 		normalized.value,
 	);
-	return { status, registryName, registryAddress };
+	return { status, source, registryName, registryAddress };
+}
+
+/** Lookups nobody kept (anonymous blur checks, changed numbers) go after the cache window. */
+export function purgeOrphanVatIdChecks(now = new Date()): Promise<number> {
+	const cutoff = new Date(now.getTime() - FRESH_MS);
+	return prisma.$executeRaw`
+		DELETE FROM "vat_id_checks" c
+		WHERE c."checkedAt" < ${cutoff}
+		AND NOT EXISTS (SELECT 1 FROM "users" u WHERE u."vatId" = c."vatId")`;
 }

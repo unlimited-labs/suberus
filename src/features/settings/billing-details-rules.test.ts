@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
 	applyBillingConfig,
 	buyerLines,
+	registryFill,
 	submittedBillingValues,
 } from "./billing-details-rules";
 import { DEFAULT_BILLING_DETAILS } from "./billing-details-schema";
@@ -184,5 +185,88 @@ describe("VAT ID in both modes", () => {
 		);
 		expect(shown).toEqual({ billingText: "ACME", vatId: "PL6750002236" });
 		expect(buyerLines(shown)).toEqual(["ACME", "VAT ID: PL6750002236"]);
+	});
+});
+
+describe("registryFill", () => {
+	const registry = {
+		status: "VERIFIED" as const,
+		registryName: "AKADEMIA GÓRNICZO-HUTNICZA",
+		registryAddress: "AL. ADAMA MICKIEWICZA 30\n30-059 KRAKÓW",
+	};
+	const structured = {
+		...DEFAULT_BILLING_DETAILS,
+		mode: "STRUCTURED" as const,
+		fields: {
+			...DEFAULT_BILLING_DETAILS.fields,
+			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
+			streetAddress: { state: "OPTIONAL" as const, label: "", help: "" },
+			postalCode: { state: "OPTIONAL" as const, label: "", help: "" },
+			city: { state: "OPTIONAL" as const, label: "", help: "" },
+		},
+	};
+
+	it("fills only the empty fields of the Separate fields form", () => {
+		expect(
+			registryFill(
+				{ billingOrganization: "AGH", billingCity: "" },
+				structured,
+				registry,
+			),
+		).toEqual({
+			billingStreet: "AL. ADAMA MICKIEWICZA 30",
+			billingPostalCode: "30-059",
+			billingCity: "KRAKÓW",
+		});
+	});
+
+	it("puts a one-line address into the street instead of guessing postal code and city", () => {
+		expect(
+			registryFill({ billingOrganization: "X" }, structured, {
+				...registry,
+				registryAddress: "1 RUE X 75001 PARIS",
+			}),
+		).toEqual({ billingStreet: "1 RUE X 75001 PARIS" });
+	});
+
+	it("skips switched-off fields", () => {
+		const noPostal = {
+			...structured,
+			fields: {
+				...structured.fields,
+				postalCode: { state: "OFF" as const, label: "", help: "" },
+			},
+		};
+		expect(registryFill({}, noPostal, registry)).not.toHaveProperty(
+			"billingPostalCode",
+		);
+	});
+
+	it("fills an empty Simple text box with name and address, never a filled one", () => {
+		expect(
+			registryFill({ billingText: "" }, DEFAULT_BILLING_DETAILS, registry),
+		).toEqual({
+			billingText:
+				"AKADEMIA GÓRNICZO-HUTNICZA\nAL. ADAMA MICKIEWICZA 30\n30-059 KRAKÓW",
+		});
+		expect(
+			registryFill({ billingText: "Mine" }, DEFAULT_BILLING_DETAILS, registry),
+		).toEqual({});
+	});
+
+	it("offers nothing without registry details", () => {
+		expect(
+			registryFill({}, structured, {
+				status: "VERIFIED" as const,
+				registryName: null,
+				registryAddress: null,
+			}),
+		).toEqual({});
+		expect(
+			registryFill({}, structured, {
+				...registry,
+				status: "NOT_FOUND" as const,
+			}),
+		).toEqual({});
 	});
 });

@@ -5,7 +5,9 @@ import { vatIdCheckQueryOptions } from "@/features/settings/api/vat-id-check";
 import {
 	billingFieldError,
 	billingTextError,
+	FILLABLE_BILLING_COLUMNS,
 	invoiceNeeded,
+	registryFill,
 } from "@/features/settings/billing-details-rules";
 import {
 	BILLING_TEXT_NAME,
@@ -18,6 +20,7 @@ import {
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
 import { normalizeVatId } from "@/shared/lib/vat-id";
 import { BuyerSummaryCard } from "./buyer-summary-card";
+import { RegistryFillButton } from "./registry-fill-button";
 import { VatIdStatus } from "./vat-id-status";
 
 type BillingFields = {
@@ -149,6 +152,7 @@ export const BillingFieldsGroup = withFieldGroup({
 		const view = billingView(config, admin === true, values.needInvoice);
 		const countryIsRequired = countryRequired === true;
 		const vatRow = catalogueRow(config, VAT_ID_FIELD, view.required);
+		const shownCheck = values.vatId === checkedVatId ? vatCheck : undefined;
 
 		return (
 			<>
@@ -236,9 +240,16 @@ export const BillingFieldsGroup = withFieldGroup({
 						)}
 					</group.AppField>
 				)}
+				{view.showVat && <VatIdStatus check={shownCheck} />}
 				{view.showVat && (
-					<VatIdStatus
-						check={values.vatId === checkedVatId ? vatCheck : undefined}
+					<RegistryFillButton
+						fill={registryFill(values, config, shownCheck)}
+						onApply={(fill) => {
+							for (const column of FILLABLE_BILLING_COLUMNS) {
+								const value = fill[column];
+								if (value) group.setFieldValue(column, value);
+							}
+						}}
 					/>
 				)}
 

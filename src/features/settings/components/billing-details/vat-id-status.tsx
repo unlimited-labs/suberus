@@ -4,7 +4,15 @@ import {
 	IconClock,
 } from "@tabler/icons-react";
 import type { VatIdCheck } from "@/generated/prisma/client";
+import { lookup } from "@/shared/lib/lookup";
 import { cn } from "@/shared/lib/utils";
+
+const REGISTRY_LABELS = {
+	VIES: "VIES",
+	MF: "the Polish VAT register",
+	UID: "the Swiss UID register",
+	BRREG: "the Norwegian VAT register",
+};
 
 const STATUS_VIEW = {
 	VERIFIED: {
@@ -26,14 +34,17 @@ const STATUS_VIEW = {
 export function VatIdStatus({
 	check,
 }: {
-	check: Pick<VatIdCheck, "status" | "registryName"> | null | undefined;
+	check:
+		| Pick<VatIdCheck, "status" | "source" | "registryName">
+		| null
+		| undefined;
 }) {
 	if (!check || check.status === "NOT_CHECKABLE") return null;
 	const view = STATUS_VIEW[check.status];
 	const text =
 		"text" in view
 			? view.text
-			: `Found in VIES${check.registryName ? `: ${check.registryName}` : ""}`;
+			: `Found in ${lookup(REGISTRY_LABELS, check.source ?? "") ?? "the registry"}${check.registryName ? `: ${check.registryName}` : ""}`;
 
 	return (
 		<p

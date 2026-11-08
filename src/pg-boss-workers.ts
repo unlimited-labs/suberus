@@ -4,6 +4,7 @@ import { registerBulkEmailWorker } from "@/features/bulk-email/server/workers/bu
 import { registerDocumentGenerateWorker } from "@/features/documents/server/workers/generate";
 import { registerExtractionWorker } from "@/features/extraction/server/workers/extraction";
 import { registerAutoplanWorker } from "@/features/planner/server/workers/autoplan";
+import { registerVatIdWorkers } from "@/features/settings/server/workers/vat-id";
 import { registerSubmissionDiffWorker } from "@/features/submission-diff/server/workers/normalize";
 
 export async function registerAllWorkers(boss: PgBoss): Promise<void> {
@@ -13,4 +14,5 @@ export async function registerAllWorkers(boss: PgBoss): Promise<void> {
 	await registerAnnouncementPublishWorker(boss);
 	await registerSubmissionDiffWorker(boss);
 	await registerDocumentGenerateWorker(boss);
+	await registerVatIdWorkers(boss);
 }

@@ -52,20 +52,31 @@ labels and card later in **Profile › Contact & Invoice Information**, where th
 ### VAT ID registry check
 
 When a participant leaves the VAT ID field with a number whose check digit is correct,
-Suberus looks it up in the EU's **VIES** register (EU countries and Northern Ireland) and
-shows the result under the field:
+Suberus looks it up in a public register and shows the result under the field:
+
+| Country of the VAT ID | Register |
+|---|---|
+| EU countries, Northern Ireland (`XI`) | **VIES** (the EU register of intra-EU traders) |
+| Poland | VIES, and the Ministry of Finance **VAT payer list** (biała lista) when VIES does not know the number. A NIP counts as found if either confirms it. |
+| Switzerland | Swiss **UID** register |
+| Norway | **Brønnøysund** register (only organizations registered for VAT count as found) |
+| Anywhere else | No check |
 
 | Status | Shown to the participant |
 |---|---|
-| Found | ✓ *Found in VIES: (registered name)* — some countries (for example Germany and Spain) do not publish the name. |
-| Not found | ⚠ *Not found in the registry. Check the number; you can still continue.* Common for organizations not registered for intra-EU trade, such as some Polish universities. |
-| Registry unavailable | ⏳ *Registry unavailable, we'll check later.* Several countries take VIES offline at night or at weekends. |
-| *(nothing)* | The number is from a country VIES does not cover. |
+| Found | ✓ *Found in VIES: (registered name)* (or the name of the other register) — some countries (for example Germany and Spain) and the Polish and Swiss registers do not give the name. |
+| Not found | ⚠ *Not found in the registry. Check the number; you can still continue.* |
+| Registry unavailable | ⏳ *Registry unavailable, we'll check later.* Several countries take VIES offline at night or at weekends. Suberus retries in the background, less and less often, for up to 72 hours. Nobody is emailed about the result. |
+| *(nothing)* | The number is from a country with no register check. |
+
+When the register returns a name or address, a **Use these details** button appears. It fills
+only the participant's **empty** fields (or an empty text box in Simple mode) and never
+overwrites what they typed. Nothing is filled until they click it.
 
 The check is **advisory only**: it never blocks registration or a profile save. A result
-is reused for 24 hours; the number is checked again when it changes, and an "unavailable"
-result is retried at the next check. The AI assistant
-reads the last result of each user's VAT ID.
+is reused for 24 hours; the number is checked again when it changes, also when you or the
+AI assistant change it. There is no periodic re-check. Lookups that no participant kept are
+deleted after a day. The AI assistant reads the last result of each user's VAT ID.
 
 🖼️ [Screenshot placeholder: VAT ID field with the "Found in VIES" status]
 

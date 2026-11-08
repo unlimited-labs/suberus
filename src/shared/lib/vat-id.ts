@@ -126,3 +126,8 @@ const VIES_PREFIXES = new Set([
 export function isViesCheckable(normalizedVatId: string): boolean {
 	return VIES_PREFIXES.has(normalizedVatId.slice(0, 2));
 }
+
+export function isRegistryCheckable(normalizedVatId: string): boolean {
+	const prefix = normalizedVatId.slice(0, 2);
+	return VIES_PREFIXES.has(prefix) || prefix === "CH" || prefix === "NO";
+}

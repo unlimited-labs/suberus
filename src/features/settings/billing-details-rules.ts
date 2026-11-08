@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { VatIdCheck } from "@/generated/prisma/client";
 import {
 	activeBillingFields,
 	type BillingCatalogueColumn,
@@ -96,6 +97,54 @@ export function buyerLines(
 	]
 		.map((line) => line?.trim() ?? "")
 		.filter(Boolean);
+}
+
+type RegistryDetails = Pick<
+	VatIdCheck,
+	"status" | "registryName" | "registryAddress"
+>;
+
+function splitRegistryAddress(address: string | null) {
+	const lines = address?.split("\n").map((line) => line.trim()) ?? [];
+	const postalLine =
+		lines.length > 1 ? /^(\S*\d\S*)\s+(.+)$/.exec(lines.at(-1) ?? "") : null;
+	return {
+		billingStreet: (postalLine ? lines.slice(0, -1) : lines).join(", "),
+		billingPostalCode: postalLine?.[1] ?? "",
+		billingCity: postalLine?.[2] ?? "",
+	};
+}
+
+export const FILLABLE_BILLING_COLUMNS = [
+	"billingText",
+	"billingOrganization",
+	"billingStreet",
+	"billingPostalCode",
+	"billingCity",
+] as const;
+
+export function registryFill(
+	values: BillingColumnValues,
+	config: BillingDetailsSettings,
+	registry: RegistryDetails | null | undefined,
+): BillingColumnValues {
+	if (registry?.status !== "VERIFIED") return {};
+	const text = [registry.registryName, registry.registryAddress]
+		.filter(Boolean)
+		.join("\n");
+	if (!text) return {};
+	if (config.mode === "FREE_TEXT") {
+		return values.billingText?.trim() ? {} : { billingText: text };
+	}
+	const found: BillingColumnValues = {
+		billingOrganization: registry.registryName ?? "",
+		...splitRegistryAddress(registry.registryAddress),
+	};
+	const fill: BillingColumnValues = {};
+	for (const { column } of activeBillingFields(config)) {
+		if (!values[column]?.trim() && found[column]) fill[column] = found[column];
+	}
+	return fill;
 }
 
 export function billingColumnsToForm(values: BillingColumnValues) {
