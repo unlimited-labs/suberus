@@ -124,6 +124,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -142,6 +143,7 @@
 							"rowSpan": 1,
 							"colSpan": 2,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -160,6 +162,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -178,6 +181,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -196,6 +200,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -214,6 +219,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -232,6 +238,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -250,6 +257,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -268,6 +276,7 @@
 							"rowSpan": 2,
 							"colSpan": 1,
 							"accent": "#d9480f",
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -290,6 +299,7 @@
 							"rowSpan": 3,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -312,6 +322,7 @@
 							"rowSpan": 2,
 							"colSpan": 1,
 							"accent": "#1971c2",
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -334,6 +345,7 @@
 							"rowSpan": 1,
 							"colSpan": 3,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -352,6 +364,7 @@
 							"rowSpan": 1,
 							"colSpan": 3,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -394,6 +407,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -412,6 +426,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -430,6 +445,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -448,6 +464,7 @@
 							"rowSpan": 1,
 							"colSpan": 1,
 							"accent": null,
+							"fill": null,
 							"blocks": [
 								{
 									"type": "paragraph",
@@ -487,6 +504,26 @@
 				},
 				{
 					"type": "paragraph",
+					"style": "Legend",
+					"runs": [
+						{
+							"text": "■ ",
+							"color": "#1971c2"
+						},
+						{
+							"text": "Metals"
+						},
+						{
+							"text": "   ■ ",
+							"color": "#d9480f"
+						},
+						{
+							"text": "Polymers"
+						}
+					]
+				},
+				{
+					"type": "paragraph",
 					"style": "DayHeading",
 					"runs": [
 						{
@@ -495,243 +532,469 @@
 					]
 				},
 				{
-					"type": "paragraph",
-					"style": "SessionHeading",
-					"runs": [
+					"type": "table",
+					"columns": [
 						{
-							"text": "1A1 ",
-							"charStyle": "Code"
+							"widthWeight": 60
 						},
 						{
-							"text": "Opening"
+							"widthWeight": 60
+						},
+						{
+							"widthWeight": 60
+						}
+					],
+					"headerRows": 3,
+					"rowCount": 8,
+					"cells": [
+						{
+							"row": 0,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 3,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 15
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "BlockHeading",
+									"runs": [
+										{
+											"text": "09:00–10:30",
+											"charStyle": "Time"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#d9480f",
+								"tint": 20
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridRoom",
+									"runs": [
+										{
+											"text": "Aula"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "GridSession",
+									"runs": [
+										{
+											"text": "1A1 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Opening"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 1,
+							"rowSpan": 4,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridCell",
+									"runs": []
+								}
+							]
+						},
+						{
+							"row": 1,
+							"col": 2,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 6
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridRoom",
+									"runs": [
+										{
+											"text": "Sala 2"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "GridSession",
+									"runs": [
+										{
+											"text": "1B1 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Parallel"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 2,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#d9480f",
+								"tint": 35
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridChairs",
+									"runs": [
+										{
+											"text": "Prowadzący: ",
+											"charStyle": "Label"
+										},
+										{
+											"text": "Adam Lis"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 2,
+							"col": 2,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 11
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridChairs",
+									"runs": []
+								}
+							]
+						},
+						{
+							"row": 3,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "TalkBadge",
+									"runs": [
+										{
+											"text": "Best paper"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkTitle",
+									"runs": [
+										{
+											"text": "09:00–09:20 ",
+											"charStyle": "Time"
+										},
+										{
+											"text": "Chain growth in composites p1"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkPresenter",
+									"runs": [
+										{
+											"text": "Ewa Zając"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 3,
+							"col": 2,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "TalkBadge",
+									"runs": [
+										{
+											"text": "Zaproszony"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkTitle",
+									"runs": [
+										{
+											"text": "09:00–09:20 ",
+											"charStyle": "Time"
+										},
+										{
+											"text": "Chain growth in composites p4"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkPresenter",
+									"runs": [
+										{
+											"text": "Ewa Zając"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 4,
+							"col": 0,
+							"rowSpan": 3,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "TalkTitle",
+									"runs": [
+										{
+											"text": "09:20–09:40 ",
+											"charStyle": "Time"
+										},
+										{
+											"text": "Chain growth in composites p2",
+											"charStyle": "Cancelled"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkPresenter",
+									"runs": [
+										{
+											"text": "Ewa Zając"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 4,
+							"col": 2,
+							"rowSpan": 4,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridCell",
+									"runs": []
+								}
+							]
+						},
+						{
+							"row": 5,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#1971c2",
+								"tint": 20
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridRoom",
+									"runs": [
+										{
+											"text": "Aula"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "GridSession",
+									"runs": [
+										{
+											"text": "1A2 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Overlap"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 6,
+							"col": 1,
+							"rowSpan": 2,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "TalkTitle",
+									"runs": [
+										{
+											"text": "09:30–09:50 ",
+											"charStyle": "Time"
+										},
+										{
+											"text": "Chain growth in composites p3"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkPresenter",
+									"runs": [
+										{
+											"text": "Ewa Zając"
+										}
+									]
+								}
+							]
+						},
+						{
+							"row": 7,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridCell",
+									"runs": []
+								}
+							]
 						}
 					]
 				},
 				{
-					"type": "paragraph",
-					"style": "SessionMeta",
-					"runs": [
+					"type": "table",
+					"columns": [
 						{
-							"text": "09:00–10:00 · Aula · Polymers"
+							"widthWeight": 180
+						}
+					],
+					"headerRows": 0,
+					"rowCount": 1,
+					"cells": [
+						{
+							"row": 0,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 15
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "BlockHeading",
+									"runs": [
+										{
+											"text": "10:30–11:00",
+											"charStyle": "Time"
+										},
+										{
+											"text": "   Coffee · Foyer"
+										}
+									]
+								}
+							]
 						}
 					]
 				},
 				{
-					"type": "paragraph",
-					"style": "ChairLine",
-					"runs": [
+					"type": "table",
+					"columns": [
 						{
-							"text": "Prowadzący: A. Lis"
+							"widthWeight": 180
 						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotTitle",
-					"runs": [
+					],
+					"headerRows": 0,
+					"rowCount": 1,
+					"cells": [
 						{
-							"text": "09:00–09:20 ",
-							"charStyle": "Time"
-						},
-						{
-							"text": "Chain growth in composites p1"
-						},
-						{
-							"text": " Best paper",
-							"charStyle": "Badge"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotAuthors",
-					"runs": [
-						{
-							"text": "E. Zając",
-							"charStyle": "Presenter"
-						},
-						{
-							"text": ", "
-						},
-						{
-							"text": "Ł. Żak"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotTitle",
-					"runs": [
-						{
-							"text": "09:20–09:40 ",
-							"charStyle": "Time"
-						},
-						{
-							"text": "Chain growth in composites p2",
-							"charStyle": "Cancelled"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotAuthors",
-					"runs": [
-						{
-							"text": "E. Zając",
-							"charStyle": "Presenter"
-						},
-						{
-							"text": ", "
-						},
-						{
-							"text": "Ł. Żak"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SessionHeading",
-					"runs": [
-						{
-							"text": "1B1 ",
-							"charStyle": "Code"
-						},
-						{
-							"text": "Parallel"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SessionMeta",
-					"runs": [
-						{
-							"text": "09:00–10:30 · Sala 2"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotTitle",
-					"runs": [
-						{
-							"text": "09:00–09:20 ",
-							"charStyle": "Time"
-						},
-						{
-							"text": "Chain growth in composites p4"
-						},
-						{
-							"text": " Zaproszony",
-							"charStyle": "Invited"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotAuthors",
-					"runs": [
-						{
-							"text": "E. Zając",
-							"charStyle": "Presenter"
-						},
-						{
-							"text": ", "
-						},
-						{
-							"text": "Ł. Żak"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SessionHeading",
-					"runs": [
-						{
-							"text": "1A2 ",
-							"charStyle": "Code"
-						},
-						{
-							"text": "Overlap"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SessionMeta",
-					"runs": [
-						{
-							"text": "09:30–10:30 · Aula · Metals"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotTitle",
-					"runs": [
-						{
-							"text": "09:30–09:50 ",
-							"charStyle": "Time"
-						},
-						{
-							"text": "Chain growth in composites p3"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotAuthors",
-					"runs": [
-						{
-							"text": "E. Zając",
-							"charStyle": "Presenter"
-						},
-						{
-							"text": ", "
-						},
-						{
-							"text": "Ł. Żak"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "BreakLine",
-					"runs": [
-						{
-							"text": "10:30–11:00 ",
-							"charStyle": "Time"
-						},
-						{
-							"text": "Coffee"
-						},
-						{
-							"text": " · Foyer"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "EventTitle",
-					"runs": [
-						{
-							"text": "19:00–22:00 ",
-							"charStyle": "Time"
-						},
-						{
-							"text": "Dinner"
-						},
-						{
-							"text": " · Sala 2"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "EventText",
-					"runs": [
-						{
-							"text": "Old town"
+							"row": 0,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 15
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "BlockHeading",
+									"runs": [
+										{
+											"text": "19:00–22:00",
+											"charStyle": "Time"
+										},
+										{
+											"text": "   Dinner · Sala 2"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "EventText",
+									"runs": [
+										{
+											"text": "Old town"
+										}
+									]
+								}
+							]
 						}
 					]
 				}
@@ -755,82 +1018,160 @@
 					]
 				},
 				{
-					"type": "paragraph",
-					"style": "SessionHeading",
-					"runs": [
+					"type": "table",
+					"columns": [
 						{
-							"text": "2X1 ",
-							"charStyle": "Code"
+							"widthWeight": 10
 						},
 						{
-							"text": "Posters"
+							"widthWeight": 170
 						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SessionMeta",
-					"runs": [
+					],
+					"headerRows": 2,
+					"rowCount": 4,
+					"cells": [
 						{
-							"text": "12:00–14:00"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotTitle",
-					"runs": [
-						{
-							"text": "P1 ",
-							"charStyle": "Time"
+							"row": 0,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 2,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 15
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "BlockHeading",
+									"runs": [
+										{
+											"text": "12:00–14:00",
+											"charStyle": "Time"
+										}
+									]
+								}
+							]
 						},
 						{
-							"text": "Chain growth in composites p5"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotAuthors",
-					"runs": [
-						{
-							"text": "E. Zając",
-							"charStyle": "Presenter"
+							"row": 1,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 2,
+							"accent": null,
+							"fill": {
+								"color": "#000000",
+								"tint": 6
+							},
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridSession",
+									"runs": [
+										{
+											"text": "2X1 ",
+											"charStyle": "Code"
+										},
+										{
+											"text": "Posters"
+										}
+									]
+								}
+							]
 						},
 						{
-							"text": ", "
+							"row": 2,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "P1"
+										}
+									]
+								}
+							]
 						},
 						{
-							"text": "Ł. Żak"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotTitle",
-					"runs": [
-						{
-							"text": "P2 ",
-							"charStyle": "Time"
+							"row": 2,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "TalkTitle",
+									"runs": [
+										{
+											"text": "Chain growth in composites p5"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkPresenter",
+									"runs": [
+										{
+											"text": "Ewa Zając"
+										}
+									]
+								}
+							]
 						},
 						{
-							"text": "Chain growth in composites p6"
-						}
-					]
-				},
-				{
-					"type": "paragraph",
-					"style": "SlotAuthors",
-					"runs": [
-						{
-							"text": "E. Zając",
-							"charStyle": "Presenter"
+							"row": 3,
+							"col": 0,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "GridTime",
+									"runs": [
+										{
+											"text": "P2"
+										}
+									]
+								}
+							]
 						},
 						{
-							"text": ", "
-						},
-						{
-							"text": "Ł. Żak"
+							"row": 3,
+							"col": 1,
+							"rowSpan": 1,
+							"colSpan": 1,
+							"accent": null,
+							"fill": null,
+							"blocks": [
+								{
+									"type": "paragraph",
+									"style": "TalkTitle",
+									"runs": [
+										{
+											"text": "Chain growth in composites p6"
+										}
+									]
+								},
+								{
+									"type": "paragraph",
+									"style": "TalkPresenter",
+									"runs": [
+										{
+											"text": "Ewa Zając"
+										}
+									]
+								}
+							]
 						}
 					]
 				}

@@ -1,14 +1,25 @@
-import {
-	type PrintBlock,
-	type PrintDocument,
-	type PrintParagraph,
-	type PrintRun,
-	type PrintSection,
-	type PrintTable,
+import type {
+	PrintBlock,
+	PrintDocument,
+	PrintParagraph,
+	PrintRun,
+	PrintSection,
+	PrintTable,
 } from "./print-document-schema";
 import type { DayGrid } from "./print-grid-rules";
 import { byAt, groupBy } from "./print-grid-rules";
 import { PRINT_LABELS, PRINT_LOCALE, type PrintLabels } from "./print-labels";
+import {
+	type BookSize,
+	commaRuns,
+	contentSizeMm,
+	type Orientation,
+	para,
+	run,
+	section,
+	table,
+	type TableCellInput,
+} from "./print-layout-rules";
 import type {
 	GlanceLayout,
 	PrintLanguage,
@@ -19,9 +30,7 @@ import type {
 	PrintProgram,
 	PrintSession,
 } from "./print-program-rules";
-
-type BookSize = PrintOptions["bookSize"];
-type Orientation = PrintSection["page"]["orientation"];
+import { dayGridSection } from "./print-talk-table-rules";
 
 const GLANCE_LIMITS = {
 	A4: { landscapeFrom: 5, maxColumns: 8, maxSpread: 14 },
@@ -31,25 +40,6 @@ const GLANCE_LIMITS = {
 	BookSize,
 	{ landscapeFrom: number; maxColumns: number; maxSpread: number }
 >;
-
-export const PAGE_MM = {
-	A4: [210, 297],
-	B5: [176, 250],
-	A5: [148, 210],
-} satisfies Record<BookSize, [number, number]>;
-export const MARGIN_MM = 15;
-export const FOOTER_MM = 10;
-export const PX_PER_MM = 3.7795;
-
-export function contentSizeMm(page: PrintSection["page"]): [number, number] {
-	const [w, h] = pageSizeMm(page);
-	return [w - 2 * MARGIN_MM, h - 2 * MARGIN_MM - FOOTER_MM];
-}
-
-export function pageSizeMm(page: PrintSection["page"]): [number, number] {
-	const [w, h] = PAGE_MM[page.size];
-	return page.orientation === "landscape" ? [h, w] : [w, h];
-}
 
 interface GlanceChoice {
 	layout: GlanceLayout;
@@ -81,105 +71,10 @@ export function chooseGlanceLayout(
 	return { layout, orientation };
 }
 
-interface Span {
-	row: number;
-	col: number;
-	rowSpan: number;
-	colSpan: number;
-}
-
-function coveredCells(cells: readonly Span[]): Set<string> {
-	const covered = new Set<string>();
-	for (const c of cells)
-		for (let r = c.row; r < c.row + c.rowSpan; r++)
-			for (let k = c.col; k < c.col + c.colSpan; k++)
-				if (r !== c.row || k !== c.col) covered.add(`${r}:${k}`);
-	return covered;
-}
-
-export function tableRows<C extends Span>(
-	cells: readonly C[],
-	columns: number,
-	from: number,
-	to: number,
-) {
-	const covered = coveredCells(cells);
-	const anchors = new Map(cells.map((c) => [`${c.row}:${c.col}`, c]));
-	return Array.from({ length: Math.max(0, to - from) }, (_, i) => {
-		const row = from + i;
-		const slots = Array.from({ length: columns }, (_, col) => col).flatMap(
-			(col) =>
-				covered.has(`${row}:${col}`)
-					? []
-					: [{ col, cell: anchors.get(`${row}:${col}`) ?? null }],
-		);
-		return { row, slots };
-	});
-}
-
-export const breakableAfterRow = (cells: readonly Span[], rowCount: number) =>
-	Array.from(
-		{ length: rowCount },
-		(_, r) => !cells.some((c) => c.row <= r && r + 1 < c.row + c.rowSpan),
-	);
-
 export type PrintLogo = Omit<
 	Extract<PrintBlock, { type: "image" }>,
 	"type" | "widthFraction"
 >;
-
-const para = (
-	style: PrintParagraph["style"],
-	...runs: PrintRun[]
-): PrintParagraph => ({
-	type: "paragraph",
-	style,
-	runs,
-});
-const run = (text: string, charStyle?: PrintRun["charStyle"]): PrintRun =>
-	charStyle ? { text, charStyle } : { text };
-
-const commaRuns = <T>(items: readonly T[], toRun: (item: T) => PrintRun) =>
-	items.flatMap((item, i): PrintRun[] => [
-		...(i > 0 ? [run(", ")] : []),
-		toRun(item),
-	]);
-
-export const columnFractions = (table: PrintTable) => {
-	const total = table.columns.reduce((a, c) => a + c.widthWeight, 0);
-	return table.columns.map((c) => c.widthWeight / total);
-};
-
-interface TableCellInput {
-	row: number;
-	col: number;
-	rowSpan?: number;
-	colSpan?: number;
-	accent?: string | null;
-	block: PrintParagraph;
-}
-
-function table(
-	weights: number[],
-	headerRows: number,
-	rowCount: number,
-	cells: TableCellInput[],
-): PrintTable {
-	return {
-		type: "table",
-		columns: weights.map((widthWeight) => ({ widthWeight })),
-		headerRows,
-		rowCount,
-		cells: cells.map((c) => ({
-			row: c.row,
-			col: c.col,
-			rowSpan: c.rowSpan ?? 1,
-			colSpan: c.colSpan ?? 1,
-			accent: c.accent ?? null,
-			blocks: [c.block],
-		})),
-	};
-}
 
 function cellParagraph(
 	cell: DayGrid["cells"][number],
@@ -211,7 +106,7 @@ function columnsTable(
 	const timeMm = timeColumnMm(grid.rows);
 	const roomMm = (widthMm - timeMm) / cols.length;
 	const header: TableCellInput[] = [
-		{ row: 0, col: 0, block: para("GridHeader", run(l.time)) },
+		{ row: 0, col: 0, blocks: [para("GridHeader", run(l.time))] },
 		...cols.flatMap((c, i) =>
 			c.lane === 1 || i === 0
 				? [
@@ -219,7 +114,7 @@ function columnsTable(
 							row: 0,
 							col: i + 1,
 							colSpan: Math.min(c.lanes - c.lane + 1, cols.length - i),
-							block: para("GridHeader", run(c.room)),
+							blocks: [para("GridHeader", run(c.room))],
 						},
 					]
 				: [],
@@ -228,7 +123,7 @@ function columnsTable(
 	const times = grid.rows.map((r, i) => ({
 		row: i + 1,
 		col: 0,
-		block: para("GridTime", run(r)),
+		blocks: [para("GridTime", run(r))],
 	}));
 	const body = grid.cells.flatMap((c): TableCellInput[] => {
 		const start = c.col;
@@ -241,7 +136,7 @@ function columnsTable(
 				rowSpan: c.rowSpan,
 				colSpan: Math.min(end, to) - Math.max(start, from),
 				accent: c.trackColor,
-				block: cellParagraph(c),
+				blocks: [cellParagraph(c)],
 			},
 		];
 	});
@@ -254,20 +149,19 @@ function columnsTable(
 
 function transposedTable(grid: DayGrid, l: PrintLabels): PrintTable {
 	const header: TableCellInput[] = [
-		{ row: 0, col: 0, block: para("GridHeader", run(l.room)) },
+		{ row: 0, col: 0, blocks: [para("GridHeader", run(l.room))] },
 		...grid.rows.map((r, i) => ({
 			row: 0,
 			col: i + 1,
-			block: para("GridTime", run(r)),
+			blocks: [para("GridTime", run(r))],
 		})),
 	];
 	const rooms = grid.columns.map((c, i) => ({
 		row: i + 1,
 		col: 0,
-		block: para(
-			"GridHeader",
-			run(c.lanes > 1 ? `${c.room} (${c.lane})` : c.room),
-		),
+		blocks: [
+			para("GridHeader", run(c.lanes > 1 ? `${c.room} (${c.lane})` : c.room)),
+		],
 	}));
 	const body = grid.cells.map((c) => ({
 		row: c.col + 1,
@@ -275,7 +169,7 @@ function transposedTable(grid: DayGrid, l: PrintLabels): PrintTable {
 		rowSpan: c.colSpan,
 		colSpan: c.rowSpan,
 		accent: c.trackColor,
-		block: cellParagraph(c),
+		blocks: [cellParagraph(c)],
 	}));
 	return table([1.2, ...grid.rows.map(() => 1)], 1, grid.columns.length + 1, [
 		...header,
@@ -323,24 +217,6 @@ function legend(swatches: PrintDocument["swatches"]): PrintParagraph[] {
 			]),
 		),
 	];
-}
-
-function section(
-	options: PrintOptions,
-	blocks: PrintBlock[],
-	extra: Partial<Pick<PrintSection, "columns" | "start">> & {
-		orientation?: Orientation;
-	} = {},
-): PrintSection {
-	return {
-		page: {
-			size: options.bookSize,
-			orientation: extra.orientation ?? "portrait",
-		},
-		columns: extra.columns ?? 1,
-		start: extra.start ?? "nextPage",
-		blocks,
-	};
 }
 
 function glanceSections(
@@ -520,12 +396,16 @@ export function buildPrintDocument(
 		sections.push(...glanceSections(program, options, l, swatches));
 	if (has("detailed"))
 		sections.push(
-			...program.days.map((day, i) =>
-				section(options, [
-					...(i === 0 ? [para("PartHeading", run(l.parts.detailed))] : []),
-					...dayBlocks(day, l),
-				]),
-			),
+			...program.days.map((day, i) => {
+				const lead =
+					i === 0 ? [para("PartHeading", run(l.parts.detailed))] : [];
+				return options.detailedLayout === "grid"
+					? dayGridSection(day, options, l, [
+							...lead,
+							...(i === 0 ? legend(swatches) : []),
+						])
+					: section(options, [...lead, ...dayBlocks(day, l)]);
+			}),
 		);
 	if (has("index"))
 		sections.push(

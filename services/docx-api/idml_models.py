@@ -10,10 +10,13 @@ Hex = Annotated[str, Field(pattern=r"^#[0-9a-fA-F]{6}$")]
 ParagraphStyle = Literal[
     "Title", "Subtitle", "PartHeading", "DayHeading", "SessionHeading", "SessionMeta",
     "ChairLine", "SlotTitle", "SlotAuthors", "BreakLine", "EventTitle", "EventText",
-    "GridHeader", "GridTime", "GridCell", "GridBand", "Legend", "IndexLetter", "IndexEntry",
-    "TocEntry1", "TocEntry2",
+    "GridHeader", "GridTime", "GridCell", "GridBand", "BlockHeading", "GridRoom", "GridSession",
+    "GridChairs", "TalkTime", "TalkBadge", "TalkTitle", "TalkPresenter", "TalkAffiliation",
+    "Legend", "IndexLetter", "IndexEntry", "TocEntry1", "TocEntry2",
 ]
-CharacterStyle = Literal["Code", "Time", "Presenter", "Presenting", "Cancelled", "Badge", "Invited"]
+CharacterStyle = Literal[
+    "Code", "Time", "Presenter", "Presenting", "Cancelled", "Badge", "Invited", "Label",
+]
 
 
 class Model(BaseModel):
@@ -36,12 +39,18 @@ class TableColumn(Model):
     widthWeight: float = Field(gt=0)
 
 
+class Fill(Model):
+    color: Hex
+    tint: int = Field(ge=1, le=100)
+
+
 class TableCell(Model):
     row: int = Field(ge=0)
     col: int = Field(ge=0)
     rowSpan: int = Field(ge=1)
     colSpan: int = Field(ge=1)
     accent: Hex | None
+    fill: Fill | None
     blocks: list[Paragraph]
 
 

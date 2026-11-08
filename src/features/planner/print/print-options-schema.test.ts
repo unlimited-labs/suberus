@@ -7,6 +7,7 @@ describe("printOptionsSchema", () => {
 			bookSize: "A4",
 			trackColor: true,
 			layoutOverride: "auto",
+			detailedLayout: "grid",
 			includeCancelled: false,
 			language: "en",
 			parts: ["title", "glance", "detailed", "index"],

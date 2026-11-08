@@ -48,11 +48,12 @@ def test_every_reference_resolves(package):
         r'(?:ParentStory|NextTextFrame|PreviousTextFrame|AppliedMaster|PageStart|ItemLayer)="([^"]+)"',
         xml)) - {"n"}
     styles = set(re.findall(r'Applied(?:Paragraph|Character|Cell|Table|Object)Style="([^"]+)"', xml))
-    colors = set(re.findall(r'(?:FillColor|LeftEdgeStrokeColor)="([^"]+)"', xml)) - {"Color/Black"}
+    colors = set(re.findall(r'(?:FillColor|LeftEdgeStrokeColor)="([^"]+)"', xml))
     srcs = set(re.findall(r'src="([^"]+)"', xml))
     assert refs - selfs == set()
     assert styles - selfs == set()
     assert colors - selfs == set()
+    assert not any(" " in ref for ref in refs | colors)
     assert srcs - set(package.namelist()) == set()
 
 
@@ -136,3 +137,12 @@ def test_parts_validate_against_the_indesign_schema(package, tmp_path):
         result = subprocess.run(["java", "-jar", jing, "-c", str(schema / rnc), str(tmp_path / part)],
                                 capture_output=True, text=True)
         assert result.returncode == 0, result.stdout
+
+
+def test_tints_session_heads_with_the_track_swatch_and_turns_talk_times(package):
+    stories = "".join(text(package, n) for n in package.namelist() if n.startswith("Stories/"))
+    polymers = re.search(r'Self="([^"]+)"[^>]*Name="Track: Polymers"',
+                         text(package, "Resources/Graphic.xml")).group(1)
+    assert re.search(rf'<Cell [^>]*FillColor="{polymers}" FillTint="20"', stories)
+    styles = text(package, "Resources/Styles.xml")
+    assert re.search(r'<CellStyle [^>]*Name="TalkTime"[^>]*RotationAngle="270"', styles)

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { buildPrintDocument, chooseGlanceLayout } from "./print-document-rules";
+import type { PrintBlock, PrintTable } from "./print-document-schema";
 import {
-	buildPrintDocument,
-	chooseGlanceLayout,
 	breakableAfterRow,
 	columnFractions,
 	tableRows,
-} from "./print-document-rules";
+} from "./print-layout-rules";
 import { printOptionsSchema } from "./print-options-schema";
 import { buildPrintProgram, type PrintSource } from "./print-program-rules";
 
@@ -60,7 +60,13 @@ const src: PrintSource = {
 			roomId: "a",
 			track: { name: "Polymers", color: "#ff0000" },
 			chairs: [
-				{ userId: "u9", email: "c@x.org", firstName: "Adam", lastName: "Lis" },
+				{
+					userId: "u9",
+					email: "c@x.org",
+					firstName: "Adam",
+					lastName: "Lis",
+					title: null,
+				},
 			],
 			slots: [
 				{
@@ -84,6 +90,8 @@ const src: PrintSource = {
 								lastName: "Zając",
 								orderIndex: 0,
 								isPresenter: true,
+								title: null,
+								affiliation: null,
 							},
 						],
 					},
@@ -117,6 +125,7 @@ const src: PrintSource = {
 };
 
 const options = printOptionsSchema.parse({});
+const list = printOptionsSchema.parse({ detailedLayout: "list" });
 const docFor = (o = options) =>
 	buildPrintDocument(buildPrintProgram(src, o), o, null);
 const text = (p: { runs: { text: string }[] }) =>
@@ -145,7 +154,7 @@ describe("buildPrintDocument", () => {
 	});
 
 	it("keeps the first day under its Part heading instead of breaking the page twice", () => {
-		const detailed = docFor().sections[2];
+		const detailed = docFor(list).sections[2];
 		const styles = detailed?.blocks
 			.flatMap((b) => (b.type === "paragraph" ? [b.style] : []))
 			.slice(0, 2);
@@ -153,7 +162,7 @@ describe("buildPrintDocument", () => {
 	});
 
 	it("prints the session code and presenter with their character styles", () => {
-		const detailed = docFor().sections[2];
+		const detailed = docFor(list).sections[2];
 		const paras =
 			detailed?.blocks.flatMap((b) => (b.type === "paragraph" ? [b] : [])) ??
 			[];
@@ -207,7 +216,7 @@ describe("buildPrintDocument", () => {
 	});
 
 	it("falls back to a single grid when a forced spread has no room boundary to split at", () => {
-		const doc = docFor({ ...options, layoutOverride: "spread" });
+		const doc = docFor({ ...list, layoutOverride: "spread" });
 		const tables = doc.sections.flatMap((s) =>
 			s.blocks.flatMap((b) => (b.type === "table" ? [b] : [])),
 		);
@@ -238,6 +247,8 @@ describe("buildPrintDocument", () => {
 									lastName,
 									orderIndex: i,
 									isPresenter: i === 0,
+									title: null,
+									affiliation: null,
 								})),
 							},
 						},
@@ -292,5 +303,129 @@ describe("table layout helpers", () => {
 
 	it("never breaks a page inside a row span", () => {
 		expect(breakableAfterRow(cells, 3)).toEqual([false, true, true]);
+	});
+});
+
+describe("buildPrintDocument: detailed program as a talk grid", () => {
+	const detailedOnly = { ...options, parts: ["detailed" as const] };
+	const detailed = (source: PrintSource) =>
+		buildPrintDocument(
+			buildPrintProgram(source, detailedOnly),
+			detailedOnly,
+			null,
+		).sections;
+	const tablesOf = (s: { blocks: PrintBlock[] } | undefined) =>
+		s?.blocks.flatMap((b) => (b.type === "table" ? [b] : [])) ?? [];
+	const at = (t: PrintTable | undefined, row: number, col: number) => {
+		const cell = t?.cells.find((c) => c.row === row && c.col === col);
+		return cell?.blocks.map(text).join(" / ");
+	};
+	const [first] = src.sessions;
+	if (!first) throw new Error("fixture has a first session");
+
+	it("heads each block with its time range, then rooms tinted by track, chairs and one row per talk", () => {
+		const [day1] = detailed(src);
+		const [t] = tablesOf(day1);
+		expect(t?.columns.length).toBe(3);
+		expect(t?.headerRows).toBe(3);
+		expect([0, 1, 2, 3].map((r) => [0, 1, 2].map((c) => at(t, r, c)))).toEqual([
+			["10:00–11:00", undefined, undefined],
+			["", "Aula / 1A1 Opening", "Sala 2 / 1B1 Parallel"],
+			["", "Chair: Adam Lis", ""],
+			["10:00–10:20", "Chain growth / Ewa Zając", ""],
+		]);
+		const cell = (row: number, col: number) =>
+			t?.cells.find((c) => c.row === row && c.col === col);
+		expect(cell(1, 1)?.fill).toEqual({ color: "#ff0000", tint: 20 });
+		expect(cell(1, 2)?.fill).toEqual({ color: "#000000", tint: 6 });
+		expect(cell(3, 0)?.blocks[0]?.style).toBe("TalkTime");
+	});
+
+	it("drops the time column when rooms keep different talk lengths and prints each talk's time by its title", () => {
+		const [opening, parallel] = src.sessions;
+		const [talk] = opening?.slots ?? [];
+		if (!opening || !parallel || !talk)
+			throw new Error("fixture has two sessions");
+		const [day1] = detailed({
+			...src,
+			sessions: [
+				opening,
+				{ ...parallel, slots: [{ ...talk, id: "p9", durationMin: 30 }] },
+			],
+		});
+		const [t] = tablesOf(day1);
+		expect(t?.columns.length).toBe(2);
+		expect(at(t, 3, 0)).toBe("10:00–10:20 Chain growth / Ewa Zając");
+		expect(at(t, 3, 1)).toBe("10:00–10:30 Chain growth / Ewa Zając");
+	});
+
+	it("puts a lone session's title in its time band", () => {
+		const [, day2] = detailed(src);
+		const [t] = tablesOf(day2);
+		expect(at(t, 0, 0)).toBe("10:00–11:00   Day two");
+		expect(at(t, 1, 1)).toBe("Aula / 2A1");
+		expect(day2?.page.orientation).toBe("portrait");
+	});
+
+	it("turns the day landscape for many parallel rooms and splits a block into tables of at most five", () => {
+		const rooms = Array.from({ length: 7 }, (_, i) => ({
+			id: `r${i}`,
+			name: `Room ${i}`,
+			order: i,
+		}));
+		const [day] = detailed({
+			...src,
+			rooms,
+			sessions: rooms.map((r) => ({
+				...first,
+				id: r.id,
+				roomId: r.id,
+				chairs: [],
+				slots: [],
+			})),
+		});
+		expect(day?.page.orientation).toBe("landscape");
+		expect(tablesOf(day).map((t) => t.columns.length)).toEqual([5, 4]);
+	});
+
+	it("prints breaks as full-width bands and poster boards in place of a time column", () => {
+		const [day1] = detailed({
+			...src,
+			sessions: [
+				first,
+				{
+					...first,
+					id: "posters",
+					title: "Posters",
+					roomId: null,
+					track: null,
+					chairs: [],
+					untimedSlots: true,
+					startAt: new Date("2026-09-14T10:00:00Z"),
+					endAt: new Date("2026-09-14T11:00:00Z"),
+				},
+			],
+			items: [
+				{
+					id: "k",
+					kind: "BREAK",
+					title: "Coffee",
+					description: null,
+					location: "Foyer",
+					roomId: null,
+					startAt: new Date("2026-09-14T09:00:00Z"),
+					endAt: new Date("2026-09-14T09:30:00Z"),
+				},
+			],
+		});
+		const [, coffee, posters] = tablesOf(day1);
+		expect(coffee?.columns.length).toBe(1);
+		expect(at(coffee, 0, 0)).toBe("11:00–11:30   Coffee · Foyer");
+		expect(posters?.columns.length).toBe(2);
+		expect([at(posters, 1, 0), at(posters, 2, 0), at(posters, 2, 1)]).toEqual([
+			"1X1 Posters",
+			"P1",
+			"Chain growth / Ewa Zając",
+		]);
 	});
 });

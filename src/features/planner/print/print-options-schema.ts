@@ -5,6 +5,7 @@ export const PRINT_FORMATS = ["docx", "idml", "xlsx"] as const;
 export const PRINT_PARTS = ["title", "glance", "detailed", "index"] as const;
 export const BOOK_SIZES = ["A4", "B5", "A5"] as const;
 const GLANCE_LAYOUTS = ["columns", "spread", "transposed", "list"] as const;
+export const DETAILED_LAYOUTS = ["grid", "list"] as const;
 export const PRINT_LANGUAGES = ["en", "pl"] as const;
 
 export type PrintFormat = (typeof PRINT_FORMATS)[number];
@@ -44,6 +45,7 @@ export const printOptionsSchema = z
 		bookSize: z.enum(BOOK_SIZES).default("A4"),
 		trackColor: z.boolean().default(true),
 		layoutOverride: z.enum(["auto", ...GLANCE_LAYOUTS]).default("auto"),
+		detailedLayout: z.enum(DETAILED_LAYOUTS).default("grid"),
 		includeCancelled: z.boolean().default(false),
 		language: z.enum(PRINT_LANGUAGES).default("en"),
 		parts: z.array(z.enum(PRINT_PARTS)).default([...PRINT_PARTS]),
