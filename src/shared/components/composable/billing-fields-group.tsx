@@ -3,14 +3,14 @@ import { withFieldGroup } from "@/shared/hooks/use-app-form";
 
 type BillingFields = {
 	needInvoice: boolean;
-	address: string;
+	billingText: string;
 	country: string;
 };
 
 // Keys are used for field mapping; values are not used at runtime.
 const defaultValues: BillingFields = {
 	needInvoice: false,
-	address: "",
+	billingText: "",
 	country: "",
 };
 
@@ -18,8 +18,8 @@ const defaultValues: BillingFields = {
 // apply the `props` defaults at runtime.
 interface BillingFieldsGroupProps {
 	needInvoiceLabel?: string;
-	addressLabel?: string;
-	addressPlaceholder?: string;
+	billingTextLabel?: string;
+	billingTextPlaceholder?: string;
 	countryLabel?: string;
 	disabled?: boolean;
 }
@@ -32,8 +32,8 @@ export const BillingFieldsGroup = withFieldGroup({
 	render: function Render({
 		group,
 		needInvoiceLabel = "I need an invoice for my organization",
-		addressLabel = "Billing details (organization)",
-		addressPlaceholder = "Company/organization name, billing address, VAT/Tax ID (if applicable)",
+		billingTextLabel = "Billing details (organization)",
+		billingTextPlaceholder = "Company/organization name, billing address, VAT/Tax ID (if applicable)",
 		countryLabel = "Country",
 		disabled = false,
 	}) {
@@ -46,12 +46,12 @@ export const BillingFieldsGroup = withFieldGroup({
 				</group.AppField>
 
 				{needInvoice && (
-					<group.AppField name="address">
+					<group.AppField name="billingText">
 						{(field) => (
 							<field.TextareaField
 								disabled={disabled}
-								label={addressLabel}
-								placeholder={addressPlaceholder}
+								label={billingTextLabel}
+								placeholder={billingTextPlaceholder}
 								rows={3}
 							/>
 						)}

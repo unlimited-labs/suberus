@@ -28,12 +28,12 @@ export const personalInfoSchema = z.object({
 	linkedin: z.httpUrl("Invalid URL").optional().or(z.literal("")),
 });
 
-// needInvoice/address/country are always present in the form (defaulted), so
+// needInvoice/billingText/country are always present in the form (defaulted), so
 // they are required here — this lets BillingFieldsGroup map onto them.
 export const contactInfoSchema = z.object({
 	email: z.email("Invalid email address"),
 	needInvoice: z.boolean(),
-	address: z
+	billingText: z
 		.string()
 		.max(500, "Billing details must be at most 500 characters"),
 	country: z.string(),

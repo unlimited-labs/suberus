@@ -9,7 +9,7 @@ import { getSetting } from "@/features/settings/server/settings";
 import type {
 	feeMarkPaidInput,
 	userBulkActionInput,
-	userProfileUpdateInput,
+	userProfilePatchInput,
 	usersListInput,
 } from "@/features/users/validations";
 import type { Prisma } from "@/generated/prisma/client";
@@ -62,7 +62,7 @@ export interface AdminUser {
 	affiliation: string | null;
 	affiliationId: string | null;
 	orcid: string | null;
-	address: string | null;
+	billingText: string | null;
 	country: string | null;
 	needInvoice: boolean;
 	role: UserRole;
@@ -278,7 +278,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		affiliation: u.affiliation?.name ?? null,
 		affiliationId: u.affiliationId,
 		orcid: u.orcid,
-		address: u.address,
+		billingText: u.billingText,
 		country: u.country,
 		needInvoice: u.needInvoice,
 		role: u.role,
@@ -322,7 +322,7 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 		affiliation: user.affiliation?.name ?? null,
 		affiliationId: user.affiliationId,
 		orcid: user.orcid,
-		address: user.address,
+		billingText: user.billingText,
 		country: user.country,
 		needInvoice: user.needInvoice,
 		role: user.role,
@@ -691,9 +691,12 @@ export async function unmarkFeePaid(
 }
 
 export type UpdateUserProfileInput = Omit<
-	z.infer<typeof userProfileUpdateInput>,
+	z.infer<typeof userProfilePatchInput>,
 	"id"
 >;
+
+const emptyToNull = (value: string | undefined) =>
+	value === undefined ? undefined : value || null;
 
 export async function updateUserProfile(
 	userId: string,
@@ -708,21 +711,19 @@ export async function updateUserProfile(
 		throw new Response("User not found", { status: 404 });
 	}
 
-	// website/linkedin are absent from the admin form; undefined leaves the
-	// user's own value alone instead of wiping it.
 	const updateData: Prisma.UserUpdateInput = {
 		firstName: data.firstName,
 		lastName: data.lastName,
-		title: data.title || null,
-		orcid: data.orcid || null,
-		website: data.website === undefined ? undefined : data.website || null,
-		linkedin: data.linkedin === undefined ? undefined : data.linkedin || null,
+		title: emptyToNull(data.title),
+		orcid: emptyToNull(data.orcid),
+		website: emptyToNull(data.website),
+		linkedin: emptyToNull(data.linkedin),
 		needInvoice: data.needInvoice,
-		address: data.address || null,
-		country: data.country || null,
+		billingText: emptyToNull(data.billingText),
+		country: emptyToNull(data.country),
 	};
 
-	if (data.email !== currentUser.email) {
+	if (data.email !== undefined && data.email !== currentUser.email) {
 		const existing = await prisma.user.findUnique({
 			where: { email: data.email },
 		});
@@ -736,7 +737,7 @@ export async function updateUserProfile(
 	if (data.affiliation) {
 		const affiliation = await upsertAffiliation(data.affiliation);
 		updateData.affiliation = { connect: { id: affiliation.id } };
-	} else {
+	} else if (data.affiliation !== undefined) {
 		updateData.affiliation = { disconnect: true };
 	}
 

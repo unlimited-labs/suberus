@@ -56,7 +56,7 @@ export function UserCreateDialog({
 		affiliation: "",
 		email: "",
 		needInvoice: false,
-		address: "",
+		billingText: "",
 		country: "",
 		surveyAnswers: Object.fromEntries(
 			questions.map((q) => [q.id, q.type === "CHECKBOX" ? "false" : ""]),
@@ -73,7 +73,7 @@ export function UserCreateDialog({
 					title: value.title || undefined,
 					affiliation: value.affiliation || undefined,
 					needInvoice: value.needInvoice,
-					address: value.address,
+					billingText: value.billingText,
 					country: value.country,
 					answers: Object.entries(value.surveyAnswers).map(
 						([questionId, answer]) => ({ questionId, value: answer }),
@@ -157,7 +157,7 @@ export function UserCreateDialog({
 					<BillingFieldsGroup
 						fields={{
 							needInvoice: "needInvoice",
-							address: "address",
+							billingText: "billingText",
 							country: "country",
 						}}
 						form={form}

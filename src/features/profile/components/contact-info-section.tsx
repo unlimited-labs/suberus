@@ -153,7 +153,7 @@ export function ContactInfoSection({
 				disabled={isLoading}
 				fields={{
 					needInvoice: "needInvoice",
-					address: "address",
+					billingText: "billingText",
 					country: "country",
 				}}
 				form={form}

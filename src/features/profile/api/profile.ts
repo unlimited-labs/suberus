@@ -65,7 +65,7 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 	.validator(
 		z.object({
 			needInvoice: z.boolean().optional(),
-			address: z.string().max(500).optional(),
+			billingText: z.string().max(500).optional(),
 			country: z.string().optional(),
 			contactConsent: z.boolean().optional(),
 		}),

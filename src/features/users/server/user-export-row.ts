@@ -15,7 +15,7 @@ export type ExportUser = Pick<
 	| "isActive"
 	| "fee"
 	| "needInvoice"
-	| "address"
+	| "billingText"
 	| "createdAt"
 	| "lastLoginAt"
 	| "surveyAnswers"
@@ -66,7 +66,7 @@ export function buildUserExportRow(
 		"Fee Type": user.fee?.type ?? "",
 		"Fee Paid At": fmtDate(user.fee?.paidAt),
 		"Need Invoice": user.needInvoice ? "True" : "False",
-		"Invoice details": user.address ?? "",
+		"Billing details (text)": user.billingText ?? "",
 		"Registration Date": fmtDate(user.createdAt),
 		"Last Login": fmtDate(user.lastLoginAt),
 		...buildSurveyColumns(user.surveyAnswers, questions),

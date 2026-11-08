@@ -68,14 +68,14 @@ export async function getContactInfo(userId: string) {
 		where: { id: userId },
 		select: {
 			needInvoice: true,
-			address: true,
+			billingText: true,
 			country: true,
 			contactConsent: true,
 		},
 	});
 	return {
 		needInvoice: user.needInvoice,
-		address: user.address ?? "",
+		billingText: user.billingText ?? "",
 		country: user.country ?? "",
 		contactConsent: user.contactConsent,
 	};
@@ -85,7 +85,7 @@ export async function updateContactInfo(
 	userId: string,
 	data: {
 		needInvoice?: boolean;
-		address?: string;
+		billingText?: string;
 		country?: string;
 		contactConsent?: boolean;
 	},
@@ -94,7 +94,7 @@ export async function updateContactInfo(
 		where: { id: userId },
 		data: {
 			needInvoice: data.needInvoice,
-			address: data.address || null,
+			billingText: data.billingText || null,
 			country: data.country || null,
 			contactConsent: data.contactConsent,
 		},

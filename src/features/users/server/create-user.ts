@@ -56,7 +56,7 @@ export async function createUserByAdmin(
 				title: input.title || null,
 				affiliationId: affiliation?.id ?? null,
 				needInvoice: input.needInvoice,
-				address: input.address || null,
+				billingText: input.billingText || null,
 				country: input.country || null,
 				role: "AUTHOR",
 				isActive: true,

@@ -222,7 +222,7 @@ export const auth = betterAuth({
 				required: false,
 				input: true,
 			},
-			address: {
+			billingText: {
 				type: "string",
 				required: false,
 				input: true,

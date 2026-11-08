@@ -42,7 +42,7 @@ type RegisterField =
 	| "firstName"
 	| "lastName"
 	| "affiliationId"
-	| "address"
+	| "billingText"
 	| "country"
 	| "acceptTerms";
 
@@ -55,7 +55,7 @@ const STEP_FIELDS = {
 		"lastName",
 		"affiliationId",
 	],
-	2: ["address", "country"],
+	2: ["billingText", "country"],
 	3: ["acceptTerms"],
 } satisfies Record<number, RegisterField[]>;
 
@@ -183,7 +183,7 @@ export function useRegisterForm({
 			affiliationId: "",
 			affiliationName: "",
 			needInvoice: true,
-			address: "",
+			billingText: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
 			contactConsent: false,
@@ -205,7 +205,7 @@ export function useRegisterForm({
 				affiliationId: value.affiliationId || undefined,
 				needInvoice: value.needInvoice,
 				contactConsent: value.contactConsent,
-				address: value.address || undefined,
+				billingText: value.billingText || undefined,
 				country: value.country || undefined,
 			} as Parameters<typeof signUp.email>[0]);
 

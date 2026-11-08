@@ -15,7 +15,7 @@ import {
 	userCreateInput,
 	userIdInput,
 	userPatchInput,
-	userProfileUpdateInput,
+	userProfilePatchInput,
 	usersListInput,
 } from "@/features/users/validations";
 import {
@@ -101,8 +101,8 @@ const updateUserProfile = defineTool({
 	name: "users_update_profile",
 	title: "Update user profile",
 	description:
-		"Replace a user's personal and billing details. Every field is overwritten, so send the full record.",
-	input: userProfileUpdateInput,
+		"Update a user's personal and billing details. Only the fields you send change; an omitted field keeps its value and an empty string clears it. The free-text billing details field is billingText.",
+	input: userProfilePatchInput,
 	roles: ["ADMIN"],
 	scope: MCP_SCOPE_USERS_WRITE,
 	destructive: true,

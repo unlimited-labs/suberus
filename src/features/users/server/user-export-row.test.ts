@@ -18,7 +18,7 @@ const baseUser: ExportUser = {
 	submissionRoles: [],
 	isActive: true,
 	needInvoice: false,
-	address: null,
+	billingText: null,
 	createdAt: new Date("2026-01-02"),
 	lastLoginAt: null,
 	fee: null,
@@ -41,7 +41,7 @@ describe("buildUserExportRow", () => {
 			"Fee Type": "",
 			"Fee Paid At": "",
 			"Need Invoice": "False",
-			"Invoice details": "",
+			"Billing details (text)": "",
 			"Registration Date": "FORMATTED",
 			"Last Login": "",
 		});
@@ -53,7 +53,7 @@ describe("buildUserExportRow", () => {
 				...baseUser,
 				isActive: false,
 				needInvoice: true,
-				address: "1 Engine St",
+				billingText: "1 Engine St",
 				fee: {
 					id: "fee1",
 					userId: "u1",
@@ -73,7 +73,7 @@ describe("buildUserExportRow", () => {
 			"Fee Type": "regular",
 			"Fee Paid At": "FORMATTED",
 			"Need Invoice": "True",
-			"Invoice details": "1 Engine St",
+			"Billing details (text)": "1 Engine St",
 		});
 	});
 

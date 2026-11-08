@@ -41,10 +41,10 @@ export function UserContactSection({ user }: UserContactSectionProps) {
 					<span>{user.country}</span>
 				</div>
 			)}
-			{user.address && (
+			{user.billingText && (
 				<div className="flex items-start gap-2 sm:col-span-2">
 					<IconMapPin className="text-muted-foreground mt-0.5 size-4" />
-					<span className="whitespace-pre-line">{user.address}</span>
+					<span className="whitespace-pre-line">{user.billingText}</span>
 				</div>
 			)}
 		</div>

@@ -30,7 +30,7 @@ model User {
   orcid                 String?
   website               String?
   linkedin              String?
-  address               String?
+  billingText           String?                @map("address")
   country               String?
   needInvoice           Boolean                @default(false)
   role                  UserRole               @default(AUTHOR)

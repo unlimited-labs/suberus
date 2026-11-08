@@ -35,6 +35,10 @@ export const userProfileUpdateInput = personalInfoSchema
 	.extend(contactInfoSchema.shape)
 	.extend(userIdInput.shape);
 
+export const userProfilePatchInput = userProfileUpdateInput
+	.partial()
+	.extend(userIdInput.shape);
+
 export const userPatchInput = userIdInput.extend({
 	role: userRoleSchema.optional(),
 	isActive: z.boolean().optional(),

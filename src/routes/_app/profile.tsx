@@ -150,7 +150,7 @@ function SettingsPage() {
 			await updateContactInfoFn({
 				data: {
 					needInvoice: data.needInvoice,
-					address: data.address,
+					billingText: data.billingText,
 					country: data.country,
 					contactConsent: data.contactConsent,
 				},
@@ -202,7 +202,7 @@ function SettingsPage() {
 							initialData={{
 								email: user.email,
 								needInvoice: contactInfo.needInvoice,
-								address: contactInfo.address,
+								billingText: contactInfo.billingText,
 								country: contactInfo.country,
 								contactConsent: contactInfo.contactConsent,
 							}}

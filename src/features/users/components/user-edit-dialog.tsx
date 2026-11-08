@@ -62,7 +62,7 @@ export function UserEditDialog({
 		orcid: user.orcid ?? "",
 		email: user.email,
 		needInvoice: user.needInvoice,
-		address: user.address ?? "",
+		billingText: user.billingText ?? "",
 		country: user.country ?? "",
 	};
 
@@ -129,7 +129,7 @@ export function UserEditDialog({
 					<BillingFieldsGroup
 						fields={{
 							needInvoice: "needInvoice",
-							address: "address",
+							billingText: "billingText",
 							country: "country",
 						}}
 						form={form}

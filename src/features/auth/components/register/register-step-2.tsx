@@ -17,7 +17,7 @@ export function RegisterStep2({ form, needInvoice }: RegisterStep2Props) {
 
 			{needInvoice && (
 				<form.AppField
-					name="address"
+					name="billingText"
 					validators={{
 						onChangeListenTo: ["needInvoice"],
 						onChange: ({ value, fieldApi }) =>

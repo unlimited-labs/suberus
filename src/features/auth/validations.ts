@@ -19,7 +19,7 @@ export const registerBase = z.object({
 	affiliationId: z.string().min(1, "Affiliation is required"),
 	affiliationName: z.string(),
 	needInvoice: z.boolean(),
-	address: z.string(),
+	billingText: z.string(),
 	country: z.string().min(1, "Country is required"),
 	surveyAnswers: z.record(z.string(), z.string()),
 	contactConsent: z.boolean(),
