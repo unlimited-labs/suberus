@@ -17,6 +17,9 @@ vi.mock("@/shared/server/link-coauthors", () => ({
 vi.mock("@/shared/server/affiliations", () => ({
 	upsertAffiliation: vi.fn().mockResolvedValue({ id: "aff-1" }),
 }));
+vi.mock("@/features/settings/server/vat-id-check", () => ({
+	checkVatIdInBackground: vi.fn(),
+}));
 vi.mock("@/logger.ts", () => ({
 	logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
@@ -30,6 +33,7 @@ function savedData() {
 beforeEach(() => {
 	vi.clearAllMocks();
 	prismaMock.user.findUnique.mockResolvedValue({ email: "old@x.com" });
+	prismaMock.user.update.mockResolvedValue({ vatId: null });
 });
 
 describe("updateUserProfile (PATCH)", () => {

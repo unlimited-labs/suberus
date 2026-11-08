@@ -91,3 +91,38 @@ export function normalizeVatIdOrThrow(
 	if ("error" in result) throw new Response(result.error, { status: 400 });
 	return result.value;
 }
+
+const VIES_PREFIXES = new Set([
+	"AT",
+	"BE",
+	"BG",
+	"CY",
+	"CZ",
+	"DE",
+	"DK",
+	"EE",
+	"EL",
+	"ES",
+	"FI",
+	"FR",
+	"HR",
+	"HU",
+	"IE",
+	"IT",
+	"LT",
+	"LU",
+	"LV",
+	"MT",
+	"NL",
+	"PL",
+	"PT",
+	"RO",
+	"SE",
+	"SI",
+	"SK",
+	"XI",
+]);
+
+export function isViesCheckable(normalizedVatId: string): boolean {
+	return VIES_PREFIXES.has(normalizedVatId.slice(0, 2));
+}

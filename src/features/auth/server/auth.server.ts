@@ -23,6 +23,7 @@ import {
 	invoiceNeeded,
 } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
+import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
 import { contactInfoSchema } from "@/shared/lib/validations/user";
@@ -382,6 +383,7 @@ export const auth = betterAuth({
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
 					});
 					const extUser = authUserExtras(user);
+					checkVatIdInBackground(extUser.vatId);
 					void sendEmail("ACCOUNT_CREATED", user.email, {
 						firstName: extUser.firstName ?? user.email,
 						conferenceName: await getSetting("CONFERENCE_NAME"),

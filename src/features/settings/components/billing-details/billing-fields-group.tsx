@@ -1,4 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "@tanstack/react-store";
+import { useState } from "react";
+import { vatIdCheckQueryOptions } from "@/features/settings/api/vat-id-check";
 import {
 	billingFieldError,
 	billingTextError,
@@ -15,6 +18,7 @@ import {
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
 import { normalizeVatId } from "@/shared/lib/vat-id";
 import { BuyerSummaryCard } from "./buyer-summary-card";
+import { VatIdStatus } from "./vat-id-status";
 
 type BillingFields = {
 	needInvoice: boolean;
@@ -137,6 +141,10 @@ export const BillingFieldsGroup = withFieldGroup({
 		disabled,
 	}) {
 		const values = useSelector(group.store, (s) => s.values);
+		const [checkedVatId, setCheckedVatId] = useState(values.vatId);
+		const { data: vatCheck } = useQuery(
+			vatIdCheckQueryOptions(checkedVatId, values.country),
+		);
 		if (!config) throw new Error("BillingFieldsGroup needs a config");
 		const view = billingView(config, admin === true, values.needInvoice);
 		const countryIsRequired = countryRequired === true;
@@ -210,6 +218,7 @@ export const BillingFieldsGroup = withFieldGroup({
 								if ("value" in result && result.value !== value) {
 									fieldApi.setValue(result.value);
 								}
+								setCheckedVatId("value" in result ? result.value : "");
 							},
 						}}
 						name="vatId"
@@ -226,6 +235,11 @@ export const BillingFieldsGroup = withFieldGroup({
 							/>
 						)}
 					</group.AppField>
+				)}
+				{view.showVat && (
+					<VatIdStatus
+						check={values.vatId === checkedVatId ? vatCheck : undefined}
+					/>
 				)}
 
 				<group.AppField

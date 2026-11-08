@@ -1423,3 +1423,22 @@ model AnnouncementRecipient {
   @@index([userId, publishedAt])
   @@map("announcement_recipient")
 }
+
+enum VatIdCheckStatus {
+  VERIFIED
+  NOT_FOUND
+  UNAVAILABLE
+  NOT_CHECKABLE
+}
+
+model VatIdCheck {
+  vatId             String           @id
+  status            VatIdCheckStatus
+  source            String?
+  registryName      String?
+  registryAddress   String?
+  requestIdentifier String?
+  checkedAt         DateTime         @default(now())
+
+  @@map("vat_id_checks")
+}

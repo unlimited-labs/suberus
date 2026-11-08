@@ -8,6 +8,7 @@ import {
 	invoiceNeeded,
 } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
+import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
 
@@ -116,6 +117,8 @@ export async function updateContactInfo(
 			contactConsent: data.contactConsent,
 		},
 	});
+
+	checkVatIdInBackground(result.vatId);
 
 	await logActivity({
 		type: "USER_PROFILE_UPDATED",

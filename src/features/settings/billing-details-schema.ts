@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isViesCheckable, normalizeVatId } from "@/shared/lib/vat-id";
 
 export const BILLING_TEXT_NAME = "Billing details (organization)";
 
@@ -61,7 +62,21 @@ export const billingDetailsSettingsSchema = z.object({
 		city: billingFieldConfigSchema,
 		vatId: billingFieldConfigSchema,
 	}),
-	organizerVatId: z.string().trim().max(20),
+	organizerVatId: z.string().transform((value, ctx) => {
+		const result = normalizeVatId(value);
+		if ("error" in result) {
+			ctx.addIssue({ code: "custom", message: result.error });
+			return z.NEVER;
+		}
+		if (result.value && !isViesCheckable(result.value)) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Use an EU or Northern Ireland (XI) VAT ID",
+			});
+			return z.NEVER;
+		}
+		return result.value;
+	}),
 });
 
 export type BillingDetailsSettings = z.infer<

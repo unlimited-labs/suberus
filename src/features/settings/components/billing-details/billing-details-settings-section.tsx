@@ -272,6 +272,15 @@ export function BillingDetailsSettingsSection({
 						</form.AppField>
 						<ModeCards form={form} />
 						<FieldAccordion form={form} />
+						<form.AppField name="organizerVatId">
+							{(field) => (
+								<field.InputField
+									description="Optional. Sent to VIES with every VAT ID check, so each check returns a consultation number you can keep as proof."
+									label="Organizer's EU VAT ID"
+									placeholder="e.g. PL6750001923"
+								/>
+							)}
+						</form.AppField>
 						<div className="flex justify-end">
 							<form.AppForm>
 								<form.SubmitButton label="Save" />

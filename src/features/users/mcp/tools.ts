@@ -58,7 +58,7 @@ const getUser = defineTool({
 	name: "users_get",
 	title: "Get user",
 	description:
-		"Fetch one user by id, including submissions, survey answers and fee status.",
+		"Fetch one user by id, including submissions, survey answers, fee status and billing details. vatIdCheck holds the last registry check of the VAT ID (status VERIFIED / NOT_FOUND / UNAVAILABLE / NOT_CHECKABLE, checkedAt, registryName); the check is advisory and never blocks anything.",
 	input: userIdInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_USERS_READ,

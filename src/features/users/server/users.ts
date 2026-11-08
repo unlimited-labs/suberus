@@ -6,13 +6,14 @@ import {
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { getSetting } from "@/features/settings/server/settings";
+import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import type {
 	feeMarkPaidInput,
 	userBulkActionInput,
 	userProfilePatchInput,
 	usersListInput,
 } from "@/features/users/validations";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, VatIdCheck } from "@/generated/prisma/client";
 import type {
 	SubmissionStatus,
 	SubmissionType,
@@ -92,6 +93,7 @@ export interface AdminUser {
 
 export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
+	vatIdCheck: Pick<VatIdCheck, "status" | "checkedAt" | "registryName"> | null;
 }
 
 export type UsersFilters = z.infer<typeof usersListInput>;
@@ -324,7 +326,15 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 
 	if (!user) return null;
 
+	const vatIdCheck = user.vatId
+		? await prisma.vatIdCheck.findUnique({
+				where: { vatId: user.vatId },
+				select: { status: true, checkedAt: true, registryName: true },
+			})
+		: null;
+
 	return {
+		vatIdCheck,
 		id: user.id,
 		email: user.email,
 		firstName: user.firstName,
@@ -764,10 +774,12 @@ export async function updateUserProfile(
 		updateData.affiliation = { disconnect: true };
 	}
 
-	await prisma.user.update({
+	const updated = await prisma.user.update({
 		where: { id: userId },
 		data: updateData,
+		select: { vatId: true },
 	});
+	checkVatIdInBackground(updated.vatId);
 
 	return { success: true };
 }

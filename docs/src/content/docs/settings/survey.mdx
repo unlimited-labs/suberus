@@ -49,6 +49,26 @@ labels and card later in **Profile › Contact & Invoice Information**, where th
 
 🖼️ [Screenshot placeholder: registration step 2 in Separate fields mode with the Buyer on your invoice card]
 
+### VAT ID registry check
+
+When a participant leaves the VAT ID field with a number whose check digit is correct,
+Suberus looks it up in the EU's **VIES** register (EU countries and Northern Ireland) and
+shows the result under the field:
+
+| Status | Shown to the participant |
+|---|---|
+| Found | ✓ *Found in VIES: (registered name)* — some countries (for example Germany and Spain) do not publish the name. |
+| Not found | ⚠ *Not found in the registry. Check the number; you can still continue.* Common for organizations not registered for intra-EU trade, such as some Polish universities. |
+| Registry unavailable | ⏳ *Registry unavailable, we'll check later.* Several countries take VIES offline at night or at weekends. |
+| *(nothing)* | The number is from a country VIES does not cover. |
+
+The check is **advisory only**: it never blocks registration or a profile save. A result
+is reused for 24 hours; the number is checked again when it changes, and an "unavailable"
+result is retried at the next check. The AI assistant
+reads the last result of each user's VAT ID.
+
+🖼️ [Screenshot placeholder: VAT ID field with the "Found in VIES" status]
+
 ### How to require an invoice from everyone
 
 <Steps>
@@ -81,6 +101,7 @@ in **Users** are exempt.
 | *(field)* **› State** | **Off** hides the field, **Optional** shows it, **Required** makes it mandatory once an invoice is needed. | All fields start **Off**, so turn on at least the ones your accounting needs. |
 | *(field)* **› Label** | The field's label for participants. | Up to 60 characters. Leave empty for the built-in English name, shown as the placeholder. |
 | *(field)* **› Help text** | A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. |
+| **Organizer's EU VAT ID** | Your own VAT ID, sent to VIES as the requester of every check. VIES then returns a consultation number, which Suberus stores with the result as proof that you checked. | Optional, empty by default. Must be an EU or Northern Ireland (`XI`) VAT ID with a correct check digit. VIES checks only its format, not whether it is registered. |
 
 ## Survey
 
