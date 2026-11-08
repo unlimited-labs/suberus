@@ -197,5 +197,10 @@ test.describe.serial("Users - Billing details", () => {
 			select: { billingChangedAfterPaymentAt: true },
 		})
 		expect(user.billingChangedAfterPaymentAt).toBeNull()
+		await expect(
+			getPrisma().activityLog.count({
+				where: { userId: changed.id, type: "USER_BILLING_CHANGE_ACKNOWLEDGED" },
+			}),
+		).resolves.toBe(1)
 	})
 })

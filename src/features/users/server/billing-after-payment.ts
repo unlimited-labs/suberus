@@ -1,3 +1,5 @@
+import { logActivityTx } from "@/features/activity-log/server/activity-log";
+import { activityDetail } from "@/features/activity-log/types";
 import {
 	type BillingChanges,
 	mergeBillingChanges,
@@ -27,9 +29,28 @@ export async function billingChangesAfterPayment(user: {
 	);
 }
 
-export async function acknowledgeBillingChange(userId: string): Promise<void> {
-	await prisma.user.update({
-		where: { id: userId },
-		data: { billingChangedAfterPaymentAt: null },
+export async function acknowledgeBillingChange(
+	userId: string,
+	performedBy: string,
+): Promise<void> {
+	await prisma.$transaction(async (tx) => {
+		const { billingChangedAfterPaymentAt: changedAt } =
+			await tx.user.findUniqueOrThrow({
+				where: { id: userId },
+				select: { billingChangedAfterPaymentAt: true },
+			});
+		if (!changedAt) return;
+		await tx.user.update({
+			where: { id: userId },
+			data: { billingChangedAfterPaymentAt: null },
+		});
+		await logActivityTx(tx, {
+			type: "USER_BILLING_CHANGE_ACKNOWLEDGED",
+			userId,
+			performedBy,
+			detail: activityDetail("USER_BILLING_CHANGE_ACKNOWLEDGED", {
+				changedAt: changedAt.toISOString(),
+			}),
+		});
 	});
 }

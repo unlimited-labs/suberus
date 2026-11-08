@@ -121,8 +121,8 @@ export const acknowledgeAdminUserBillingChange = createServerFn({
 })
 	.middleware([adminMiddleware])
 	.validator(userIdInput)
-	.handler(async ({ data }) => {
-		await acknowledgeBillingChange(data.id);
+	.handler(async ({ data, context }) => {
+		await acknowledgeBillingChange(data.id, context.user.id);
 		return { success: true };
 	});
 

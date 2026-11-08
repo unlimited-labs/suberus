@@ -33,6 +33,7 @@ type DetailShapes = AssertExhaustive<{
 	USER_TOGGLED_LATE_SUBMISSION: { allowLateSubmission: boolean };
 	USER_DELETED: { email: string };
 	USER_BILLING_DETAILS_UPDATED: { changes: BillingChanges };
+	USER_BILLING_CHANGE_ACKNOWLEDGED: { changedAt: string };
 	SUBMISSION_CREATED: {
 		title: string;
 		submissionType: string;
