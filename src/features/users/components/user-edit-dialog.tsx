@@ -1,7 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
-import { BillingFieldsGroup } from "@/features/settings/components/billing-details/billing-fields-group";
+import { billingDetailsConfigQueryOptions } from "@/features/settings/api/settings";
+import { billingColumnsToForm } from "@/features/settings/billing-details-rules";
+import {
+	BILLING_FIELDS_MAP,
+	BillingFieldsGroup,
+} from "@/features/settings/components/billing-details/billing-fields-group";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
@@ -34,6 +43,9 @@ export function UserEditDialog({
 	open,
 	onOpenChange,
 }: UserEditDialogProps) {
+	const { data: billingConfig } = useSuspenseQuery(
+		billingDetailsConfigQueryOptions(),
+	);
 	const queryClient = useQueryClient();
 
 	const mutation = useMutation({
@@ -62,7 +74,7 @@ export function UserEditDialog({
 		orcid: user.orcid ?? "",
 		email: user.email,
 		needInvoice: user.needInvoice,
-		billingText: user.billingText ?? "",
+		...billingColumnsToForm(user),
 		country: user.country ?? "",
 	};
 
@@ -127,11 +139,9 @@ export function UserEditDialog({
 					/>
 
 					<BillingFieldsGroup
-						fields={{
-							needInvoice: "needInvoice",
-							billingText: "billingText",
-							country: "country",
-						}}
+						admin
+						config={billingConfig}
+						fields={BILLING_FIELDS_MAP}
 						form={form}
 						needInvoiceLabel="Needs invoice for organization"
 					/>

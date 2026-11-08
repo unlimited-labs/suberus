@@ -4,6 +4,7 @@ import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { auth } from "@/features/auth/server/auth.server";
+import { billingColumnsToDb } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
 import type { userCreateInput } from "@/features/users/validations";
 import { upsertAffiliation } from "@/shared/server/affiliations";
@@ -56,7 +57,7 @@ export async function createUserByAdmin(
 				title: input.title || null,
 				affiliationId: affiliation?.id ?? null,
 				needInvoice: input.needInvoice,
-				billingText: input.billingText || null,
+				...billingColumnsToDb(input),
 				country: input.country || null,
 				role: "AUTHOR",
 				isActive: true,

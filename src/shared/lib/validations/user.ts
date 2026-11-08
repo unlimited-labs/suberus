@@ -36,9 +36,36 @@ export const contactInfoSchema = z.object({
 	billingText: z
 		.string()
 		.max(500, "Billing details must be at most 500 characters"),
+	billingOrganization: z
+		.string()
+		.max(200, "Organization name must be at most 200 characters")
+		.optional(),
+	billingStreet: z
+		.string()
+		.max(200, "Street address must be at most 200 characters")
+		.optional(),
+	billingPostalCode: z
+		.string()
+		.max(20, "Postal code must be at most 20 characters")
+		.optional(),
+	billingCity: z
+		.string()
+		.max(100, "City must be at most 100 characters")
+		.optional(),
 	country: z.string(),
 	contactConsent: z.boolean().optional(),
 });
 
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
-export type ContactInfoFormData = z.infer<typeof contactInfoSchema>;
+export const BILLING_COLUMNS_IN_FORM = {
+	billingOrganization: true,
+	billingStreet: true,
+	billingPostalCode: true,
+	billingCity: true,
+} as const;
+
+export const contactInfoFormSchema = contactInfoSchema.required(
+	BILLING_COLUMNS_IN_FORM,
+);
+
+export type ContactInfoFormData = z.infer<typeof contactInfoFormSchema>;

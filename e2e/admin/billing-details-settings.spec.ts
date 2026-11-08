@@ -54,4 +54,31 @@ test.describe.serial("Settings - Billing details", () => {
 		await page.reload()
 		await expect(page.getByTestId("billing-invoice-required")).toBeChecked()
 	})
+
+	test("switches to Separate fields and sets a field's state", async ({ page }) => {
+		await page.goto("/admin/settings?tab=survey")
+		const preview = page.getByTestId("billing-details-preview")
+		const pane = async (name: "Preview" | "Configure") => {
+			const toggle = page.getByRole("radio", { name })
+			if (await toggle.isVisible()) await toggle.click()
+		}
+
+		await page.getByTestId("billing-mode-STRUCTURED").click()
+		await page.getByRole("button", { name: /^City/ }).click()
+		await page.getByRole("radio", { name: "Required" }).click()
+
+		await pane("Preview")
+		await expect(preview.getByLabel("City *")).toBeVisible()
+		await expect(preview.getByLabel("Organization name")).toHaveCount(0)
+
+		await pane("Configure")
+		await page.getByRole("button", { name: "Save", exact: true }).click()
+		await expect(page.getByText("Billing details saved")).toBeVisible()
+
+		const saved = await getPrisma().appSetting.findUnique({ where: { key: "BILLING_DETAILS" } })
+		expect(saved?.value).toMatchObject({
+			mode: "STRUCTURED",
+			fields: { city: { state: "REQUIRED" }, organizationName: { state: "OFF" } },
+		})
+	})
 })

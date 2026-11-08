@@ -1,9 +1,11 @@
 import { IconReceipt } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
 	BILLING_TEXT_NAME,
 	type BillingDetailsSettings,
+	STRUCTURED_BILLING_FIELDS,
+	type StructuredBillingField,
 } from "@/features/settings/billing-details-schema";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { Form } from "@/shared/components/composable/form";
@@ -27,15 +29,25 @@ const MODES = [
 		mode: "FREE_TEXT",
 		title: "Simple",
 		text: "One text box — participants type the billing details freely.",
-		available: true,
 	},
 	{
 		mode: "STRUCTURED",
 		title: "Separate fields",
 		text: "Organization, street, postal code and city as separate fields.",
-		available: false,
 	},
 ] as const;
+
+const STATE_OPTIONS = [
+	{ value: "OFF", label: "Off" },
+	{ value: "OPTIONAL", label: "Optional" },
+	{ value: "REQUIRED", label: "Required" },
+] as const;
+
+const STATE_BADGE = {
+	OFF: "outline",
+	OPTIONAL: "secondary",
+	REQUIRED: "default",
+} as const;
 
 function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
 	return (
@@ -46,13 +58,12 @@ function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
 						<button
 							aria-pressed={field.state.value === m.mode}
 							className={cn(
-								"rounded-lg border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+								"rounded-lg border p-3 text-left transition-colors",
 								field.state.value === m.mode
 									? "border-primary bg-primary/5 ring-primary ring-1"
 									: "hover:bg-muted/50",
 							)}
 							data-testid={`billing-mode-${m.mode}`}
-							disabled={!m.available}
 							key={m.mode}
 							onClick={() => field.handleChange(m.mode)}
 							type="button"
@@ -69,42 +80,139 @@ function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
 	);
 }
 
+function RowTrigger({
+	name,
+	label,
+	help,
+	badge,
+}: {
+	name: string;
+	label: string;
+	help: string;
+	badge: ReactNode;
+}) {
+	return (
+		<AccordionTrigger className="hover:no-underline">
+			<span className="min-w-0">
+				<span className="block text-sm font-medium">{name}</span>
+				<span className="text-muted-foreground block truncate text-xs font-normal">
+					“{label}”{help ? " · has help text" : ""}
+				</span>
+			</span>
+			<span className="ml-auto shrink-0">{badge}</span>
+		</AccordionTrigger>
+	);
+}
+
 function TextBoxRow({ form }: { form: BillingDetailsSettingsForm }) {
-	const label = useSelector(form.store, (s) => s.values.text.label);
-	const help = useSelector(form.store, (s) => s.values.text.help);
+	const text = useSelector(form.store, (s) => s.values.text);
+	const invoiceRequired = useSelector(
+		form.store,
+		(s) => s.values.invoiceRequired,
+	);
+
+	return (
+		<AccordionItem value="text">
+			<RowTrigger
+				badge={
+					<Badge>
+						{invoiceRequired ? "required" : "required with invoice"}
+					</Badge>
+				}
+				help={text.help}
+				label={text.label || BILLING_TEXT_NAME}
+				name="Text box"
+			/>
+			<AccordionContent className="space-y-3 pb-3">
+				<p className="text-muted-foreground text-xs">
+					Required whenever the participant needs an invoice.
+				</p>
+				<form.AppField name="text.label">
+					{(field) => (
+						<field.InputField label="Label" placeholder={BILLING_TEXT_NAME} />
+					)}
+				</form.AppField>
+				<form.AppField name="text.help">
+					{(field) => (
+						<field.TextareaField
+							description="Shown under the field. Leave empty for none."
+							label="Help text"
+							rows={2}
+						/>
+					)}
+				</form.AppField>
+			</AccordionContent>
+		</AccordionItem>
+	);
+}
+
+function FieldRow({
+	form,
+	field: f,
+}: {
+	form: BillingDetailsSettingsForm;
+	field: StructuredBillingField;
+}) {
+	const config = useSelector(form.store, (s) => s.values.fields[f.key]);
+	const stateLabelId = `billing-field-${f.key}-state`;
+
+	return (
+		<AccordionItem value={f.key}>
+			<RowTrigger
+				badge={
+					<Badge variant={STATE_BADGE[config.state]}>
+						{config.state.toLowerCase()}
+					</Badge>
+				}
+				help={config.help}
+				label={config.label || f.name}
+				name={f.name}
+			/>
+			<AccordionContent className="space-y-3 pb-3">
+				<form.Field name={`fields.${f.key}.state` as const}>
+					{(field) => (
+						<div className="space-y-1">
+							<span className="text-sm font-medium" id={stateLabelId}>
+								State
+							</span>
+							<SegmentedControl
+								labelledBy={stateLabelId}
+								onChange={field.handleChange}
+								options={STATE_OPTIONS}
+								value={field.state.value}
+							/>
+						</div>
+					)}
+				</form.Field>
+				<form.AppField name={`fields.${f.key}.label` as const}>
+					{(field) => <field.InputField label="Label" placeholder={f.name} />}
+				</form.AppField>
+				<form.AppField name={`fields.${f.key}.help` as const}>
+					{(field) => (
+						<field.TextareaField
+							description="Shown under the field. Leave empty for none."
+							label="Help text"
+							rows={2}
+						/>
+					)}
+				</form.AppField>
+			</AccordionContent>
+		</AccordionItem>
+	);
+}
+
+function FieldAccordion({ form }: { form: BillingDetailsSettingsForm }) {
+	const mode = useSelector(form.store, (s) => s.values.mode);
 
 	return (
 		<Accordion className="rounded-lg border px-3">
-			<AccordionItem value="text">
-				<AccordionTrigger className="hover:no-underline">
-					<span className="min-w-0">
-						<span className="block text-sm font-medium">Text box</span>
-						<span className="text-muted-foreground block truncate text-xs font-normal">
-							“{label || BILLING_TEXT_NAME}”{help ? " · has help text" : ""}
-						</span>
-					</span>
-					<Badge className="ml-auto shrink-0">required</Badge>
-				</AccordionTrigger>
-				<AccordionContent className="space-y-3 pb-3">
-					<p className="text-muted-foreground text-xs">
-						Required whenever the participant needs an invoice.
-					</p>
-					<form.AppField name="text.label">
-						{(field) => (
-							<field.InputField label="Label" placeholder={BILLING_TEXT_NAME} />
-						)}
-					</form.AppField>
-					<form.AppField name="text.help">
-						{(field) => (
-							<field.TextareaField
-								description="Shown under the field. Leave empty for none."
-								label="Help text"
-								rows={2}
-							/>
-						)}
-					</form.AppField>
-				</AccordionContent>
-			</AccordionItem>
+			{mode === "FREE_TEXT" ? (
+				<TextBoxRow form={form} />
+			) : (
+				STRUCTURED_BILLING_FIELDS.map((f) => (
+					<FieldRow field={f} form={form} key={f.key} />
+				))
+			)}
 		</Accordion>
 	);
 }
@@ -161,7 +269,7 @@ export function BillingDetailsSettingsSection({
 							)}
 						</form.AppField>
 						<ModeCards form={form} />
-						<TextBoxRow form={form} />
+						<FieldAccordion form={form} />
 						<div className="flex justify-end">
 							<form.AppForm>
 								<form.SubmitButton label="Save" />

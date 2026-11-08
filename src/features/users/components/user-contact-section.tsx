@@ -5,6 +5,7 @@ import {
 	IconMapPin,
 	IconWorld,
 } from "@tabler/icons-react";
+import { buyerLines } from "@/features/settings/billing-details-rules";
 import type { AdminUserDetail } from "@/features/users/server/users";
 
 interface UserContactSectionProps {
@@ -12,6 +13,13 @@ interface UserContactSectionProps {
 }
 
 export function UserContactSection({ user }: UserContactSectionProps) {
+	const structuredBilling = buyerLines({
+		billingOrganization: user.billingOrganization,
+		billingStreet: user.billingStreet,
+		billingPostalCode: user.billingPostalCode,
+		billingCity: user.billingCity,
+	}).join("\n");
+
 	return (
 		<div className="grid gap-3 sm:grid-cols-2">
 			<div className="flex items-center gap-2">
@@ -45,6 +53,12 @@ export function UserContactSection({ user }: UserContactSectionProps) {
 				<div className="flex items-start gap-2 sm:col-span-2">
 					<IconMapPin className="text-muted-foreground mt-0.5 size-4" />
 					<span className="whitespace-pre-line">{user.billingText}</span>
+				</div>
+			)}
+			{structuredBilling && (
+				<div className="flex items-start gap-2 sm:col-span-2">
+					<IconMapPin className="text-muted-foreground mt-0.5 size-4" />
+					<span className="whitespace-pre-line">{structuredBilling}</span>
 				</div>
 			)}
 		</div>

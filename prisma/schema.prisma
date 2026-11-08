@@ -31,6 +31,10 @@ model User {
   website               String?
   linkedin              String?
   billingText           String?                @map("address")
+  billingOrganization   String?
+  billingStreet         String?
+  billingPostalCode     String?
+  billingCity           String?
   country               String?
   needInvoice           Boolean                @default(false)
   role                  UserRole               @default(AUTHOR)

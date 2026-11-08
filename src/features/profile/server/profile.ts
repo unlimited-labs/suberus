@@ -1,7 +1,10 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import type { ContactInfoFormData } from "@/features/profile/validations";
 import {
-	billingTextError,
+	billingColumnsToDb,
+	billingColumnsToForm,
+	billingDetailsIssues,
 	invoiceNeeded,
 } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
@@ -74,13 +77,17 @@ export async function getContactInfo(userId: string) {
 		select: {
 			needInvoice: true,
 			billingText: true,
+			billingOrganization: true,
+			billingStreet: true,
+			billingPostalCode: true,
+			billingCity: true,
 			country: true,
 			contactConsent: true,
 		},
 	});
 	return {
 		needInvoice: user.needInvoice,
-		billingText: user.billingText ?? "",
+		...billingColumnsToForm(user),
 		country: user.country ?? "",
 		contactConsent: user.contactConsent,
 	};
@@ -88,23 +95,18 @@ export async function getContactInfo(userId: string) {
 
 export async function updateContactInfo(
 	userId: string,
-	data: {
-		needInvoice?: boolean;
-		billingText?: string;
-		country?: string;
-		contactConsent?: boolean;
-	},
+	data: Omit<Partial<ContactInfoFormData>, "email">,
 ) {
 	const config = await getSetting("BILLING_DETAILS");
 	const needInvoice = invoiceNeeded(data.needInvoice === true, config);
-	const message = billingTextError(data.billingText, needInvoice);
-	if (message) throw new Response(message, { status: 400 });
+	const [issue] = billingDetailsIssues({ ...data, needInvoice }, config);
+	if (issue) throw new Response(issue.message, { status: 400 });
 
 	const result = await prisma.user.update({
 		where: { id: userId },
 		data: {
 			needInvoice,
-			billingText: data.billingText || null,
+			...billingColumnsToDb(data),
 			country: data.country || null,
 			contactConsent: data.contactConsent,
 		},

@@ -5,7 +5,11 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
-import { BillingFieldsGroup } from "@/features/settings/components/billing-details/billing-fields-group";
+import { billingDetailsConfigQueryOptions } from "@/features/settings/api/settings";
+import {
+	BILLING_FIELDS_MAP,
+	BillingFieldsGroup,
+} from "@/features/settings/components/billing-details/billing-fields-group";
 import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import {
 	adminUsersQueryOptions,
@@ -43,6 +47,9 @@ export function UserCreateDialog({
 	const { data: allQuestions } = useSuspenseQuery(
 		adminSurveyQuestionsQueryOptions(),
 	);
+	const { data: billingConfig } = useSuspenseQuery(
+		billingDetailsConfigQueryOptions(),
+	);
 
 	const questions = allQuestions.filter(
 		(q) =>
@@ -57,6 +64,10 @@ export function UserCreateDialog({
 		email: "",
 		needInvoice: false,
 		billingText: "",
+		billingOrganization: "",
+		billingStreet: "",
+		billingPostalCode: "",
+		billingCity: "",
 		country: "",
 		surveyAnswers: Object.fromEntries(
 			questions.map((q) => [q.id, q.type === "CHECKBOX" ? "false" : ""]),
@@ -74,6 +85,10 @@ export function UserCreateDialog({
 					affiliation: value.affiliation || undefined,
 					needInvoice: value.needInvoice,
 					billingText: value.billingText,
+					billingOrganization: value.billingOrganization,
+					billingStreet: value.billingStreet,
+					billingPostalCode: value.billingPostalCode,
+					billingCity: value.billingCity,
 					country: value.country,
 					answers: Object.entries(value.surveyAnswers).map(
 						([questionId, answer]) => ({ questionId, value: answer }),
@@ -155,11 +170,9 @@ export function UserCreateDialog({
 					/>
 
 					<BillingFieldsGroup
-						fields={{
-							needInvoice: "needInvoice",
-							billingText: "billingText",
-							country: "country",
-						}}
+						admin
+						config={billingConfig}
+						fields={BILLING_FIELDS_MAP}
 						form={form}
 						needInvoiceLabel="Needs invoice for organization"
 					/>

@@ -19,12 +19,13 @@ import {
 } from "@/features/auth/server/cimd-audit-rules";
 import { MCP_SCOPES } from "@/features/mcp/scopes";
 import {
-	billingTextError,
+	billingDetailsIssues,
 	invoiceNeeded,
 } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
 import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
+import { contactInfoSchema } from "@/shared/lib/validations/user";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
@@ -42,7 +43,21 @@ type AuthUserExtras = {
 	affiliationId?: string;
 	needInvoice?: boolean;
 	billingText?: string;
+	billingOrganization?: string;
+	billingStreet?: string;
+	billingPostalCode?: string;
+	billingCity?: string;
 };
+
+const billingColumnsSchema = contactInfoSchema
+	.pick({
+		billingText: true,
+		billingOrganization: true,
+		billingStreet: true,
+		billingPostalCode: true,
+		billingCity: true,
+	})
+	.partial();
 
 function authUserExtras<T extends { email: string }>(
 	user: T,
@@ -240,6 +255,30 @@ export const auth = betterAuth({
 				input: true,
 				returned: false,
 			},
+			billingOrganization: {
+				type: "string",
+				required: false,
+				input: true,
+				returned: false,
+			},
+			billingStreet: {
+				type: "string",
+				required: false,
+				input: true,
+				returned: false,
+			},
+			billingPostalCode: {
+				type: "string",
+				required: false,
+				input: true,
+				returned: false,
+			},
+			billingCity: {
+				type: "string",
+				required: false,
+				input: true,
+				returned: false,
+			},
 			country: {
 				type: "string",
 				required: false,
@@ -300,9 +339,20 @@ export const auth = betterAuth({
 				before: async (user) => {
 					const config = await getSetting("BILLING_DETAILS");
 					const extUser = authUserExtras(user);
+					const lengths = billingColumnsSchema.safeParse(extUser);
+					if (!lengths.success) {
+						throw new APIError("BAD_REQUEST", {
+							message: lengths.error.issues[0].message,
+						});
+					}
 					const needed = invoiceNeeded(extUser.needInvoice === true, config);
-					const message = billingTextError(extUser.billingText, needed);
-					if (message) throw new APIError("BAD_REQUEST", { message });
+					const [issue] = billingDetailsIssues(
+						{ ...extUser, needInvoice: needed },
+						config,
+					);
+					if (issue) {
+						throw new APIError("BAD_REQUEST", { message: issue.message });
+					}
 					return { data: { ...user, needInvoice: needed } };
 				},
 				after: async (user) => {

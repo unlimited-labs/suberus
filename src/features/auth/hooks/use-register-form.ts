@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { detectCountry } from "@/features/auth/detect-country";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
@@ -8,6 +8,7 @@ import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
 	applyBillingConfig,
 	invoiceNeeded,
+	submittedBillingValues,
 } from "@/features/settings/billing-details-rules";
 import type { BillingDetailsSettings } from "@/features/settings/billing-details-schema";
 import type { SurveyAudience } from "@/generated/prisma/enums";
@@ -48,6 +49,10 @@ type RegisterField =
 	| "lastName"
 	| "affiliationId"
 	| "billingText"
+	| "billingOrganization"
+	| "billingStreet"
+	| "billingPostalCode"
+	| "billingCity"
 	| "country"
 	| "acceptTerms";
 
@@ -60,7 +65,14 @@ const STEP_FIELDS = {
 		"lastName",
 		"affiliationId",
 	],
-	2: ["billingText", "country"],
+	2: [
+		"billingText",
+		"billingOrganization",
+		"billingStreet",
+		"billingPostalCode",
+		"billingCity",
+		"country",
+	],
 	3: ["acceptTerms"],
 } satisfies Record<number, RegisterField[]>;
 
@@ -190,6 +202,10 @@ export function useRegisterForm({
 			affiliationName: "",
 			needInvoice: billingConfig.invoiceRequired,
 			billingText: "",
+			billingOrganization: "",
+			billingStreet: "",
+			billingPostalCode: "",
+			billingCity: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
 			contactConsent: false,
@@ -201,7 +217,7 @@ export function useRegisterForm({
 		onSubmit: async ({ value }) => {
 			if (!(await ensureRegistrationOpen(token))) return;
 
-			// SAFETY: firstName/title/affiliationId are better-auth additionalFields.
+			// SAFETY: every key below except email/password/name is a better-auth additionalField.
 			const result = await signUp.email({
 				email: value.email,
 				password: value.password,
@@ -211,7 +227,7 @@ export function useRegisterForm({
 				affiliationId: value.affiliationId || undefined,
 				needInvoice: invoiceNeeded(value.needInvoice, billingConfig),
 				contactConsent: value.contactConsent,
-				billingText: value.billingText || undefined,
+				...submittedBillingValues(value, billingConfig),
 				country: value.country || undefined,
 			} as Parameters<typeof signUp.email>[0]);
 
@@ -234,6 +250,20 @@ export function useRegisterForm({
 		},
 	});
 
+	const organizationPrefilled = useRef(false);
+	const prefillOrganizationOnce = () => {
+		if (organizationPrefilled.current) return;
+		organizationPrefilled.current = true;
+		if (
+			billingConfig.mode === "STRUCTURED" &&
+			billingConfig.fields.organizationName.state !== "OFF"
+		) {
+			form.setFieldValue(
+				"billingOrganization",
+				form.getFieldValue("affiliationName"),
+			);
+		}
+	};
 	const validateStep = async (step: number): Promise<boolean> => {
 		// SAFETY: the template literals already have that form; TS widens them to string.
 		const surveyFields =
@@ -249,6 +279,7 @@ export function useRegisterForm({
 			fields.map((field) => form.validateField(field, "change")),
 		);
 		const ok = results.every((errors) => errors.length === 0);
+		if (ok && step === 1) prefillOrganizationOnce();
 		if (!ok) {
 			for (const field of fields) {
 				form.setFieldMeta(field, (prev) => ({ ...prev, isBlurred: true }));

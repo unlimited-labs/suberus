@@ -16,6 +16,11 @@ export type ExportUser = Pick<
 	| "fee"
 	| "needInvoice"
 	| "billingText"
+	| "billingOrganization"
+	| "billingStreet"
+	| "billingPostalCode"
+	| "billingCity"
+	| "country"
 	| "createdAt"
 	| "lastLoginAt"
 	| "surveyAnswers"
@@ -67,6 +72,11 @@ export function buildUserExportRow(
 		"Fee Paid At": fmtDate(user.fee?.paidAt),
 		"Need Invoice": user.needInvoice ? "True" : "False",
 		"Billing details (text)": user.billingText ?? "",
+		Organization: user.billingOrganization ?? "",
+		"Street address": user.billingStreet ?? "",
+		"Postal code": user.billingPostalCode ?? "",
+		City: user.billingCity ?? "",
+		Country: user.country ?? "",
 		"Registration Date": fmtDate(user.createdAt),
 		"Last Login": fmtDate(user.lastLoginAt),
 		...buildSurveyColumns(user.surveyAnswers, questions),

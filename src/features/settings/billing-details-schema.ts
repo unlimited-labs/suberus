@@ -2,6 +2,20 @@ import { z } from "zod";
 
 export const BILLING_TEXT_NAME = "Billing details (organization)";
 
+export const STRUCTURED_BILLING_FIELDS = [
+	{
+		key: "organizationName",
+		column: "billingOrganization",
+		name: "Organization name",
+	},
+	{ key: "streetAddress", column: "billingStreet", name: "Street address" },
+	{ key: "postalCode", column: "billingPostalCode", name: "Postal code" },
+	{ key: "city", column: "billingCity", name: "City" },
+] as const;
+
+export type StructuredBillingField = (typeof STRUCTURED_BILLING_FIELDS)[number];
+export type StructuredBillingColumn = StructuredBillingField["column"];
+
 const labelSchema = z
 	.string()
 	.trim()

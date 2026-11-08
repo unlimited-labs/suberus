@@ -1,6 +1,6 @@
 import type { BillingDetailsSettings } from "@/features/settings/billing-details-schema";
 import { useAppForm } from "@/shared/hooks/use-app-form";
-import { BillingFieldsGroup } from "./billing-fields-group";
+import { BILLING_FIELDS_MAP, BillingFieldsGroup } from "./billing-fields-group";
 
 export function BillingDetailsPreview({
 	config,
@@ -8,20 +8,24 @@ export function BillingDetailsPreview({
 	config: BillingDetailsSettings;
 }) {
 	const form = useAppForm({
-		defaultValues: { needInvoice: false, billingText: "", country: "" },
+		defaultValues: {
+			needInvoice: false,
+			billingText: "",
+			billingOrganization: "",
+			billingStreet: "",
+			billingPostalCode: "",
+			billingCity: "",
+			country: "",
+		},
 	});
 
 	return (
 		<div className="space-y-3" data-testid="billing-details-preview">
 			<BillingFieldsGroup
+				config={config}
 				countryRequired
-				fields={{
-					needInvoice: "needInvoice",
-					billingText: "billingText",
-					country: "country",
-				}}
+				fields={BILLING_FIELDS_MAP}
 				form={form}
-				participantConfig={config}
 			/>
 		</div>
 	);

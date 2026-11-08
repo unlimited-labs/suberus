@@ -27,6 +27,28 @@ exactly what participants will see as you edit; on a phone, switch between
 
 🖼️ [Screenshot placeholder: the Billing details section with Invoice required on and the live preview]
 
+### How to collect separate fields
+
+<Steps>
+
+1. Click the **Separate fields** card.
+
+2. Open each field row (Organization name, Street address, Postal code, City) and set its
+   **State**: **Required**, **Optional** or **Off**. Optionally give it your own **Label**
+   and **Help text**.
+
+3. Check the preview, then click **Save**.
+
+</Steps>
+
+On the registration form, **Organization name** starts filled in with the participant's
+affiliation; they can change it, and it stays separate from the affiliation afterwards.
+Postal code and City share one row. Under the fields, a **Buyer on your invoice** card shows
+participants how their details will appear on the invoice. Participants see the same fields,
+labels and card later in **Profile › Contact & Invoice Information**, where they can update them.
+
+🖼️ [Screenshot placeholder: registration step 2 in Separate fields mode with the Buyer on your invoice card]
+
 ### How to require an invoice from everyone
 
 <Steps>
@@ -51,9 +73,13 @@ in **Users** are exempt.
 | Field | What it does | What to enter / Notes |
 |---|---|---|
 | **Invoice required** | Every participant must give Billing details; the "I need an invoice" checkbox disappears and their account is marked as needing an invoice. | Off by default. When off, participants tick "I need an invoice" themselves (unticked by default) and the details become mandatory only then. |
-| **Simple** / **Separate fields** | How participants enter the details: one free-text box, or separate fields. | **Simple** is the default. **Separate fields** is not available yet. |
-| **Text box › Label** | The field's label on the registration form and profile. | Up to 60 characters. Leave empty to use the built-in "Billing details (organization)", shown as the placeholder. |
-| **Text box › Help text** | A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. |
+| **Simple** / **Separate fields** | How participants enter the details: one free-text box, or separate fields. | **Simple** is the default. Switching keeps every participant's data; nothing is converted or deleted. |
+| **Text box › Label** | *(Simple)* The field's label on the registration form and profile. | Up to 60 characters. Leave empty to use the built-in "Billing details (organization)", shown as the placeholder. |
+| **Text box › Help text** | *(Simple)* A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. The text box itself is always required once an invoice is needed. |
+| **Organization name**, **Street address**, **Postal code**, **City** | *(Separate fields)* The fixed set of fields. Each row shows its state; open it to change it. | You cannot add your own fields — use [survey questions](#survey) for anything else. Country is the participant's existing Country, not a separate billing field. |
+| *(field)* **› State** | **Off** hides the field, **Optional** shows it, **Required** makes it mandatory once an invoice is needed. | All fields start **Off**, so turn on at least the ones your accounting needs. |
+| *(field)* **› Label** | The field's label for participants. | Up to 60 characters. Leave empty for the built-in English name, shown as the placeholder. |
+| *(field)* **› Help text** | A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. |
 
 ## Survey
 

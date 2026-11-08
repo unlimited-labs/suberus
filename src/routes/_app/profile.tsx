@@ -158,6 +158,10 @@ function SettingsPage() {
 				data: {
 					needInvoice: data.needInvoice,
 					billingText: data.billingText,
+					billingOrganization: data.billingOrganization,
+					billingStreet: data.billingStreet,
+					billingPostalCode: data.billingPostalCode,
+					billingCity: data.billingCity,
 					country: data.country,
 					contactConsent: data.contactConsent,
 				},
@@ -211,6 +215,10 @@ function SettingsPage() {
 								email: user.email,
 								needInvoice: contactInfo.needInvoice,
 								billingText: contactInfo.billingText,
+								billingOrganization: contactInfo.billingOrganization,
+								billingStreet: contactInfo.billingStreet,
+								billingPostalCode: contactInfo.billingPostalCode,
+								billingCity: contactInfo.billingCity,
 								country: contactInfo.country,
 								contactConsent: contactInfo.contactConsent,
 							}}

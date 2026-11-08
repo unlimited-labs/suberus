@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+	BILLING_COLUMNS_IN_FORM,
+	contactInfoFormSchema,
+} from "@/shared/lib/validations/user";
 
 export const loginSchema = z.object({
 	email: z.email("Invalid email address"),
@@ -20,6 +24,7 @@ export const registerBase = z.object({
 	affiliationName: z.string(),
 	needInvoice: z.boolean(),
 	billingText: z.string(),
+	...contactInfoFormSchema.pick(BILLING_COLUMNS_IN_FORM).shape,
 	country: z.string().min(1, "Country is required"),
 	surveyAnswers: z.record(z.string(), z.string()),
 	contactConsent: z.boolean(),

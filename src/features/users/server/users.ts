@@ -63,6 +63,10 @@ export interface AdminUser {
 	affiliationId: string | null;
 	orcid: string | null;
 	billingText: string | null;
+	billingOrganization: string | null;
+	billingStreet: string | null;
+	billingPostalCode: string | null;
+	billingCity: string | null;
 	country: string | null;
 	needInvoice: boolean;
 	role: UserRole;
@@ -279,6 +283,10 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		affiliationId: u.affiliationId,
 		orcid: u.orcid,
 		billingText: u.billingText,
+		billingOrganization: u.billingOrganization,
+		billingStreet: u.billingStreet,
+		billingPostalCode: u.billingPostalCode,
+		billingCity: u.billingCity,
 		country: u.country,
 		needInvoice: u.needInvoice,
 		role: u.role,
@@ -323,6 +331,10 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 		affiliationId: user.affiliationId,
 		orcid: user.orcid,
 		billingText: user.billingText,
+		billingOrganization: user.billingOrganization,
+		billingStreet: user.billingStreet,
+		billingPostalCode: user.billingPostalCode,
+		billingCity: user.billingCity,
 		country: user.country,
 		needInvoice: user.needInvoice,
 		role: user.role,
@@ -720,6 +732,10 @@ export async function updateUserProfile(
 		linkedin: emptyToNull(data.linkedin),
 		needInvoice: data.needInvoice,
 		billingText: emptyToNull(data.billingText),
+		billingOrganization: emptyToNull(data.billingOrganization),
+		billingStreet: emptyToNull(data.billingStreet),
+		billingPostalCode: emptyToNull(data.billingPostalCode),
+		billingCity: emptyToNull(data.billingCity),
 		country: emptyToNull(data.country),
 	};
 

@@ -19,6 +19,11 @@ const baseUser: ExportUser = {
 	isActive: true,
 	needInvoice: false,
 	billingText: null,
+	billingOrganization: null,
+	billingStreet: null,
+	billingPostalCode: null,
+	billingCity: null,
+	country: null,
 	createdAt: new Date("2026-01-02"),
 	lastLoginAt: null,
 	fee: null,
@@ -74,6 +79,28 @@ describe("buildUserExportRow", () => {
 			"Fee Paid At": "FORMATTED",
 			"Need Invoice": "True",
 			"Billing details (text)": "1 Engine St",
+		});
+	});
+
+	it("exports the separate billing fields and the country", () => {
+		const row = buildUserExportRow(
+			{
+				...baseUser,
+				billingOrganization: "ACME Institute",
+				billingStreet: "1 Main St",
+				billingPostalCode: "30-059",
+				billingCity: "Krakow",
+				country: "Poland",
+			},
+			[],
+			fmtDate,
+		);
+		expect(row).toMatchObject({
+			Organization: "ACME Institute",
+			"Street address": "1 Main St",
+			"Postal code": "30-059",
+			City: "Krakow",
+			Country: "Poland",
 		});
 	});
 

@@ -9,10 +9,13 @@ import { useSelector } from "@tanstack/react-store";
 import { useState } from "react";
 import { EmailChangeConfirmDialog } from "@/features/profile/components/email-change-confirm-dialog";
 import type { ContactInfoFormData } from "@/features/profile/validations";
-import { contactInfoSchema } from "@/features/profile/validations";
+import { contactInfoFormSchema } from "@/features/profile/validations";
 import { applyBillingConfig } from "@/features/settings/billing-details-rules";
 import type { BillingDetailsSettings } from "@/features/settings/billing-details-schema";
-import { BillingFieldsGroup } from "@/features/settings/components/billing-details/billing-fields-group";
+import {
+	BILLING_FIELDS_MAP,
+	BillingFieldsGroup,
+} from "@/features/settings/components/billing-details/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useResendVerification } from "@/shared/hooks/use-resend-verification";
@@ -52,7 +55,7 @@ export function ContactInfoSection({
 	);
 	const [isConfirming, setIsConfirming] = useState(false);
 
-	const schema = applyBillingConfig(contactInfoSchema, billingConfig);
+	const schema = applyBillingConfig(contactInfoFormSchema, billingConfig);
 	const form = useAppForm({
 		defaultValues: initialData,
 		validators: {
@@ -155,14 +158,10 @@ export function ContactInfoSection({
 			)}
 
 			<BillingFieldsGroup
+				config={billingConfig}
 				disabled={isLoading}
-				fields={{
-					needInvoice: "needInvoice",
-					billingText: "billingText",
-					country: "country",
-				}}
+				fields={BILLING_FIELDS_MAP}
 				form={form}
-				participantConfig={billingConfig}
 			/>
 
 			{(contactConsentEnabled || initialData.contactConsent) && (

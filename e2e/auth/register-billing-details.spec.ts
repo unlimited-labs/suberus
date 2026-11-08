@@ -10,7 +10,7 @@ const STEP1 = {
 	affiliation: "Test University",
 }
 
-test.describe.serial("Registration - Billing details (Simple mode)", () => {
+test.describe.serial("Registration - Billing details", () => {
 	let restore: () => Promise<void>
 
 	test.beforeAll(async () => {
@@ -75,5 +75,93 @@ test.describe.serial("Registration - Billing details (Simple mode)", () => {
 			select: { needInvoice: true, billingText: true },
 		})
 		expect(user).toEqual({ needInvoice: true, billingText: "ACME Institute\n1 Main St" })
+	})
+
+	const structured = (invoiceRequired: boolean) => ({
+		...DEFAULT_BILLING_DETAILS,
+		invoiceRequired,
+		mode: "STRUCTURED",
+		fields: {
+			...DEFAULT_BILLING_DETAILS.fields,
+			organizationName: { state: "REQUIRED", label: "", help: "" },
+			streetAddress: { state: "OPTIONAL", label: "", help: "" },
+			postalCode: { state: "REQUIRED", label: "", help: "" },
+			city: { state: "REQUIRED", label: "", help: "Town or city of the institution." },
+		},
+	})
+
+	test("Separate fields, Invoice required off: fields appear on request, organization prefilled from affiliation", async ({
+		registerPage,
+		testRun,
+	}) => {
+		test.setTimeout(120_000)
+		await setAppSetting("BILLING_DETAILS", structured(false))
+		const email = `billing-fields-off-${testRun.testRunId}@e2e.local`
+		const page = registerPage.page
+
+		await registerPage.goto()
+		await registerPage.fillStep1({ email, ...STEP1 })
+		await registerPage.clickContinue()
+		await registerPage.waitForStep2()
+
+		await expect(page.getByLabel("Organization name *")).toHaveCount(0)
+		await page.getByRole("checkbox", { name: "I need an invoice for my organization" }).check()
+		await expect(page.getByLabel("Organization name *")).toHaveValue("Test University")
+		await expect(page.getByLabel("Street address", { exact: true })).toBeVisible()
+		await expect(page.getByText("Town or city of the institution.")).toBeVisible()
+
+		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.clickContinue()
+		await expect(page.getByText("This field is required")).toHaveCount(2)
+
+		await page.getByLabel("Postal code *").fill("30-059")
+		await page.getByLabel("City *").fill("Krakow")
+		await expect(page.getByTestId("buyer-summary-card")).toContainText("30-059 Krakow")
+		await registerPage.clickContinue()
+		await registerPage.fillStep3({ acceptTerms: true })
+		await registerPage.clickCreateAccount()
+		await expect(page).toHaveURL("/", { timeout: 15000 })
+
+		const user = await getPrisma().user.findUnique({
+			where: { email },
+			select: {
+				needInvoice: true,
+				billingOrganization: true,
+				billingStreet: true,
+				billingPostalCode: true,
+				billingCity: true,
+			},
+		})
+		expect(user).toEqual({
+			needInvoice: true,
+			billingOrganization: "Test University",
+			billingStreet: null,
+			billingPostalCode: "30-059",
+			billingCity: "Krakow",
+		})
+	})
+
+	test("Separate fields, Invoice required on: no checkbox and REQUIRED fields block step 2", async ({
+		registerPage,
+	}) => {
+		await setAppSetting("BILLING_DETAILS", structured(true))
+		const page = registerPage.page
+
+		await registerPage.goto()
+		await registerPage.fillStep1({ email: "billing-fields-on@example.com", ...STEP1 })
+		await registerPage.clickContinue()
+		await registerPage.waitForStep2()
+
+		await expect(page.getByRole("checkbox", { name: "I need an invoice for my organization" })).toHaveCount(0)
+		await page.getByLabel("Organization name *").fill("")
+		await registerPage.fillStep2({ country: "Poland" })
+		await registerPage.clickContinue()
+		await expect(page.getByText("This field is required")).toHaveCount(3)
+
+		await page.getByLabel("Organization name *").fill("ACME Institute")
+		await page.getByLabel("Postal code *").fill("30-059")
+		await page.getByLabel("City *").fill("Krakow")
+		await registerPage.clickContinue()
+		await expect(page.getByRole("checkbox", { name: /I agree to the/ })).toBeVisible()
 	})
 })
