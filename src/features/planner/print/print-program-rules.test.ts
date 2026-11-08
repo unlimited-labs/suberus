@@ -418,6 +418,27 @@ describe("buildPrintProgram: at-a-glance grid and items", () => {
 		);
 	});
 
+	it("keeps a one-room day's sessions under their room, with only breaks and events as bands", () => {
+		const grid = buildPrintProgram(
+			source({
+				sessions: [
+					session("s1", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+						roomId: "room-a",
+					}),
+				],
+				items: [item("Coffee", "2026-09-14T09:00:00Z", "2026-09-14T09:30:00Z")],
+			}),
+			options,
+		).days[0]?.grid;
+		expect(grid?.columns.map((c) => c.room)).toEqual(["Aula"]);
+		expect(grid?.cells.map((c) => [c.title, c.col, c.colSpan, c.band])).toEqual(
+			[
+				["Session s1", 0, 1, false],
+				["Coffee", 0, 1, true],
+			],
+		);
+	});
+
 	it("lists breaks and events with time and place, describing only events", () => {
 		const items = buildPrintProgram(day, options).days[0]?.items;
 		expect(

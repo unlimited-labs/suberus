@@ -197,13 +197,19 @@ function cellParagraph(
 		: para(paragraphStyle, run(`${cell.title}${suffix}`));
 }
 
+const timeColumnMm = (rows: readonly string[]) =>
+	Math.max(16, ...rows.map((r) => r.length * 1.5 + 4));
+
 function columnsTable(
 	grid: DayGrid,
 	l: PrintLabels,
+	widthMm: number,
 	from = 0,
 	to = grid.columns.length,
 ): PrintTable {
 	const cols = grid.columns.slice(from, to);
+	const timeMm = timeColumnMm(grid.rows);
+	const roomMm = (widthMm - timeMm) / cols.length;
 	const header: TableCellInput[] = [
 		{ row: 0, col: 0, block: para("GridHeader", run(l.time)) },
 		...cols.flatMap((c, i) =>
@@ -239,7 +245,7 @@ function columnsTable(
 			},
 		];
 	});
-	return table([0.6, ...cols.map(() => 1)], 1, grid.rows.length + 1, [
+	return table([timeMm, ...cols.map(() => roomMm)], 1, grid.rows.length + 1, [
 		...header,
 		...times,
 		...body,
@@ -343,7 +349,9 @@ function glanceSections(
 	l: PrintLabels,
 	swatches: PrintDocument["swatches"],
 ): PrintSection[] {
-	return program.days.flatMap((day, i): PrintSection[] => {
+	const sections: PrintSection[] = [];
+	let flowing = false;
+	program.days.forEach((day, i) => {
 		const lead: PrintBlock[] =
 			i === 0
 				? [para("PartHeading", run(l.parts.glance)), ...legend(swatches)]
@@ -354,27 +362,43 @@ function glanceSections(
 			options.bookSize,
 			options.layoutOverride,
 		);
+		const page = { size: options.bookSize, orientation: choice.orientation };
+		const [widthMm] = contentSizeMm(page);
 		const at = choice.layout === "spread" ? splitPoint(day.grid) : null;
 		if (at !== null) {
-			return [
-				section(options, [...lead, heading, columnsTable(day.grid, l, 0, at)], {
-					start: "evenPage",
-				}),
-				section(options, [columnsTable(day.grid, l, at)]),
-			];
+			sections.push(
+				section(
+					options,
+					[...lead, heading, columnsTable(day.grid, l, widthMm, 0, at)],
+					{ start: "evenPage" },
+				),
+				section(options, [columnsTable(day.grid, l, widthMm, at)]),
+			);
+			flowing = false;
+			return;
 		}
 		const body: PrintBlock[] =
 			choice.layout === "transposed"
 				? [transposedTable(day.grid, l)]
 				: choice.layout === "list"
 					? listBlocks(day.grid)
-					: [columnsTable(day.grid, l)];
-		return [
+					: [columnsTable(day.grid, l, widthMm)];
+		const prev = sections.at(-1);
+		if (flowing && prev?.page.orientation === choice.orientation) {
+			sections[sections.length - 1] = {
+				...prev,
+				blocks: [...prev.blocks, heading, ...body],
+			};
+			return;
+		}
+		sections.push(
 			section(options, [...lead, heading, ...body], {
 				orientation: choice.orientation,
 			}),
-		];
+		);
+		flowing = true;
 	});
+	return sections;
 }
 
 function sessionBlocks(s: PrintSession, l: PrintLabels): PrintParagraph[] {

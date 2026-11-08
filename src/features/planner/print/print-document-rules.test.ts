@@ -3,6 +3,7 @@ import {
 	buildPrintDocument,
 	chooseGlanceLayout,
 	breakableAfterRow,
+	columnFractions,
 	tableRows,
 } from "./print-document-rules";
 import { printOptionsSchema } from "./print-options-schema";
@@ -120,9 +121,13 @@ const docFor = (o = options) =>
 	buildPrintDocument(buildPrintProgram(src, o), o, null);
 const text = (p: { runs: { text: string }[] }) =>
 	p.runs.map((r) => r.text).join("");
+const glanceTables = (o = options) =>
+	docFor(o).sections.flatMap((s) =>
+		s.blocks.flatMap((b) => (b.type === "table" ? [b] : [])),
+	);
 
 describe("buildPrintDocument", () => {
-	it("orders the Parts as title, glance, detailed program and author index, each day of a Part on a new page", () => {
+	it("orders the Parts as title, glance, detailed program and author index, each detailed day on a new page", () => {
 		const doc = docFor();
 		const firstHeadings = doc.sections.map((s) => {
 			const p = s.blocks.find((b) => b.type === "paragraph");
@@ -131,17 +136,16 @@ describe("buildPrintDocument", () => {
 		expect(firstHeadings).toEqual([
 			"Title: Polymers 2026",
 			"PartHeading: Program at a glance",
-			"DayHeading: Tuesday 15 September",
 			"PartHeading: Detailed program",
 			"DayHeading: Tuesday 15 September",
 			"PartHeading: Author index",
 		]);
 		expect(doc.draft).toBe(true);
-		expect(doc.sections[5]?.columns).toBe(2);
+		expect(doc.sections[4]?.columns).toBe(2);
 	});
 
 	it("keeps the first day under its Part heading instead of breaking the page twice", () => {
-		const detailed = docFor().sections[3];
+		const detailed = docFor().sections[2];
 		const styles = detailed?.blocks
 			.flatMap((b) => (b.type === "paragraph" ? [b.style] : []))
 			.slice(0, 2);
@@ -149,7 +153,7 @@ describe("buildPrintDocument", () => {
 	});
 
 	it("prints the session code and presenter with their character styles", () => {
-		const detailed = docFor().sections[3];
+		const detailed = docFor().sections[2];
 		const paras =
 			detailed?.blocks.flatMap((b) => (b.type === "paragraph" ? [b] : [])) ??
 			[];
@@ -171,14 +175,30 @@ describe("buildPrintDocument", () => {
 		expect(opening).toMatchObject({ row: 1, col: 1, accent: "#ff0000" });
 	});
 
-	it("spans a day's only session across the grid when there are no room columns", () => {
-		const glanceDay2 = docFor().sections[2];
-		const table = glanceDay2?.blocks.find((b) => b.type === "table");
-		expect(table?.type === "table" && table.columns.length).toBe(2);
-		expect(
-			table?.type === "table" &&
-				table.cells.find((c) => c.row === 1 && c.col === 1)?.blocks[0]?.style,
-		).toBe("GridBand");
+	it("prints a one-room day's session as a cell under its room name", () => {
+		const [, day2] = glanceTables();
+		expect(day2?.columns.length).toBe(2);
+		const at = (row: number) =>
+			day2?.cells.find((c) => c.row === row && c.col === 1)?.blocks[0];
+		const header = at(0);
+		expect(header ? text(header) : null).toBe("Aula");
+		expect(at(1)?.style).toBe("GridCell");
+	});
+
+	it("keeps the time column narrow and shares the rest equally between rooms", () => {
+		const [day1] = glanceTables();
+		const [time, ...rooms] = day1 ? columnFractions(day1) : [];
+		expect(time).toBeGreaterThan(0.08);
+		expect(time).toBeLessThan(0.15);
+		expect(new Set(rooms).size).toBe(1);
+	});
+
+	it("runs the days of the glance one under another on shared pages", () => {
+		const glance = docFor().sections[1];
+		const headings = glance?.blocks.flatMap((b) =>
+			b.type === "paragraph" && b.style === "DayHeading" ? [text(b)] : [],
+		);
+		expect(headings).toEqual(["Monday 14 September", "Tuesday 15 September"]);
 	});
 
 	it("lists a named swatch for every coloured track, none when track colour is off", () => {
