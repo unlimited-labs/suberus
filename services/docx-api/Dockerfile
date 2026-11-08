@@ -47,7 +47,7 @@ RUN --mount=from=ghcr.io/astral-sh/uv:latest,source=/uv,target=/usr/local/bin/uv
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     uv sync --frozen --no-install-project
-COPY main.py config.py omml.py diffhtml.py mathtype.py stylecss.py htmlesc.py ooxml.py signing.py ./
+COPY *.py ./
 COPY core/ ./core/
 COPY routers/ ./routers/
 USER appuser
