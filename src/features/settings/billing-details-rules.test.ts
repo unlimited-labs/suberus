@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import {
 	applyBillingConfig,
+	becomesStricter,
 	buyerLines,
 	invoiceState,
 	registryFill,
+	requirednessOf,
 	submittedBillingValues,
 } from "./billing-details-rules";
 import { DEFAULT_BILLING_DETAILS } from "./billing-details-schema";
@@ -337,5 +339,71 @@ describe("invoiceState", () => {
 				simple,
 			),
 		).toBe("REQUESTED");
+	});
+});
+
+describe("becomesStricter", () => {
+	const saved = DEFAULT_BILLING_DETAILS;
+
+	it("is true when Invoice required is switched on", () => {
+		expect(becomesStricter(saved, { ...saved, invoiceRequired: true })).toBe(
+			true,
+		);
+	});
+
+	it("is true when a field becomes REQUIRED", () => {
+		expect(
+			becomesStricter(saved, {
+				...saved,
+				fields: {
+					...saved.fields,
+					vatId: { state: "REQUIRED", label: "", help: "" },
+				},
+			}),
+		).toBe(true);
+	});
+
+	it("is false for label changes, relaxing, or a field that was already REQUIRED", () => {
+		const required = {
+			...saved,
+			invoiceRequired: true,
+			fields: {
+				...saved.fields,
+				city: { state: "REQUIRED" as const, label: "", help: "" },
+			},
+		};
+		expect(
+			becomesStricter(saved, {
+				...saved,
+				text: { label: "Invoice", help: "" },
+			}),
+		).toBe(false);
+		expect(becomesStricter(required, saved)).toBe(false);
+		expect(becomesStricter(required, required)).toBe(false);
+	});
+});
+
+describe("requirednessOf", () => {
+	it("keeps what decides Incomplete and drops labels, help and the organizer VAT ID", () => {
+		const config = {
+			...DEFAULT_BILLING_DETAILS,
+			invoiceRequired: true,
+			mode: "STRUCTURED" as const,
+			text: { label: "Invoice", help: "Help" },
+			organizerVatId: "PL6750001923",
+			fields: {
+				...DEFAULT_BILLING_DETAILS.fields,
+				city: { state: "REQUIRED" as const, label: "Town", help: "Where" },
+			},
+		};
+		expect(requirednessOf(config)).toEqual({
+			...DEFAULT_BILLING_DETAILS,
+			invoiceRequired: true,
+			mode: "STRUCTURED",
+			fields: {
+				...DEFAULT_BILLING_DETAILS.fields,
+				city: { state: "REQUIRED", label: "", help: "" },
+			},
+		});
 	});
 });

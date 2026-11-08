@@ -25,10 +25,12 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
+import { myInvoiceStateQueryOptions } from "@/features/settings/api/billing-status";
 import {
 	billingDetailsConfigQueryOptions,
 	getRegistrationStatusFn,
 } from "@/features/settings/api/settings";
+import { IncompleteBillingBanner } from "@/features/settings/components/billing-details/incomplete-billing-banner";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -169,6 +171,7 @@ function SettingsPage() {
 			});
 			await Promise.all([
 				queryClient.invalidateQueries(contactInfoQueryOptions()),
+				queryClient.invalidateQueries(myInvoiceStateQueryOptions()),
 				refetchSession(),
 			]);
 			if (data.email === user.email) {
@@ -189,6 +192,7 @@ function SettingsPage() {
 			<PageHeader icon={IconUser} title="Profile" />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl space-y-8">
+					<IncompleteBillingBanner />
 					<SettingsSection
 						delay={0}
 						description="Update your name, title, and professional details"
@@ -201,33 +205,35 @@ function SettingsPage() {
 						/>
 					</SettingsSection>
 
-					<SettingsSection
-						delay={100}
-						description="Update your email and billing address"
-						icon={IconMail}
-						title="Contact & Invoice Information"
-					>
-						<ContactInfoSection
-							billingConfig={billingConfig}
-							contactConsentEnabled={contactConsentEnabled}
-							currentEmail={user.email}
-							emailVerified={user.emailVerified}
-							initialData={{
-								email: user.email,
-								needInvoice: contactInfo.needInvoice,
-								billingText: contactInfo.billingText,
-								billingOrganization: contactInfo.billingOrganization,
-								billingStreet: contactInfo.billingStreet,
-								billingPostalCode: contactInfo.billingPostalCode,
-								billingCity: contactInfo.billingCity,
-								vatId: contactInfo.vatId,
-								country: contactInfo.country,
-								contactConsent: contactInfo.contactConsent,
-							}}
-							onSave={handleContactInfoSave}
-							pendingEmail={pendingEmail}
-						/>
-					</SettingsSection>
+					<div className="scroll-mt-4" id="contact-invoice">
+						<SettingsSection
+							delay={100}
+							description="Update your email and billing address"
+							icon={IconMail}
+							title="Contact & Invoice Information"
+						>
+							<ContactInfoSection
+								billingConfig={billingConfig}
+								contactConsentEnabled={contactConsentEnabled}
+								currentEmail={user.email}
+								emailVerified={user.emailVerified}
+								initialData={{
+									email: user.email,
+									needInvoice: contactInfo.needInvoice,
+									billingText: contactInfo.billingText,
+									billingOrganization: contactInfo.billingOrganization,
+									billingStreet: contactInfo.billingStreet,
+									billingPostalCode: contactInfo.billingPostalCode,
+									billingCity: contactInfo.billingCity,
+									vatId: contactInfo.vatId,
+									country: contactInfo.country,
+									contactConsent: contactInfo.contactConsent,
+								}}
+								onSave={handleContactInfoSave}
+								pendingEmail={pendingEmail}
+							/>
+						</SettingsSection>
+					</div>
 
 					<SettingsSection
 						delay={200}

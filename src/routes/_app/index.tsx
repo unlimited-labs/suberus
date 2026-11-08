@@ -12,6 +12,7 @@ import { myAnnouncementsQueryOptions } from "@/features/announcements/api/announ
 import { AnnouncementInboxCard } from "@/features/announcements/components/announcement-inbox-card";
 import { redirectExhibitorRouteMiddleware } from "@/features/auth/server/middleware";
 import { userDashboardQueryOptions } from "@/features/dashboard/api/user-dashboard";
+import { IncompleteBillingBanner } from "@/features/settings/components/billing-details/incomplete-billing-banner";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useSession } from "@/shared/hooks/use-session";
 
@@ -66,6 +67,7 @@ function DashboardPage() {
 		<div className="flex h-full flex-col">
 			<PageHeader icon={IconDashboard} title="Dashboard" />
 			<div className="flex-1 space-y-6 p-6">
+				<IncompleteBillingBanner />
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<StatCard title="Total Submissions" value={data.mySubmissions} />
 					<StatCard title="Under Review" value={data.underReview} />

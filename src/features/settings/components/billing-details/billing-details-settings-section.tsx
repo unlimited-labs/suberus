@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/shared/ui/badge";
 import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { BillingDetailsPreview } from "./billing-details-preview";
+import { IncompleteCountWarning } from "./incomplete-count-warning";
 import {
 	type BillingDetailsSettingsForm,
 	useBillingDetailsSettings,
@@ -270,6 +271,7 @@ export function BillingDetailsSettingsSection({
 								</div>
 							)}
 						</form.AppField>
+						<IncompleteCountWarning draft={config} saved={initialData} />
 						<ModeCards form={form} />
 						<FieldAccordion form={form} />
 						<form.AppField name="organizerVatId">

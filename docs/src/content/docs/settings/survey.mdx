@@ -49,6 +49,25 @@ labels and card later in **Profile › Contact & Invoice Information**, where th
 
 🖼️ [Screenshot placeholder: registration step 2 in Separate fields mode with the Buyer on your invoice card]
 
+### Incomplete Billing details
+
+A participant's Billing details are **Incomplete** when they need an invoice (they asked for
+one, or Invoice required is on) but a field the current form requires is empty.
+
+- **Participants** see a banner — *Your billing details are incomplete. Complete them* — on
+  their dashboard and profile until the details are complete. It cannot be dismissed. The
+  fee page shows the same message, but payment is never blocked.
+- **When you make the form stricter** — switch Invoice required on, or set a field to
+  **Required** — the section shows *N participants will have Incomplete Billing details once
+  you save*, with a **See who** link to the users list filtered by Incomplete. The count
+  already uses your unsaved changes; the list reflects them only after you save. Saving is
+  never blocked.
+- **Suberus sends no reminder e-mails on its own.** To remind people, open **Users**, filter
+  the **Invoice** column by **Incomplete**, select all, and choose **Send email** or **Send
+  announcement** from the bulk actions.
+
+🖼️ [Screenshot placeholder: "N participants will have Incomplete Billing details" warning in the Billing details section]
+
 ### VAT ID registry check
 
 When a participant leaves the VAT ID field with a number whose check digit is correct,

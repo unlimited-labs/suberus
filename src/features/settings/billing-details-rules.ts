@@ -2,8 +2,10 @@ import type { z } from "zod";
 import type { VatIdCheck } from "@/generated/prisma/client";
 import {
 	activeBillingFields,
+	BILLING_FIELD_KEYS,
 	type BillingCatalogueColumn,
 	type BillingDetailsSettings,
+	type BillingFieldState,
 } from "./billing-details-schema";
 
 export interface BillingColumnValues {
@@ -178,6 +180,38 @@ export function billingColumnsToDb(values: BillingColumnValues) {
 		billingPostalCode: values.billingPostalCode || null,
 		billingCity: values.billingCity || null,
 		vatId: values.vatId || null,
+	};
+}
+
+export function becomesStricter(
+	saved: BillingDetailsSettings,
+	draft: BillingDetailsSettings,
+): boolean {
+	if (draft.invoiceRequired && !saved.invoiceRequired) return true;
+	return BILLING_FIELD_KEYS.some(
+		(key) =>
+			draft.fields[key].state === "REQUIRED" &&
+			saved.fields[key].state !== "REQUIRED",
+	);
+}
+
+/** Only what decides Incomplete, so editing a label keeps the count query key stable. */
+export function requirednessOf(
+	config: BillingDetailsSettings,
+): BillingDetailsSettings {
+	const blank = (state: BillingFieldState) => ({ state, label: "", help: "" });
+	return {
+		invoiceRequired: config.invoiceRequired,
+		mode: config.mode,
+		text: { label: "", help: "" },
+		fields: {
+			organizationName: blank(config.fields.organizationName.state),
+			streetAddress: blank(config.fields.streetAddress.state),
+			postalCode: blank(config.fields.postalCode.state),
+			city: blank(config.fields.city.state),
+			vatId: blank(config.fields.vatId.state),
+		},
+		organizerVatId: "",
 	};
 }
 

@@ -77,6 +77,12 @@ test.describe.serial("Users - Billing details", () => {
 
 		await expect(rowByEmail(incomplete.email)).toBeVisible()
 		await expect(rowByEmail(requested.email)).toHaveCount(0)
+
+		await page.goto("/admin/users?invoice=INCOMPLETE")
+		await adminUsersPage.waitForLoad()
+		await adminUsersPage.search(stamp)
+		await expect(rowByEmail(incomplete.email)).toBeVisible()
+		await expect(rowByEmail(requested.email)).toHaveCount(0)
 	})
 
 	test("user detail shows the Billing details with the VAT ID registry result", async ({ page }) => {
@@ -89,5 +95,37 @@ test.describe.serial("Users - Billing details", () => {
 		await expect(section).toContainText("Verified")
 		await expect(section).toContainText("Registry: UNIWERSYTET JAGIELLOŃSKI")
 		await expect(section.getByRole("button", { name: "Re-check" })).toBeVisible()
+	})
+
+	test("Incomplete users reach a Bulk email draft through the filter and select-all", async ({
+		adminUsersPage,
+		page,
+	}, testInfo) => {
+		test.skip(testInfo.project.name === "mobile-admin", "selection and composer are desktop-only")
+		const rowByEmail = (email: string) =>
+			page.getByTestId("user-row").filter({ visible: true, has: page.locator(`text="${email}"`) })
+
+		await adminUsersPage.goto()
+		await adminUsersPage.waitForLoad()
+		await adminUsersPage.search(stamp)
+		await page
+			.getByRole("columnheader")
+			.filter({ hasText: "Invoice" })
+			.getByRole("button", { name: "Filter" })
+			.click()
+		await page.locator("[data-slot='popover-content']").getByRole("checkbox", { name: "Incomplete" }).click()
+		await page.keyboard.press("Escape")
+		await expect(rowByEmail(incomplete.email)).toBeVisible()
+		await expect(rowByEmail(requested.email)).toHaveCount(0)
+
+		await adminUsersPage.selectAllUsers()
+		const campaignId = await adminUsersPage.openBulkEmailComposer()
+
+		await expect(page.getByTestId("recipient-count")).toHaveText("1")
+		const recipients = await getPrisma().emailCampaignRecipient.findMany({
+			where: { campaignId },
+			select: { userId: true },
+		})
+		expect(recipients).toEqual([{ userId: incomplete.id }])
 	})
 })

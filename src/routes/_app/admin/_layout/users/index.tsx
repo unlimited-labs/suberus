@@ -2,6 +2,7 @@ import { IconDownload, IconUserPlus, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { z } from "zod";
 import {
 	billingDetailsConfigQueryOptions,
 	feeCurrencyQueryOptions,
@@ -13,6 +14,7 @@ import {
 	buildUserColumns,
 	type SurveyListColumn,
 } from "@/features/users/components/columns";
+import { InitialInvoiceFilter } from "@/features/users/components/initial-invoice-filter";
 import { UserBulkActions } from "@/features/users/components/user-bulk-actions";
 import { UserCreateDialog } from "@/features/users/components/user-create-dialog";
 import { UserMobileCard } from "@/features/users/components/user-mobile-card";
@@ -20,7 +22,12 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
+const searchSchema = z.object({
+	invoice: z.enum(["NONE", "REQUESTED", "INCOMPLETE"]).optional(),
+});
+
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
+	validateSearch: searchSchema,
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.ensureQueryData(adminUsersQueryOptions()),
@@ -45,6 +52,7 @@ const columnLabels = {
 
 function UsersPage() {
 	const [createOpen, setCreateOpen] = useState(false);
+	const { invoice } = Route.useSearch();
 	const { data: users } = useSuspenseQuery(adminUsersQueryOptions());
 	const { data: surveyQuestions } = useSuspenseQuery(
 		adminSurveyQuestionsQueryOptions(),
@@ -106,7 +114,10 @@ function UsersPage() {
 					toolbar={(table, rowSelection) => (
 						<DataTableToolbar
 							actions={
-								<UserBulkActions rowSelection={rowSelection} table={table} />
+								<>
+									<InitialInvoiceFilter invoice={invoice} table={table} />
+									<UserBulkActions rowSelection={rowSelection} table={table} />
+								</>
 							}
 							columnLabels={dynamicColumnLabels}
 							searchKey="name"

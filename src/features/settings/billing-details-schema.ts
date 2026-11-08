@@ -20,6 +20,11 @@ export const VAT_ID_FIELD = {
 	name: "VAT ID",
 } as const;
 
+export const BILLING_FIELD_KEYS = [
+	...STRUCTURED_BILLING_FIELDS.map((f) => f.key),
+	VAT_ID_FIELD.key,
+];
+
 export type StructuredBillingField = (typeof STRUCTURED_BILLING_FIELDS)[number];
 export type BillingCatalogueField =
 	| StructuredBillingField
@@ -78,6 +83,10 @@ export const billingDetailsSettingsSchema = z.object({
 		return result.value;
 	}),
 });
+
+export type BillingFieldState = z.infer<
+	typeof billingFieldConfigSchema
+>["state"];
 
 export type BillingDetailsSettings = z.infer<
 	typeof billingDetailsSettingsSchema
