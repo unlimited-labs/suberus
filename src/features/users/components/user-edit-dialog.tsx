@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
+import { BillingFieldsGroup } from "@/features/settings/components/billing-details/billing-fields-group";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
@@ -10,7 +11,6 @@ import { UserContactFieldsGroup } from "@/features/users/components/user-contact
 import type { AdminUser } from "@/features/users/server/users";
 import type { AdminUserEditFormData } from "@/features/users/validations";
 import { adminUserEditSchema } from "@/features/users/validations";
-import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { Button } from "@/shared/ui/button";

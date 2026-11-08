@@ -1,26 +1,70 @@
 ---
-title: Survey
-description: Build custom questions shown to users during registration and in their settings.
+title: Registration form
+description: Configure the Billing details participants give at registration, and build custom survey questions shown during registration and in their settings.
 sidebar:
   order: 13
 ---
 
 import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-The **Survey** tab lets you build your own questions that users answer during
-registration and can revisit in their settings — for example dietary requirements,
-t-shirt size, or consent checkboxes. You control the order, the question type, and
-whether each answer appears as a column in the users list.
+The **Registration form** tab controls what participants fill in beyond their name and
+affiliation: the **Billing details** you need to issue invoices (top of the tab), and
+your own **survey** questions (below).
 
 <Aside type="note" title="Where to find it">
-**Settings › Survey.** Existing questions are listed, each with a drag handle
-to reorder it; below them, **Add question** opens a dialog for a new one and
-**Import template** adds a predefined set in one click.
+**Settings › Registration form.** The Billing details section sits at the top. Below it,
+existing survey questions are listed, each with a drag handle to reorder it;
+**Add question** opens a dialog for a new one and **Import template** adds a predefined
+set in one click.
 </Aside>
+
+## Billing details
+
+What participants enter on step 2 of registration (and later in **Profile › Contact &
+Invoice Information**) so you can issue them an invoice. The right-hand panel previews
+exactly what participants will see as you edit; on a phone, switch between
+**Configure** and **Preview** at the top of the section.
+
+🖼️ [Screenshot placeholder: the Billing details section with Invoice required on and the live preview]
+
+### How to require an invoice from everyone
+
+<Steps>
+
+1. Switch on **Invoice required**. The preview drops the "I need an invoice" checkbox
+   and marks the Billing details field as mandatory.
+
+2. Open the **Text box** row and, optionally, give the field your own **Label** and
+   **Help text** (for example, which details your accounting needs).
+
+3. Click **Save**.
+
+</Steps>
+
+<Aside type="caution">
+Invoice required applies to new registrations and to profile saves from then on.
+Participants who registered earlier without Billing details are not blocked, but they
+must fill them in the next time they save their profile. Accounts you create yourself
+in **Users** are exempt.
+</Aside>
+
+| Field | What it does | What to enter / Notes |
+|---|---|---|
+| **Invoice required** | Every participant must give Billing details; the "I need an invoice" checkbox disappears and their account is marked as needing an invoice. | Off by default. When off, participants tick "I need an invoice" themselves (unticked by default) and the details become mandatory only then. |
+| **Simple** / **Separate fields** | How participants enter the details: one free-text box, or separate fields. | **Simple** is the default. **Separate fields** is not available yet. |
+| **Text box › Label** | The field's label on the registration form and profile. | Up to 60 characters. Leave empty to use the built-in "Billing details (organization)", shown as the placeholder. |
+| **Text box › Help text** | A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. |
+
+## Survey
+
+Build your own questions that users answer during registration and can revisit in
+their settings — for example dietary requirements, t-shirt size, or consent checkboxes.
+You control the order, the question type, and whether each answer appears as a column
+in the users list.
 
 ![Survey tab](../../../assets/screenshots/13-configuration-survey.png)
 
-## How to add a question
+### How to add a question
 
 <Steps>
 
@@ -42,7 +86,7 @@ to reorder it; below them, **Add question** opens a dialog for a new one and
 
 </Steps>
 
-## Importing a template
+### Importing a template
 
 Templates are predefined question sets you can drop in instead of building from
 scratch, then edit or remove like any other question.
@@ -64,7 +108,7 @@ scratch, then edit or remove like any other question.
 |---|---|
 | **Dietary requirements – basic** | A *Multi Select* "Dietary requirements" (Vegetarian, Vegan, Gluten-free, Lactose-free, Halal, Kosher, Nut allergy) with **Allow 'Other'** on. |
 
-## Question fields
+### Question fields
 
 | Field | What it does | What to enter / Notes |
 |---|---|---|

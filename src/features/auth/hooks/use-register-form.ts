@@ -1,11 +1,15 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useSelector } from "@tanstack/react-store";
 import { useState } from "react";
 import { toast } from "sonner";
 import { detectCountry } from "@/features/auth/detect-country";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
 import { registerSchema } from "@/features/auth/validations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
+import {
+	applyBillingConfig,
+	invoiceNeeded,
+} from "@/features/settings/billing-details-rules";
+import type { BillingDetailsSettings } from "@/features/settings/billing-details-schema";
 import type { SurveyAudience } from "@/generated/prisma/enums";
 import type { SurveyQuestionData } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
@@ -32,6 +36,7 @@ interface UseRegisterFormArgs {
 	tosContent: RegisterTosContent;
 	invitation: { email: string; role: string } | null;
 	token: string | undefined;
+	billingConfig: BillingDetailsSettings;
 	effects: RegisterEffects;
 }
 
@@ -148,6 +153,7 @@ export function useRegisterForm({
 	tosContent,
 	invitation,
 	token,
+	billingConfig,
 	effects,
 }: UseRegisterFormArgs) {
 	const navigate = useNavigate();
@@ -182,7 +188,7 @@ export function useRegisterForm({
 			lastName: "",
 			affiliationId: "",
 			affiliationName: "",
-			needInvoice: true,
+			needInvoice: billingConfig.invoiceRequired,
 			billingText: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
@@ -190,7 +196,7 @@ export function useRegisterForm({
 			acceptTerms: !tosContent,
 		},
 		validators: {
-			onSubmit: registerSchema,
+			onSubmit: applyBillingConfig(registerSchema, billingConfig),
 		},
 		onSubmit: async ({ value }) => {
 			if (!(await ensureRegistrationOpen(token))) return;
@@ -203,7 +209,7 @@ export function useRegisterForm({
 				firstName: value.firstName,
 				title: value.title || undefined,
 				affiliationId: value.affiliationId || undefined,
-				needInvoice: value.needInvoice,
+				needInvoice: invoiceNeeded(value.needInvoice, billingConfig),
 				contactConsent: value.contactConsent,
 				billingText: value.billingText || undefined,
 				country: value.country || undefined,
@@ -227,8 +233,6 @@ export function useRegisterForm({
 			await finishRegistration(accountType, effects, navigate, roleGranted);
 		},
 	});
-
-	const needInvoice = useSelector(form.store, (s) => s.values.needInvoice);
 
 	const validateStep = async (step: number): Promise<boolean> => {
 		// SAFETY: the template literals already have that form; TS widens them to string.
@@ -272,7 +276,6 @@ export function useRegisterForm({
 		setAccountType,
 		tosOpen,
 		setTosOpen,
-		needInvoice,
 		currentStep,
 		next,
 		prev,

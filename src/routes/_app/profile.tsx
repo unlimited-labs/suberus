@@ -25,7 +25,10 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
-import { getRegistrationStatusFn } from "@/features/settings/api/settings";
+import {
+	billingDetailsConfigQueryOptions,
+	getRegistrationStatusFn,
+} from "@/features/settings/api/settings";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -45,6 +48,7 @@ export const Route = createFileRoute("/_app/profile")({
 			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
 			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
 			getRegistrationStatusFn(),
+			context.queryClient.ensureQueryData(billingDetailsConfigQueryOptions()),
 		]);
 		return { contactConsentEnabled: registrationStatus.contactConsentEnabled };
 	},
@@ -85,6 +89,9 @@ function SettingsPage() {
 	};
 	const { data: personalInfo } = useSuspenseQuery(personalInfoQueryOptions());
 	const { data: contactInfo } = useSuspenseQuery(contactInfoQueryOptions());
+	const { data: billingConfig } = useSuspenseQuery(
+		billingDetailsConfigQueryOptions(),
+	);
 	const { data: surveyQuestions } = useSuspenseQuery(
 		activeSurveyQuestionsQueryOptions(),
 	);
@@ -196,6 +203,7 @@ function SettingsPage() {
 						title="Contact & Invoice Information"
 					>
 						<ContactInfoSection
+							billingConfig={billingConfig}
 							contactConsentEnabled={contactConsentEnabled}
 							currentEmail={user.email}
 							emailVerified={user.emailVerified}

@@ -1,4 +1,5 @@
 import type { ReviewMode } from "@/generated/prisma/enums";
+import type { BillingDetailsSettings } from "./billing-details-schema";
 import type { SupportedFileExtension } from "./file-types";
 
 export type ContentFormat = "TEXT" | "FILE";
@@ -193,6 +194,8 @@ export type AppSettingsMap = {
 	TIME_FORMAT: "24h" | "12h";
 
 	INVITATION_VALIDITY_HOURS: number;
+
+	BILLING_DETAILS: BillingDetailsSettings;
 
 	SCHEDULE_STATE: {
 		status: "DRAFT" | "DRAFT_PUBLISHED" | "PUBLISHED";

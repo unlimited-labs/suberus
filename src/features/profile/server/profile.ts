@@ -1,5 +1,10 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import {
+	billingTextError,
+	invoiceNeeded,
+} from "@/features/settings/billing-details-rules";
+import { getSetting } from "@/features/settings/server/settings";
 import { prisma } from "@/shared/server/db.server";
 
 export async function getPersonalInfo(userId: string) {
@@ -90,10 +95,15 @@ export async function updateContactInfo(
 		contactConsent?: boolean;
 	},
 ) {
+	const config = await getSetting("BILLING_DETAILS");
+	const needInvoice = invoiceNeeded(data.needInvoice === true, config);
+	const message = billingTextError(data.billingText, needInvoice);
+	if (message) throw new Response(message, { status: 400 });
+
 	const result = await prisma.user.update({
 		where: { id: userId },
 		data: {
-			needInvoice: data.needInvoice,
+			needInvoice,
 			billingText: data.billingText || null,
 			country: data.country || null,
 			contactConsent: data.contactConsent,

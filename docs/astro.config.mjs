@@ -71,7 +71,7 @@ export default defineConfig({
 						{ label: 'Fee', slug: 'settings/fee' },
 						{ label: 'Finances', slug: 'settings/finances' },
 						{ label: 'Reminders', slug: 'settings/reminders' },
-						{ label: 'Survey', slug: 'settings/survey' },
+						{ label: 'Registration form', slug: 'settings/survey' },
 						{ label: 'Documents', slug: 'settings/documents' },
 						{
 							label: 'Terms of Service',

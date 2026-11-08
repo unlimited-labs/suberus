@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
+import { BillingFieldsGroup } from "@/features/settings/components/billing-details/billing-fields-group";
 import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import {
 	adminUsersQueryOptions,
@@ -13,7 +14,6 @@ import {
 import { UserContactFieldsGroup } from "@/features/users/components/user-contact-fields-group";
 import type { AdminUserCreateFormData } from "@/features/users/validations";
 import { adminUserCreateSchema } from "@/features/users/validations";
-import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";

@@ -117,6 +117,7 @@ export class RegisterPage {
 		const combobox = countryField.getByRole("combobox")
 
 		if (data.address) {
+			await this.page.getByRole("checkbox", { name: "I need an invoice for my organization" }).check()
 			await this.page.getByLabel("Billing details (organization)").fill(data.address)
 		}
 

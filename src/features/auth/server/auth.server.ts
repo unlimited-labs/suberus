@@ -5,6 +5,7 @@ import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError } from "better-auth/api";
 import { jwt, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "@/env";
@@ -17,6 +18,10 @@ import {
 	mcpClientUpdatedDetail,
 } from "@/features/auth/server/cimd-audit-rules";
 import { MCP_SCOPES } from "@/features/mcp/scopes";
+import {
+	billingTextError,
+	invoiceNeeded,
+} from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
 import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
@@ -32,12 +37,17 @@ export const MCP_RESOURCE_NAME = "Suberus MCP";
 
 /** better-auth types hook payloads as the base user; the additionalFields declared
  * below are present at runtime but absent from that type. */
-type AuthUserExtras = { firstName?: string; affiliationId?: string };
+type AuthUserExtras = {
+	firstName?: string;
+	affiliationId?: string;
+	needInvoice?: boolean;
+	billingText?: string;
+};
 
 function authUserExtras<T extends { email: string }>(
 	user: T,
 ): T & AuthUserExtras {
-	// SAFETY: both keys are declared in `user.additionalFields` on the config below.
+	// SAFETY: every key is declared in `user.additionalFields` on the config below.
 	return user as T & AuthUserExtras;
 }
 
@@ -117,6 +127,8 @@ const mcpPlugins = env.MCP_ENABLED
 export const auth = betterAuth({
 	baseURL: env.APP_BASE_URL,
 	secret: env.AUTH_SECRET,
+	// Participant writes go through our server fns, which enforce Billing details rules.
+	disabledPaths: ["/update-user"],
 	trustedOrigins:
 		env.NODE_ENV === "development"
 			? [
@@ -285,6 +297,14 @@ export const auth = betterAuth({
 		},
 		user: {
 			create: {
+				before: async (user) => {
+					const config = await getSetting("BILLING_DETAILS");
+					const extUser = authUserExtras(user);
+					const needed = invoiceNeeded(extUser.needInvoice === true, config);
+					const message = billingTextError(extUser.billingText, needed);
+					if (message) throw new APIError("BAD_REQUEST", { message });
+					return { data: { ...user, needInvoice: needed } };
+				},
 				after: async (user) => {
 					await logActivity({
 						type: "USER_REGISTERED",
