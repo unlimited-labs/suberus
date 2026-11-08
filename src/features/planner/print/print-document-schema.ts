@@ -19,6 +19,15 @@ const PARAGRAPH_STYLES = [
 	"GridTime",
 	"GridCell",
 	"GridBand",
+	"BlockHeading",
+	"GridRoom",
+	"GridSession",
+	"GridChairs",
+	"TalkTime",
+	"TalkBadge",
+	"TalkTitle",
+	"TalkPresenter",
+	"TalkAffiliation",
 	"Legend",
 	"IndexLetter",
 	"IndexEntry",
@@ -34,6 +43,7 @@ const CHARACTER_STYLES = [
 	"Cancelled",
 	"Badge",
 	"Invited",
+	"Label",
 ] as const;
 
 export type ParagraphStyle = (typeof PARAGRAPH_STYLES)[number];
@@ -70,6 +80,9 @@ const tableSchema = z.object({
 			rowSpan: z.number().int().min(1),
 			colSpan: z.number().int().min(1),
 			accent: hexColor.nullable(),
+			fill: z
+				.object({ color: hexColor, tint: z.number().int().min(1).max(100) })
+				.nullable(),
 			blocks: z.array(paragraphSchema),
 		}),
 	),

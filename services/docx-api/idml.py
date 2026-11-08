@@ -39,6 +39,15 @@ PARAGRAPH_STYLES: dict[str, tuple[float, str, dict[str, str]]] = {
     "GridTime": (7, "Regular", {}),
     "GridCell": (7, "Regular", {}),
     "GridBand": (7.5, "Bold", {"Justification": "CenterAlign"}),
+    "BlockHeading": (8.5, "Bold", {}),
+    "GridRoom": (8, "Bold", {"Justification": "CenterAlign", "Capitalization": "AllCaps"}),
+    "GridSession": (7.5, "Regular", {"Justification": "CenterAlign"}),
+    "GridChairs": (7, "Regular", {"Justification": "CenterAlign"}),
+    "TalkTime": (6.5, "Regular", {"Justification": "CenterAlign"}),
+    "TalkBadge": (6.5, "Regular", {"Underline": "true"}),
+    "TalkTitle": (7.5, "Regular", {}),
+    "TalkPresenter": (7, "Bold", {"SpaceBefore": "2"}),
+    "TalkAffiliation": (6.5, "Italic", {}),
     "Legend": (7.5, "Regular", {"SpaceAfter": "6"}),
     "IndexLetter": (11, "Bold", {"SpaceBefore": "6", "KeepWithNext": "1"}),
     "IndexEntry": (8, "Regular", {}),
@@ -58,8 +67,13 @@ CHARACTER_STYLES = {
     "Cancelled": {"StrikeThru": "true"},
     "Badge": {"FontStyle": "Bold", "Capitalization": "SmallCaps"},
     "Invited": {"FontStyle": "Bold", "Capitalization": "SmallCaps"},
+    "Label": {"FontStyle": "Bold"},
 }
-CELL_STYLES = ["GridHeader", "GridTime", "GridCell", "GridBand"]
+CELL_STYLES: dict[str, dict[str, str]] = {
+    "GridHeader": {}, "GridTime": {}, "GridCell": {}, "GridBand": {}, "BlockHeading": {},
+    "GridRoom": {},
+    "TalkTime": {"RotationAngle": "270", "VerticalJustification": "CenterAlign"},
+}
 
 
 XML_ILLEGAL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
@@ -98,8 +112,9 @@ def page_size(section: Section) -> tuple[float, float]:
     return mm(w), mm(h)
 
 
-def color_self(name: str) -> str:
-    return f"Color/Track: {name}"
+# InDesign splits a reference at spaces, so a swatch id must not carry the track name.
+def color_self(index: int) -> str:
+    return f"Color/utrack{index}"
 
 
 def styles_xml(language: str) -> bytes:
@@ -130,9 +145,9 @@ def styles_xml(language: str) -> bytes:
                                         "Name": source, "Level": level}, props))
     cells = el("RootCellStyleGroup", {"Self": "u_rcellsg"},
                el("CellStyle", {"Self": "CellStyle/$ID/[None]", "Name": "$ID/[None]"}))
-    for name in CELL_STYLES:
+    for name, extra in CELL_STYLES.items():
         cells.append(el("CellStyle", {"Self": f"CellStyle/{name}", "Name": name,
-                                      "AppliedParagraphStyle": f"ParagraphStyle/{name}"}))
+                                      "AppliedParagraphStyle": f"ParagraphStyle/{name}", **extra}))
     cells.append(el("CellStyle", {"Self": "CellStyle/GridEmpty", "Name": "GridEmpty",
                                   "AppliedParagraphStyle": "ParagraphStyle/GridCell",
                                   "FillColor": "Color/Black", "FillTint": "10"}))
@@ -145,13 +160,24 @@ def styles_xml(language: str) -> bytes:
     return to_bytes(pkg_root("Styles", chars, paras, toc, cells, tables, objects))
 
 
+SWATCH = {"ColorOverride": "Normal", "AlternateLayer": "n", "AlternateSpace": "NoAlternateColor",
+          "AlternateColorValue": "", "ColorEditable": "true", "ColorRemovable": "true",
+          "Visible": "true", "SwatchCreatorID": "7937"}
+
+
 def graphic_xml(doc: PrintDocument) -> bytes:
+    # References to a swatch the package does not declare (even Black) are dropped on open.
+    black = el("Color", {**SWATCH, "Self": "Color/Black", "Model": "Process", "Space": "CMYK",
+                         "ColorValue": "0 0 0 100", "ColorOverride": "Specialblack",
+                         "Name": "Black", "ColorEditable": "false", "ColorRemovable": "false"})
+    none = el("Swatch", {"Self": "Swatch/None", "Name": "None", "ColorEditable": "false",
+                         "ColorRemovable": "false", "Visible": "true", "SwatchCreatorID": "7937"})
     colors = []
-    for s in doc.swatches:
+    for n, s in enumerate(doc.swatches):
         rgb = " ".join(str(int(s.color[i:i + 2], 16)) for i in (1, 3, 5))
-        colors.append(el("Color", {"Self": color_self(s.name), "Model": "Process", "Space": "RGB",
-                                   "ColorValue": rgb, "Name": f"Track: {s.name}"}))
-    return to_bytes(pkg_root("Graphic", *colors))
+        colors.append(el("Color", {**SWATCH, "Self": color_self(n), "Model": "Process",
+                                   "Space": "RGB", "ColorValue": rgb, "Name": f"Track: {s.name}"}))
+    return to_bytes(pkg_root("Graphic", black, none, *colors))
 
 
 def margin() -> etree._Element:
@@ -219,6 +245,8 @@ def table_cell(sid, r, k, cell, swatch):
              "AppliedCellStyle": f"CellStyle/{style}"}
     if cell.accent:
         attrs |= {"LeftEdgeStrokeWeight": 3, "LeftEdgeStrokeColor": swatch(cell.accent)}
+    if cell.fill:
+        attrs |= {"FillColor": swatch(cell.fill.color), "FillTint": cell.fill.tint}
     node = el("Cell", attrs)
     for i, p in enumerate(cell.blocks):
         node.append(paragraph_range(p, swatch, last=i == len(cell.blocks) - 1))
@@ -258,17 +286,35 @@ class PlannedPage:
     master: str
 
 
+def paragraph_lines(p: Paragraph, width_pt: float) -> int:
+    chars_per_line = max(8, width_pt / 3.6)
+    return 1 + int(sum(len(r.text) for r in p.runs) // chars_per_line)
+
+
+def table_height(t: Table, width_pt: float) -> float:
+    total = sum(c.widthWeight for c in t.columns)
+    rows = [14.0] * t.rowCount
+    for c in t.cells:
+        cell_pt = width_pt * sum(col.widthWeight for col in t.columns[c.col:c.col + c.colSpan]) / total
+        h = 8 + 9.5 * sum(paragraph_lines(p, cell_pt) for p in c.blocks)
+        for r in range(c.row, min(c.row + c.rowSpan, t.rowCount)):
+            rows[r] = max(rows[r], h / c.rowSpan)
+    return sum(rows) + 10
+
+
+# Headless InDesign does not reflow on open, so the planned pages must hold the whole story.
 def estimate_pages(section: Section) -> int:
     w, h = page_size(section)
     content = (h - mm(2 * MARGIN_MM + FOOTER_MM)) * section.columns
-    chars_per_line = max(30, (w - mm(2 * MARGIN_MM)) / section.columns / 4.2)
+    width = (w - mm(2 * MARGIN_MM)) / section.columns
+    chars_per_line = max(30, width / 4.2)
     used = 0.0
     for b in section.blocks:
         if b.type == "paragraph":
             text = sum(len(r.text) for r in b.runs)
             used += 14 * (1 + text // chars_per_line)
         elif b.type == "table":
-            used += 20 * b.rowCount
+            used += table_height(b, width)
         else:
             used += 120
     return max(1, math.ceil(used / content))
@@ -443,7 +489,7 @@ CONTAINER = (b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
 
 
 def build_idml(doc: PrintDocument) -> bytes:
-    colors = {s.color.lower(): color_self(s.name) for s in doc.swatches}
+    colors = {s.color.lower(): color_self(i) for i, s in enumerate(doc.swatches)}
 
     def swatch(hex_color: str) -> str:
         return colors.get(hex_color.lower(), "Color/Black")

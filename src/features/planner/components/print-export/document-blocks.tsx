@@ -1,8 +1,4 @@
 import type { CSSProperties } from "react";
-import {
-	columnFractions,
-	tableRows,
-} from "@/features/planner/print/print-document-rules";
 import type {
 	ParagraphStyle,
 	PrintBlock,
@@ -10,6 +6,11 @@ import type {
 	PrintRun,
 	PrintTable,
 } from "@/features/planner/print/print-document-schema";
+import {
+	columnFractions,
+	fillHex,
+	tableRows,
+} from "@/features/planner/print/print-layout-rules";
 import { cn } from "@/shared/lib/utils";
 
 const PARAGRAPH_CLASS = {
@@ -29,6 +30,16 @@ const PARAGRAPH_CLASS = {
 	GridTime: "text-[7pt] tabular-nums",
 	GridCell: "text-[7pt]",
 	GridBand: "text-center text-[7.5pt] font-bold",
+	BlockHeading: "text-[8.5pt] font-bold",
+	GridRoom: "text-center text-[8pt] font-bold uppercase",
+	GridSession: "text-center text-[7.5pt]",
+	GridChairs: "text-center text-[7pt]",
+	TalkTime:
+		"mx-auto rotate-180 text-[6.5pt] whitespace-nowrap tabular-nums [writing-mode:vertical-rl]",
+	TalkBadge: "text-[6.5pt] underline",
+	TalkTitle: "text-[7.5pt]",
+	TalkPresenter: "mt-[0.7mm] text-[7pt] font-bold",
+	TalkAffiliation: "text-[6.5pt] italic",
 	Legend: "mb-[2mm] text-[7.5pt]",
 	IndexLetter: "mt-[2mm] text-[11pt] font-bold break-after-avoid",
 	IndexEntry: "text-[8pt]",
@@ -44,6 +55,7 @@ const RUN_CLASS = {
 	Cancelled: "line-through",
 	Badge: "text-[0.85em] font-semibold uppercase",
 	Invited: "text-[0.85em] font-semibold uppercase",
+	Label: "font-bold",
 } satisfies Record<NonNullable<PrintRun["charStyle"]>, string>;
 
 function Run({ run }: { run: PrintRun }) {
@@ -113,11 +125,18 @@ function TableSlice({
 											colSpan={cell.colSpan}
 											key={col}
 											rowSpan={cell.rowSpan}
-											style={
-												cell.accent
-													? { borderLeft: `3pt solid ${cell.accent}` }
-													: undefined
-											}
+											style={{
+												borderLeft: cell.accent
+													? `3pt solid ${cell.accent}`
+													: undefined,
+												backgroundColor: cell.fill
+													? fillHex(cell.fill)
+													: undefined,
+												verticalAlign:
+													cell.blocks[0]?.style === "TalkTime"
+														? "middle"
+														: undefined,
+											}}
 										>
 											{cell.blocks.map((b, bi) => (
 												<Paragraph block={b} key={`${bi}-${b.style}`} />

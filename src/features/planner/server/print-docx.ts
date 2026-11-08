@@ -19,20 +19,13 @@ import {
 	TableOfContents,
 	TableRow,
 	TabStopType,
+	TextDirection,
 	TextRun,
+	VerticalAlign,
 	WidthType,
 } from "docx";
 import { estimatePageNumbers } from "docx/layout";
 import { TextWatermark } from "docx/watermarks";
-import {
-	FOOTER_MM,
-	MARGIN_MM,
-	PAGE_MM,
-	PX_PER_MM,
-	contentSizeMm,
-	columnFractions,
-	tableRows,
-} from "@/features/planner/print/print-document-rules";
 import {
 	type CharacterStyle,
 	type ParagraphStyle,
@@ -43,6 +36,16 @@ import {
 	type PrintTable,
 	TOC_LEVELS,
 } from "@/features/planner/print/print-document-schema";
+import {
+	FOOTER_MM,
+	MARGIN_MM,
+	PAGE_MM,
+	PX_PER_MM,
+	contentSizeMm,
+	columnFractions,
+	fillHex,
+	tableRows,
+} from "@/features/planner/print/print-layout-rules";
 
 const FONT = "Arial";
 const twip = (mm: number) => Math.round(mm * 56.6929);
@@ -101,6 +104,21 @@ const PARAGRAPH_STYLES = Object.entries({
 		run: { bold: true },
 		paragraph: { alignment: AlignmentType.CENTER },
 	}),
+	BlockHeading: P(8.5, { run: { bold: true } }),
+	GridRoom: P(8, {
+		run: { bold: true, allCaps: true },
+		paragraph: { alignment: AlignmentType.CENTER },
+	}),
+	GridSession: P(7.5, { paragraph: { alignment: AlignmentType.CENTER } }),
+	GridChairs: P(7, { paragraph: { alignment: AlignmentType.CENTER } }),
+	TalkTime: P(6.5, { paragraph: { alignment: AlignmentType.CENTER } }),
+	TalkBadge: P(6.5, { run: { underline: {} } }),
+	TalkTitle: P(7.5),
+	TalkPresenter: P(7, {
+		run: { bold: true },
+		paragraph: { spacing: { before: 40 } },
+	}),
+	TalkAffiliation: P(6.5, { run: { italics: true } }),
 	Legend: P(7.5, { paragraph: { spacing: { after: 120 } } }),
 	IndexLetter: P(11, {
 		run: { bold: true },
@@ -128,6 +146,7 @@ const CHARACTER_STYLES = Object.entries({
 	Cancelled: C({ strike: true }),
 	Badge: C({ bold: true, smallCaps: true }),
 	Invited: C({ bold: true, smallCaps: true }),
+	Label: C({ bold: true }),
 } satisfies Record<CharacterStyle, StyleSpec<ICharacterStyleOptions>>).map(
 	([id, style]): ICharacterStyleOptions => ({ id, name: id, ...style }),
 );
@@ -171,9 +190,21 @@ function tableCell(cell: PrintTable["cells"][number] | null): TableCell {
 			},
 			children: [new Paragraph({ style: "GridCell" })],
 		});
+	const vertical = cell.blocks[0]?.style === "TalkTime";
 	return new TableCell({
 		rowSpan: cell.rowSpan,
 		columnSpan: cell.colSpan,
+		shading: cell.fill
+			? {
+					type: ShadingType.CLEAR,
+					color: "auto",
+					fill: hex(fillHex(cell.fill)),
+				}
+			: undefined,
+		textDirection: vertical
+			? TextDirection.BOTTOM_TO_TOP_LEFT_TO_RIGHT
+			: undefined,
+		verticalAlign: vertical ? VerticalAlign.CENTER : undefined,
 		borders: cell.accent
 			? {
 					left: {

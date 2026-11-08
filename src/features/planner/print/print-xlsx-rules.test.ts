@@ -25,7 +25,13 @@ const src: PrintSource = {
 			roomId: "a",
 			track: { name: "Polymers", color: "#f00" },
 			chairs: [
-				{ userId: "u9", email: "c@x.org", firstName: "Adam", lastName: "Lis" },
+				{
+					userId: "u9",
+					email: "c@x.org",
+					firstName: "Adam",
+					lastName: "Lis",
+					title: null,
+				},
 			],
 			slots: [
 				{
@@ -49,6 +55,8 @@ const src: PrintSource = {
 								lastName: "Zając",
 								orderIndex: 0,
 								isPresenter: true,
+								title: null,
+								affiliation: null,
 							},
 						],
 					},

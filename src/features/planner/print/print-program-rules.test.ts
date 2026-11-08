@@ -24,6 +24,8 @@ function author(
 		lastName,
 		orderIndex: 0,
 		isPresenter: false,
+		title: null,
+		affiliation: null,
 		...extra,
 	};
 }
@@ -170,6 +172,7 @@ describe("buildPrintProgram: sessions and slots", () => {
 					email: "c@x.org",
 					firstName: "Anna",
 					lastName: "Nowak",
+					title: null,
 				},
 			],
 			slots: [
@@ -472,7 +475,13 @@ describe("buildPrintProgram: author index and track legend", () => {
 	const s2 = session("s2", "2026-09-14T10:00:00Z", "2026-09-14T11:00:00Z", {
 		track: { name: "Alloys", color: null },
 		chairs: [
-			{ userId: "u9", email: "lis@x.org", firstName: "Adam", lastName: "Lis" },
+			{
+				userId: "u9",
+				email: "lis@x.org",
+				firstName: "Adam",
+				lastName: "Lis",
+				title: null,
+			},
 		],
 		slots: [
 			slot("b", 0, {
@@ -608,5 +617,110 @@ describe("buildPrintProgram: author index and track legend", () => {
 			{ name: "Alloys", color: null },
 			{ name: "Polymers", color: "#ff0000" },
 		]);
+	});
+});
+
+describe("buildPrintProgram: talk grid", () => {
+	it("names each talk's presenter with the academic title and affiliation, and chairs with theirs", () => {
+		const program = buildPrintProgram(
+			source({
+				sessions: [
+					session("s1", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+						chairs: [
+							{
+								userId: "u1",
+								email: "c@x.org",
+								firstName: "Anna",
+								lastName: "Nowak",
+								title: "Dr",
+							},
+						],
+						slots: [
+							slot("a", 0, {
+								submission: {
+									...slot("a", 0).submission,
+									authors: [
+										author("a1", "Jan", "Kowalski"),
+										author("a2", "Ewa", "Zając", {
+											isPresenter: true,
+											title: "Prof.",
+											affiliation: "AGH University",
+										}),
+									],
+								},
+							}),
+							slot("b", 1),
+						],
+					}),
+				],
+			}),
+			options,
+		);
+		const [s] = program.days[0]?.sessions ?? [];
+		expect(s?.chairNames).toEqual(["Dr Anna Nowak"]);
+		expect(s?.slots.map((x) => x.presenter)).toEqual([
+			{ name: "Prof. Ewa Zając", affiliation: "AGH University" },
+			{ name: "Jan Kowalski", affiliation: null },
+		]);
+	});
+
+	it("groups overlapping sessions into one block whose rows follow every talk boundary in any room", () => {
+		const program = buildPrintProgram(
+			source({
+				sessions: [
+					session("s1", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+						slots: [slot("a", 0), slot("b", 1)],
+					}),
+					session("s2", "2026-09-14T08:00:00Z", "2026-09-14T09:00:00Z", {
+						roomId: "room-b",
+						slots: [slot("c", 0, { durationMin: 20 })],
+					}),
+					session("s3", "2026-09-14T09:30:00Z", "2026-09-14T10:00:00Z"),
+				],
+				items: [
+					{
+						id: "k",
+						kind: "BREAK",
+						title: "Coffee",
+						description: null,
+						location: null,
+						roomId: null,
+						startAt: new Date("2026-09-14T09:00:00Z"),
+						endAt: new Date("2026-09-14T09:30:00Z"),
+					},
+				],
+			}),
+			options,
+		);
+		const blocks = program.days[0]?.talkBlocks ?? [];
+		expect(blocks.map((b) => b.kind)).toEqual(["talks", "item", "talks"]);
+		const [first, , last] = blocks;
+		if (first?.kind !== "talks" || last?.kind !== "talks")
+			throw new Error("expected talk blocks");
+		expect(first.label).toBe("10:00–11:00");
+		expect(first.plenary).toBeNull();
+		expect(
+			first.rows.map((r) => (r.kind === "time" ? r.label : r.kind)),
+		).toEqual(["head", "10:00–10:15", "10:15–10:20", "10:20–10:30"]);
+		expect(
+			first.cells.map((c) => [
+				c.content.kind === "talk"
+					? c.content.slot.title
+					: c.content.kind === "head"
+						? c.content.session.code
+						: c.content.kind,
+				c.row,
+				c.col,
+				c.rowSpan,
+			]),
+		).toEqual([
+			["1A1", 0, 0, 1],
+			["1B1", 0, 1, 1],
+			["Talk a", 1, 0, 1],
+			["Talk c", 1, 1, 2],
+			["Talk b", 2, 0, 2],
+			["empty", 3, 1, 1],
+		]);
+		expect(last.plenary?.code).toBe("1A2");
 	});
 });

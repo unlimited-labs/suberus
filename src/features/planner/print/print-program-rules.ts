@@ -22,6 +22,7 @@ import {
 	timeRange,
 } from "./print-labels";
 import type { PrintLanguage, PrintOptions } from "./print-options-schema";
+import { buildTalkBlocks, type TalkBlock } from "./print-talk-grid-rules";
 import { assignSessionCodes } from "./session-code-rules";
 
 type ProgramOptions = Pick<
@@ -37,6 +38,7 @@ interface SourceRoom {
 
 interface SourcePerson extends NamedPerson {
 	userId: string | null;
+	title: string | null;
 }
 
 export interface SourceAuthor extends SourcePerson {
@@ -45,6 +47,7 @@ export interface SourceAuthor extends SourcePerson {
 	lastName: string;
 	orderIndex: number;
 	isPresenter: boolean;
+	affiliation: string | null;
 }
 
 export interface SourceSlot {
@@ -105,10 +108,13 @@ export interface PrintSlot {
 	submissionType: SubmissionType;
 	title: string;
 	timeLabel: string | null;
+	startAt: string | null;
+	endAt: string | null;
 	start: string | null;
 	end: string | null;
 	board: string | null;
 	authors: { name: string; fullName: string; presenting: boolean }[];
+	presenter: { name: string; affiliation: string | null } | null;
 	badge: string | null;
 	invited: boolean;
 	cancelled: boolean;
@@ -119,19 +125,22 @@ export interface PrintSession {
 	code: string;
 	title: string;
 	startAt: string;
+	endAt: string;
 	timeLabel: string;
 	start: string;
 	end: string;
 	room: string | null;
 	track: { name: string; color: string | null } | null;
 	chairs: string[];
+	chairNames: string[];
 	slots: PrintSlot[];
 }
 
-interface PrintItem {
+export interface PrintItem {
 	kind: ScheduleItemKind;
 	title: string;
 	startAt: string;
+	endAt: string;
 	timeLabel: string;
 	start: string;
 	end: string;
@@ -146,6 +155,7 @@ export interface PrintDay {
 	sessions: PrintSession[];
 	items: PrintItem[];
 	grid: DayGrid;
+	talkBlocks: TalkBlock[];
 }
 
 type AppearanceRole = "author" | "presenter" | "chair";
@@ -206,6 +216,9 @@ const shortName = (p: { firstName: string | null; lastName: string | null }) =>
 		.filter(Boolean)
 		.join(" ");
 
+const titledName = (p: SourcePerson) =>
+	[p.title, p.firstName, p.lastName].filter(Boolean).join(" ") || p.email;
+
 function datesLabel(src: PrintSource, language: PrintLanguage): string {
 	if (!src.startDate) return "";
 	const fmt = new Intl.DateTimeFormat(PRINT_LOCALE[language], {
@@ -252,6 +265,36 @@ function isPresenting(slot: SourceSlot, a: SourceAuthor): boolean {
 		: a.isPresenter;
 }
 
+function slotTiming(s: SourceSession, slot: SourceSlot, f: Formatters) {
+	if (s.untimedSlots)
+		return {
+			timeLabel: null,
+			startAt: null,
+			endAt: null,
+			start: null,
+			end: null,
+		};
+	const startAt = slotStartAt(s.startAt, s.slots, slot.order);
+	const endAt = addMinutes(startAt, slot.durationMin);
+	const start = f.time(startAt);
+	const end = f.time(endAt);
+	return {
+		timeLabel: timeRange(start, end),
+		startAt: startAt.toISOString(),
+		endAt: endAt.toISOString(),
+		start,
+		end,
+	};
+}
+
+function presenterOf(
+	slot: SourceSlot,
+	authors: readonly SourceAuthor[],
+): PrintSlot["presenter"] {
+	const p = authors.find((a) => isPresenting(slot, a)) ?? authors[0];
+	return p ? { name: titledName(p), affiliation: p.affiliation } : null;
+}
+
 function buildSlots(
 	s: SourceSession,
 	f: Formatters,
@@ -260,26 +303,21 @@ function buildSlots(
 ): PrintSlot[] {
 	return slotsInOrder(s).flatMap((slot, i): PrintSlot[] => {
 		if (!isShown(slot, options)) return [];
-		const startAt = slotStartAt(s.startAt, s.slots, slot.order);
-		const start = s.untimedSlots ? null : f.time(startAt);
-		const end = s.untimedSlots
-			? null
-			: f.time(addMinutes(startAt, slot.durationMin));
+		const authors = authorsInOrder(slot);
 		return [
 			{
 				id: slot.id,
 				submissionNumber: slot.submission.sequentialNumber,
 				submissionType: slot.submission.type,
 				title: slot.submission.title,
-				timeLabel: start && end ? timeRange(start, end) : null,
-				start,
-				end,
+				...slotTiming(s, slot, f),
 				board: s.untimedSlots ? `P${i + 1}` : null,
-				authors: authorsInOrder(slot).map((a) => ({
+				authors: authors.map((a) => ({
 					name: shortName(a),
 					fullName: `${a.firstName} ${a.lastName}`,
 					presenting: isPresenting(slot, a),
 				})),
+				presenter: presenterOf(slot, authors),
 				badge: slot.badgeId ? (badgeLabels.get(slot.badgeId) ?? null) : null,
 				invited: slot.submission.type === "INVITED",
 				cancelled: slot.cancelled,
@@ -427,6 +465,7 @@ export function buildPrintProgram(
 		const end = f.time(endAt);
 		return {
 			startAt: startAt.toISOString(),
+			endAt: endAt.toISOString(),
 			timeLabel: timeRange(start, end),
 			start,
 			end,
@@ -466,11 +505,10 @@ export function buildPrintProgram(
 			})),
 		];
 		const first = daySessions[0]?.startAt ?? dayItems[0]?.startAt;
-		return {
-			index: dayNumber(src, dayKeys, key, i),
-			date: key,
-			label: first ? f.dayLabel(first) : key,
-			sessions: daySessions.map((s): PrintSession => ({
+		const placed = daySessions.map((s) => ({
+			room: s.roomId,
+			roomRank: roomOrder(s.roomId),
+			session: {
 				id: s.id,
 				code: codes.get(s.id) ?? "",
 				title: s.title,
@@ -478,16 +516,25 @@ export function buildPrintProgram(
 				room: s.roomId ? roomName(s.roomId) : null,
 				track: trackById.get(s.id) ?? null,
 				chairs: s.chairs.map(shortName),
+				chairNames: s.chairs.map(titledName),
 				slots: buildSlots(s, f, options, badgeLabels),
-			})),
-			items: dayItems.map((x): PrintItem => ({
-				kind: x.kind,
-				title: x.title,
-				...timing(x.startAt, x.endAt),
-				place: x.location ?? (x.roomId ? roomName(x.roomId) : null),
-				description: x.kind === "EVENT" ? x.description : null,
-			})),
+			} satisfies PrintSession,
+		}));
+		const printItems = dayItems.map((x): PrintItem => ({
+			kind: x.kind,
+			title: x.title,
+			...timing(x.startAt, x.endAt),
+			place: x.location ?? (x.roomId ? roomName(x.roomId) : null),
+			description: x.kind === "EVENT" ? x.description : null,
+		}));
+		return {
+			index: dayNumber(src, dayKeys, key, i),
+			date: key,
+			label: first ? f.dayLabel(first) : key,
+			sessions: placed.map((p) => p.session),
+			items: printItems,
 			grid: buildGrid(entries, f.time, roomName, roomOrder),
+			talkBlocks: buildTalkBlocks(placed, printItems, f.time),
 		};
 	});
 

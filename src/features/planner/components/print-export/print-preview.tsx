@@ -12,18 +12,18 @@ import {
 	paginate,
 } from "@/features/planner/print/paginate-rules";
 import {
-	breakableAfterRow,
-	contentSizeMm,
-	MARGIN_MM,
-	pageSizeMm,
-	PX_PER_MM,
-} from "@/features/planner/print/print-document-rules";
-import {
 	type PrintBlock,
 	type PrintDocument,
 	type PrintSection,
 	TOC_LEVELS,
 } from "@/features/planner/print/print-document-schema";
+import {
+	breakableAfterRow,
+	contentSizeMm,
+	MARGIN_MM,
+	pageSizeMm,
+	PX_PER_MM,
+} from "@/features/planner/print/print-layout-rules";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Block, type TocEntry } from "./document-blocks";

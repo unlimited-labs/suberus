@@ -56,6 +56,25 @@ const LAYOUTS: ReadonlyArray<{ value: Layout; label: string; hint: string }> = [
 	},
 ];
 
+type DetailedLayout = PrintOptions["detailedLayout"];
+
+const DETAILED_LAYOUTS: ReadonlyArray<{
+	value: DetailedLayout;
+	label: string;
+	hint: string;
+}> = [
+	{
+		value: "grid",
+		label: "Grid",
+		hint: "Parallel sessions side by side, one row per talk, with presenters and affiliations",
+	},
+	{
+		value: "list",
+		label: "List",
+		hint: "Sessions one after another with all authors",
+	},
+];
+
 type SetOption = <K extends keyof PrintOptions>(
 	key: K,
 	value: PrintOptions[K],
@@ -195,6 +214,9 @@ function IncludeRow({
 
 function BookRows({ options, set }: { options: PrintOptions; set: SetOption }) {
 	const layoutHint = LAYOUTS.find((l) => l.value === options.layoutOverride);
+	const detailedHint = DETAILED_LAYOUTS.find(
+		(l) => l.value === options.detailedLayout,
+	);
 	return (
 		<>
 			<Row label="Book size">
@@ -214,6 +236,16 @@ function BookRows({ options, set }: { options: PrintOptions; set: SetOption }) {
 						onChange={(v) => set("layoutOverride", v)}
 						options={LAYOUTS}
 						value={options.layoutOverride}
+					/>
+				)}
+			</Row>
+			<Row hint={detailedHint?.hint} label="Detailed program layout">
+				{(ids) => (
+					<SegmentedControl
+						{...ids}
+						onChange={(v) => set("detailedLayout", v)}
+						options={DETAILED_LAYOUTS}
+						value={options.detailedLayout}
 					/>
 				)}
 			</Row>

@@ -23,6 +23,8 @@ const author = (id: string, firstName: string, lastName: string, i = 0) => ({
 	lastName,
 	orderIndex: i,
 	isPresenter: i === 0,
+	title: null,
+	affiliation: null,
 });
 const slot = (
 	id: string,
@@ -70,7 +72,13 @@ const source: PrintSource = {
 			roomId: "a",
 			track: { name: "Polymers", color: "#d9480f" },
 			chairs: [
-				{ userId: "u1", email: "c@x.org", firstName: "Adam", lastName: "Lis" },
+				{
+					userId: "u1",
+					email: "c@x.org",
+					firstName: "Adam",
+					lastName: "Lis",
+					title: null,
+				},
 			],
 			slots: [
 				slot("p1", 0, { badgeId: "bp" }),

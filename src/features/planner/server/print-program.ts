@@ -39,6 +39,7 @@ export async function loadPrintSource(): Promise<PrintSource> {
 								firstName: true,
 								lastName: true,
 								email: true,
+								title: true,
 							},
 						},
 					},
@@ -66,6 +67,8 @@ export async function loadPrintSource(): Promise<PrintSource> {
 										lastName: true,
 										orderIndex: true,
 										isPresenter: true,
+										user: { select: { title: true } },
+										affiliation: { select: { name: true } },
 									},
 								},
 							},
@@ -104,8 +107,19 @@ export async function loadPrintSource(): Promise<PrintSource> {
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
+				title: user.title,
 			})),
-			slots: presentations,
+			slots: presentations.map(({ submission, ...slot }) => ({
+				...slot,
+				submission: {
+					...submission,
+					authors: submission.authors.map(({ user, affiliation, ...a }) => ({
+						...a,
+						title: user?.title ?? null,
+						affiliation: affiliation?.name ?? null,
+					})),
+				},
+			})),
 		})),
 		items,
 	};

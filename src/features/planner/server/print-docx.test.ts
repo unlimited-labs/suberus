@@ -54,6 +54,7 @@ const doc: PrintDocument = {
 							rowSpan: 1,
 							colSpan: 1,
 							accent: null,
+							fill: null,
 							blocks: [
 								{
 									type: "paragraph",
@@ -68,6 +69,7 @@ const doc: PrintDocument = {
 							rowSpan: 1,
 							colSpan: 2,
 							accent: null,
+							fill: null,
 							blocks: [
 								{
 									type: "paragraph",
@@ -82,6 +84,7 @@ const doc: PrintDocument = {
 							rowSpan: 2,
 							colSpan: 1,
 							accent: "#ff0000",
+							fill: null,
 							blocks: [
 								{
 									type: "paragraph",
@@ -165,6 +168,62 @@ describe("renderDocx", () => {
 		expect(xml).not.toContain("\x0b");
 		expect(xml).not.toContain("\x01");
 		expect(xml).toContain("Opening");
+	});
+
+	it("shades tinted cells and turns talk times to read bottom to top", async () => {
+		const grid: PrintDocument = {
+			...doc,
+			sections: [
+				{
+					page: { size: "A4", orientation: "portrait" },
+					columns: 1,
+					start: "nextPage",
+					blocks: [
+						{
+							type: "table",
+							columns: [{ widthWeight: 1 }, { widthWeight: 4 }],
+							headerRows: 0,
+							rowCount: 1,
+							cells: [
+								{
+									row: 0,
+									col: 0,
+									rowSpan: 1,
+									colSpan: 1,
+									accent: null,
+									fill: null,
+									blocks: [
+										{
+											type: "paragraph",
+											style: "TalkTime",
+											runs: [{ text: "10:00–10:20" }],
+										},
+									],
+								},
+								{
+									row: 0,
+									col: 1,
+									rowSpan: 1,
+									colSpan: 1,
+									accent: null,
+									fill: { color: "#ff0000", tint: 20 },
+									blocks: [
+										{
+											type: "paragraph",
+											style: "GridRoom",
+											runs: [{ text: "Aula" }],
+										},
+									],
+								},
+							],
+						},
+					],
+				},
+			],
+		};
+		const { document } = parts(await renderDocx(grid));
+		expect(document).toMatch(/<w:shd [^>]*w:fill="FFCCCC"/);
+		expect(document).toContain('<w:textDirection w:val="btLr"/>');
 	});
 
 	it("marks a draft with a watermark in every section header", async () => {
