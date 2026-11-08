@@ -59,8 +59,9 @@ test.describe.serial("Planner — Printed program export", () => {
 		expect(rows[0]).toContain("Kod sesji");
 		expect(rows.some((r) => r.includes(`${testRun.testRunId}_Print Session`))).toBe(true);
 
-		const saved = await getPrisma().appSetting.findUnique({ where: { key: "PRINT_EXPORT_OPTIONS" } });
-		expect(saved?.value).toMatchObject({ language: "pl", parts: ["title", "glance", "detailed"] });
+		await expect
+			.poll(async () => (await getPrisma().appSetting.findUnique({ where: { key: "PRINT_EXPORT_OPTIONS" } }))?.value)
+			.toMatchObject({ language: "pl", parts: ["title", "glance", "detailed"] });
 	});
 
 	test("previews the booklet as pages with a page counter, and Excel as sheets", async ({ page, testRun }) => {
