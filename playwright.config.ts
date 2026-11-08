@@ -9,8 +9,9 @@ export const portFor = (i: number) => E2E_BASE_PORT + i;
 // intermittently resolves to IPv6 ::1, which the IPv4-only app server refuses
 // (ECONNREFUSED ::1) — flaking page.goto navigations and page.request API calls.
 export const baseUrlFor = (i: number) => `http://127.0.0.1:${portFor(i)}`;
+// Same for Postgres: Docker Desktop can accept a connection on ::1 and never relay it, hanging `migrate reset`.
 export const PG_BASE =
-	"postgresql://suberus:suberus_dev_password@localhost:5432";
+	"postgresql://suberus:suberus_dev_password@127.0.0.1:5432";
 export const dbNameFor = (i: number) => `suberus_e2e_${i}`;
 export const dbUrlFor = (i: number) => `${PG_BASE}/${dbNameFor(i)}`;
 export const fromAddrFor = (i: number) => `noreply-w${i}@suberus.local`;
