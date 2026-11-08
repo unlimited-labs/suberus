@@ -16,6 +16,8 @@ export const roleFilterOptions = [
 	{ label: "Exhibitor", value: "EXHIBITOR" },
 ] as const;
 
+export const CHANGED_AFTER_PAYMENT = "CHANGED_AFTER_PAYMENT";
+
 export const invoiceStateLabels = {
 	NONE: "—",
 	REQUESTED: "Requested",
@@ -26,6 +28,7 @@ export const invoiceFilterOptions = [
 	{ label: "Not needed", value: "NONE" },
 	{ label: "Requested", value: "REQUESTED" },
 	{ label: "Incomplete", value: "INCOMPLETE" },
+	{ label: "Changed after payment", value: CHANGED_AFTER_PAYMENT },
 ] as const;
 
 export const vatIdStatusLabels = {

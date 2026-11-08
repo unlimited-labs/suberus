@@ -17,6 +17,7 @@ import {
 	updatePersonalInfoFn,
 } from "@/features/profile/api/profile";
 import { ContactInfoSection } from "@/features/profile/components/contact-info-section";
+import { PaidBillingNote } from "@/features/profile/components/paid-billing-note";
 import { PasskeySection } from "@/features/profile/components/passkey-section";
 import { PasswordChangeSection } from "@/features/profile/components/password-change-section";
 import { PersonalInfoSection } from "@/features/profile/components/personal-info-section";
@@ -213,6 +214,9 @@ function SettingsPage() {
 							icon={IconMail}
 							title="Contact & Invoice Information"
 						>
+							{contactInfo.feePaid && (
+								<PaidBillingNote organizerEmail={contactInfo.organizerEmail} />
+							)}
 							<ContactInfoSection
 								billingConfig={billingConfig}
 								contactConsentEnabled={contactConsentEnabled}

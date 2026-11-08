@@ -7,6 +7,7 @@ import type {
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
+import type { BillingChanges } from "@/shared/lib/billing-changes";
 import { prisma } from "@/shared/server/db.server";
 import { checkSmtpHealth, type SmtpHealthResult } from "@/shared/server/email";
 import { checkS3Health, type S3HealthResult } from "@/shared/server/storage";
@@ -19,6 +20,14 @@ import {
 	TREND_DAYS,
 	tallyGroups,
 } from "./admin-dashboard-transforms";
+
+type ActivityDetailField =
+	| string
+	| number
+	| boolean
+	| string[]
+	| BillingChanges
+	| null;
 
 export interface AdminDashboardMetrics {
 	users: {
@@ -59,7 +68,7 @@ export interface AdminDashboardMetrics {
 		performerName: string | null;
 		submissionTitle: string | null;
 		userName: string | null;
-		detail: Record<string, string | number | boolean | string[] | null> | null;
+		detail: Record<string, ActivityDetailField> | null;
 		createdAt: Date;
 	}>;
 	usersByCountry: Array<{ country: string; count: number }>;
@@ -318,10 +327,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
 			submissionTitle: item.submission?.title ?? null,
 			userName: formatPersonName(item.user),
 			// SAFETY: activity detail is written through activityDetail(); the union mirrors DetailShapes.
-			detail: item.detail as Record<
-				string,
-				string | number | boolean | string[] | null
-			> | null,
+			detail: item.detail as Record<string, ActivityDetailField> | null,
 			createdAt: item.createdAt,
 		})),
 		usersByCountry: usersByCountry

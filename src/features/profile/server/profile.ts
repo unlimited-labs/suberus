@@ -1,4 +1,8 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
+import {
+	auditBillingChange,
+	BILLING_BEFORE_SELECT,
+} from "@/features/activity-log/server/billing-change-audit";
 import { activityDetail } from "@/features/activity-log/types";
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import {
@@ -74,21 +78,27 @@ export async function updatePersonalInfo(
 }
 
 export async function getContactInfo(userId: string) {
-	const user = await prisma.user.findUniqueOrThrow({
-		where: { id: userId },
-		select: {
-			needInvoice: true,
-			billingText: true,
-			billingOrganization: true,
-			billingStreet: true,
-			billingPostalCode: true,
-			billingCity: true,
-			vatId: true,
-			country: true,
-			contactConsent: true,
-		},
-	});
+	const [user, organizerEmail] = await Promise.all([
+		prisma.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: {
+				fee: { select: { paid: true } },
+				needInvoice: true,
+				billingText: true,
+				billingOrganization: true,
+				billingStreet: true,
+				billingPostalCode: true,
+				billingCity: true,
+				vatId: true,
+				country: true,
+				contactConsent: true,
+			},
+		}),
+		getSetting("CONTACT_EMAIL"),
+	]);
 	return {
+		feePaid: user.fee?.paid === true,
+		organizerEmail,
 		needInvoice: user.needInvoice,
 		...billingColumnsToForm(user),
 		country: user.country ?? "",
@@ -105,17 +115,31 @@ export async function updateContactInfo(
 	const [issue] = billingDetailsIssues({ ...data, needInvoice }, config);
 	if (issue) throw new Response(issue.message, { status: 400 });
 
-	const result = await prisma.user.update({
-		where: { id: userId },
-		data: {
-			needInvoice,
-			...billingColumnsToDb({
-				...data,
-				vatId: normalizeVatIdOrThrow(data.vatId, data.country),
-			}),
-			country: data.country || null,
-			contactConsent: data.contactConsent,
-		},
+	const result = await prisma.$transaction(async (tx) => {
+		const before = await tx.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: BILLING_BEFORE_SELECT,
+		});
+		const after = await tx.user.update({
+			where: { id: userId },
+			data: {
+				needInvoice,
+				...billingColumnsToDb({
+					...data,
+					vatId: normalizeVatIdOrThrow(data.vatId, data.country),
+				}),
+				country: data.country || null,
+				contactConsent: data.contactConsent,
+			},
+		});
+		await auditBillingChange(tx, {
+			userId,
+			performedBy: userId,
+			byParticipant: true,
+			before,
+			after,
+		});
+		return after;
 	});
 
 	checkVatIdInBackground(result.vatId);

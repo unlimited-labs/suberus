@@ -1,0 +1,3 @@
+ALTER TYPE "ActivityType" ADD VALUE 'USER_BILLING_DETAILS_UPDATED';
+
+ALTER TABLE "users" ADD COLUMN "billingChangedAfterPaymentAt" TIMESTAMP(3);

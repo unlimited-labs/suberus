@@ -12,6 +12,7 @@ import type { AdminUserDetail } from "@/features/users/server/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { BillingChangedAfterPayment } from "./billing-changed-after-payment";
 import { useRecheckVatId } from "./use-recheck-vat-id";
 import { VatIdStatusIcon } from "./user-invoice-cells";
 
@@ -123,6 +124,7 @@ export function UserBillingSection({ user }: { user: AdminUserDetail }) {
 
 	return (
 		<div className="space-y-3" data-testid="user-billing-section">
+			<BillingChangedAfterPayment user={user} />
 			<dl className="space-y-3">
 				<BillingRow
 					label="Invoice"

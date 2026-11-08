@@ -8,7 +8,9 @@ import {
 	IconUser,
 	IconUserMinus,
 } from "@tabler/icons-react";
+import { z } from "zod";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
+import { BILLING_AUDIT_LABELS } from "@/features/settings/billing-details-rules";
 import { statusLabels } from "@/shared/lib/labels/submission";
 import { roleLabels } from "@/shared/lib/labels/user-role";
 import { lookup } from "@/shared/lib/lookup";
@@ -130,6 +132,8 @@ const mcpClientOf: DescriptionRenderer = (e) => {
 	return redirects ? `${clientId} → ${redirects}` : clientId;
 };
 
+const billingChangesSchema = z.record(z.string(), z.unknown());
+
 const descriptionRenderers = {
 	MCP_CLIENT_REGISTERED: mcpClientOf,
 	MCP_CLIENT_UPDATED: (e) => {
@@ -139,6 +143,14 @@ const descriptionRenderers = {
 		return changed ? `${base} · Changed: ${changed}` : base;
 	},
 	SETTINGS_CONFERENCE_UPDATED: (e) => list(e.detail?.changedFields) ?? null,
+	USER_BILLING_DETAILS_UPDATED: (e) => {
+		const changes = billingChangesSchema.safeParse(e.detail?.changes);
+		if (!changes.success) return null;
+		const fields = Object.keys(changes.data).map(
+			(field) => lookup(BILLING_AUDIT_LABELS, field) ?? field,
+		);
+		return `Changed: ${fields.join(", ")}`;
+	},
 	SUBMISSION_DELETED: (e) => (e.userName ? `Author: ${e.userName}` : null),
 	SUBMISSION_STATUS_CHANGED: statusArrow,
 	SUBMISSION_RESUBMITTED: statusArrow,

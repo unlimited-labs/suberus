@@ -6,6 +6,7 @@ import {
 import {
 	feeFilterOptions,
 	formatSubmissionRole,
+	CHANGED_AFTER_PAYMENT,
 	invoiceFilterOptions,
 	roleFilterOptions,
 	roleLabels,
@@ -139,6 +140,10 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 	{
 		id: "invoice",
 		accessorFn: (row) => row.invoiceState,
+		getUniqueValues: (row) =>
+			row.billingChangedAfterPaymentAt
+				? [row.invoiceState, CHANGED_AFTER_PAYMENT]
+				: [row.invoiceState],
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
@@ -147,7 +152,10 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 			/>
 		),
 		cell: ({ row }) => <UserInvoiceCell user={row.original} />,
-		filterFn: facetedFilterFn,
+		filterFn: (row, columnId, filterValue: string[]) =>
+			row
+				.getUniqueValues<string>(columnId)
+				.some((value) => filterValue.includes(value)),
 	},
 	{
 		id: "vatIdStatus",

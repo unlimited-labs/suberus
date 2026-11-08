@@ -1,8 +1,10 @@
 import type { z } from "zod";
 import type { VatIdCheck } from "@/generated/prisma/client";
+import type { BillingAuditField } from "@/shared/lib/billing-changes";
 import {
 	activeBillingFields,
 	BILLING_FIELD_KEYS,
+	BILLING_TEXT_NAME,
 	STRUCTURED_BILLING_FIELDS,
 	VAT_ID_FIELD,
 	type BillingCatalogueColumn,
@@ -294,3 +296,14 @@ export function applyBillingConfig<T extends z.ZodType<BillingValues>>(
 		}
 	});
 }
+
+export const BILLING_AUDIT_LABELS = {
+	needInvoice: "Invoice needed",
+	billingText: BILLING_TEXT_NAME,
+	billingOrganization: "Organization name",
+	billingStreet: "Street address",
+	billingPostalCode: "Postal code",
+	billingCity: "City",
+	vatId: "VAT ID",
+	country: "Country",
+} satisfies Record<BillingAuditField, string>;

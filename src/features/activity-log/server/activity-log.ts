@@ -10,6 +10,7 @@ export type LogActivityParams = {
 		submissionId?: string;
 		performedBy?: string;
 		detail?: Extract<ActivityDetail, { type: K }>;
+		createdAt?: Date;
 	};
 }[ActivityType];
 
@@ -19,6 +20,7 @@ function toData(params: LogActivityParams) {
 		userId: params.userId,
 		submissionId: params.submissionId,
 		performedBy: params.performedBy,
+		createdAt: params.createdAt,
 		// SAFETY: activityDetail() builds a plain JSON object.
 		detail: (params.detail ?? undefined) as Prisma.InputJsonValue | undefined,
 	};

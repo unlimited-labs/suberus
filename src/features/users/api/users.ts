@@ -4,6 +4,7 @@ import {
 	adminMiddleware,
 	adminOnlyMiddleware,
 } from "@/features/auth/server/middleware";
+import { acknowledgeBillingChange } from "@/features/users/server/billing-after-payment";
 import {
 	createUserByAdmin,
 	resendSetPasswordLink,
@@ -102,9 +103,9 @@ export const bulkAdminAction = createServerFn({ method: "POST" })
 export const updateAdminUserProfile = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(userProfileUpdateInput)
-	.handler(async ({ data }) => {
+	.handler(async ({ data, context }) => {
 		const { id, ...profileData } = data;
-		return adminUpdateProfile(id, profileData);
+		return adminUpdateProfile(id, profileData, context.user.id);
 	});
 
 export const recheckAdminUserVatId = createServerFn({ method: "POST" })
@@ -112,6 +113,16 @@ export const recheckAdminUserVatId = createServerFn({ method: "POST" })
 	.validator(userIdInput)
 	.handler(async ({ data }) => {
 		await recheckUserVatId(data.id);
+		return { success: true };
+	});
+
+export const acknowledgeAdminUserBillingChange = createServerFn({
+	method: "POST",
+})
+	.middleware([adminMiddleware])
+	.validator(userIdInput)
+	.handler(async ({ data }) => {
+		await acknowledgeBillingChange(data.id);
 		return { success: true };
 	});
 

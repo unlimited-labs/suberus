@@ -13,6 +13,7 @@ test.describe.serial("Users - Billing details", () => {
 	let restore: () => Promise<void>
 	let incomplete: { id: string; email: string }
 	let requested: { id: string; email: string }
+	let changed: { id: string; email: string }
 	const vatId = "PL6750002236"
 
 	test.beforeAll(async ({}, testInfo) => {
@@ -45,11 +46,38 @@ test.describe.serial("Users - Billing details", () => {
 			create: { vatId, status: "VERIFIED", source: "VIES", registryName: "UNIWERSYTET JAGIELLOŃSKI" },
 			update: { status: "VERIFIED", source: "VIES", registryName: "UNIWERSYTET JAGIELLOŃSKI", checkedAt: new Date() },
 		})
+
+		changed = await createTestUser({
+			email: `billing-changed-${stamp}@e2e.local`,
+			firstName: "Billing",
+			lastName: `Changed${stamp}`,
+		})
+		const changedAt = new Date()
+		await db.user.update({
+			where: { id: changed.id },
+			data: { needInvoice: true, billingText: "New Institute", billingChangedAfterPaymentAt: changedAt },
+		})
+		await db.fee.create({ data: { userId: changed.id, paid: true, paidAt: changedAt } })
+		await db.activityLog.create({
+			data: {
+				type: "USER_BILLING_DETAILS_UPDATED",
+				userId: changed.id,
+				performedBy: changed.id,
+				createdAt: changedAt,
+				detail: {
+					type: "USER_BILLING_DETAILS_UPDATED",
+					changes: { billingText: { from: "Old Institute", to: "New Institute" } },
+				},
+			},
+		})
 	})
 
 	test.afterAll(async () => {
 		await deleteTestUser(incomplete.id)
 		await deleteTestUser(requested.id)
+		await getPrisma().activityLog.deleteMany({ where: { userId: changed.id } })
+		await getPrisma().fee.deleteMany({ where: { userId: changed.id } })
+		await deleteTestUser(changed.id)
 		await getPrisma().vatIdCheck.deleteMany({ where: { vatId } })
 		await restore()
 	})
@@ -127,5 +155,47 @@ test.describe.serial("Users - Billing details", () => {
 			select: { userId: true },
 		})
 		expect(recipients).toEqual([{ userId: incomplete.id }])
+	})
+
+	test("the Changed after payment filter and badge single out a participant edit", async ({
+		adminUsersPage,
+		page,
+	}, testInfo) => {
+		test.skip(testInfo.project.name === "mobile-admin", "faceted filter is desktop table only")
+		const rowByEmail = (email: string) =>
+			page.getByTestId("user-row").filter({ visible: true, has: page.locator(`text="${email}"`) })
+
+		await adminUsersPage.goto()
+		await adminUsersPage.waitForLoad()
+		await adminUsersPage.search(stamp)
+		await page
+			.getByRole("columnheader")
+			.filter({ hasText: "Invoice" })
+			.getByRole("button", { name: "Filter" })
+			.click()
+		await page
+			.locator("[data-slot='popover-content']")
+			.getByRole("checkbox", { name: "Changed after payment" })
+			.click()
+
+		await expect(rowByEmail(changed.email).getByTestId("billing-changed-after-payment")).toBeVisible()
+		await expect(rowByEmail(requested.email)).toHaveCount(0)
+	})
+
+	test("user detail shows the change since payment, and Acknowledge clears it", async ({ page }) => {
+		await page.goto(`/admin/users/${changed.id}`)
+
+		const alert = page.getByTestId("billing-changed-after-payment-alert")
+		await expect(alert).toContainText("Changed after payment")
+		await expect(alert).toContainText("Old Institute")
+		await expect(alert).toContainText("New Institute")
+
+		await alert.getByRole("button", { name: "Acknowledge" }).click()
+		await expect(alert).toHaveCount(0)
+		const user = await getPrisma().user.findUniqueOrThrow({
+			where: { id: changed.id },
+			select: { billingChangedAfterPaymentAt: true },
+		})
+		expect(user.billingChangedAfterPaymentAt).toBeNull()
 	})
 })

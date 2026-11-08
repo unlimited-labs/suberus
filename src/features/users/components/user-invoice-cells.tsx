@@ -44,6 +44,11 @@ export function UserInvoiceCell({ user }: { user: AdminUser }) {
 				</Badge>
 			)}
 			<VatIdStatusIcon check={user.vatIdCheck} />
+			{user.billingChangedAfterPaymentAt && (
+				<Badge data-testid="billing-changed-after-payment" variant="outline">
+					Changed after payment
+				</Badge>
+			)}
 		</span>
 	);
 }

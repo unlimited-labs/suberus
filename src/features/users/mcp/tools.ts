@@ -106,9 +106,9 @@ const updateUserProfile = defineTool({
 	roles: ["ADMIN"],
 	scope: MCP_SCOPE_USERS_WRITE,
 	destructive: true,
-	async handler(input) {
+	async handler(input, actor) {
 		const { id, ...profile } = input;
-		return adminUpdateProfile(id, profile);
+		return adminUpdateProfile(id, profile, actor.id);
 	},
 });
 

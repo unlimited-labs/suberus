@@ -4,6 +4,11 @@ import {
 	logActivity,
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
+import {
+	auditBillingChange,
+	BILLING_AUDIT_SELECT,
+	BILLING_BEFORE_SELECT,
+} from "@/features/activity-log/server/billing-change-audit";
 import { activityDetail } from "@/features/activity-log/types";
 import {
 	type InvoiceState,
@@ -27,11 +32,13 @@ import type {
 	UserRole,
 } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
+import type { BillingChanges } from "@/shared/lib/billing-changes";
 import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 import { deleteFile } from "@/shared/server/storage";
+import { billingChangesAfterPayment } from "./billing-after-payment";
 import {
 	extractFeePayment,
 	type PatchUserData,
@@ -98,10 +105,12 @@ export interface AdminUser {
 	surveyAnswers: { questionId: string; value: string }[];
 	invoiceState: InvoiceState;
 	vatIdCheck: Pick<VatIdCheck, "status" | "checkedAt" | "registryName"> | null;
+	billingChangedAfterPaymentAt: Date | null;
 }
 
 export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
+	billingChangesAfterPayment: BillingChanges | null;
 }
 
 export type UsersFilters = z.infer<typeof usersListInput>;
@@ -330,6 +339,7 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 
 type BillingStatusSource = Parameters<typeof invoiceState>[0] & {
 	vatId: string | null;
+	billingChangedAfterPaymentAt: Date | null;
 };
 
 async function billingStatusLookup(users: BillingStatusSource[]) {
@@ -352,6 +362,7 @@ async function billingStatusLookup(users: BillingStatusSource[]) {
 	return (user: BillingStatusSource) => ({
 		invoiceState: invoiceState(user, config),
 		vatIdCheck: (user.vatId && checkByVatId.get(user.vatId)) || null,
+		billingChangedAfterPaymentAt: user.billingChangedAfterPaymentAt,
 	});
 }
 
@@ -363,10 +374,14 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 
 	if (!user) return null;
 
-	const billing = await billingStatusLookup([user]);
+	const [billing, billingChangesSincePayment] = await Promise.all([
+		billingStatusLookup([user]),
+		billingChangesAfterPayment(user),
+	]);
 
 	return {
 		...billing(user),
+		billingChangesAfterPayment: billingChangesSincePayment,
 		id: user.id,
 		email: user.email,
 		firstName: user.firstName,
@@ -759,6 +774,7 @@ const emptyToNull = (value: string | undefined) =>
 export async function updateUserProfile(
 	userId: string,
 	data: UpdateUserProfileInput,
+	performedBy: string,
 ): Promise<{ success: boolean }> {
 	const currentUser = await prisma.user.findUnique({
 		where: { id: userId },
@@ -806,10 +822,24 @@ export async function updateUserProfile(
 		updateData.affiliation = { disconnect: true };
 	}
 
-	const updated = await prisma.user.update({
-		where: { id: userId },
-		data: updateData,
-		select: { vatId: true },
+	const updated = await prisma.$transaction(async (tx) => {
+		const before = await tx.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: BILLING_BEFORE_SELECT,
+		});
+		const after = await tx.user.update({
+			where: { id: userId },
+			data: updateData,
+			select: BILLING_AUDIT_SELECT,
+		});
+		await auditBillingChange(tx, {
+			userId,
+			performedBy,
+			byParticipant: false,
+			before,
+			after,
+		});
+		return after;
 	});
 	checkVatIdInBackground(updated.vatId);
 
@@ -1052,8 +1082,9 @@ export async function executeBulkAction(
 export async function adminUpdateProfile(
 	userId: string,
 	data: UpdateUserProfileInput,
+	performedBy: string,
 ): Promise<AdminUserDetail | null> {
-	await updateUserProfile(userId, data);
+	await updateUserProfile(userId, data, performedBy);
 	logger.info(`[admin] updateProfile ${userId}`);
 	return getUserById(userId);
 }

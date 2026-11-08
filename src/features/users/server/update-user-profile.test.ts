@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const prismaMock = {
-	user: { findUnique: vi.fn(), update: vi.fn() },
+	user: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() },
+	$transaction: (run: (tx: unknown) => unknown) => run(prismaMock),
 };
 
 vi.mock("@/shared/server/db.server", () => ({ prisma: prismaMock }));
@@ -33,22 +34,27 @@ function savedData() {
 beforeEach(() => {
 	vi.clearAllMocks();
 	prismaMock.user.findUnique.mockResolvedValue({ email: "old@x.com" });
+	prismaMock.user.findUniqueOrThrow.mockResolvedValue({ fee: null });
 	prismaMock.user.update.mockResolvedValue({ vatId: null });
 });
 
 describe("updateUserProfile (PATCH)", () => {
 	it("leaves every omitted field untouched", async () => {
-		await updateUserProfile("u1", { billingText: "ACME" });
+		await updateUserProfile("u1", { billingText: "ACME" }, "admin");
 
 		expect(savedData()).toEqual({ billingText: "ACME" });
 	});
 
 	it("clears a field sent as an empty string", async () => {
-		await updateUserProfile("u1", {
-			billingText: "",
-			title: "",
-			affiliation: "",
-		});
+		await updateUserProfile(
+			"u1",
+			{
+				billingText: "",
+				title: "",
+				affiliation: "",
+			},
+			"admin",
+		);
 
 		expect(savedData()).toEqual({
 			billingText: null,
@@ -62,7 +68,7 @@ describe("updateUserProfile (PATCH)", () => {
 			.mockResolvedValueOnce({ email: "old@x.com" })
 			.mockResolvedValueOnce(null);
 
-		await updateUserProfile("u1", { email: "new@x.com" });
+		await updateUserProfile("u1", { email: "new@x.com" }, "admin");
 
 		expect(savedData()).toEqual({
 			email: "new@x.com",
