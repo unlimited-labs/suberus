@@ -27,6 +27,7 @@ export interface GridEntry {
 	start: number;
 	end: number;
 	roomId: string | null;
+	session: boolean;
 	code: string | null;
 	title: string;
 	trackColor: string | null;
@@ -85,9 +86,15 @@ export function buildGrid(
 	roomName: (id: string | null) => string,
 	roomOrder: (id: string | null) => number,
 ): DayGrid {
+	// A lone session is a plenary across rooms; with one room it stays in its column.
+	const sessionRooms = new Set(
+		entries.filter((e) => e.session).map((e) => e.roomId),
+	);
 	const marked = entries.map((e) => ({
 		...e,
-		band: !entries.some((o) => o !== e && overlaps(o, e)),
+		band:
+			(!e.session || sessionRooms.size > 1) &&
+			!entries.some((o) => o !== e && overlaps(o, e)),
 	}));
 	const { rooms, columnOf, laneCount } = assignLanes(
 		marked.filter((e) => !e.band),
