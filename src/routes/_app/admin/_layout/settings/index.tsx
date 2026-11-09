@@ -143,7 +143,11 @@ const tabs = [
 	{ id: "fee", label: "Fee", icon: IconCash },
 	{ id: "finances", label: "Finances", icon: IconCash },
 	{ id: "reminders", label: "Reminders", icon: IconBell },
-	{ id: "survey", label: "Registration form", icon: IconClipboardList },
+	{
+		id: "registration-form",
+		label: "Registration form",
+		icon: IconClipboardList,
+	},
 	{ id: "documents", label: "Documents", icon: IconShieldCheck },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
 	{ id: "invitations", label: "Invitations", icon: IconMailPlus },
@@ -333,7 +337,7 @@ function AdminSettingsPage() {
 							<RemindersSettingsTab initialData={reminderSettings} />
 						</TabsContent>
 
-						<TabsContent className="space-y-8" value="survey">
+						<TabsContent className="space-y-8" value="registration-form">
 							<BillingDetailsSettingsSection initialData={billingDetails} />
 							<SurveyQuestionsTab
 								exhibitorsEnabled={submissionTypes.EXHIBITOR.isActive}

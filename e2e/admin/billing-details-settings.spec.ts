@@ -15,8 +15,8 @@ test.describe.serial("Settings - Billing details", () => {
 	})
 
 	test("saves Invoice required and the text box label, with a live preview", async ({ page }) => {
-		await page.goto("/admin/settings?tab=survey")
-		await expect(page.getByTestId("settings-tab-survey")).toContainText("Registration form")
+		await page.goto("/admin/settings?tab=registration-form")
+		await expect(page.getByTestId("settings-tab-registration-form")).toContainText("Registration form")
 
 		const preview = page.getByTestId("billing-details-preview")
 		const showPreview = async () => {
@@ -56,7 +56,7 @@ test.describe.serial("Settings - Billing details", () => {
 	})
 
 	test("switches to Separate fields and sets a field's state", async ({ page }) => {
-		await page.goto("/admin/settings?tab=survey")
+		await page.goto("/admin/settings?tab=registration-form")
 		const preview = page.getByTestId("billing-details-preview")
 		const pane = async (name: "Preview" | "Configure") => {
 			const toggle = page.getByRole("radio", { name })
