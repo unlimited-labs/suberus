@@ -1,6 +1,6 @@
 import { IconReceipt } from "@tabler/icons-react";
 import { useSelector } from "@tanstack/react-store";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import {
 	BILLING_TEXT_NAME,
 	type BillingDetailsSettings,
@@ -17,7 +17,6 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/shared/ui/accordion";
-import { Badge } from "@/shared/ui/badge";
 import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { BillingDetailsPreview } from "./billing-details-preview";
 import { IncompleteCountWarning } from "./incomplete-count-warning";
@@ -46,10 +45,10 @@ const STATE_OPTIONS = [
 	{ value: "REQUIRED", label: "Required" },
 ] as const;
 
-const STATE_BADGE = {
-	OFF: "outline",
-	OPTIONAL: "secondary",
-	REQUIRED: "default",
+const STATE_VIEW = {
+	OFF: { text: "Off", dot: "bg-muted-foreground/40" },
+	OPTIONAL: { text: "Optional", dot: "bg-sky-500" },
+	REQUIRED: { text: "Required", dot: "bg-primary" },
 } as const;
 
 function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
@@ -87,22 +86,37 @@ function RowTrigger({
 	name,
 	label,
 	help,
-	badge,
+	state,
 }: {
 	name: string;
 	label: string;
 	help: string;
-	badge: ReactNode;
+	state: { text: string; dot: string; off?: boolean };
 }) {
 	return (
 		<AccordionTrigger className="hover:no-underline">
 			<span className="min-w-0">
-				<span className="block text-sm font-medium">{name}</span>
-				<span className="text-muted-foreground block truncate text-xs font-normal">
-					“{label}”{help ? " · has help text" : ""}
+				<span
+					className={cn(
+						"block text-sm font-medium",
+						state.off && "text-muted-foreground",
+					)}
+				>
+					{name}
+				</span>
+				<span className="text-muted-foreground flex items-center gap-1.5 text-xs font-normal">
+					<span
+						aria-hidden
+						className={cn("size-2 shrink-0 rounded-full", state.dot)}
+					/>
+					<span className="shrink-0" data-testid="billing-field-state">
+						{state.text}
+					</span>
+					<span className="truncate">
+						· “{label}”{help ? " · has help text" : ""}
+					</span>
 				</span>
 			</span>
-			<span className="ml-auto shrink-0">{badge}</span>
 		</AccordionTrigger>
 	);
 }
@@ -117,14 +131,13 @@ function TextBoxRow({ form }: { form: BillingDetailsSettingsForm }) {
 	return (
 		<AccordionItem value="text">
 			<RowTrigger
-				badge={
-					<Badge>
-						{invoiceRequired ? "required" : "required with invoice"}
-					</Badge>
-				}
 				help={text.help}
 				label={text.label || BILLING_TEXT_NAME}
 				name="Text box"
+				state={{
+					...STATE_VIEW.REQUIRED,
+					text: invoiceRequired ? "Required" : "Required with invoice",
+				}}
 			/>
 			<AccordionContent className="space-y-3 pb-3">
 				<p className="text-muted-foreground text-xs">
@@ -162,14 +175,10 @@ function FieldRow({
 	return (
 		<AccordionItem value={f.key}>
 			<RowTrigger
-				badge={
-					<Badge variant={STATE_BADGE[config.state]}>
-						{config.state.toLowerCase()}
-					</Badge>
-				}
 				help={config.help}
 				label={config.label || f.name}
 				name={f.name}
+				state={{ ...STATE_VIEW[config.state], off: config.state === "OFF" }}
 			/>
 			<AccordionContent className="space-y-3 pb-3">
 				<form.Field name={`fields.${f.key}.state` as const}>
