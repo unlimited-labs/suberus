@@ -230,6 +230,41 @@ function FieldAccordion({ form }: { form: BillingDetailsSettingsForm }) {
 	);
 }
 
+function RegistryCheckFields({ form }: { form: BillingDetailsSettingsForm }) {
+	const registryCheck = useSelector(form.store, (s) => s.values.registryCheck);
+
+	return (
+		<div className="space-y-4">
+			<form.AppField name="registryCheck">
+				{(field) => (
+					<div className="space-y-1">
+						<field.SwitchField
+							label="Validate VAT IDs with VIES and national registries"
+							testId="billing-registry-check"
+						/>
+						<p className="text-muted-foreground text-xs">
+							EU numbers are checked in VIES; Polish, Swiss and Norwegian ones
+							in their national registers. Off: only the number's format and
+							check digit are verified.
+						</p>
+					</div>
+				)}
+			</form.AppField>
+			{registryCheck && (
+				<form.AppField name="organizerVatId">
+					{(field) => (
+						<field.InputField
+							description="Optional. Sent to VIES with every VAT ID check, so each check returns a consultation number you can keep as proof."
+							label="Organizer's EU VAT ID"
+							placeholder="e.g. PL6750001923"
+						/>
+					)}
+				</form.AppField>
+			)}
+		</div>
+	);
+}
+
 export function BillingDetailsSettingsSection({
 	initialData,
 }: {
@@ -284,15 +319,7 @@ export function BillingDetailsSettingsSection({
 						<IncompleteCountWarning draft={config} saved={initialData} />
 						<ModeCards form={form} />
 						<FieldAccordion form={form} />
-						<form.AppField name="organizerVatId">
-							{(field) => (
-								<field.InputField
-									description="Optional. Sent to VIES with every VAT ID check, so each check returns a consultation number you can keep as proof."
-									label="Organizer's EU VAT ID"
-									placeholder="e.g. PL6750001923"
-								/>
-							)}
-						</form.AppField>
+						<RegistryCheckFields form={form} />
 						<ModeSwitchWarning
 							draftMode={config.mode}
 							savedMode={initialData.mode}

@@ -155,6 +155,17 @@ function PreviousDetails({
 	);
 }
 
+function useVatIdCheck(
+	vatId: string,
+	country: string,
+	config: BillingDetailsSettings | undefined,
+) {
+	return useQuery({
+		...vatIdCheckQueryOptions(vatId, country),
+		enabled: config?.registryCheck === true && vatId.length > 0,
+	}).data;
+}
+
 export const BillingFieldsGroup = withFieldGroup({
 	defaultValues: EMPTY_BILLING_FIELDS,
 	props,
@@ -169,9 +180,7 @@ export const BillingFieldsGroup = withFieldGroup({
 		const values = useSelector(group.store, (s) => s.values);
 		const savedRevision = useSelector(group.form.store, savedRevisionOf);
 		const [checkedVatId, setCheckedVatId] = useState(values.vatId);
-		const { data: vatCheck } = useQuery(
-			vatIdCheckQueryOptions(checkedVatId, values.country),
-		);
+		const vatCheck = useVatIdCheck(checkedVatId, values.country, config);
 		if (!config) throw new Error("BillingFieldsGroup needs a config");
 		const isAdmin = admin === true;
 		const view = billingView(config, isAdmin, values.needInvoice);

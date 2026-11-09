@@ -69,10 +69,12 @@ function VatIdRow({
 	user,
 	label,
 	showRegistry,
+	canRecheck,
 }: {
 	user: AdminUserDetail;
 	label: string;
 	showRegistry: boolean;
+	canRecheck: boolean;
 }) {
 	const { formatDateTime } = useDateFormat();
 	const recheck = useRecheckVatId(user.id);
@@ -94,7 +96,7 @@ function VatIdRow({
 							{vatIdStatusLabels[check.status]}
 						</Badge>
 					)}
-					{user.vatId && (
+					{user.vatId && canRecheck && (
 						<Button
 							disabled={recheck.isPending}
 							onClick={() => recheck.mutate()}
@@ -141,6 +143,7 @@ export function UserBillingSection({ user }: { user: AdminUserDetail }) {
 				))}
 				{config.fields.vatId.state !== "OFF" && (
 					<VatIdRow
+						canRecheck={config.registryCheck}
 						label={config.fields.vatId.label || VAT_ID_FIELD.name}
 						showRegistry={registryOnVatRow}
 						user={user}

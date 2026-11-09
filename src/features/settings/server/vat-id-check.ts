@@ -23,12 +23,11 @@ function reusable(check: VatIdCheck, mode: CheckMode, now: number) {
 	return mode === "cached" && now - check.checkedAt.getTime() < FRESH_MS;
 }
 
-async function lookupRegistry(vatId: string) {
+async function lookupRegistry(vatId: string, organizerVatId: string) {
 	const prefix = vatId.slice(0, 2);
 	if (prefix === "CH")
 		return { source: "UID", ...(await querySwissUid(vatId)) };
 	if (prefix === "NO") return { source: "BRREG", ...(await queryBrreg(vatId)) };
-	const { organizerVatId } = await getSetting("BILLING_DETAILS");
 	const vies = await queryVies(vatId, organizerVatId);
 	// A valid Polish NIP is often absent from VIES (no VAT-UE registration) yet active in the MF register.
 	if (prefix === "PL" && vies.status === "NOT_FOUND") {
@@ -64,7 +63,8 @@ export async function checkVatId(
 	vatId: string,
 	mode: CheckMode = "cached",
 ): Promise<VatIdCheck> {
-	if (!isRegistryCheckable(vatId)) {
+	const config = await getSetting("BILLING_DETAILS");
+	if (!config.registryCheck || !isRegistryCheckable(vatId)) {
 		return {
 			vatId,
 			status: "NOT_CHECKABLE",
@@ -77,7 +77,10 @@ export async function checkVatId(
 	}
 	const cached = await prisma.vatIdCheck.findUnique({ where: { vatId } });
 	if (cached && reusable(cached, mode, Date.now())) return cached;
-	const result = { ...(await lookupRegistry(vatId)), checkedAt: new Date() };
+	const result = {
+		...(await lookupRegistry(vatId, config.organizerVatId)),
+		checkedAt: new Date(),
+	};
 	const row = await prisma.vatIdCheck.upsert({
 		where: { vatId },
 		create: { vatId, ...result },

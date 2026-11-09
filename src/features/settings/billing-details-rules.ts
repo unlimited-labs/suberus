@@ -248,6 +248,7 @@ export function requirednessOf(
 			city: blank(config.fields.city.state),
 			vatId: blank(config.fields.vatId.state),
 		},
+		registryCheck: true,
 		organizerVatId: "",
 	};
 }

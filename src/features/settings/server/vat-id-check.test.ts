@@ -14,9 +14,8 @@ const registries = {
 
 vi.mock("@/shared/server/db.server", () => ({ prisma: prismaMock }));
 vi.mock("@/shared/server/queue", () => ({ getBoss: async () => boss }));
-vi.mock("@/features/settings/server/settings", () => ({
-	getSetting: vi.fn().mockResolvedValue({ organizerVatId: "" }),
-}));
+const getSetting = vi.fn();
+vi.mock("@/features/settings/server/settings", () => ({ getSetting }));
 vi.mock("./vies", () => ({ queryVies: registries.queryVies }));
 vi.mock("./national-registries", () => ({
 	queryMfWhiteList: registries.queryMfWhiteList,
@@ -42,6 +41,7 @@ function savedRow() {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	getSetting.mockResolvedValue({ registryCheck: true, organizerVatId: "" });
 	prismaMock.vatIdCheck.findUnique.mockResolvedValue(null);
 	prismaMock.vatIdCheck.upsert.mockImplementation(async ({ create }) => create);
 });
@@ -125,6 +125,16 @@ describe("checkVatId", () => {
 		await checkVatId("DE136695976", "retry");
 
 		expect(registries.queryVies).toHaveBeenCalledOnce();
+	});
+
+	it("asks no registry and stores nothing while registry checks are off", async () => {
+		getSetting.mockResolvedValue({ registryCheck: false, organizerVatId: "" });
+
+		const check = await checkVatId("DE136695976", "recheck");
+
+		expect(check.status).toBe("NOT_CHECKABLE");
+		expect(registries.queryVies).not.toHaveBeenCalled();
+		expect(prismaMock.vatIdCheck.upsert).not.toHaveBeenCalled();
 	});
 
 	it("returns a fresh cached result without calling a registry", async () => {

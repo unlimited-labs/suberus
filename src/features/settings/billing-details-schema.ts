@@ -67,6 +67,7 @@ export const billingDetailsSettingsSchema = z.object({
 		city: billingFieldConfigSchema,
 		vatId: billingFieldConfigSchema,
 	}),
+	registryCheck: z.boolean(),
 	organizerVatId: z.string().transform((value, ctx) => {
 		const result = normalizeVatId(value);
 		if ("error" in result) {
@@ -105,5 +106,6 @@ export const DEFAULT_BILLING_DETAILS: BillingDetailsSettings = {
 		city: offField,
 		vatId: offField,
 	},
+	registryCheck: true,
 	organizerVatId: "",
 };

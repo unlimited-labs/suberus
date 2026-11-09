@@ -93,8 +93,11 @@ one, or Invoice required is on) but a field the current form requires is empty.
 
 ### VAT ID registry check
 
-When a participant leaves the VAT ID field with a number whose check digit is correct,
-Suberus looks it up in a public register and shows the result under the field:
+When **Validate VAT IDs with VIES and national registries** is on (the default) and a
+participant leaves the VAT ID field with a number whose check digit is correct, Suberus looks
+it up in a public register and shows the result under the field. Switched off, only the
+format and check digit are verified, nothing is sent to a register, and the **Re-check**
+button on the user's page is hidden.
 
 | Country of the VAT ID | Register |
 |---|---|
@@ -154,7 +157,8 @@ in **Users** are exempt.
 | *(field)* **› Label** | The field's label for participants. | Up to 60 characters. Leave empty for the built-in English name, shown as the placeholder. |
 | *(field)* **› State** | **Off** hides the field, **Optional** shows it, **Required** makes it mandatory once an invoice is needed. | All fields start **Off**, so turn on at least the ones your accounting needs. |
 | *(field)* **› Help text** | A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. |
-| **Organizer's EU VAT ID** | Your own VAT ID, sent to VIES as the requester of every check. VIES then returns a consultation number, which Suberus stores with the result as proof that you checked. | Optional, empty by default. Must be an EU or Northern Ireland (`XI`) VAT ID with a correct check digit. VIES checks only its format, not whether it is registered. |
+| **Validate VAT IDs with VIES and national registries** | Looks participants' VAT IDs up in VIES and the Polish, Swiss and Norwegian registers. | On by default. Off: only the format and check digit are verified. |
+| **Organizer's EU VAT ID** | *(Shown while the switch above is on.)* Your own VAT ID, sent to VIES as the requester of every check. VIES then returns a consultation number, which Suberus stores with the result as proof that you checked. | Optional, empty by default. Must be an EU or Northern Ireland (`XI`) VAT ID with a correct check digit. VIES checks only its format, not whether it is registered. |
 
 ## Survey
 
