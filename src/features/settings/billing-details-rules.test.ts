@@ -4,7 +4,6 @@ import {
 	applyBillingConfig,
 	becomesStricter,
 	buyerLines,
-	composeBillingText,
 	initialBillingText,
 	invoiceState,
 	previousFormValues,
@@ -13,7 +12,31 @@ import {
 	showsPreviousText,
 	submittedBillingValues,
 } from "./billing-details-rules";
-import { DEFAULT_BILLING_DETAILS } from "./billing-details-schema";
+import {
+	BILLING_FIELD_KEYS,
+	type BillingDetailsSettings,
+	type BillingFieldState,
+	DEFAULT_BILLING_DETAILS,
+} from "./billing-details-schema";
+
+type FieldStates = Partial<
+	Record<keyof BillingDetailsSettings["fields"], BillingFieldState>
+>;
+
+function withFields(
+	states: FieldStates,
+	overrides: Partial<BillingDetailsSettings> = {},
+): BillingDetailsSettings {
+	const fields = { ...DEFAULT_BILLING_DETAILS.fields };
+	for (const key of BILLING_FIELD_KEYS) {
+		const state = states[key];
+		if (state) fields[key] = { state, label: "", help: "" };
+	}
+	return { ...DEFAULT_BILLING_DETAILS, ...overrides, fields };
+}
+
+const structuredConfig = (states: FieldStates) =>
+	withFields(states, { mode: "STRUCTURED" });
 
 const base = z.object({ needInvoice: z.boolean(), billingText: z.string() });
 const optionalInvoice = applyBillingConfig(base, DEFAULT_BILLING_DETAILS);
@@ -73,15 +96,10 @@ describe("applyBillingConfig (Separate fields mode)", () => {
 		billingOrganization: z.string().optional(),
 		billingCity: z.string().optional(),
 	});
-	const config = {
-		...DEFAULT_BILLING_DETAILS,
-		mode: "STRUCTURED" as const,
-		fields: {
-			...DEFAULT_BILLING_DETAILS.fields,
-			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
-			city: { state: "OPTIONAL" as const, label: "", help: "" },
-		},
-	};
+	const config = structuredConfig({
+		organizationName: "REQUIRED",
+		city: "OPTIONAL",
+	});
 	const schema = applyBillingConfig(structuredBase, config);
 
 	function errorPaths(result: z.ZodSafeParseResult<unknown>) {
@@ -114,14 +132,7 @@ describe("applyBillingConfig (Separate fields mode)", () => {
 });
 
 describe("submittedBillingValues", () => {
-	const structured = {
-		...DEFAULT_BILLING_DETAILS,
-		mode: "STRUCTURED" as const,
-		fields: {
-			...DEFAULT_BILLING_DETAILS.fields,
-			organizationName: { state: "OPTIONAL" as const, label: "", help: "" },
-		},
-	};
+	const structured = structuredConfig({ organizationName: "OPTIONAL" });
 	const values = {
 		needInvoice: true,
 		billingText: "old text",
@@ -166,13 +177,7 @@ describe("buyerLines", () => {
 });
 
 describe("VAT ID in both modes", () => {
-	const vatRequired = {
-		...DEFAULT_BILLING_DETAILS,
-		fields: {
-			...DEFAULT_BILLING_DETAILS.fields,
-			vatId: { state: "REQUIRED" as const, label: "", help: "" },
-		},
-	};
+	const vatRequired = withFields({ vatId: "REQUIRED" });
 	const schema = applyBillingConfig(
 		base.extend({ vatId: z.string().optional() }),
 		vatRequired,
@@ -201,17 +206,12 @@ describe("registryFill", () => {
 		registryName: "AKADEMIA GÓRNICZO-HUTNICZA",
 		registryAddress: "AL. ADAMA MICKIEWICZA 30\n30-059 KRAKÓW",
 	};
-	const structured = {
-		...DEFAULT_BILLING_DETAILS,
-		mode: "STRUCTURED" as const,
-		fields: {
-			...DEFAULT_BILLING_DETAILS.fields,
-			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
-			streetAddress: { state: "OPTIONAL" as const, label: "", help: "" },
-			postalCode: { state: "OPTIONAL" as const, label: "", help: "" },
-			city: { state: "OPTIONAL" as const, label: "", help: "" },
-		},
-	};
+	const structured = structuredConfig({
+		organizationName: "REQUIRED",
+		streetAddress: "OPTIONAL",
+		postalCode: "OPTIONAL",
+		city: "OPTIONAL",
+	});
 
 	it("fills only the empty fields of the Separate fields form", () => {
 		expect(
@@ -279,15 +279,10 @@ describe("registryFill", () => {
 });
 
 describe("invoiceState", () => {
-	const structured = {
-		...DEFAULT_BILLING_DETAILS,
-		mode: "STRUCTURED" as const,
-		fields: {
-			...DEFAULT_BILLING_DETAILS.fields,
-			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
-			city: { state: "OPTIONAL" as const, label: "", help: "" },
-		},
-	};
+	const structured = structuredConfig({
+		organizationName: "REQUIRED",
+		city: "OPTIONAL",
+	});
 
 	it("is NONE when the participant needs no invoice", () => {
 		expect(invoiceState({ needInvoice: false }, structured)).toBe("NONE");
@@ -321,13 +316,7 @@ describe("invoiceState", () => {
 	});
 
 	it("is INCOMPLETE in Simple mode with an empty text box or a missing REQUIRED VAT ID", () => {
-		const simple = {
-			...DEFAULT_BILLING_DETAILS,
-			fields: {
-				...DEFAULT_BILLING_DETAILS.fields,
-				vatId: { state: "REQUIRED" as const, label: "", help: "" },
-			},
-		};
+		const simple = withFields({ vatId: "REQUIRED" });
 		expect(
 			invoiceState(
 				{ needInvoice: true, billingText: " ", vatId: "PL6750002236" },
@@ -434,15 +423,10 @@ describe("previousFormValues", () => {
 	});
 
 	it("under Separate fields lists the text and the fields switched off", () => {
-		const structured = {
-			...DEFAULT_BILLING_DETAILS,
-			mode: "STRUCTURED" as const,
-			fields: {
-				...DEFAULT_BILLING_DETAILS.fields,
-				organizationName: { state: "REQUIRED" as const, label: "", help: "" },
-				vatId: { state: "OPTIONAL" as const, label: "", help: "" },
-			},
-		};
+		const structured = structuredConfig({
+			organizationName: "REQUIRED",
+			vatId: "OPTIONAL",
+		});
 		expect(previousFormValues(values, structured)).toEqual([
 			{
 				column: "billingText",
@@ -454,28 +438,8 @@ describe("previousFormValues", () => {
 	});
 });
 
-describe("composeBillingText", () => {
-	it("joins organization, street and postal code + city into lines", () => {
-		expect(
-			composeBillingText({
-				billingOrganization: "ACME",
-				billingStreet: "1 Main St",
-				billingPostalCode: "30-059",
-				billingCity: "Krakow",
-			}),
-		).toBe("ACME\n1 Main St\n30-059 Krakow");
-	});
-});
-
 describe("showsPreviousText", () => {
-	const structured = {
-		...DEFAULT_BILLING_DETAILS,
-		mode: "STRUCTURED" as const,
-		fields: {
-			...DEFAULT_BILLING_DETAILS.fields,
-			organizationName: { state: "REQUIRED" as const, label: "", help: "" },
-		},
-	};
+	const structured = structuredConfig({ organizationName: "REQUIRED" });
 
 	it("shows the old text while the separate fields are still empty", () => {
 		expect(showsPreviousText({ billingText: "ACME" }, structured)).toBe(true);
@@ -502,9 +466,12 @@ describe("initialBillingText", () => {
 	};
 
 	it("starts Simple mode from the separate fields when there is no text yet", () => {
-		expect(initialBillingText(fields, DEFAULT_BILLING_DETAILS)).toBe(
-			["ACME", "Krakow"].join(String.fromCharCode(10)),
-		);
+		expect(
+			initialBillingText(
+				{ ...fields, billingStreet: "1 Main St", billingPostalCode: "30-059" },
+				DEFAULT_BILLING_DETAILS,
+			),
+		).toBe("ACME\n1 Main St\n30-059 Krakow");
 	});
 
 	it("leaves the hidden text empty when no invoice is wanted", () => {

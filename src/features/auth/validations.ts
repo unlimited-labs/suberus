@@ -1,45 +1,10 @@
 import { z } from "zod";
-import {
-	BILLING_COLUMNS_IN_FORM,
-	contactInfoFormSchema,
-} from "@/shared/lib/validations/user";
 
 export const loginSchema = z.object({
 	email: z.email("Invalid email address"),
 	password: z.string().min(1, "Password is required"),
 	rememberMe: z.boolean(),
 });
-
-export const registerBase = z.object({
-	email: z.email("Invalid email address"),
-	password: z
-		.string()
-		.min(1, "Password is required")
-		.min(10, "Password must be at least 10 characters"),
-	confirmPassword: z.string().min(1, "Please confirm your password"),
-	firstName: z.string().min(1, "First name is required"),
-	lastName: z.string().min(1, "Last name is required"),
-	title: z.string(),
-	affiliationId: z.string().min(1, "Affiliation is required"),
-	affiliationName: z.string(),
-	needInvoice: z.boolean(),
-	billingText: z.string(),
-	...contactInfoFormSchema.pick(BILLING_COLUMNS_IN_FORM).shape,
-	country: z.string().min(1, "Country is required"),
-	surveyAnswers: z.record(z.string(), z.string()),
-	contactConsent: z.boolean(),
-	acceptTerms: z
-		.boolean()
-		.refine((val) => val === true, "You must accept the Terms of Service"),
-});
-
-export const registerSchema = registerBase.refine(
-	(data) => data.password === data.confirmPassword,
-	{
-		message: "Passwords do not match",
-		path: ["confirmPassword"],
-	},
-);
 
 export const forgotPasswordSchema = z.object({
 	email: z.email("Invalid email address"),

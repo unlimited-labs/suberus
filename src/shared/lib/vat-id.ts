@@ -1,20 +1,74 @@
-import { countries } from "countries-list";
-import { euVat, stdnum, type Validator } from "stdnum";
+import type { Validator } from "stdnum";
+import * as adNrt from "stdnum/lib/cjs/ad/nrt.js";
+import * as atUid from "stdnum/lib/cjs/at/uid.js";
+import * as beVat from "stdnum/lib/cjs/be/vat.js";
+import * as bgVat from "stdnum/lib/cjs/bg/vat.js";
+import * as chUid from "stdnum/lib/cjs/ch/uid.js";
+import * as cyVat from "stdnum/lib/cjs/cy/vat.js";
+import * as czDic from "stdnum/lib/cjs/cz/dic.js";
+import * as deVat from "stdnum/lib/cjs/de/vat.js";
+import * as dkCvr from "stdnum/lib/cjs/dk/cvr.js";
+import * as eeKmkr from "stdnum/lib/cjs/ee/kmkr.js";
+import * as esNif from "stdnum/lib/cjs/es/nif.js";
+import * as fiAlv from "stdnum/lib/cjs/fi/alv.js";
+import * as frTva from "stdnum/lib/cjs/fr/tva.js";
+import * as gbVat from "stdnum/lib/cjs/gb/vat.js";
+import * as grVat from "stdnum/lib/cjs/gr/vat.js";
+import * as hrOib from "stdnum/lib/cjs/hr/oib.js";
+import * as huAnum from "stdnum/lib/cjs/hu/anum.js";
+import * as ieVat from "stdnum/lib/cjs/ie/vat.js";
+import * as itIva from "stdnum/lib/cjs/it/iva.js";
+import * as ltPvm from "stdnum/lib/cjs/lt/pvm.js";
+import * as luTva from "stdnum/lib/cjs/lu/tva.js";
+import * as lvPvn from "stdnum/lib/cjs/lv/pvn.js";
+import * as mtVat from "stdnum/lib/cjs/mt/vat.js";
+import * as nlBtw from "stdnum/lib/cjs/nl/btw.js";
+import * as noOrgnr from "stdnum/lib/cjs/no/orgnr.js";
+import * as plNip from "stdnum/lib/cjs/pl/nip.js";
+import * as ptNif from "stdnum/lib/cjs/pt/nif.js";
+import * as roCif from "stdnum/lib/cjs/ro/cif.js";
+import * as seVat from "stdnum/lib/cjs/se/vat.js";
+import * as siDdv from "stdnum/lib/cjs/si/ddv.js";
+import * as skDph from "stdnum/lib/cjs/sk/dph.js";
+import { countryNameToCode } from "@/shared/lib/country-code";
 import { lookup } from "@/shared/lib/lookup";
 
 const PREFIX_ALIASES = { GR: "EL" } as const;
 
+// Per-file imports: the package index bundles all ~90 countries into the client.
 const CHECKSUM_VALIDATORS = {
-	...Object.fromEntries(
-		Object.entries(euVat).map(([code, [validator]]) => [
-			lookup(PREFIX_ALIASES, code) ?? code,
-			validator,
-		]),
-	),
-	CH: stdnum.CH.uid,
-	GB: stdnum.GB.vat,
-	XI: stdnum.GB.vat,
-	NO: stdnum.NO.orgnr,
+	AD: adNrt,
+	AT: atUid,
+	BE: beVat,
+	BG: bgVat,
+	CH: chUid,
+	CY: cyVat,
+	CZ: czDic,
+	DE: deVat,
+	DK: dkCvr,
+	EE: eeKmkr,
+	EL: grVat,
+	ES: esNif,
+	FI: fiAlv,
+	FR: frTva,
+	GB: gbVat,
+	XI: gbVat,
+	HR: hrOib,
+	HU: huAnum,
+	IE: ieVat,
+	IT: itIva,
+	LT: ltPvm,
+	LU: luTva,
+	LV: lvPvn,
+	MT: mtVat,
+	NL: nlBtw,
+	NO: noOrgnr,
+	PL: plNip,
+	PT: ptNif,
+	RO: roCif,
+	SE: seVat,
+	SI: siDdv,
+	SK: skDph,
 } satisfies Record<string, Validator>;
 
 const MAX_LENGTH = 20;
@@ -27,9 +81,7 @@ function withAlias(code: string) {
 }
 
 function countryPrefix(countryName: string | null | undefined) {
-	const iso = Object.entries(countries).find(
-		([, country]) => country.name === countryName,
-	)?.[0];
+	const iso = countryName ? countryNameToCode.get(countryName) : undefined;
 	return iso ? withAlias(iso) : undefined;
 }
 

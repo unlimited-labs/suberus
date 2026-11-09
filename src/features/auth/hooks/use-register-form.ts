@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { detectCountry } from "@/features/auth/detect-country";
 import { useMultiStep } from "@/features/auth/hooks/use-multi-step";
-import { registerSchema } from "@/features/auth/validations";
+import { registerSchema } from "@/features/auth/register-validations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
 	applyBillingConfig,

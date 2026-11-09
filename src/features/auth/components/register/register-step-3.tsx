@@ -3,7 +3,7 @@ import type {
 	RegisterSurveyQuestions,
 	RegisterTosContent,
 } from "@/features/auth/hooks/use-register-form";
-import { registerBase } from "@/features/auth/validations";
+import { registerBase } from "@/features/auth/register-validations";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { surveyAnswerRequiredError } from "@/shared/lib/validations/survey";

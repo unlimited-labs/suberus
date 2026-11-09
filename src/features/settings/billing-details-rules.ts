@@ -274,7 +274,7 @@ export function previousFormValues(
 	});
 }
 
-export function composeBillingText({
+function composeBillingText({
 	billingOrganization,
 	billingStreet,
 	billingPostalCode,
