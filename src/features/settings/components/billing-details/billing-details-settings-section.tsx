@@ -20,7 +20,7 @@ import {
 import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { BillingDetailsPreview } from "./billing-details-preview";
 import { IncompleteCountWarning } from "./incomplete-count-warning";
-import { ModeSwitchWarning } from "./mode-switch-warning";
+import { ModeSwitchNote, useModeSwitchCount } from "./mode-switch-warning";
 import {
 	type BillingDetailsSettingsForm,
 	useBillingDetailsSettings,
@@ -51,7 +51,15 @@ const STATE_VIEW = {
 	REQUIRED: { text: "Required", dot: "bg-primary" },
 } as const;
 
-function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
+function ModeCards({
+	form,
+	savedMode,
+}: {
+	form: BillingDetailsSettingsForm;
+	savedMode: BillingDetailsSettings["mode"];
+}) {
+	const switchCount = useModeSwitchCount(savedMode);
+
 	return (
 		<form.Field name="mode">
 			{(field) => (
@@ -74,6 +82,9 @@ function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
 							<span className="text-muted-foreground block text-xs">
 								{m.text}
 							</span>
+							{m.mode !== savedMode &&
+								field.state.value === m.mode &&
+								switchCount > 0 && <ModeSwitchNote count={switchCount} />}
 						</button>
 					))}
 				</div>
@@ -282,11 +293,7 @@ export function BillingDetailsSettingsSection({
 							)}
 						</form.AppField>
 						<IncompleteCountWarning draft={config} saved={initialData} />
-						<ModeCards form={form} />
-						<ModeSwitchWarning
-							draftMode={config.mode}
-							savedMode={initialData.mode}
-						/>
+						<ModeCards form={form} savedMode={initialData.mode} />
 						<FieldAccordion form={form} />
 						<form.AppField name="organizerVatId">
 							{(field) => (
