@@ -185,10 +185,13 @@ test.describe.serial("Registration - Billing details", () => {
 		await registerPage.fillStep1({ email, ...STEP1 })
 		await registerPage.clickContinue()
 		await registerPage.waitForStep2()
-		await registerPage.fillStep2({ country: "Poland" })
 		await page.getByLabel("Billing details (organization) *").fill("ACME Institute")
 
 		const vat = page.getByLabel("VAT ID", { exact: true })
+		await vat.fill("1234567890")
+		await registerPage.fillStep2({ country: "Poland" })
+		await expect(page.getByText("Not a valid PL VAT ID")).toBeVisible()
+
 		await vat.fill("PL 675-000-22-37")
 		await registerPage.clickContinue()
 		await expect(page.getByText("Not a valid PL VAT ID")).toBeVisible()

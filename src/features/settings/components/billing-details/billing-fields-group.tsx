@@ -253,8 +253,13 @@ export const BillingFieldsGroup = withFieldGroup({
 							}}
 							name="vatId"
 							validators={{
+								onChangeListenTo: ["country"],
 								onChange: ({ value }) =>
-									vatIdError(value, vatRow.required, values.country),
+									vatIdError(
+										value,
+										vatRow.required,
+										group.getFieldValue("country"),
+									),
 							}}
 						>
 							{(field) => (

@@ -1,5 +1,4 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
 import type { BillingDetailsSettings } from "@/features/settings/billing-details-schema";
 import { pluralize } from "@/shared/lib/utils";
 import { Alert, AlertDescription } from "@/shared/ui/alert";
@@ -21,17 +20,8 @@ export function IncompleteCountWarning({
 		>
 			<IconAlertTriangle className="size-4" />
 			<AlertDescription>
-				<span>
-					{count} {pluralize(count, "participant")} will have Incomplete Billing
-					details once you save.{" "}
-					<Link
-						className="text-primary-ink font-medium underline underline-offset-2"
-						search={{ invoice: "INCOMPLETE" }}
-						to="/admin/users"
-					>
-						See who
-					</Link>
-				</span>
+				{count} {pluralize(count, "participant")} will have Incomplete Billing
+				details once you save.
 			</AlertDescription>
 		</Alert>
 	);

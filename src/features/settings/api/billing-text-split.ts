@@ -6,6 +6,7 @@ import {
 	isBillingTextSplitAvailable,
 	splitBillingText,
 } from "@/features/settings/server/billing-text-split";
+import { allowRequest } from "@/shared/server/rate-limit";
 
 export const billingTextSplitAvailableFn = createServerFn({
 	method: "GET",
@@ -26,4 +27,11 @@ export const splitBillingTextFn = createServerFn({ method: "POST" })
 			country: z.string().max(100).optional(),
 		}),
 	)
-	.handler(({ data }) => splitBillingText(data.text, data.country));
+	.handler(({ data, context }) => {
+		if (!allowRequest(`billing-text-split:${context.user.id}`, 10, 60_000)) {
+			throw new Response("Too many requests. Try again in a minute.", {
+				status: 429,
+			});
+		}
+		return splitBillingText(data.text, data.country);
+	});
