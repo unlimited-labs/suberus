@@ -1445,3 +1445,16 @@ model VatIdCheck {
 
   @@map("vat_id_checks")
 }
+
+/// Every registry answer that carried a consultation number, kept as proof of the check.
+model VatIdConsultation {
+  id                String           @id @default(uuid()) @db.Uuid
+  vatId             String
+  status            VatIdCheckStatus
+  source            String
+  requestIdentifier String
+  checkedAt         DateTime         @default(now())
+
+  @@index([vatId, checkedAt])
+  @@map("vat_id_consultations")
+}

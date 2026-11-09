@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const prismaMock = {
 	vatIdCheck: { findUnique: vi.fn(), upsert: vi.fn() },
+	vatIdConsultation: { create: vi.fn() },
+	$transaction: vi.fn((ops: unknown[]) => Promise.all(ops)),
 	$executeRaw: vi.fn(),
 };
 const boss = { send: vi.fn() };
@@ -135,6 +137,33 @@ describe("checkVatId", () => {
 		expect(check.status).toBe("NOT_CHECKABLE");
 		expect(registries.queryVies).not.toHaveBeenCalled();
 		expect(prismaMock.vatIdCheck.upsert).not.toHaveBeenCalled();
+	});
+
+	it("keeps every consultation number VIES returns, beside the latest result", async () => {
+		registries.queryVies.mockResolvedValue({
+			...result("VERIFIED"),
+			requestIdentifier: "WAPIAAAAZ1",
+		});
+
+		await checkVatId("DE136695976", "recheck");
+
+		expect(prismaMock.vatIdConsultation.create).toHaveBeenCalledWith({
+			data: expect.objectContaining({
+				vatId: "DE136695976",
+				status: "VERIFIED",
+				source: "VIES",
+				requestIdentifier: "WAPIAAAAZ1",
+			}),
+		});
+		expect(savedRow()).toMatchObject({ requestIdentifier: "WAPIAAAAZ1" });
+	});
+
+	it("records no consultation when the registry gave no number", async () => {
+		registries.queryVies.mockResolvedValue(result("VERIFIED"));
+
+		await checkVatId("DE136695976", "recheck");
+
+		expect(prismaMock.vatIdConsultation.create).not.toHaveBeenCalled();
 	});
 
 	it("returns a fresh cached result without calling a registry", async () => {

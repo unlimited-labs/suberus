@@ -57,6 +57,32 @@ async function scheduleRetry(vatId: string) {
 	);
 }
 
+type RegistryAnswer = Omit<VatIdCheck, "vatId">;
+
+/** The latest answer per number, plus every consultation number ever returned (proof of the check). */
+async function saveCheck(vatId: string, result: RegistryAnswer) {
+	const upsert = prisma.vatIdCheck.upsert({
+		where: { vatId },
+		create: { vatId, ...result },
+		update: result,
+	});
+	const { requestIdentifier, source } = result;
+	if (!requestIdentifier || !source) return upsert;
+	const [row] = await prisma.$transaction([
+		upsert,
+		prisma.vatIdConsultation.create({
+			data: {
+				vatId,
+				status: result.status,
+				source,
+				requestIdentifier,
+				checkedAt: result.checkedAt,
+			},
+		}),
+	]);
+	return row;
+}
+
 /** `vatId` must be normalized. "cached" reuses a fresh result, "retry" (the job itself) any
  * resolved one and never schedules another retry; "recheck" always asks the registry. */
 export async function checkVatId(
@@ -81,11 +107,7 @@ export async function checkVatId(
 		...(await lookupRegistry(vatId, config.organizerVatId)),
 		checkedAt: new Date(),
 	};
-	const row = await prisma.vatIdCheck.upsert({
-		where: { vatId },
-		create: { vatId, ...result },
-		update: result,
-	});
+	const row = await saveCheck(vatId, result);
 	if (row.status === "UNAVAILABLE" && mode !== "retry") {
 		void scheduleRetry(vatId).catch((error) => {
 			logger.warn("[vat-id] could not schedule a retry:", error);
