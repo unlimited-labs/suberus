@@ -1,10 +1,4 @@
-import {
-	IconBuilding,
-	IconId,
-	IconMail,
-	IconMapPin,
-	IconWorld,
-} from "@tabler/icons-react";
+import { IconBuilding, IconId, IconMail, IconWorld } from "@tabler/icons-react";
 import type { AdminUserDetail } from "@/features/users/server/users";
 
 interface UserContactSectionProps {
@@ -39,12 +33,6 @@ export function UserContactSection({ user }: UserContactSectionProps) {
 				<div className="flex items-center gap-2">
 					<IconWorld className="text-muted-foreground size-4" />
 					<span>{user.country}</span>
-				</div>
-			)}
-			{user.address && (
-				<div className="flex items-start gap-2 sm:col-span-2">
-					<IconMapPin className="text-muted-foreground mt-0.5 size-4" />
-					<span className="whitespace-pre-line">{user.address}</span>
 				</div>
 			)}
 		</div>

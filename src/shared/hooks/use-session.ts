@@ -2,7 +2,7 @@ import type { UserRole } from "@/generated/prisma/enums";
 import { authClient } from "@/shared/lib/auth-client";
 
 // Mirrors the get-session payload. Fields marked `returned: false` in
-// auth.server (title, needInvoice, address, country) are intentionally absent —
+// auth.server (title, needInvoice, billingText, country) are intentionally absent —
 // the app reads those from the DB via the profile slice queries.
 export interface SessionUser {
 	id: string;

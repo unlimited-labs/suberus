@@ -18,7 +18,14 @@ const baseUser: ExportUser = {
 	submissionRoles: [],
 	isActive: true,
 	needInvoice: false,
-	address: null,
+	billingText: null,
+	billingOrganization: null,
+	billingStreet: null,
+	billingPostalCode: null,
+	billingCity: null,
+	vatId: null,
+	vatIdCheck: null,
+	country: null,
 	createdAt: new Date("2026-01-02"),
 	lastLoginAt: null,
 	fee: null,
@@ -41,7 +48,10 @@ describe("buildUserExportRow", () => {
 			"Fee Type": "",
 			"Fee Paid At": "",
 			"Need Invoice": "False",
-			"Invoice details": "",
+			"Billing details (text)": "",
+			"VAT ID status": "",
+			"VAT ID checked at": "",
+			"Registry name": "",
 			"Registration Date": "FORMATTED",
 			"Last Login": "",
 		});
@@ -53,7 +63,7 @@ describe("buildUserExportRow", () => {
 				...baseUser,
 				isActive: false,
 				needInvoice: true,
-				address: "1 Engine St",
+				billingText: "1 Engine St",
 				fee: {
 					id: "fee1",
 					userId: "u1",
@@ -73,7 +83,57 @@ describe("buildUserExportRow", () => {
 			"Fee Type": "regular",
 			"Fee Paid At": "FORMATTED",
 			"Need Invoice": "True",
-			"Invoice details": "1 Engine St",
+			"Billing details (text)": "1 Engine St",
+		});
+	});
+
+	it("keeps the fixed billing column order whatever the form", () => {
+		const keys = Object.keys(buildUserExportRow(baseUser, [], fmtDate));
+		const start = keys.indexOf("Need Invoice");
+		expect(keys.slice(start, start + 11)).toEqual([
+			"Need Invoice",
+			"Billing details (text)",
+			"Organization name",
+			"Street address",
+			"Postal code",
+			"City",
+			"Country",
+			"VAT ID",
+			"VAT ID status",
+			"VAT ID checked at",
+			"Registry name",
+		]);
+	});
+
+	it("exports the separate billing fields and the country", () => {
+		const row = buildUserExportRow(
+			{
+				...baseUser,
+				billingOrganization: "ACME Institute",
+				billingStreet: "1 Main St",
+				billingPostalCode: "30-059",
+				billingCity: "Krakow",
+				country: "Poland",
+				vatId: "PL6750002236",
+				vatIdCheck: {
+					status: "VERIFIED",
+					checkedAt: new Date("2026-11-08"),
+					registryName: "UNIWERSYTET JAGIELLOŃSKI",
+				},
+			},
+			[],
+			fmtDate,
+		);
+		expect(row).toMatchObject({
+			"VAT ID": "PL6750002236",
+			"VAT ID status": "Verified",
+			"VAT ID checked at": "FORMATTED",
+			"Registry name": "UNIWERSYTET JAGIELLOŃSKI",
+			"Organization name": "ACME Institute",
+			"Street address": "1 Main St",
+			"Postal code": "30-059",
+			City: "Krakow",
+			Country: "Poland",
 		});
 	});
 

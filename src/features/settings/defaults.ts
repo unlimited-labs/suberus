@@ -1,3 +1,4 @@
+import { DEFAULT_BILLING_DETAILS } from "./billing-details-schema";
 import type { AppSettingsMap, SubmissionTypeConfig } from "./types";
 
 export const DEFAULT_ORAL_PRESENTATION_CONFIG: SubmissionTypeConfig = {
@@ -195,6 +196,8 @@ export const APP_SETTINGS_DEFAULTS: AppSettingsMap = {
 	TIME_FORMAT: "24h",
 
 	INVITATION_VALIDITY_HOURS: 72,
+
+	BILLING_DETAILS: DEFAULT_BILLING_DETAILS,
 
 	SCHEDULE_STATE: { status: "DRAFT" },
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { billingDetailsSettingsSchema } from "@/features/settings/billing-details-schema";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { zIanaTz } from "@/shared/lib/validations/zod-helpers";
 
@@ -221,6 +222,10 @@ export const setSettingSchema = z.discriminatedUnion("key", [
 	z.object({
 		key: z.literal("INVITATION_VALIDITY_HOURS"),
 		value: z.number().int().min(1).max(8760),
+	}),
+	z.object({
+		key: z.literal("BILLING_DETAILS"),
+		value: billingDetailsSettingsSchema,
 	}),
 ]);
 

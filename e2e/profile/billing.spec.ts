@@ -16,6 +16,7 @@ test.describe("Profile billing persistence", () => {
 		await expect(settingsPage.needInvoiceCheckbox).not.toBeChecked()
 
 		await settingsPage.needInvoiceCheckbox.click()
+		await settingsPage.addressInput.fill("Toggle Org")
 		await settingsPage.saveContactInfo()
 		await settingsPage.expectToastSuccess(/contact information updated/i)
 

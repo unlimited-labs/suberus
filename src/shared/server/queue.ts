@@ -9,6 +9,7 @@ const QUEUES = [
 	"announcement-publish",
 	"submission-diff",
 	"document-generate",
+	"vat-id-purge",
 ] as const;
 
 declare global {

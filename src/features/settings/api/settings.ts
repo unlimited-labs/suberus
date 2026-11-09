@@ -348,6 +348,16 @@ export const getRegistrationStatusFn = createServerFn({
 	};
 });
 
+export const getBillingDetailsConfigFn = createServerFn({
+	method: "GET",
+}).handler(() => getSetting("BILLING_DETAILS"));
+
+export const billingDetailsConfigQueryOptions = () =>
+	queryOptions({
+		queryKey: ["settings", "billing-details"],
+		queryFn: () => getBillingDetailsConfigFn(),
+	});
+
 export interface BrandingSettings {
 	logoUrl: string;
 	faviconUrl: string;

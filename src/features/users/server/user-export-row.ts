@@ -1,5 +1,12 @@
+import {
+	BILLING_AUDIT_LABELS as LABELS,
+	billingColumnsToForm,
+} from "@/features/settings/billing-details-rules";
 import { formatSurveyAnswerValue } from "@/features/survey/labels";
-import { formatSubmissionRoles } from "@/features/users/labels";
+import {
+	formatSubmissionRoles,
+	vatIdStatusLabels,
+} from "@/features/users/labels";
 import type { SurveyQuestionType } from "@/generated/prisma/enums";
 import type { AdminUser } from "./users";
 
@@ -15,7 +22,14 @@ export type ExportUser = Pick<
 	| "isActive"
 	| "fee"
 	| "needInvoice"
-	| "address"
+	| "billingText"
+	| "billingOrganization"
+	| "billingStreet"
+	| "billingPostalCode"
+	| "billingCity"
+	| "vatId"
+	| "vatIdCheck"
+	| "country"
 	| "createdAt"
 	| "lastLoginAt"
 	| "surveyAnswers"
@@ -48,6 +62,31 @@ function buildSurveyColumns(
 	return columns;
 }
 
+function billingColumns(user: ExportUser) {
+	const billing = billingColumnsToForm(user);
+	return {
+		"Need Invoice": user.needInvoice ? "True" : "False",
+		"Billing details (text)": billing.billingText,
+		[LABELS.billingOrganization]: billing.billingOrganization,
+		[LABELS.billingStreet]: billing.billingStreet,
+		[LABELS.billingPostalCode]: billing.billingPostalCode,
+		[LABELS.billingCity]: billing.billingCity,
+		[LABELS.country]: user.country ?? "",
+		[LABELS.vatId]: billing.vatId,
+	};
+}
+
+function vatIdCheckColumns(
+	check: ExportUser["vatIdCheck"],
+	fmtDate: FormatExportDate,
+) {
+	return {
+		"VAT ID status": check ? vatIdStatusLabels[check.status] : "",
+		"VAT ID checked at": fmtDate(check?.checkedAt),
+		"Registry name": check?.registryName ?? "",
+	};
+}
+
 export function buildUserExportRow(
 	user: ExportUser,
 	questions: ExportQuestion[],
@@ -65,8 +104,8 @@ export function buildUserExportRow(
 		"Fee Status": user.fee?.paid ? "Paid" : "Unpaid",
 		"Fee Type": user.fee?.type ?? "",
 		"Fee Paid At": fmtDate(user.fee?.paidAt),
-		"Need Invoice": user.needInvoice ? "True" : "False",
-		"Invoice details": user.address ?? "",
+		...billingColumns(user),
+		...vatIdCheckColumns(user.vatIdCheck, fmtDate),
 		"Registration Date": fmtDate(user.createdAt),
 		"Last Login": fmtDate(user.lastLoginAt),
 		...buildSurveyColumns(user.surveyAnswers, questions),

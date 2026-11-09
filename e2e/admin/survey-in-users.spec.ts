@@ -50,7 +50,7 @@ test.describe("Survey answers in Users area", () => {
 
 		await db.user.update({
 			where: { id: user.id },
-			data: { needInvoice: true, address: "ACME Corp, VAT PL123" },
+			data: { needInvoice: true, billingText: "ACME Corp, VAT PL123" },
 		});
 		await db.surveyAnswer.create({
 			data: { userId: user.id, questionId, value: answerValue },
@@ -216,7 +216,7 @@ test.describe("Survey answers in Users area", () => {
 		await expect(section).toContainText(answerValue);
 	});
 
-	test("XLSX export includes survey, Need Invoice and Invoice details columns", async ({
+	test("XLSX export includes survey, Need Invoice and Billing details (text) columns", async ({
 		page,
 	}) => {
 		const response = await page.request.get("/api/admin/users/export");
@@ -230,6 +230,6 @@ test.describe("Survey answers in Users area", () => {
 		expect(userRow).toBeTruthy();
 		expect(userRow?.[listFieldName]).toBe(answerValue);
 		expect(userRow?.["Need Invoice"]).toBe("True");
-		expect(userRow?.["Invoice details"]).toContain("ACME Corp");
+		expect(userRow?.["Billing details (text)"]).toContain("ACME Corp");
 	});
 });

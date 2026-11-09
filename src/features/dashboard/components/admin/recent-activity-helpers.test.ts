@@ -108,6 +108,13 @@ describe("getEventDescription", () => {
 		).toBe("Updated: firstName, country");
 		expect(
 			getEventDescription(
+				event("USER_BILLING_DETAILS_UPDATED", {
+					changes: { vatId: { from: null, to: "PL5260250995" } },
+				}),
+			),
+		).toBe("Changed: VAT ID");
+		expect(
+			getEventDescription(
 				event("INVITATION_CREATED", { email: "a@b.co", role: "REVIEWER" }),
 			),
 		).toBe("a@b.co · Reviewer");

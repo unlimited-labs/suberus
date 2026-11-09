@@ -1193,7 +1193,7 @@ test.describe("docs screenshots", () => {
 	});
 
 	test("40 survey import template dialog", async ({ page }) => {
-		await page.goto("/admin/settings?tab=survey");
+		await page.goto("/admin/settings?tab=registration-form");
 		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
 		await page.getByTestId("import-template-button").click();
 		await expect(page.getByRole("dialog")).toBeVisible();

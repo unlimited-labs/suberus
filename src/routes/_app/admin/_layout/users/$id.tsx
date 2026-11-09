@@ -2,6 +2,7 @@ import { IconArrowLeft, IconUsers } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+	billingDetailsConfigQueryOptions,
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/features/settings/api/settings";
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
 			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
 			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
+			context.queryClient.ensureQueryData(billingDetailsConfigQueryOptions()),
 		]);
 	},
 	component: UserDetailPage,

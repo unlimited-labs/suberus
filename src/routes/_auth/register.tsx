@@ -15,7 +15,10 @@ import {
 	consumeInvitationFn,
 	validateInvitationTokenFn,
 } from "@/features/invitations/api/invitations";
-import { getRegistrationStatusFn } from "@/features/settings/api/settings";
+import {
+	getBillingDetailsConfigFn,
+	getRegistrationStatusFn,
+} from "@/features/settings/api/settings";
 import {
 	acceptTosFn,
 	getSurveyQuestionsForRegistrationFn,
@@ -39,11 +42,13 @@ export const Route = createFileRoute("/_auth/register")({
 			tosContent,
 			registrationStatus,
 			exhibitorSignupAvailable,
+			billingConfig,
 		] = await Promise.all([
 			getSurveyQuestionsForRegistrationFn(),
 			getTosContentForRegistrationFn(),
 			getRegistrationStatusFn(),
 			exhibitorSignupAvailableFn(),
+			getBillingDetailsConfigFn(),
 		]);
 
 		let invitation: { email: string; role: string } | null = null;
@@ -63,6 +68,7 @@ export const Route = createFileRoute("/_auth/register")({
 			registrationClosed,
 			exhibitorSignupAvailable,
 			contactConsentEnabled: registrationStatus.contactConsentEnabled,
+			billingConfig,
 		};
 	},
 	component: RegisterPage,
@@ -115,6 +121,7 @@ function RegisterForm() {
 		token,
 		exhibitorSignupAvailable,
 		contactConsentEnabled,
+		billingConfig,
 	} = Route.useLoaderData();
 	const {
 		form,
@@ -123,7 +130,6 @@ function RegisterForm() {
 		setAccountType,
 		tosOpen,
 		setTosOpen,
-		needInvoice,
 		currentStep,
 		next,
 		prev,
@@ -135,6 +141,7 @@ function RegisterForm() {
 		tosContent,
 		invitation,
 		token,
+		billingConfig,
 		effects: {
 			consumeInvitation: (t) => consumeInvitationFn({ data: { token: t } }),
 			saveSurveyAnswers: async (answers) => {
@@ -184,7 +191,7 @@ function RegisterForm() {
 					)}
 
 					{currentStep === 2 && (
-						<RegisterStep2 form={form} needInvoice={needInvoice} />
+						<RegisterStep2 billingConfig={billingConfig} form={form} />
 					)}
 
 					{currentStep === 3 && (

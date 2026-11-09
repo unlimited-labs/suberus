@@ -17,6 +17,7 @@ import {
 	updatePersonalInfoFn,
 } from "@/features/profile/api/profile";
 import { ContactInfoSection } from "@/features/profile/components/contact-info-section";
+import { PaidBillingNote } from "@/features/profile/components/paid-billing-note";
 import { PasskeySection } from "@/features/profile/components/passkey-section";
 import { PasswordChangeSection } from "@/features/profile/components/password-change-section";
 import { PersonalInfoSection } from "@/features/profile/components/personal-info-section";
@@ -25,7 +26,16 @@ import type {
 	PasswordChangeFormData,
 	PersonalInfoFormData,
 } from "@/features/profile/validations";
-import { getRegistrationStatusFn } from "@/features/settings/api/settings";
+import { myInvoiceStateQueryOptions } from "@/features/settings/api/billing-status";
+import {
+	billingDetailsConfigQueryOptions,
+	getRegistrationStatusFn,
+} from "@/features/settings/api/settings";
+import {
+	billingConfigFor,
+	initialBillingText,
+} from "@/features/settings/billing-details-rules";
+import { IncompleteBillingBanner } from "@/features/settings/components/billing-details/incomplete-billing-banner";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
 	activeSurveyQuestionsQueryOptions,
@@ -45,6 +55,7 @@ export const Route = createFileRoute("/_app/profile")({
 			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
 			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
 			getRegistrationStatusFn(),
+			context.queryClient.ensureQueryData(billingDetailsConfigQueryOptions()),
 		]);
 		return { contactConsentEnabled: registrationStatus.contactConsentEnabled };
 	},
@@ -85,6 +96,10 @@ function SettingsPage() {
 	};
 	const { data: personalInfo } = useSuspenseQuery(personalInfoQueryOptions());
 	const { data: contactInfo } = useSuspenseQuery(contactInfoQueryOptions());
+	const { feePaid, organizerEmail, ...contactFields } = contactInfo;
+	const { data: billingConfig } = useSuspenseQuery(
+		billingDetailsConfigQueryOptions(),
+	);
 	const { data: surveyQuestions } = useSuspenseQuery(
 		activeSurveyQuestionsQueryOptions(),
 	);
@@ -99,6 +114,7 @@ function SettingsPage() {
 	const { contactConsentEnabled } = Route.useLoaderData();
 
 	if (!user) return null;
+	const contactBillingConfig = billingConfigFor(billingConfig, user.role);
 
 	const handlePersonalInfoSave = async (data: PersonalInfoFormData) => {
 		try {
@@ -147,16 +163,10 @@ function SettingsPage() {
 				setPendingEmail(data.email);
 				toast.success("Verification email sent to your new address");
 			}
-			await updateContactInfoFn({
-				data: {
-					needInvoice: data.needInvoice,
-					address: data.address,
-					country: data.country,
-					contactConsent: data.contactConsent,
-				},
-			});
+			await updateContactInfoFn({ data });
 			await Promise.all([
 				queryClient.invalidateQueries(contactInfoQueryOptions()),
+				queryClient.invalidateQueries(myInvoiceStateQueryOptions()),
 				refetchSession(),
 			]);
 			if (data.email === user.email) {
@@ -177,6 +187,7 @@ function SettingsPage() {
 			<PageHeader icon={IconUser} title="Profile" />
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl space-y-8">
+					<IncompleteBillingBanner />
 					<SettingsSection
 						delay={0}
 						description="Update your name, title, and professional details"
@@ -189,27 +200,32 @@ function SettingsPage() {
 						/>
 					</SettingsSection>
 
-					<SettingsSection
-						delay={100}
-						description="Update your email and billing address"
-						icon={IconMail}
-						title="Contact & Invoice Information"
-					>
-						<ContactInfoSection
-							contactConsentEnabled={contactConsentEnabled}
-							currentEmail={user.email}
-							emailVerified={user.emailVerified}
-							initialData={{
-								email: user.email,
-								needInvoice: contactInfo.needInvoice,
-								address: contactInfo.address,
-								country: contactInfo.country,
-								contactConsent: contactInfo.contactConsent,
-							}}
-							onSave={handleContactInfoSave}
-							pendingEmail={pendingEmail}
-						/>
-					</SettingsSection>
+					<div className="scroll-mt-4" id="contact-invoice">
+						<SettingsSection
+							delay={100}
+							description="Update your email and billing address"
+							icon={IconMail}
+							title="Contact & Invoice Information"
+						>
+							{feePaid && <PaidBillingNote organizerEmail={organizerEmail} />}
+							<ContactInfoSection
+								billingConfig={contactBillingConfig}
+								contactConsentEnabled={contactConsentEnabled}
+								currentEmail={user.email}
+								emailVerified={user.emailVerified}
+								initialData={{
+									...contactFields,
+									email: user.email,
+									billingText: initialBillingText(
+										contactInfo,
+										contactBillingConfig,
+									),
+								}}
+								onSave={handleContactInfoSave}
+								pendingEmail={pendingEmail}
+							/>
+						</SettingsSection>
+					</div>
 
 					<SettingsSection
 						delay={200}

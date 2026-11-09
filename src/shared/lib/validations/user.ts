@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeVatId } from "@/shared/lib/vat-id";
 
 // ORCID format: 0000-0000-0000-000X (where X can be 0-9 or X)
 export const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
@@ -28,17 +29,53 @@ export const personalInfoSchema = z.object({
 	linkedin: z.httpUrl("Invalid URL").optional().or(z.literal("")),
 });
 
-// needInvoice/address/country are always present in the form (defaulted), so
+// needInvoice/billingText/country are always present in the form (defaulted), so
 // they are required here — this lets BillingFieldsGroup map onto them.
 export const contactInfoSchema = z.object({
 	email: z.email("Invalid email address"),
 	needInvoice: z.boolean(),
-	address: z
+	billingText: z
 		.string()
 		.max(500, "Billing details must be at most 500 characters"),
+	billingOrganization: z
+		.string()
+		.max(200, "Organization name must be at most 200 characters")
+		.optional(),
+	billingStreet: z
+		.string()
+		.max(200, "Street address must be at most 200 characters")
+		.optional(),
+	billingPostalCode: z
+		.string()
+		.max(20, "Postal code must be at most 20 characters")
+		.optional(),
+	billingCity: z
+		.string()
+		.max(100, "City must be at most 100 characters")
+		.optional(),
+	vatId: z
+		.string()
+		.optional()
+		.superRefine((value, ctx) => {
+			const result = normalizeVatId(value ?? "");
+			if ("error" in result)
+				ctx.addIssue({ code: "custom", message: result.error });
+		}),
 	country: z.string(),
 	contactConsent: z.boolean().optional(),
 });
 
 export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
-export type ContactInfoFormData = z.infer<typeof contactInfoSchema>;
+export const BILLING_COLUMNS_IN_FORM = {
+	billingOrganization: true,
+	billingStreet: true,
+	billingPostalCode: true,
+	billingCity: true,
+	vatId: true,
+} as const;
+
+export const contactInfoFormSchema = contactInfoSchema.required(
+	BILLING_COLUMNS_IN_FORM,
+);
+
+export type ContactInfoFormData = z.infer<typeof contactInfoFormSchema>;

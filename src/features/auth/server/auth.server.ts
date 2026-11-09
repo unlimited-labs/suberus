@@ -5,8 +5,10 @@ import { mcp } from "@better-auth/mcp";
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError } from "better-auth/api";
 import { jwt, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
+import type { z } from "zod";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
@@ -17,9 +19,15 @@ import {
 	mcpClientUpdatedDetail,
 } from "@/features/auth/server/cimd-audit-rules";
 import { MCP_SCOPES } from "@/features/mcp/scopes";
+import { participantBillingWrite } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
+import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
+import {
+	BILLING_COLUMNS_IN_FORM,
+	contactInfoSchema,
+} from "@/shared/lib/validations/user";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
@@ -32,12 +40,28 @@ export const MCP_RESOURCE_NAME = "Suberus MCP";
 
 /** better-auth types hook payloads as the base user; the additionalFields declared
  * below are present at runtime but absent from that type. */
-type AuthUserExtras = { firstName?: string; affiliationId?: string };
+const billingColumnsSchema = contactInfoSchema
+	.pick({ billingText: true, ...BILLING_COLUMNS_IN_FORM })
+	.partial();
+
+type AuthUserExtras = z.infer<typeof billingColumnsSchema> & {
+	firstName?: string;
+	affiliationId?: string;
+	needInvoice?: boolean;
+	country?: string;
+};
+
+const privateInputString = {
+	type: "string",
+	required: false,
+	input: true,
+	returned: false,
+} as const;
 
 function authUserExtras<T extends { email: string }>(
 	user: T,
 ): T & AuthUserExtras {
-	// SAFETY: both keys are declared in `user.additionalFields` on the config below.
+	// SAFETY: every key is declared in `user.additionalFields` on the config below.
 	return user as T & AuthUserExtras;
 }
 
@@ -117,6 +141,8 @@ const mcpPlugins = env.MCP_ENABLED
 export const auth = betterAuth({
 	baseURL: env.APP_BASE_URL,
 	secret: env.AUTH_SECRET,
+	// Participant writes go through our server fns, which enforce Billing details rules.
+	disabledPaths: ["/update-user"],
 	trustedOrigins:
 		env.NODE_ENV === "development"
 			? [
@@ -222,18 +248,13 @@ export const auth = betterAuth({
 				required: false,
 				input: true,
 			},
-			address: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			country: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
+			billingText: privateInputString,
+			billingOrganization: privateInputString,
+			billingStreet: privateInputString,
+			billingPostalCode: privateInputString,
+			billingCity: privateInputString,
+			vatId: privateInputString,
+			country: privateInputString,
 			needInvoice: {
 				type: "boolean",
 				required: false,
@@ -285,6 +306,27 @@ export const auth = betterAuth({
 		},
 		user: {
 			create: {
+				before: async (user) => {
+					const config = await getSetting("BILLING_DETAILS");
+					const extUser = authUserExtras(user);
+					const lengths = billingColumnsSchema.safeParse(extUser);
+					if (!lengths.success) {
+						throw new APIError("BAD_REQUEST", {
+							message: lengths.error.issues[0].message,
+						});
+					}
+					const billing = participantBillingWrite(extUser, config);
+					if ("error" in billing) {
+						throw new APIError("BAD_REQUEST", { message: billing.error });
+					}
+					return {
+						data: {
+							...user,
+							needInvoice: billing.needInvoice,
+							vatId: billing.vatId || undefined,
+						},
+					};
+				},
 				after: async (user) => {
 					await logActivity({
 						type: "USER_REGISTERED",
@@ -292,6 +334,7 @@ export const auth = betterAuth({
 						detail: activityDetail("USER_REGISTERED", { email: user.email }),
 					});
 					const extUser = authUserExtras(user);
+					checkVatIdInBackground(extUser.vatId);
 					void sendEmail("ACCOUNT_CREATED", user.email, {
 						firstName: extUser.firstName ?? user.email,
 						conferenceName: await getSetting("CONFERENCE_NAME"),

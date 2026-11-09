@@ -1,8 +1,9 @@
+import type { InvoiceState } from "@/features/settings/billing-details-rules";
 import type {
 	SubmissionInvolvementRole,
 	SubmissionRoleSummary,
 } from "@/features/users/server/users";
-import type { UserRole } from "@/generated/prisma/enums";
+import type { UserRole, VatIdCheckStatus } from "@/generated/prisma/enums";
 import { typeLabels } from "@/shared/lib/labels/submission";
 
 export { roleLabels } from "@/shared/lib/labels/user-role";
@@ -14,6 +15,38 @@ export const roleFilterOptions = [
 	{ label: "Author", value: "AUTHOR" },
 	{ label: "Exhibitor", value: "EXHIBITOR" },
 ] as const;
+
+export const CHANGED_AFTER_PAYMENT = "CHANGED_AFTER_PAYMENT";
+
+export const invoiceStateLabels = {
+	NONE: "Not needed",
+	REQUESTED: "Requested",
+	INCOMPLETE: "Incomplete",
+} satisfies Record<InvoiceState, string>;
+
+export const CHANGED_AFTER_PAYMENT_LABEL = "Changed after payment";
+
+export const invoiceFilterOptions = [
+	...Object.entries(invoiceStateLabels).map(([value, label]) => ({
+		label,
+		value,
+	})),
+	{ label: CHANGED_AFTER_PAYMENT_LABEL, value: CHANGED_AFTER_PAYMENT },
+];
+
+export const vatIdStatusLabels = {
+	VERIFIED: "Verified",
+	NOT_FOUND: "Not found",
+	UNAVAILABLE: "Registry unavailable",
+	NOT_CHECKABLE: "Not checkable",
+} satisfies Record<VatIdCheckStatus, string>;
+
+export const vatIdStatusFilterOptions = [
+	...Object.entries(vatIdStatusLabels)
+		.filter(([value]) => value !== "NOT_CHECKABLE")
+		.map(([value, label]) => ({ label, value })),
+	{ label: "No VAT ID / not checked", value: "NONE" },
+];
 
 export const feeFilterOptions = [
 	{ label: "Paid", value: "paid" },

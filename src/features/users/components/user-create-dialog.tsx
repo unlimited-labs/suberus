@@ -5,6 +5,12 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
+import { billingDetailsConfigQueryOptions } from "@/features/settings/api/settings";
+import { EMPTY_BILLING_FIELDS } from "@/features/settings/billing-details-rules";
+import {
+	BILLING_FIELDS_MAP,
+	BillingFieldsGroup,
+} from "@/features/settings/components/billing-details/billing-fields-group";
 import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import {
 	adminUsersQueryOptions,
@@ -13,7 +19,6 @@ import {
 import { UserContactFieldsGroup } from "@/features/users/components/user-contact-fields-group";
 import type { AdminUserCreateFormData } from "@/features/users/validations";
 import { adminUserCreateSchema } from "@/features/users/validations";
-import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { SurveyQuestionField } from "@/shared/components/survey-question-field";
 import { useAppForm } from "@/shared/hooks/use-app-form";
@@ -43,6 +48,9 @@ export function UserCreateDialog({
 	const { data: allQuestions } = useSuspenseQuery(
 		adminSurveyQuestionsQueryOptions(),
 	);
+	const { data: billingConfig } = useSuspenseQuery(
+		billingDetailsConfigQueryOptions(),
+	);
 
 	const questions = allQuestions.filter(
 		(q) =>
@@ -55,27 +63,20 @@ export function UserCreateDialog({
 		title: "",
 		affiliation: "",
 		email: "",
-		needInvoice: false,
-		address: "",
-		country: "",
+		...EMPTY_BILLING_FIELDS,
 		surveyAnswers: Object.fromEntries(
 			questions.map((q) => [q.id, q.type === "CHECKBOX" ? "false" : ""]),
 		),
 	};
 
 	const mutation = useMutation({
-		mutationFn: (value: AdminUserCreateFormData) =>
+		mutationFn: ({ surveyAnswers, ...value }: AdminUserCreateFormData) =>
 			createAdminUser({
 				data: {
-					email: value.email,
-					firstName: value.firstName,
-					lastName: value.lastName,
+					...value,
 					title: value.title || undefined,
 					affiliation: value.affiliation || undefined,
-					needInvoice: value.needInvoice,
-					address: value.address,
-					country: value.country,
-					answers: Object.entries(value.surveyAnswers).map(
+					answers: Object.entries(surveyAnswers).map(
 						([questionId, answer]) => ({ questionId, value: answer }),
 					),
 				},
@@ -155,11 +156,9 @@ export function UserCreateDialog({
 					/>
 
 					<BillingFieldsGroup
-						fields={{
-							needInvoice: "needInvoice",
-							address: "address",
-							country: "country",
-						}}
+						admin
+						config={billingConfig}
+						fields={BILLING_FIELDS_MAP}
 						form={form}
 						needInvoiceLabel="Needs invoice for organization"
 					/>

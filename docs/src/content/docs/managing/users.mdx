@@ -25,6 +25,8 @@ paid, or read how they answered your registration survey.
 | **Role** | Author, Reviewer, Editor, Admin, or Exhibitor. |
 | **Affiliation** | Their institution/organisation. |
 | **Fee** | Whether their conference fee is marked paid. Click the badge to open the fee dialog right here — pick a fee type and **Save**, or **Unmark as Paid** to reverse it, without opening the user. |
+| **Invoice** | **—** (no invoice needed), **Requested** (needs an invoice and gave every required Billing detail) or **Incomplete** (needs an invoice — they asked for one, or [Invoice required](/settings/survey/#billing-details) is on — but a field the current form requires is empty; admins and deactivated accounts always show **—**). A small icon shows the VAT ID's register status: ✓ found, ⚠ not found, ⏳ register unavailable. Filter on the three states, e.g. to e-mail everyone who is **Incomplete** (select all, then **Send email** or **Send announcement**). Opening `/admin/users?invoice=INCOMPLETE` starts with that filter on, and the address follows the filter as you change it, so you can bookmark or share it. Details given under an earlier form setting do not count. A **Changed after payment** badge marks a participant who edited their Billing details after their fee was marked paid; the **Changed after payment** filter option lists only them. |
+| **VAT ID** | The register status of the user's VAT ID: Verified, Not found or Registry unavailable (— when there is no VAT ID or its country has no register). Filterable. |
 | **Submissions** | How many submissions they have. |
 | **Status** | Active or deactivated. |
 | **Registration Date** | When the user registered (sortable). |
@@ -32,19 +34,23 @@ paid, or read how they answered your registration survey.
 
 Use **Add User** (top right) to create an account yourself — see
 [below](#add-a-user-yourself). Search by name, toggle columns, and use **Export XLSX** to download the full list
-(including survey answers). Select rows for **bulk actions**. Your column choices
+(including survey answers). The export always has the same Billing details columns,
+whatever form you use: `Need Invoice`, `Billing details (text)`, `Organization name`,
+`Street address`, `Postal code`, `City`, `Country`, `VAT ID`, `VAT ID status`,
+`VAT ID checked at`, `Registry name` (empty when not given). Select rows for **bulk actions**. Your column choices
 are remembered in this browser and restored next time you open the page.
 
 <Aside type="tip" title="Surfacing survey answers">
 Which survey answers appear as columns here is controlled per question on the
-**[Survey](/settings/survey/)** tab via *Show in users list*.
+**[Registration form](/settings/survey/)** tab via *Show in users list*.
 </Aside>
 
 ### On mobile
 
 On a phone the list becomes a stack of **cards** instead of a table. Each card
-shows the name, **role**, email, affiliation, a **Paid / Unpaid** fee badge, and
-the user's submission-role badges; tap the name block to open the user, or tap
+shows the name, **role**, email, affiliation, a **Paid / Unpaid** fee badge, the
+**Requested / Incomplete** invoice badge (when an invoice is needed), and the user's
+submission-role badges; tap the name block to open the user, or tap
 the fee badge to change the fee status without leaving the list. Search is
 full-width and every match scrolls in one list (no paging). The **Columns**
 picker is hidden — switch to a wider screen to choose columns.
@@ -64,7 +70,7 @@ waiting for the person to sign up.
 | **Title** | Academic title (Dr, Prof, …). Optional. |
 | **Affiliation** | Institution/organisation. A new name is added to the affiliation list automatically. |
 | **Email** | Required, must not already belong to an account. This is the person's login. |
-| **Needs invoice for organization** | Ticking it reveals the billing details field. |
+| **Needs invoice for organization** | Ticking it reveals the Billing details fields in the form set under [Registration form](/settings/survey/#billing-details) (one text box, or separate fields). Nothing is required here, even if Invoice required is on, but a VAT ID must still pass its check-digit test. |
 | **Country** | Optional. |
 | *(Survey questions)* | The same registration survey the person would have filled in themselves. Required questions must be answered here too. |
 
@@ -116,11 +122,16 @@ submission** badge when late submissions are allowed. The **⋯** menu holds:
 
 | Card | What it shows |
 |---|---|
-| **Contact Information** | Email (click to send mail), affiliation, ORCID, country, and address — each shown only when set. |
+| **Contact Information** | Email (click to send mail), affiliation, ORCID and country — each shown only when set. |
+| **Billing details** | Whether they need an invoice (**Not needed**, **Requested** or **Incomplete**), then the fields of the current [Billing details form](/settings/survey/#billing-details) under your labels. The **VAT ID** shows its register status badge and when it was checked; the name found in the register appears under the organization name (or the text box) so you can compare them. **Re-check** asks the register again right away. Values the participant gave under an earlier form setting (another kind of form, or a field since switched Off) appear below under **From previous form settings**. When the participant edited their details after their fee was marked paid, a **Changed after payment** callout at the top lists each changed field (old → new value, all their changes since you last acknowledged). Check whether an invoice was already issued, then press **Acknowledge** to clear the badge (recorded in the activity log with your name). If the participant edited again while you had the page open, the badge stays and shows only those newer edits. Your own edits, including those made through an AI assistant, never raise it. If their edits cancel out, the callout says so. |
 | **Account Information** | Registration and last-login dates, plus email-verification status. If the address isn't verified, a **Verify** button sends a fresh verification email. |
 | **Fee Status** | A green **Fee Paid** callout (type, amount, currency, and paid-on date, with **Unmark**) or a red **Fee Unpaid** callout. When unpaid, **Mark as Paid** records payment (fee type / currency from **[Fee](/settings/fee/)**). The **Fee** badge on the [users list](#the-list) does the same thing in one click. |
 | **Survey Responses** | The user's answers to your registration **[Survey](/settings/survey/)**. Use **Edit** (top-right of the card) to correct or fill in answers on the user's behalf — see [below](#edit-survey-answers). |
 | **Announcements** | Every [announcement](/managing/announcements/) this person has received, whether they have read it, and **Preview** / **Edit**. Editing rewrites this one person's copy only. Hidden when they have received none. |
+
+🖼️ [Screenshot placeholder: Billing details card on a user's page, with the VAT ID status and Re-check]
+
+🖼️ [Screenshot placeholder: Changed after payment callout with the field changes and Acknowledge]
 
 ### Submissions panel
 
@@ -160,7 +171,7 @@ participant as the presenting author.
 - Available to **Editors and Admins**.
 
 <Aside type="caution">
-Role changes, activation/deactivation, late-submission permission changes, and fee marking are recorded in the
+Role changes, activation/deactivation, late-submission permission changes, fee marking, and every change to Billing details (by the participant, you, or an AI assistant) are recorded in the
 **[activity log](/managing/activity-log/)**. Deactivating is reversible; deleting a
 user is not — prefer deactivation unless you're sure.
 </Aside>

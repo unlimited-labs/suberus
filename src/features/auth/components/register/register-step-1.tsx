@@ -6,7 +6,7 @@ import {
 } from "@tabler/icons-react";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import type { RegisterFormApi } from "@/features/auth/hooks/use-register-form";
-import { registerBase } from "@/features/auth/validations";
+import { registerBase } from "@/features/auth/register-validations";
 import { AffiliationSelect } from "@/shared/components/affiliation-select";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { titleOptions } from "@/shared/lib/labels/title";

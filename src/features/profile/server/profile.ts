@@ -1,5 +1,18 @@
 import { logActivity } from "@/features/activity-log/server/activity-log";
+import {
+	BILLING_BEFORE_SELECT,
+	updateUserAuditingBilling,
+} from "@/features/activity-log/server/billing-change-audit";
 import { activityDetail } from "@/features/activity-log/types";
+import type { ContactInfoFormData } from "@/features/profile/validations";
+import {
+	billingColumnsToDb,
+	billingConfigFor,
+	billingColumnsToForm,
+	participantBillingWrite,
+} from "@/features/settings/billing-details-rules";
+import { getSetting } from "@/features/settings/server/settings";
+import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import { prisma } from "@/shared/server/db.server";
 
 export async function getPersonalInfo(userId: string) {
@@ -64,18 +77,18 @@ export async function updatePersonalInfo(
 }
 
 export async function getContactInfo(userId: string) {
-	const user = await prisma.user.findUniqueOrThrow({
-		where: { id: userId },
-		select: {
-			needInvoice: true,
-			address: true,
-			country: true,
-			contactConsent: true,
-		},
-	});
+	const [user, organizerEmail] = await Promise.all([
+		prisma.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: { ...BILLING_BEFORE_SELECT, contactConsent: true },
+		}),
+		getSetting("CONTACT_EMAIL"),
+	]);
 	return {
+		feePaid: user.fee?.paid === true,
+		organizerEmail,
 		needInvoice: user.needInvoice,
-		address: user.address ?? "",
+		...billingColumnsToForm(user),
 		country: user.country ?? "",
 		contactConsent: user.contactConsent,
 	};
@@ -83,22 +96,24 @@ export async function getContactInfo(userId: string) {
 
 export async function updateContactInfo(
 	userId: string,
-	data: {
-		needInvoice?: boolean;
-		address?: string;
-		country?: string;
-		contactConsent?: boolean;
-	},
+	role: string | null | undefined,
+	data: Omit<ContactInfoFormData, "email">,
 ) {
-	const result = await prisma.user.update({
-		where: { id: userId },
-		data: {
-			needInvoice: data.needInvoice,
-			address: data.address || null,
+	const config = billingConfigFor(await getSetting("BILLING_DETAILS"), role);
+	const billing = participantBillingWrite(data, config);
+	if ("error" in billing) throw new Response(billing.error, { status: 400 });
+
+	const { before, after } = await updateUserAuditingBilling(
+		userId,
+		{
+			needInvoice: billing.needInvoice,
+			...billingColumnsToDb({ ...data, vatId: billing.vatId }),
 			country: data.country || null,
 			contactConsent: data.contactConsent,
 		},
-	});
+		{ performedBy: userId, byParticipant: true },
+	);
+	if (after.vatId !== before.vatId) checkVatIdInBackground(after.vatId);
 
 	await logActivity({
 		type: "USER_PROFILE_UPDATED",
@@ -108,6 +123,4 @@ export async function updateContactInfo(
 			fields: Object.keys(data),
 		}),
 	});
-
-	return result;
 }

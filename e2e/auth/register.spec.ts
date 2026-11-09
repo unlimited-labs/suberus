@@ -98,7 +98,7 @@ test.describe("Register Page - Step 1: Author Info", () => {
 
 		// Assert - wait for step 2 to load (country combobox appears regardless of pre-fill)
 		await registerPage.waitForStep2()
-		await expect(registerPage.page.getByLabel("Billing details (organization)")).toBeAttached()
+		await expect(registerPage.page.getByRole("checkbox", { name: "I need an invoice for my organization" })).not.toBeChecked()
 	})
 })
 
@@ -382,8 +382,6 @@ test.describe("Register Page - Country Auto-Detection", () => {
 		await registerPage.clickContinue()
 		await registerPage.waitForStep2()
 
-		// Act — fill billing details (required when needInvoice is checked), then Continue
-		await registerPage.page.getByLabel("Billing details (organization)").fill("Test Org\n123 Test St")
 		await registerPage.clickContinue()
 
 		await expect(registerPage.page.getByRole("checkbox", { name: /I agree to the/ })).toBeVisible()

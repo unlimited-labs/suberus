@@ -1,11 +1,11 @@
 import { IconList, IconMap, IconWorld } from "@tabler/icons-react";
-import { countries } from "countries-list";
 import * as Flags from "country-flag-icons/react/3x2";
 import * as MapLibreGL from "maplibre-gl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { COUNTRY_CENTROIDS } from "@/features/dashboard/country-centroids";
 import type { AdminDashboardMetrics } from "@/features/dashboard/server/admin-dashboard";
 import { useTheme } from "@/shared/components/theme-provider";
+import { countryNameToCode } from "@/shared/lib/country-code";
 import { lookup } from "@/shared/lib/lookup";
 import { MapControls, Map as MapView, useMap } from "@/shared/ui/map";
 import { SectionCard } from "@/shared/ui/section-card";
@@ -14,14 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 interface UsersByCountryCardProps {
 	data: AdminDashboardMetrics["usersByCountry"] | undefined;
-}
-
-const countryNameToCode = new globalThis.Map<string, string>();
-for (const [code, info] of Object.entries(countries)) {
-	for (const alias of info.alias ?? []) countryNameToCode.set(alias, code);
-}
-for (const [code, info] of Object.entries(countries)) {
-	countryNameToCode.set(info.name, code);
 }
 
 const SOURCE_ID = "bubbles-source";

@@ -1,9 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import {
 	adminMiddleware,
 	adminOnlyMiddleware,
 } from "@/features/auth/server/middleware";
+import { acknowledgeBillingChange } from "@/features/users/server/billing-after-payment";
 import {
 	createUserByAdmin,
 	resendSetPasswordLink,
@@ -16,6 +18,7 @@ import {
 	getUserById,
 	getUsers,
 	patchUser,
+	recheckUserVatId,
 } from "@/features/users/server/users";
 import {
 	userBulkActionInput,
@@ -101,9 +104,31 @@ export const bulkAdminAction = createServerFn({ method: "POST" })
 export const updateAdminUserProfile = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(userProfileUpdateInput)
-	.handler(async ({ data }) => {
+	.handler(async ({ data, context }) => {
 		const { id, ...profileData } = data;
-		return adminUpdateProfile(id, profileData);
+		return adminUpdateProfile(id, profileData, context.user.id);
+	});
+
+export const recheckAdminUserVatId = createServerFn({ method: "POST" })
+	.middleware([adminMiddleware])
+	.validator(userIdInput)
+	.handler(async ({ data }) => {
+		await recheckUserVatId(data.id);
+		return { success: true };
+	});
+
+export const acknowledgeAdminUserBillingChange = createServerFn({
+	method: "POST",
+})
+	.middleware([adminMiddleware])
+	.validator(userIdInput.extend({ seenUntil: z.iso.datetime() }))
+	.handler(async ({ data, context }) => {
+		await acknowledgeBillingChange(
+			data.id,
+			context.user.id,
+			new Date(data.seenUntil),
+		);
+		return { success: true };
 	});
 
 export const checkAdminUserDeletable = createServerFn({ method: "GET" })

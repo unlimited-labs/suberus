@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_BILLING_DETAILS } from "@/features/settings/billing-details-schema";
 import { signUp } from "@/shared/lib/auth-client";
 import { type RegisterEffects, useRegisterForm } from "./use-register-form";
 
@@ -47,6 +48,7 @@ function render(
 			tosContent: "",
 			invitation: null,
 			token: undefined,
+			billingConfig: DEFAULT_BILLING_DETAILS,
 			...overrides,
 			effects: eff,
 		}),
@@ -111,6 +113,40 @@ describe("useRegisterForm", () => {
 		expect(eff.saveSurveyAnswers).toHaveBeenCalledOnce();
 		expect(eff.acceptTos).toHaveBeenCalledOnce();
 		await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/" }));
+	});
+
+	it("blocks sign-up under Invoice required until Billing details are filled", async () => {
+		const { result } = render({
+			billingConfig: { ...DEFAULT_BILLING_DETAILS, invoiceRequired: true },
+		});
+
+		act(() => fillValid(result.current.form));
+		await act(async () => {
+			await result.current.form.handleSubmit();
+		});
+
+		expect(mockSignUpEmail).not.toHaveBeenCalled();
+	});
+
+	it("sends needInvoice under Invoice required", async () => {
+		const { result } = render({
+			billingConfig: { ...DEFAULT_BILLING_DETAILS, invoiceRequired: true },
+		});
+
+		act(() => {
+			fillValid(result.current.form);
+			result.current.form.setFieldValue("billingText", "ACME, 1 Main St");
+		});
+		await act(async () => {
+			await result.current.form.handleSubmit();
+		});
+
+		expect(mockSignUpEmail).toHaveBeenCalledWith(
+			expect.objectContaining({
+				needInvoice: true,
+				billingText: "ACME, 1 Main St",
+			}),
+		);
 	});
 
 	it("aborts when registration is closed and no invitation token is present", async () => {

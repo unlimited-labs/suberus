@@ -5,6 +5,7 @@ import {
 	paymentInstructionsQueryOptions,
 	userFeeQueryOptions,
 } from "@/features/fee/api/fee";
+import { IncompleteBillingBanner } from "@/features/settings/components/billing-details/incomplete-billing-banner";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
@@ -35,6 +36,7 @@ function FeePage() {
 
 			<div className="flex-1 overflow-auto p-4 sm:p-8">
 				<div className="mx-auto max-w-5xl space-y-8">
+					<IncompleteBillingBanner />
 					{fee ? (
 						<SettingsSection
 							delay={0}

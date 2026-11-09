@@ -11,6 +11,7 @@ import {
 	updateContactInfo,
 	updatePersonalInfo,
 } from "@/features/profile/server/profile";
+import { contactInfoFormSchema } from "@/features/profile/validations";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
@@ -62,16 +63,9 @@ export const getContactInfoFn = createServerFn({ method: "GET" })
 
 export const updateContactInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.validator(
-		z.object({
-			needInvoice: z.boolean().optional(),
-			address: z.string().max(500).optional(),
-			country: z.string().optional(),
-			contactConsent: z.boolean().optional(),
-		}),
-	)
+	.validator(contactInfoFormSchema.omit({ email: true }))
 	.handler(async ({ data, context }) => {
-		await updateContactInfo(context.user.id, data);
+		await updateContactInfo(context.user.id, context.user.role, data);
 		return { success: true };
 	});
 

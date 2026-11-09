@@ -9,8 +9,13 @@ import { useSelector } from "@tanstack/react-store";
 import { useState } from "react";
 import { EmailChangeConfirmDialog } from "@/features/profile/components/email-change-confirm-dialog";
 import type { ContactInfoFormData } from "@/features/profile/validations";
-import { contactInfoSchema } from "@/features/profile/validations";
-import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
+import { contactInfoFormSchema } from "@/features/profile/validations";
+import { applyBillingConfig } from "@/features/settings/billing-details-rules";
+import type { BillingDetailsSettings } from "@/features/settings/billing-details-schema";
+import {
+	BILLING_FIELDS_MAP,
+	BillingFieldsGroup,
+} from "@/features/settings/components/billing-details/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { useResendVerification } from "@/shared/hooks/use-resend-verification";
@@ -26,6 +31,7 @@ interface ContactInfoSectionProps {
 	) => Promise<void>;
 	isLoading?: boolean;
 	contactConsentEnabled: boolean;
+	billingConfig: BillingDetailsSettings;
 	currentEmail: string;
 	emailVerified: boolean;
 	pendingEmail?: string;
@@ -36,6 +42,7 @@ export function ContactInfoSection({
 	onSave,
 	isLoading,
 	contactConsentEnabled,
+	billingConfig,
 	currentEmail,
 	emailVerified,
 	pendingEmail,
@@ -48,11 +55,12 @@ export function ContactInfoSection({
 	);
 	const [isConfirming, setIsConfirming] = useState(false);
 
+	const schema = applyBillingConfig(contactInfoFormSchema, billingConfig);
 	const form = useAppForm({
 		defaultValues: initialData,
 		validators: {
-			onChange: contactInfoSchema,
-			onSubmit: contactInfoSchema,
+			onChange: schema,
+			onSubmit: schema,
 		},
 		onSubmit: async ({ value }) => {
 			if (value.email !== currentEmail) {
@@ -150,12 +158,9 @@ export function ContactInfoSection({
 			)}
 
 			<BillingFieldsGroup
+				config={billingConfig}
 				disabled={isLoading}
-				fields={{
-					needInvoice: "needInvoice",
-					address: "address",
-					country: "country",
-				}}
+				fields={BILLING_FIELDS_MAP}
 				form={form}
 			/>
 

@@ -4,25 +4,38 @@ import {
 	logActivity,
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
+import { updateUserAuditingBilling } from "@/features/activity-log/server/billing-change-audit";
 import { activityDetail } from "@/features/activity-log/types";
+import {
+	billingColumnsToDb,
+	type InvoiceState,
+	invoiceState,
+} from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
+import {
+	checkVatId,
+	checkVatIdInBackground,
+} from "@/features/settings/server/vat-id-check";
 import type {
 	feeMarkPaidInput,
 	userBulkActionInput,
-	userProfileUpdateInput,
+	userProfilePatchInput,
 	usersListInput,
 } from "@/features/users/validations";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, VatIdCheck } from "@/generated/prisma/client";
 import type {
 	SubmissionStatus,
 	SubmissionType,
 	UserRole,
 } from "@/generated/prisma/enums";
 import { logger } from "@/logger.ts";
+import type { BillingChanges } from "@/shared/lib/billing-changes";
+import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { upsertAffiliation } from "@/shared/server/affiliations";
 import { prisma } from "@/shared/server/db.server";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
 import { deleteFile } from "@/shared/server/storage";
+import { billingChangesAfterPayment } from "./billing-after-payment";
 import {
 	extractFeePayment,
 	type PatchUserData,
@@ -62,7 +75,12 @@ export interface AdminUser {
 	affiliation: string | null;
 	affiliationId: string | null;
 	orcid: string | null;
-	address: string | null;
+	billingText: string | null;
+	billingOrganization: string | null;
+	billingStreet: string | null;
+	billingPostalCode: string | null;
+	billingCity: string | null;
+	vatId: string | null;
 	country: string | null;
 	needInvoice: boolean;
 	role: UserRole;
@@ -82,10 +100,15 @@ export interface AdminUser {
 	} | null;
 	submissionRoles: SubmissionRoleSummary[];
 	surveyAnswers: { questionId: string; value: string }[];
+	invoiceState: InvoiceState;
+	vatIdCheck: Pick<VatIdCheck, "status" | "checkedAt" | "registryName"> | null;
+	billingChangedAfterPaymentAt: Date | null;
 }
 
 export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
+	billingChangesAfterPayment: BillingChanges | null;
+	billingLastChangeAt: Date | null;
 }
 
 export type UsersFilters = z.infer<typeof usersListInput>;
@@ -269,7 +292,9 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		prisma.user.count({ where }),
 	]);
 
+	const billing = await billingStatusLookup(users);
 	const mapped: AdminUser[] = users.map((u) => ({
+		...billing(u),
 		id: u.id,
 		email: u.email,
 		firstName: u.firstName,
@@ -278,7 +303,12 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 		affiliation: u.affiliation?.name ?? null,
 		affiliationId: u.affiliationId,
 		orcid: u.orcid,
-		address: u.address,
+		billingText: u.billingText,
+		billingOrganization: u.billingOrganization,
+		billingStreet: u.billingStreet,
+		billingPostalCode: u.billingPostalCode,
+		billingCity: u.billingCity,
+		vatId: u.vatId,
 		country: u.country,
 		needInvoice: u.needInvoice,
 		role: u.role,
@@ -305,6 +335,35 @@ export async function getUsers(data: UsersFilters): Promise<GetUsersResponse> {
 	return { users: mapped, total };
 }
 
+type BillingStatusSource = Parameters<typeof invoiceState>[0] & {
+	vatId: string | null;
+	billingChangedAfterPaymentAt: Date | null;
+};
+
+async function billingStatusLookup(users: BillingStatusSource[]) {
+	const vatIds = users.flatMap((u) => (u.vatId ? [u.vatId] : []));
+	const [config, checks] = await Promise.all([
+		getSetting("BILLING_DETAILS"),
+		prisma.vatIdCheck.findMany({
+			where: { vatId: { in: vatIds } },
+			select: {
+				vatId: true,
+				status: true,
+				checkedAt: true,
+				registryName: true,
+			},
+		}),
+	]);
+	const checkByVatId = new Map(
+		checks.map(({ vatId, ...check }) => [vatId, check]),
+	);
+	return (user: BillingStatusSource) => ({
+		invoiceState: invoiceState(user, config),
+		vatIdCheck: (user.vatId && checkByVatId.get(user.vatId)) || null,
+		billingChangedAfterPaymentAt: user.billingChangedAfterPaymentAt,
+	});
+}
+
 export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 	const user = await prisma.user.findUnique({
 		where: { id },
@@ -313,7 +372,15 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 
 	if (!user) return null;
 
+	const [billing, afterPayment] = await Promise.all([
+		billingStatusLookup([user]),
+		billingChangesAfterPayment(user),
+	]);
+
 	return {
+		...billing(user),
+		billingChangesAfterPayment: afterPayment?.changes ?? null,
+		billingLastChangeAt: afterPayment?.lastChangeAt ?? null,
 		id: user.id,
 		email: user.email,
 		firstName: user.firstName,
@@ -322,7 +389,12 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 		affiliation: user.affiliation?.name ?? null,
 		affiliationId: user.affiliationId,
 		orcid: user.orcid,
-		address: user.address,
+		billingText: user.billingText,
+		billingOrganization: user.billingOrganization,
+		billingStreet: user.billingStreet,
+		billingPostalCode: user.billingPostalCode,
+		billingCity: user.billingCity,
+		vatId: user.vatId,
 		country: user.country,
 		needInvoice: user.needInvoice,
 		role: user.role,
@@ -691,38 +763,49 @@ export async function unmarkFeePaid(
 }
 
 export type UpdateUserProfileInput = Omit<
-	z.infer<typeof userProfileUpdateInput>,
+	z.infer<typeof userProfilePatchInput>,
 	"id"
 >;
+
+const emptyToNull = (value: string | undefined) =>
+	value === undefined ? undefined : value || null;
 
 export async function updateUserProfile(
 	userId: string,
 	data: UpdateUserProfileInput,
+	performedBy: string,
 ): Promise<{ success: boolean }> {
 	const currentUser = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { email: true },
+		select: { email: true, country: true, vatId: true },
 	});
 
 	if (!currentUser) {
 		throw new Response("User not found", { status: 404 });
 	}
 
-	// website/linkedin are absent from the admin form; undefined leaves the
-	// user's own value alone instead of wiping it.
+	// A new country can supply the prefix of a stored number that had none.
+	const rawVatId =
+		data.vatId ??
+		(data.country === undefined ? undefined : (currentUser.vatId ?? undefined));
+	const vatId = normalizeVatIdOrThrow(
+		rawVatId,
+		data.country ?? currentUser.country,
+	);
+
 	const updateData: Prisma.UserUpdateInput = {
 		firstName: data.firstName,
 		lastName: data.lastName,
-		title: data.title || null,
-		orcid: data.orcid || null,
-		website: data.website === undefined ? undefined : data.website || null,
-		linkedin: data.linkedin === undefined ? undefined : data.linkedin || null,
+		title: emptyToNull(data.title),
+		orcid: emptyToNull(data.orcid),
+		website: emptyToNull(data.website),
+		linkedin: emptyToNull(data.linkedin),
 		needInvoice: data.needInvoice,
-		address: data.address || null,
-		country: data.country || null,
+		...billingColumnsToDb({ ...data, vatId }),
+		country: emptyToNull(data.country),
 	};
 
-	if (data.email !== currentUser.email) {
+	if (data.email !== undefined && data.email !== currentUser.email) {
 		const existing = await prisma.user.findUnique({
 			where: { email: data.email },
 		});
@@ -736,14 +819,19 @@ export async function updateUserProfile(
 	if (data.affiliation) {
 		const affiliation = await upsertAffiliation(data.affiliation);
 		updateData.affiliation = { connect: { id: affiliation.id } };
-	} else {
+	} else if (data.affiliation !== undefined) {
 		updateData.affiliation = { disconnect: true };
 	}
 
-	await prisma.user.update({
-		where: { id: userId },
-		data: updateData,
-	});
+	const { before, after } = await updateUserAuditingBilling(
+		userId,
+		updateData,
+		{
+			performedBy,
+			byParticipant: false,
+		},
+	);
+	if (after.vatId !== before.vatId) checkVatIdInBackground(after.vatId);
 
 	return { success: true };
 }
@@ -984,10 +1072,20 @@ export async function executeBulkAction(
 export async function adminUpdateProfile(
 	userId: string,
 	data: UpdateUserProfileInput,
+	performedBy: string,
 ): Promise<AdminUserDetail | null> {
-	await updateUserProfile(userId, data);
+	await updateUserProfile(userId, data, performedBy);
 	logger.info(`[admin] updateProfile ${userId}`);
 	return getUserById(userId);
+}
+
+export async function recheckUserVatId(userId: string): Promise<void> {
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: { vatId: true },
+	});
+	if (!user?.vatId) throw new Response("User has no VAT ID", { status: 400 });
+	await checkVatId(user.vatId, "recheck");
 }
 
 export async function adminCheckDeletable(

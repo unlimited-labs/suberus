@@ -5,6 +5,7 @@ import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
 import { UserFeeBadgeCell } from "./user-fee-badge-cell";
+import { UserInvoiceCell } from "./user-invoice-cells";
 
 export function UserMobileCard({ user }: { user: AdminUser }) {
 	return (
@@ -37,6 +38,7 @@ export function UserMobileCard({ user }: { user: AdminUser }) {
 
 				<div className="flex flex-wrap items-center gap-1.5">
 					<UserFeeBadgeCell mobile user={user} />
+					<UserInvoiceCell mobile user={user} />
 					{user.submissionRoles.map((r) => (
 						<Badge
 							className={cn(

@@ -1,5 +1,6 @@
 import {
 	type ColumnFiltersState,
+	type OnChangeFn,
 	type RowData,
 	flexRender,
 	type RowSelectionState,
@@ -43,7 +44,33 @@ interface DataTableProps<TData extends RowData> {
 	 */
 	rowDataTestId?: string;
 	initialColumnVisibility?: ColumnVisibilityState;
+	/** Controlled filters, e.g. synced with the URL; omit both to keep them internal. */
+	columnFilters?: ColumnFiltersState;
+	onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
 	storageKey?: string;
+}
+
+function useColumnVisibility(
+	storageKey: string | undefined,
+	initial: ColumnVisibilityState = {},
+) {
+	return usePersistedState<ColumnVisibilityState>(
+		storageKey ? `suberus.table.columns.${storageKey}` : undefined,
+		initial,
+		{
+			schema: columnVisibilitySchema,
+			// Keep defaults for columns added since the value was last saved.
+			merge: (stored, fallback) => ({ ...fallback, ...stored }),
+		},
+	);
+}
+
+function useColumnFilters(
+	controlled: ColumnFiltersState | undefined,
+	onChange: OnChangeFn<ColumnFiltersState> | undefined,
+) {
+	const [local, setLocal] = useState<ColumnFiltersState>([]);
+	return { columnFilters: controlled ?? local, onChange: onChange ?? setLocal };
 }
 
 export function DataTable<TData extends RowData>({
@@ -54,20 +81,16 @@ export function DataTable<TData extends RowData>({
 	getRowId,
 	rowDataTestId,
 	initialColumnVisibility,
+	columnFilters,
+	onColumnFiltersChange,
 	storageKey,
 }: DataTableProps<TData>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-	const [columnVisibility, setColumnVisibility] =
-		usePersistedState<ColumnVisibilityState>(
-			storageKey ? `suberus.table.columns.${storageKey}` : undefined,
-			initialColumnVisibility ?? {},
-			{
-				schema: columnVisibilitySchema,
-				// Keep defaults for columns added since the value was last saved.
-				merge: (stored, fallback) => ({ ...fallback, ...stored }),
-			},
-		);
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [columnVisibility, setColumnVisibility] = useColumnVisibility(
+		storageKey,
+		initialColumnVisibility,
+	);
+	const filters = useColumnFilters(columnFilters, onColumnFiltersChange);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useTablePagination(storageKey);
 
@@ -79,14 +102,14 @@ export function DataTable<TData extends RowData>({
 			sorting,
 			columnVisibility,
 			rowSelection,
-			columnFilters,
+			columnFilters: filters.columnFilters,
 			pagination,
 		},
 		getRowId,
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
 		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
+		onColumnFiltersChange: filters.onChange,
 		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		autoResetPageIndex: true,

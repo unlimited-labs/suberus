@@ -1,6 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQueryClient,
+	useSuspenseQuery,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
+import { billingDetailsConfigQueryOptions } from "@/features/settings/api/settings";
+import { billingColumnsToForm } from "@/features/settings/billing-details-rules";
+import {
+	BILLING_FIELDS_MAP,
+	BillingFieldsGroup,
+} from "@/features/settings/components/billing-details/billing-fields-group";
 import {
 	adminUserDetailQueryOptions,
 	adminUsersQueryOptions,
@@ -10,7 +20,6 @@ import { UserContactFieldsGroup } from "@/features/users/components/user-contact
 import type { AdminUser } from "@/features/users/server/users";
 import type { AdminUserEditFormData } from "@/features/users/validations";
 import { adminUserEditSchema } from "@/features/users/validations";
-import { BillingFieldsGroup } from "@/shared/components/composable/billing-fields-group";
 import { Form } from "@/shared/components/composable/form";
 import { useAppForm } from "@/shared/hooks/use-app-form";
 import { Button } from "@/shared/ui/button";
@@ -34,6 +43,9 @@ export function UserEditDialog({
 	open,
 	onOpenChange,
 }: UserEditDialogProps) {
+	const { data: billingConfig } = useSuspenseQuery(
+		billingDetailsConfigQueryOptions(),
+	);
 	const queryClient = useQueryClient();
 
 	const mutation = useMutation({
@@ -62,7 +74,7 @@ export function UserEditDialog({
 		orcid: user.orcid ?? "",
 		email: user.email,
 		needInvoice: user.needInvoice,
-		address: user.address ?? "",
+		...billingColumnsToForm(user),
 		country: user.country ?? "",
 	};
 
@@ -127,11 +139,9 @@ export function UserEditDialog({
 					/>
 
 					<BillingFieldsGroup
-						fields={{
-							needInvoice: "needInvoice",
-							address: "address",
-							country: "country",
-						}}
+						admin
+						config={billingConfig}
+						fields={BILLING_FIELDS_MAP}
 						form={form}
 						needInvoiceLabel="Needs invoice for organization"
 					/>

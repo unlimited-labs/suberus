@@ -342,7 +342,7 @@ export class AdminSettingsPage {
 	}
 
 	async switchToSurveyTab(_testInfo?: { project: { name: string } }) {
-		await this.page.getByTestId("settings-tab-survey").click()
+		await this.page.getByTestId("settings-tab-registration-form").click()
 		await expect(this.page.getByRole("heading", { name: "Survey Questions" })).toBeVisible()
 	}
 

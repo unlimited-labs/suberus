@@ -4,6 +4,8 @@ const labels = {
 	USER_REGISTERED: "User registered",
 	USER_EMAIL_VERIFIED: "Email verified",
 	USER_PROFILE_UPDATED: "Profile updated",
+	USER_BILLING_DETAILS_UPDATED: "Billing details updated",
+	USER_BILLING_CHANGE_ACKNOWLEDGED: "Billing change acknowledged",
 	USER_PASSWORD_CHANGED: "Password changed",
 	USER_ROLE_CHANGED: "Role changed",
 	USER_TOGGLED_ACTIVE: "User status changed",

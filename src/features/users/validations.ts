@@ -2,6 +2,7 @@ import { z } from "zod";
 import { UserRole } from "@/generated/prisma/enums";
 import { surveyAnswersSchema } from "@/shared/lib/validations/survey";
 import {
+	BILLING_COLUMNS_IN_FORM,
 	contactInfoSchema,
 	personalInfoSchema,
 } from "@/shared/lib/validations/user";
@@ -35,6 +36,10 @@ export const userProfileUpdateInput = personalInfoSchema
 	.extend(contactInfoSchema.shape)
 	.extend(userIdInput.shape);
 
+export const userProfilePatchInput = userProfileUpdateInput
+	.partial()
+	.extend(userIdInput.shape);
+
 export const userPatchInput = userIdInput.extend({
 	role: userRoleSchema.optional(),
 	isActive: z.boolean().optional(),
@@ -62,9 +67,12 @@ export const userBulkActionInput = z.object({
 
 export const adminUserCreateSchema = userCreateInput
 	.omit({ answers: true, sendSetPasswordEmail: true })
+	.required(BILLING_COLUMNS_IN_FORM)
 	.extend({ surveyAnswers: z.record(z.string(), z.string()) });
 
-export const adminUserEditSchema = userProfileUpdateInput.omit({ id: true });
+export const adminUserEditSchema = userProfileUpdateInput
+	.omit({ id: true })
+	.required(BILLING_COLUMNS_IN_FORM);
 
 export type AdminUserCreateFormData = z.infer<typeof adminUserCreateSchema>;
 export type AdminUserEditFormData = z.infer<typeof adminUserEditSchema>;

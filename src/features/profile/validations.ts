@@ -5,7 +5,7 @@ export type {
 	PersonalInfoFormData,
 } from "@/shared/lib/validations/user";
 export {
-	contactInfoSchema,
+	contactInfoFormSchema,
 	personalInfoSchema,
 } from "@/shared/lib/validations/user";
 

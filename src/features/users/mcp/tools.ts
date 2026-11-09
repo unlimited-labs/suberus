@@ -15,7 +15,7 @@ import {
 	userCreateInput,
 	userIdInput,
 	userPatchInput,
-	userProfileUpdateInput,
+	userProfilePatchInput,
 	usersListInput,
 } from "@/features/users/validations";
 import {
@@ -58,7 +58,7 @@ const getUser = defineTool({
 	name: "users_get",
 	title: "Get user",
 	description:
-		"Fetch one user by id, including submissions, survey answers and fee status.",
+		"Fetch one user by id, including submissions, survey answers, fee status and billing details. vatIdCheck holds the last registry check of the VAT ID (status VERIFIED / NOT_FOUND / UNAVAILABLE / NOT_CHECKABLE, checkedAt, registryName); the check is advisory and never blocks anything.",
 	input: userIdInput,
 	roles: ADMIN_AND_EDITOR,
 	scope: MCP_SCOPE_USERS_READ,
@@ -101,14 +101,14 @@ const updateUserProfile = defineTool({
 	name: "users_update_profile",
 	title: "Update user profile",
 	description:
-		"Replace a user's personal and billing details. Every field is overwritten, so send the full record.",
-	input: userProfileUpdateInput,
+		"Update a user's personal and billing details. Only the fields you send change; an omitted field keeps its value and an empty string clears it. Billing details are billingText (free text) and billingOrganization, billingStreet, billingPostalCode, billingCity (separate fields), and vatId (stored normalized with its country prefix; a bad checksum is rejected); every column is accepted whatever the configured form.",
+	input: userProfilePatchInput,
 	roles: ["ADMIN"],
 	scope: MCP_SCOPE_USERS_WRITE,
 	destructive: true,
-	async handler(input) {
+	async handler(input, actor) {
 		const { id, ...profile } = input;
-		return adminUpdateProfile(id, profile);
+		return adminUpdateProfile(id, profile, actor.id);
 	},
 });
 

@@ -51,6 +51,7 @@ import {
 	submissionTypesConfigQueryOptions,
 	submissionValidationSettingsQueryOptions,
 } from "@/features/settings/api/settings";
+import { BillingDetailsSettingsSection } from "@/features/settings/components/billing-details/billing-details-settings-section";
 import { BrandingSettingsTab } from "@/features/settings/components/branding/branding-settings-tab";
 import { ConferenceSettingsTab } from "@/features/settings/components/conference/conference-settings-tab";
 import { DocumentSigningTab } from "@/features/settings/components/documents/document-signing-tab";
@@ -109,6 +110,9 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
 			),
 			context.queryClient.ensureQueryData(
+				adminSettingQueryOptions("BILLING_DETAILS"),
+			),
+			context.queryClient.ensureQueryData(
 				adminSettingQueryOptions("FEE_ENABLED"),
 			),
 			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
@@ -139,7 +143,11 @@ const tabs = [
 	{ id: "fee", label: "Fee", icon: IconCash },
 	{ id: "finances", label: "Finances", icon: IconCash },
 	{ id: "reminders", label: "Reminders", icon: IconBell },
-	{ id: "survey", label: "Survey", icon: IconClipboardList },
+	{
+		id: "registration-form",
+		label: "Registration form",
+		icon: IconClipboardList,
+	},
 	{ id: "documents", label: "Documents", icon: IconShieldCheck },
 	{ id: "tos", label: "Terms of Service", icon: IconScale },
 	{ id: "invitations", label: "Invitations", icon: IconMailPlus },
@@ -189,6 +197,9 @@ function AdminSettingsPage() {
 	);
 	const { data: invitationValidityHours } = useSuspenseQuery(
 		adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
+	);
+	const { data: billingDetails } = useSuspenseQuery(
+		adminSettingQueryOptions("BILLING_DETAILS"),
 	);
 	const { data: feeEnabled } = useSuspenseQuery(
 		adminSettingQueryOptions("FEE_ENABLED"),
@@ -326,7 +337,8 @@ function AdminSettingsPage() {
 							<RemindersSettingsTab initialData={reminderSettings} />
 						</TabsContent>
 
-						<TabsContent value="survey">
+						<TabsContent className="space-y-8" value="registration-form">
+							<BillingDetailsSettingsSection initialData={billingDetails} />
 							<SurveyQuestionsTab
 								exhibitorsEnabled={submissionTypes.EXHIBITOR.isActive}
 								initialQuestions={surveyQuestions}
