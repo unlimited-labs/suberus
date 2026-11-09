@@ -14,13 +14,26 @@ import { queryVies } from "./vies";
 export const VAT_ID_RETRY_QUEUE = "vat-id-retry";
 const FRESH_MS = 24 * 60 * 60 * 1000;
 
-type CheckMode = "cached" | "recheck" | "retry";
+type CheckMode = "preview" | "cached" | "recheck" | "retry";
 
 /** A retry only runs after an UNAVAILABLE result, so any other stored status is newer. */
-function reusable(check: VatIdCheck, mode: CheckMode, now: number) {
+function reusable(
+	check: VatIdCheck,
+	mode: CheckMode,
+	now: number,
+	organizerVatId: string,
+) {
 	if (check.status === "UNAVAILABLE") return false;
 	if (mode === "retry") return true;
-	return mode === "cached" && now - check.checkedAt.getTime() < FRESH_MS;
+	if (mode === "recheck" || now - check.checkedAt.getTime() >= FRESH_MS) {
+		return false;
+	}
+	// A saved number gets the consultation proof that a preview never asks VIES for.
+	const lacksProof =
+		organizerVatId !== "" &&
+		check.source === "VIES" &&
+		check.requestIdentifier === null;
+	return mode === "preview" || !lacksProof;
 }
 
 async function lookupRegistry(vatId: string, organizerVatId: string) {
@@ -84,7 +97,8 @@ async function saveCheck(vatId: string, result: RegistryAnswer) {
 }
 
 /** `vatId` must be normalized. "cached" reuses a fresh result, "retry" (the job itself) any
- * resolved one and never schedules another retry; "recheck" always asks the registry. */
+ * resolved one and never schedules another retry; "recheck" always asks the registry;
+ * "preview" (anonymous typing) sends no requester and schedules no retry. */
 export async function checkVatId(
 	vatId: string,
 	mode: CheckMode = "cached",
@@ -105,13 +119,16 @@ export async function checkVatId(
 			checkedAt: new Date(),
 		};
 	}
-	if (cached && reusable(cached, mode, Date.now())) return cached;
+	if (cached && reusable(cached, mode, Date.now(), config.organizerVatId)) {
+		return cached;
+	}
+	const requester = mode === "preview" ? "" : config.organizerVatId;
 	const result = {
-		...(await lookupRegistry(vatId, config.organizerVatId)),
+		...(await lookupRegistry(vatId, requester)),
 		checkedAt: new Date(),
 	};
 	const row = await saveCheck(vatId, result);
-	if (row.status === "UNAVAILABLE" && mode !== "retry") {
+	if (row.status === "UNAVAILABLE" && mode !== "retry" && mode !== "preview") {
 		void scheduleRetry(vatId).catch((error) => {
 			logger.warn("[vat-id] could not schedule a retry:", error);
 		});
@@ -131,6 +148,7 @@ export async function checkTypedVatId(raw: string, countryName?: string) {
 	if ("error" in normalized || !normalized.value) return null;
 	const { status, source, registryName, registryAddress } = await checkVatId(
 		normalized.value,
+		"preview",
 	);
 	return { status, source, registryName, registryAddress };
 }

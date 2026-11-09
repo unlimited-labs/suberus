@@ -177,6 +177,41 @@ describe("checkVatId", () => {
 
 		expect(registries.queryVies).not.toHaveBeenCalled();
 	});
+
+	it("previews without the organizer as requester and schedules no retry", async () => {
+		getSetting.mockResolvedValue({
+			registryCheck: true,
+			organizerVatId: "PL6750002236",
+		});
+		registries.queryVies.mockResolvedValue(result("UNAVAILABLE"));
+
+		await checkVatId("DE136695976", "preview");
+
+		expect(registries.queryVies).toHaveBeenCalledWith("DE136695976", "");
+		expect(boss.send).not.toHaveBeenCalled();
+	});
+
+	it("asks VIES again with the requester when a saved number has only a preview result", async () => {
+		getSetting.mockResolvedValue({
+			registryCheck: true,
+			organizerVatId: "PL6750002236",
+		});
+		prismaMock.vatIdCheck.findUnique.mockResolvedValue({
+			vatId: "DE136695976",
+			status: "VERIFIED",
+			source: "VIES",
+			requestIdentifier: null,
+			checkedAt: new Date(),
+		});
+		registries.queryVies.mockResolvedValue(result("VERIFIED"));
+
+		await checkVatId("DE136695976");
+
+		expect(registries.queryVies).toHaveBeenCalledWith(
+			"DE136695976",
+			"PL6750002236",
+		);
+	});
 });
 
 describe("purgeOrphanVatIdChecks", () => {
