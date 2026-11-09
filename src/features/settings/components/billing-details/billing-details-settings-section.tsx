@@ -181,6 +181,9 @@ function FieldRow({
 				state={{ ...STATE_VIEW[config.state], off: config.state === "OFF" }}
 			/>
 			<AccordionContent className="space-y-3 px-1 pb-3">
+				<form.AppField name={`fields.${f.key}.label` as const}>
+					{(field) => <field.InputField label="Label" placeholder={f.name} />}
+				</form.AppField>
 				<form.Field name={`fields.${f.key}.state` as const}>
 					{(field) => (
 						<div className="space-y-1">
@@ -196,9 +199,6 @@ function FieldRow({
 						</div>
 					)}
 				</form.Field>
-				<form.AppField name={`fields.${f.key}.label` as const}>
-					{(field) => <field.InputField label="Label" placeholder={f.name} />}
-				</form.AppField>
 				<form.AppField name={`fields.${f.key}.help` as const}>
 					{(field) => (
 						<field.TextareaField
