@@ -319,7 +319,13 @@ export const auth = betterAuth({
 					if ("error" in billing) {
 						throw new APIError("BAD_REQUEST", { message: billing.error });
 					}
-					return { data: { ...user, ...billing } };
+					return {
+						data: {
+							...user,
+							needInvoice: billing.needInvoice,
+							vatId: billing.vatId || undefined,
+						},
+					};
 				},
 				after: async (user) => {
 					await logActivity({

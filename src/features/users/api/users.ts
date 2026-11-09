@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import {
 	adminMiddleware,
 	adminOnlyMiddleware,
@@ -120,9 +121,13 @@ export const acknowledgeAdminUserBillingChange = createServerFn({
 	method: "POST",
 })
 	.middleware([adminMiddleware])
-	.validator(userIdInput)
+	.validator(userIdInput.extend({ seenUntil: z.iso.datetime() }))
 	.handler(async ({ data, context }) => {
-		await acknowledgeBillingChange(data.id, context.user.id);
+		await acknowledgeBillingChange(
+			data.id,
+			context.user.id,
+			new Date(data.seenUntil),
+		);
 		return { success: true };
 	});
 

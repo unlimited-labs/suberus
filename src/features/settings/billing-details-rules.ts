@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { VatIdCheck } from "@/generated/prisma/client";
+import type { UserRole } from "@/generated/prisma/enums";
 import type { BillingAuditField } from "@/shared/lib/billing-changes";
 import { normalizeVatId } from "@/shared/lib/vat-id";
 import {
@@ -93,7 +94,7 @@ export function participantBillingWrite(
 	const needInvoice = invoiceNeeded(values.needInvoice === true, config);
 	const [issue] = billingDetailsIssues({ ...values, needInvoice }, config);
 	if (issue) return { error: issue.message };
-	return { needInvoice, vatId: vat.value || undefined };
+	return { needInvoice, vatId: vat.value };
 }
 
 export const invoiceStateSchema = z.enum(["NONE", "REQUESTED", "INCOMPLETE"]);
@@ -101,9 +102,10 @@ export const invoiceStateSchema = z.enum(["NONE", "REQUESTED", "INCOMPLETE"]);
 export type InvoiceState = z.infer<typeof invoiceStateSchema>;
 
 export function invoiceState(
-	values: BillingValues,
+	values: BillingValues & { role: UserRole; isActive: boolean },
 	config: BillingDetailsSettings,
 ): InvoiceState {
+	if (!values.isActive || values.role === "ADMIN") return "NONE";
 	if (!invoiceNeeded(values.needInvoice, config)) return "NONE";
 	return billingDetailsIssues(values, config).length > 0
 		? "INCOMPLETE"
@@ -221,14 +223,18 @@ export function billingColumnsToForm(values: BillingColumnValues) {
 	};
 }
 
+const blankToNull = (value: string | null | undefined) =>
+	value === undefined ? undefined : value || null;
+
+/** PATCH semantics: an omitted column stays untouched, an empty one is cleared. */
 export function billingColumnsToDb(values: BillingColumnValues) {
 	return {
-		billingText: values.billingText || null,
-		billingOrganization: values.billingOrganization || null,
-		billingStreet: values.billingStreet || null,
-		billingPostalCode: values.billingPostalCode || null,
-		billingCity: values.billingCity || null,
-		vatId: values.vatId || null,
+		billingText: blankToNull(values.billingText),
+		billingOrganization: blankToNull(values.billingOrganization),
+		billingStreet: blankToNull(values.billingStreet),
+		billingPostalCode: blankToNull(values.billingPostalCode),
+		billingCity: blankToNull(values.billingCity),
+		vatId: blankToNull(values.vatId),
 	};
 }
 

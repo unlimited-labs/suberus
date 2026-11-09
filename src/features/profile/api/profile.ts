@@ -11,7 +11,7 @@ import {
 	updateContactInfo,
 	updatePersonalInfo,
 } from "@/features/profile/server/profile";
-import { contactInfoSchema } from "@/features/profile/validations";
+import { contactInfoFormSchema } from "@/features/profile/validations";
 
 const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
 
@@ -63,7 +63,7 @@ export const getContactInfoFn = createServerFn({ method: "GET" })
 
 export const updateContactInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
-	.validator(contactInfoSchema.omit({ email: true }))
+	.validator(contactInfoFormSchema.omit({ email: true }))
 	.handler(async ({ data, context }) => {
 		await updateContactInfo(context.user.id, data);
 		return { success: true };

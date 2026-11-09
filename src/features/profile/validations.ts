@@ -6,7 +6,6 @@ export type {
 } from "@/shared/lib/validations/user";
 export {
 	contactInfoFormSchema,
-	contactInfoSchema,
 	personalInfoSchema,
 } from "@/shared/lib/validations/user";
 

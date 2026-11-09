@@ -7,6 +7,7 @@ import {
 import { updateUserAuditingBilling } from "@/features/activity-log/server/billing-change-audit";
 import { activityDetail } from "@/features/activity-log/types";
 import {
+	billingColumnsToDb,
 	type InvoiceState,
 	invoiceState,
 } from "@/features/settings/billing-details-rules";
@@ -107,6 +108,7 @@ export interface AdminUser {
 export interface AdminUserDetail extends AdminUser {
 	submissions: AdminUserSubmission[];
 	billingChangesAfterPayment: BillingChanges | null;
+	billingLastChangeAt: Date | null;
 }
 
 export type UsersFilters = z.infer<typeof usersListInput>;
@@ -370,14 +372,15 @@ export async function getUserById(id: string): Promise<AdminUserDetail | null> {
 
 	if (!user) return null;
 
-	const [billing, billingChangesSincePayment] = await Promise.all([
+	const [billing, afterPayment] = await Promise.all([
 		billingStatusLookup([user]),
 		billingChangesAfterPayment(user),
 	]);
 
 	return {
 		...billing(user),
-		billingChangesAfterPayment: billingChangesSincePayment,
+		billingChangesAfterPayment: afterPayment?.changes ?? null,
+		billingLastChangeAt: afterPayment?.lastChangeAt ?? null,
 		id: user.id,
 		email: user.email,
 		firstName: user.firstName,
@@ -774,12 +777,21 @@ export async function updateUserProfile(
 ): Promise<{ success: boolean }> {
 	const currentUser = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { email: true, country: true },
+		select: { email: true, country: true, vatId: true },
 	});
 
 	if (!currentUser) {
 		throw new Response("User not found", { status: 404 });
 	}
+
+	// A new country can supply the prefix of a stored number that had none.
+	const rawVatId =
+		data.vatId ??
+		(data.country === undefined ? undefined : (currentUser.vatId ?? undefined));
+	const vatId = normalizeVatIdOrThrow(
+		rawVatId,
+		data.country ?? currentUser.country,
+	);
 
 	const updateData: Prisma.UserUpdateInput = {
 		firstName: data.firstName,
@@ -789,14 +801,7 @@ export async function updateUserProfile(
 		website: emptyToNull(data.website),
 		linkedin: emptyToNull(data.linkedin),
 		needInvoice: data.needInvoice,
-		billingText: emptyToNull(data.billingText),
-		billingOrganization: emptyToNull(data.billingOrganization),
-		billingStreet: emptyToNull(data.billingStreet),
-		billingPostalCode: emptyToNull(data.billingPostalCode),
-		billingCity: emptyToNull(data.billingCity),
-		vatId: emptyToNull(
-			normalizeVatIdOrThrow(data.vatId, data.country ?? currentUser.country),
-		),
+		...billingColumnsToDb({ ...data, vatId }),
 		country: emptyToNull(data.country),
 	};
 

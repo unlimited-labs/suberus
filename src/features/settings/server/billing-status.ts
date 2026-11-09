@@ -8,7 +8,7 @@ export async function getInvoiceStateForUser(userId: string) {
 		getSetting("BILLING_DETAILS"),
 		prisma.user.findUniqueOrThrow({
 			where: { id: userId },
-			select: BILLING_AUDIT_SELECT,
+			select: { ...BILLING_AUDIT_SELECT, role: true, isActive: true },
 		}),
 	]);
 	return invoiceState(user, config);

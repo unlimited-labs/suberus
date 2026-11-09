@@ -279,19 +279,22 @@ describe("registryFill", () => {
 });
 
 describe("invoiceState", () => {
+	const participant = { role: "AUTHOR", isActive: true } as const;
 	const structured = structuredConfig({
 		organizationName: "REQUIRED",
 		city: "OPTIONAL",
 	});
 
 	it("is NONE when the participant needs no invoice", () => {
-		expect(invoiceState({ needInvoice: false }, structured)).toBe("NONE");
+		expect(
+			invoiceState({ ...participant, needInvoice: false }, structured),
+		).toBe("NONE");
 	});
 
 	it("is INCOMPLETE when a REQUIRED field of the active form is empty", () => {
 		expect(
 			invoiceState(
-				{ needInvoice: true, billingOrganization: null },
+				{ ...participant, needInvoice: true, billingOrganization: null },
 				structured,
 			),
 		).toBe("INCOMPLETE");
@@ -300,7 +303,7 @@ describe("invoiceState", () => {
 	it("is REQUESTED when every REQUIRED field is filled, OPTIONAL ones may be empty", () => {
 		expect(
 			invoiceState(
-				{ needInvoice: true, billingOrganization: "ACME" },
+				{ ...participant, needInvoice: true, billingOrganization: "ACME" },
 				structured,
 			),
 		).toBe("REQUESTED");
@@ -309,7 +312,11 @@ describe("invoiceState", () => {
 	it("counts everyone under Invoice required, and ignores data from the other form", () => {
 		expect(
 			invoiceState(
-				{ needInvoice: false, billingText: "ACME, old text form" },
+				{
+					...participant,
+					needInvoice: false,
+					billingText: "ACME, old text form",
+				},
 				{ ...structured, invoiceRequired: true },
 			),
 		).toBe("INCOMPLETE");
@@ -319,19 +326,48 @@ describe("invoiceState", () => {
 		const simple = withFields({ vatId: "REQUIRED" });
 		expect(
 			invoiceState(
-				{ needInvoice: true, billingText: " ", vatId: "PL6750002236" },
+				{
+					...participant,
+					needInvoice: true,
+					billingText: " ",
+					vatId: "PL6750002236",
+				},
 				simple,
 			),
-		).toBe("INCOMPLETE");
-		expect(
-			invoiceState({ needInvoice: true, billingText: "ACME" }, simple),
 		).toBe("INCOMPLETE");
 		expect(
 			invoiceState(
-				{ needInvoice: true, billingText: "ACME", vatId: "PL6750002236" },
+				{ ...participant, needInvoice: true, billingText: "ACME" },
+				simple,
+			),
+		).toBe("INCOMPLETE");
+		expect(
+			invoiceState(
+				{
+					...participant,
+					needInvoice: true,
+					billingText: "ACME",
+					vatId: "PL6750002236",
+				},
 				simple,
 			),
 		).toBe("REQUESTED");
+	});
+
+	it("is NONE for admins and deactivated accounts, even under Invoice required", () => {
+		const required = { ...structured, invoiceRequired: true };
+		expect(
+			invoiceState(
+				{ ...participant, role: "ADMIN", needInvoice: true },
+				required,
+			),
+		).toBe("NONE");
+		expect(
+			invoiceState(
+				{ ...participant, isActive: false, needInvoice: true },
+				required,
+			),
+		).toBe("NONE");
 	});
 });
 

@@ -95,7 +95,7 @@ export async function getContactInfo(userId: string) {
 
 export async function updateContactInfo(
 	userId: string,
-	data: Omit<Partial<ContactInfoFormData>, "email">,
+	data: Omit<ContactInfoFormData, "email">,
 ) {
 	const config = await getSetting("BILLING_DETAILS");
 	const billing = participantBillingWrite(data, config);

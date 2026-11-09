@@ -78,6 +78,30 @@ describe("updateUserProfile (PATCH)", () => {
 		});
 	});
 
+	it("prefixes a stored bare VAT ID from a country-only change", async () => {
+		prismaMock.user.findUnique.mockResolvedValue({
+			email: "old@x.com",
+			country: null,
+			vatId: "6750002236",
+		});
+
+		await updateUserProfile("u1", { country: "Poland" }, "admin");
+
+		expect(savedData()).toEqual({ country: "Poland", vatId: "PL6750002236" });
+	});
+
+	it("rejects a country change that makes the stored VAT ID invalid", async () => {
+		prismaMock.user.findUnique.mockResolvedValue({
+			email: "old@x.com",
+			country: null,
+			vatId: "1234567890",
+		});
+
+		await expect(
+			updateUserProfile("u1", { country: "Poland" }, "admin"),
+		).rejects.toMatchObject({ status: 400 });
+	});
+
 	it("re-checks the VAT ID only when it changed", async () => {
 		prismaMock.user.findUniqueOrThrow.mockResolvedValue({
 			fee: null,

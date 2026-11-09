@@ -6,32 +6,39 @@ import {
 } from "@/shared/lib/billing-changes";
 import { prisma } from "@/shared/server/db.server";
 
+const participantChangesSince = (userId: string, since: Date) => ({
+	type: "USER_BILLING_DETAILS_UPDATED" as const,
+	userId,
+	performedBy: userId,
+	createdAt: { gte: since },
+});
+
 export async function billingChangesAfterPayment(user: {
 	id: string;
 	billingChangedAfterPaymentAt: Date | null;
-}): Promise<BillingChanges | null> {
+}): Promise<{ changes: BillingChanges; lastChangeAt: Date | null } | null> {
 	if (!user.billingChangedAfterPaymentAt) return null;
 	const entries = await prisma.activityLog.findMany({
-		where: {
-			type: "USER_BILLING_DETAILS_UPDATED",
-			userId: user.id,
-			performedBy: user.id,
-			createdAt: { gte: user.billingChangedAfterPaymentAt },
-		},
+		where: participantChangesSince(user.id, user.billingChangedAfterPaymentAt),
 		orderBy: { createdAt: "asc" },
-		select: { detail: true },
+		select: { detail: true, createdAt: true },
 	});
-	return mergeBillingChanges(
-		// SAFETY: USER_BILLING_DETAILS_UPDATED rows are written only by auditBillingChange with { changes }.
-		entries.map(
-			(entry) => (entry.detail as { changes: BillingChanges }).changes,
+	return {
+		changes: mergeBillingChanges(
+			// SAFETY: USER_BILLING_DETAILS_UPDATED rows are written only by auditBillingChange with { changes }.
+			entries.map(
+				(entry) => (entry.detail as { changes: BillingChanges }).changes,
+			),
 		),
-	);
+		lastChangeAt: entries.at(-1)?.createdAt ?? null,
+	};
 }
 
+/** Clears only what the admin saw; a later participant edit keeps the flag, from that edit on. */
 export async function acknowledgeBillingChange(
 	userId: string,
 	performedBy: string,
+	seenUntil: Date,
 ): Promise<void> {
 	await prisma.$transaction(async (tx) => {
 		const { billingChangedAfterPaymentAt: changedAt } =
@@ -40,9 +47,17 @@ export async function acknowledgeBillingChange(
 				select: { billingChangedAfterPaymentAt: true },
 			});
 		if (!changedAt) return;
+		const unseen = await tx.activityLog.findFirst({
+			where: {
+				...participantChangesSince(userId, changedAt),
+				createdAt: { gte: changedAt, gt: seenUntil },
+			},
+			orderBy: { createdAt: "asc" },
+			select: { createdAt: true },
+		});
 		await tx.user.update({
 			where: { id: userId },
-			data: { billingChangedAfterPaymentAt: null },
+			data: { billingChangedAfterPaymentAt: unseen?.createdAt ?? null },
 		});
 		await logActivityTx(tx, {
 			type: "USER_BILLING_CHANGE_ACKNOWLEDGED",

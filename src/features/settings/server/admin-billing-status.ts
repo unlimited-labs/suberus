@@ -9,7 +9,10 @@ import { prisma } from "@/shared/server/db.server";
 export async function countIncompleteUsers(
 	config: BillingDetailsSettings,
 ): Promise<number> {
-	const users = await prisma.user.findMany({ select: BILLING_AUDIT_SELECT });
+	const users = await prisma.user.findMany({
+		where: { isActive: true, role: { not: "ADMIN" } },
+		select: { ...BILLING_AUDIT_SELECT, role: true, isActive: true },
+	});
 	return users.filter((u) => invoiceState(u, config) === "INCOMPLETE").length;
 }
 

@@ -53,8 +53,10 @@ export function BillingChangedAfterPayment({
 	const { formatDateTime } = useDateFormat();
 	const queryClient = useQueryClient();
 	const acknowledge = useMutation({
-		mutationFn: () =>
-			acknowledgeAdminUserBillingChange({ data: { id: user.id } }),
+		mutationFn: (seenUntil: Date) =>
+			acknowledgeAdminUserBillingChange({
+				data: { id: user.id, seenUntil: seenUntil.toISOString() },
+			}),
 		onSuccess: () =>
 			queryClient.invalidateQueries({
 				queryKey: adminUsersQueryOptions().queryKey,
@@ -63,6 +65,8 @@ export function BillingChangedAfterPayment({
 			toast.error(getErrorMessage(error, "Could not acknowledge the change")),
 	});
 	if (!user.billingChangedAfterPaymentAt) return null;
+	const seenUntil =
+		user.billingLastChangeAt ?? user.billingChangedAfterPaymentAt;
 
 	return (
 		<Alert data-testid="billing-changed-after-payment-alert">
@@ -84,7 +88,7 @@ export function BillingChangedAfterPayment({
 			<AlertAction>
 				<Button
 					disabled={acknowledge.isPending}
-					onClick={() => acknowledge.mutate()}
+					onClick={() => acknowledge.mutate(seenUntil)}
 					size="sm"
 					type="button"
 					variant="outline"
