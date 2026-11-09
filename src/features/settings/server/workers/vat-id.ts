@@ -39,9 +39,6 @@ export async function registerVatIdWorkers(boss: PgBoss): Promise<void> {
 			`[vat-id] ${VAT_ID_RETRY_QUEUE} has policy ${retryQueue.policy}; retries will not be de-duplicated`,
 		);
 	}
-	if (!(await boss.getQueue(VAT_ID_PURGE_QUEUE))) {
-		await boss.createQueue(VAT_ID_PURGE_QUEUE);
-	}
 	await boss.work<VatIdRetryJobData>(
 		VAT_ID_RETRY_QUEUE,
 		{ localConcurrency: 1 },

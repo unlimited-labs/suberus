@@ -1,3 +1,5 @@
+import type { Prisma } from "@/generated/prisma/client";
+
 export const BILLING_AUDIT_FIELDS = [
 	"needInvoice",
 	"billingText",
@@ -10,6 +12,17 @@ export const BILLING_AUDIT_FIELDS = [
 ] as const;
 
 export type BillingAuditField = (typeof BILLING_AUDIT_FIELDS)[number];
+
+export const BILLING_AUDIT_SELECT = {
+	needInvoice: true,
+	billingText: true,
+	billingOrganization: true,
+	billingStreet: true,
+	billingPostalCode: true,
+	billingCity: true,
+	vatId: true,
+	country: true,
+} satisfies Prisma.UserSelect & Record<BillingAuditField, true>;
 type BillingAuditValue = string | boolean | null;
 export type BillingAuditValues = Partial<
 	Record<BillingAuditField, BillingAuditValue>

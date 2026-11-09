@@ -26,6 +26,8 @@ vi.mock("@/logger.ts", () => ({
 }));
 
 const { updateUserProfile } = await import("./users");
+const { checkVatIdInBackground } =
+	await import("@/features/settings/server/vat-id-check");
 
 function savedData() {
 	return prismaMock.user.update.mock.calls[0][0].data;
@@ -74,5 +76,19 @@ describe("updateUserProfile (PATCH)", () => {
 			email: "new@x.com",
 			emailVerified: false,
 		});
+	});
+
+	it("re-checks the VAT ID only when it changed", async () => {
+		prismaMock.user.findUniqueOrThrow.mockResolvedValue({
+			fee: null,
+			vatId: "PL6750002236",
+		});
+		prismaMock.user.update.mockResolvedValue({ vatId: "PL6750002236" });
+		await updateUserProfile("u1", { firstName: "Ann" }, "admin");
+		expect(checkVatIdInBackground).not.toHaveBeenCalled();
+
+		prismaMock.user.update.mockResolvedValue({ vatId: "DE136695976" });
+		await updateUserProfile("u1", { vatId: "DE136695976" }, "admin");
+		expect(checkVatIdInBackground).toHaveBeenCalledWith("DE136695976");
 	});
 });

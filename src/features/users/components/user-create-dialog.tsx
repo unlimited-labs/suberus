@@ -76,23 +76,13 @@ export function UserCreateDialog({
 	};
 
 	const mutation = useMutation({
-		mutationFn: (value: AdminUserCreateFormData) =>
+		mutationFn: ({ surveyAnswers, ...value }: AdminUserCreateFormData) =>
 			createAdminUser({
 				data: {
-					email: value.email,
-					firstName: value.firstName,
-					lastName: value.lastName,
+					...value,
 					title: value.title || undefined,
 					affiliation: value.affiliation || undefined,
-					needInvoice: value.needInvoice,
-					billingText: value.billingText,
-					billingOrganization: value.billingOrganization,
-					billingStreet: value.billingStreet,
-					billingPostalCode: value.billingPostalCode,
-					billingCity: value.billingCity,
-					vatId: value.vatId,
-					country: value.country,
-					answers: Object.entries(value.surveyAnswers).map(
+					answers: Object.entries(surveyAnswers).map(
 						([questionId, answer]) => ({ questionId, value: answer }),
 					),
 				},

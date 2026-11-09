@@ -1,22 +1,12 @@
-import {
-	IconAlertTriangle,
-	IconCircleCheck,
-	IconClock,
-} from "@tabler/icons-react";
+import { VAT_ID_STATUS_VIEW } from "@/features/settings/components/billing-details/vat-id-status";
 import { invoiceStateLabels, vatIdStatusLabels } from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 
-const VAT_ICONS = {
-	VERIFIED: { Icon: IconCircleCheck, className: "text-green-600" },
-	NOT_FOUND: { Icon: IconAlertTriangle, className: "text-amber-600" },
-	UNAVAILABLE: { Icon: IconClock, className: "text-muted-foreground" },
-} as const;
-
 export function VatIdStatusIcon({ check }: { check: AdminUser["vatIdCheck"] }) {
 	if (!check || check.status === "NOT_CHECKABLE") return null;
-	const { Icon, className } = VAT_ICONS[check.status];
+	const { Icon, className } = VAT_ID_STATUS_VIEW[check.status];
 	return (
 		<Icon
 			aria-label={`VAT ID: ${vatIdStatusLabels[check.status]}`}

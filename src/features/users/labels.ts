@@ -19,7 +19,7 @@ export const roleFilterOptions = [
 export const CHANGED_AFTER_PAYMENT = "CHANGED_AFTER_PAYMENT";
 
 export const invoiceStateLabels = {
-	NONE: "—",
+	NONE: "Not needed",
 	REQUESTED: "Requested",
 	INCOMPLETE: "Incomplete",
 } satisfies Record<InvoiceState, string>;

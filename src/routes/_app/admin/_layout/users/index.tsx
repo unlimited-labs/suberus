@@ -14,7 +14,6 @@ import {
 	buildUserColumns,
 	type SurveyListColumn,
 } from "@/features/users/components/columns";
-import { InitialInvoiceFilter } from "@/features/users/components/initial-invoice-filter";
 import { UserBulkActions } from "@/features/users/components/user-bulk-actions";
 import { UserCreateDialog } from "@/features/users/components/user-create-dialog";
 import { UserMobileCard } from "@/features/users/components/user-mobile-card";
@@ -103,6 +102,9 @@ function UsersPage() {
 					columns={columns}
 					data={users}
 					getRowId={(row) => row.id}
+					initialColumnFilters={
+						invoice ? [{ id: "invoice", value: [invoice] }] : undefined
+					}
 					initialColumnVisibility={{
 						submissionType: false,
 						submissionRole: false,
@@ -114,10 +116,7 @@ function UsersPage() {
 					toolbar={(table, rowSelection) => (
 						<DataTableToolbar
 							actions={
-								<>
-									<InitialInvoiceFilter invoice={invoice} table={table} />
-									<UserBulkActions rowSelection={rowSelection} table={table} />
-								</>
+								<UserBulkActions rowSelection={rowSelection} table={table} />
 							}
 							columnLabels={dynamicColumnLabels}
 							searchKey="name"

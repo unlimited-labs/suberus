@@ -158,19 +158,7 @@ function SettingsPage() {
 				setPendingEmail(data.email);
 				toast.success("Verification email sent to your new address");
 			}
-			await updateContactInfoFn({
-				data: {
-					needInvoice: data.needInvoice,
-					billingText: data.billingText,
-					billingOrganization: data.billingOrganization,
-					billingStreet: data.billingStreet,
-					billingPostalCode: data.billingPostalCode,
-					billingCity: data.billingCity,
-					vatId: data.vatId,
-					country: data.country,
-					contactConsent: data.contactConsent,
-				},
-			});
+			await updateContactInfoFn({ data });
 			await Promise.all([
 				queryClient.invalidateQueries(contactInfoQueryOptions()),
 				queryClient.invalidateQueries(myInvoiceStateQueryOptions()),

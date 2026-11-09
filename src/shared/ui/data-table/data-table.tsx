@@ -43,7 +43,25 @@ interface DataTableProps<TData extends RowData> {
 	 */
 	rowDataTestId?: string;
 	initialColumnVisibility?: ColumnVisibilityState;
+	initialColumnFilters?: ColumnFiltersState;
 	storageKey?: string;
+}
+
+const NO_FILTERS: ColumnFiltersState = [];
+
+function useColumnVisibility(
+	storageKey: string | undefined,
+	initial: ColumnVisibilityState = {},
+) {
+	return usePersistedState<ColumnVisibilityState>(
+		storageKey ? `suberus.table.columns.${storageKey}` : undefined,
+		initial,
+		{
+			schema: columnVisibilitySchema,
+			// Keep defaults for columns added since the value was last saved.
+			merge: (stored, fallback) => ({ ...fallback, ...stored }),
+		},
+	);
 }
 
 export function DataTable<TData extends RowData>({
@@ -54,20 +72,15 @@ export function DataTable<TData extends RowData>({
 	getRowId,
 	rowDataTestId,
 	initialColumnVisibility,
+	initialColumnFilters = NO_FILTERS,
 	storageKey,
 }: DataTableProps<TData>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-	const [columnVisibility, setColumnVisibility] =
-		usePersistedState<ColumnVisibilityState>(
-			storageKey ? `suberus.table.columns.${storageKey}` : undefined,
-			initialColumnVisibility ?? {},
-			{
-				schema: columnVisibilitySchema,
-				// Keep defaults for columns added since the value was last saved.
-				merge: (stored, fallback) => ({ ...fallback, ...stored }),
-			},
-		);
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [columnVisibility, setColumnVisibility] = useColumnVisibility(
+		storageKey,
+		initialColumnVisibility,
+	);
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(initialColumnFilters);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useTablePagination(storageKey);
 

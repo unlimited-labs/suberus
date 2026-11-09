@@ -263,15 +263,18 @@ export function previousFormValues(
 	});
 }
 
-export function composeBillingText(values: BillingColumnValues): string {
-	return [
-		values.billingOrganization,
-		values.billingStreet,
-		[values.billingPostalCode, values.billingCity].filter(Boolean).join(" "),
-	]
-		.map((line) => line?.trim())
-		.filter(Boolean)
-		.join("\n");
+export function composeBillingText({
+	billingOrganization,
+	billingStreet,
+	billingPostalCode,
+	billingCity,
+}: BillingColumnValues): string {
+	return buyerLines({
+		billingOrganization,
+		billingStreet,
+		billingPostalCode,
+		billingCity,
+	}).join("\n");
 }
 
 /** Simple mode with no text yet starts from the separate fields, so nothing typed earlier is lost. */

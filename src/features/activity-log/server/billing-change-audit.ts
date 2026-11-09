@@ -1,25 +1,12 @@
 import type { Prisma } from "@/generated/prisma/client";
 import {
-	type BillingAuditField,
+	BILLING_AUDIT_SELECT,
 	type BillingAuditValues,
 	billingChanges,
 } from "@/shared/lib/billing-changes";
-import type { prisma } from "@/shared/server/db.server";
+import { prisma } from "@/shared/server/db.server";
 import { activityDetail } from "../types";
 import { logActivityTx } from "./activity-log";
-
-type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-
-export const BILLING_AUDIT_SELECT = {
-	needInvoice: true,
-	billingText: true,
-	billingOrganization: true,
-	billingStreet: true,
-	billingPostalCode: true,
-	billingCity: true,
-	vatId: true,
-	country: true,
-} satisfies Prisma.UserSelect & Record<BillingAuditField, true>;
 
 export const BILLING_BEFORE_SELECT = {
 	...BILLING_AUDIT_SELECT,
@@ -27,7 +14,7 @@ export const BILLING_BEFORE_SELECT = {
 } satisfies Prisma.UserSelect;
 
 export async function auditBillingChange(
-	tx: Tx,
+	tx: Prisma.TransactionClient,
 	{
 		userId,
 		performedBy,
@@ -58,4 +45,25 @@ export async function auditBillingChange(
 			data: { billingChangedAfterPaymentAt: at },
 		});
 	}
+}
+
+/** Updates the user and logs the billing diff in one transaction. */
+export async function updateUserAuditingBilling(
+	userId: string,
+	data: Prisma.UserUpdateInput,
+	audit: { performedBy: string; byParticipant: boolean },
+) {
+	return prisma.$transaction(async (tx) => {
+		const before = await tx.user.findUniqueOrThrow({
+			where: { id: userId },
+			select: BILLING_BEFORE_SELECT,
+		});
+		const after = await tx.user.update({
+			where: { id: userId },
+			data,
+			select: BILLING_AUDIT_SELECT,
+		});
+		await auditBillingChange(tx, { userId, ...audit, before, after });
+		return { before, after };
+	});
 }

@@ -3,13 +3,13 @@ import {
 	type BillingDetailsSettings,
 	STRUCTURED_BILLING_FIELDS,
 } from "@/features/settings/billing-details-schema";
+import { BILLING_AUDIT_SELECT } from "@/shared/lib/billing-changes";
 import { prisma } from "@/shared/server/db.server";
-import { BILLING_SELECT } from "./billing-status";
 
 export async function countIncompleteUsers(
 	config: BillingDetailsSettings,
 ): Promise<number> {
-	const users = await prisma.user.findMany({ select: BILLING_SELECT });
+	const users = await prisma.user.findMany({ select: BILLING_AUDIT_SELECT });
 	return users.filter((u) => invoiceState(u, config) === "INCOMPLETE").length;
 }
 

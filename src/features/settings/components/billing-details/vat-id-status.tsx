@@ -14,7 +14,7 @@ const REGISTRY_LABELS = {
 	BRREG: "the Norwegian VAT register",
 };
 
-const STATUS_VIEW = {
+export const VAT_ID_STATUS_VIEW = {
 	VERIFIED: {
 		Icon: IconCircleCheck,
 		className: "text-green-700 dark:text-green-400",
@@ -40,7 +40,7 @@ export function VatIdStatus({
 		| undefined;
 }) {
 	if (!check || check.status === "NOT_CHECKABLE") return null;
-	const view = STATUS_VIEW[check.status];
+	const view = VAT_ID_STATUS_VIEW[check.status];
 	const text =
 		"text" in view
 			? view.text

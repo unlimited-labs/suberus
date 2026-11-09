@@ -128,11 +128,7 @@ export function UserBillingSection({ user }: { user: AdminUserDetail }) {
 			<dl className="space-y-3">
 				<BillingRow
 					label="Invoice"
-					value={
-						user.invoiceState === "NONE"
-							? "Not needed"
-							: invoiceStateLabels[user.invoiceState]
-					}
+					value={invoiceStateLabels[user.invoiceState]}
 				/>
 				{rows.map((row) => (
 					<BillingRow

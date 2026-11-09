@@ -4,11 +4,7 @@ import {
 	logActivity,
 	logActivityTx,
 } from "@/features/activity-log/server/activity-log";
-import {
-	auditBillingChange,
-	BILLING_AUDIT_SELECT,
-	BILLING_BEFORE_SELECT,
-} from "@/features/activity-log/server/billing-change-audit";
+import { updateUserAuditingBilling } from "@/features/activity-log/server/billing-change-audit";
 import { activityDetail } from "@/features/activity-log/types";
 import {
 	type InvoiceState,
@@ -822,26 +818,15 @@ export async function updateUserProfile(
 		updateData.affiliation = { disconnect: true };
 	}
 
-	const updated = await prisma.$transaction(async (tx) => {
-		const before = await tx.user.findUniqueOrThrow({
-			where: { id: userId },
-			select: BILLING_BEFORE_SELECT,
-		});
-		const after = await tx.user.update({
-			where: { id: userId },
-			data: updateData,
-			select: BILLING_AUDIT_SELECT,
-		});
-		await auditBillingChange(tx, {
-			userId,
+	const { before, after } = await updateUserAuditingBilling(
+		userId,
+		updateData,
+		{
 			performedBy,
 			byParticipant: false,
-			before,
-			after,
-		});
-		return after;
-	});
-	checkVatIdInBackground(updated.vatId);
+		},
+	);
+	if (after.vatId !== before.vatId) checkVatIdInBackground(after.vatId);
 
 	return { success: true };
 }
