@@ -20,7 +20,7 @@ import {
 import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { BillingDetailsPreview } from "./billing-details-preview";
 import { IncompleteCountWarning } from "./incomplete-count-warning";
-import { ModeSwitchNote, useModeSwitchCount } from "./mode-switch-warning";
+import { ModeSwitchWarning } from "./mode-switch-warning";
 import {
 	type BillingDetailsSettingsForm,
 	useBillingDetailsSettings,
@@ -51,15 +51,7 @@ const STATE_VIEW = {
 	REQUIRED: { text: "Required", dot: "bg-primary" },
 } as const;
 
-function ModeCards({
-	form,
-	savedMode,
-}: {
-	form: BillingDetailsSettingsForm;
-	savedMode: BillingDetailsSettings["mode"];
-}) {
-	const switchCount = useModeSwitchCount(savedMode);
-
+function ModeCards({ form }: { form: BillingDetailsSettingsForm }) {
 	return (
 		<form.Field name="mode">
 			{(field) => (
@@ -82,9 +74,6 @@ function ModeCards({
 							<span className="text-muted-foreground block text-xs">
 								{m.text}
 							</span>
-							{m.mode !== savedMode &&
-								field.state.value === m.mode &&
-								switchCount > 0 && <ModeSwitchNote count={switchCount} />}
 						</button>
 					))}
 				</div>
@@ -293,7 +282,7 @@ export function BillingDetailsSettingsSection({
 							)}
 						</form.AppField>
 						<IncompleteCountWarning draft={config} saved={initialData} />
-						<ModeCards form={form} savedMode={initialData.mode} />
+						<ModeCards form={form} />
 						<FieldAccordion form={form} />
 						<form.AppField name="organizerVatId">
 							{(field) => (
@@ -304,6 +293,10 @@ export function BillingDetailsSettingsSection({
 								/>
 							)}
 						</form.AppField>
+						<ModeSwitchWarning
+							draftMode={config.mode}
+							savedMode={initialData.mode}
+						/>
 						<div className="flex justify-end">
 							<form.AppForm>
 								<form.SubmitButton label="Save" />
