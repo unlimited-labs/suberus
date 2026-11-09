@@ -3,9 +3,11 @@ import { z } from "zod";
 import {
 	applyBillingConfig,
 	becomesStricter,
+	billingConfigFor,
 	buyerLines,
 	initialBillingText,
 	invoiceState,
+	participantBillingWrite,
 	previousFormValues,
 	registryFill,
 	requirednessOf,
@@ -532,5 +534,30 @@ describe("initialBillingText", () => {
 				mode: "STRUCTURED",
 			}),
 		).toBe("");
+	});
+});
+
+describe("billingConfigFor", () => {
+	const strict = withFields(
+		{ organizationName: "REQUIRED", vatId: "REQUIRED" },
+		{ mode: "STRUCTURED", invoiceRequired: true },
+	);
+	const empty = { needInvoice: false, billingOrganization: "", vatId: "" };
+
+	it("keeps the gate for participants", () => {
+		expect(
+			participantBillingWrite(empty, billingConfigFor(strict, "AUTHOR")),
+		).toEqual({
+			error: "This field is required",
+		});
+	});
+
+	it("lets an admin save without billing details", () => {
+		expect(
+			participantBillingWrite(empty, billingConfigFor(strict, "ADMIN")),
+		).toEqual({
+			needInvoice: false,
+			vatId: "",
+		});
 	});
 });

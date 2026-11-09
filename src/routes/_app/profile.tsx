@@ -31,7 +31,10 @@ import {
 	billingDetailsConfigQueryOptions,
 	getRegistrationStatusFn,
 } from "@/features/settings/api/settings";
-import { initialBillingText } from "@/features/settings/billing-details-rules";
+import {
+	billingConfigFor,
+	initialBillingText,
+} from "@/features/settings/billing-details-rules";
 import { IncompleteBillingBanner } from "@/features/settings/components/billing-details/incomplete-billing-banner";
 import { SettingsSection } from "@/features/settings/components/settings-section";
 import {
@@ -111,6 +114,7 @@ function SettingsPage() {
 	const { contactConsentEnabled } = Route.useLoaderData();
 
 	if (!user) return null;
+	const contactBillingConfig = billingConfigFor(billingConfig, user.role);
 
 	const handlePersonalInfoSave = async (data: PersonalInfoFormData) => {
 		try {
@@ -205,14 +209,17 @@ function SettingsPage() {
 						>
 							{feePaid && <PaidBillingNote organizerEmail={organizerEmail} />}
 							<ContactInfoSection
-								billingConfig={billingConfig}
+								billingConfig={contactBillingConfig}
 								contactConsentEnabled={contactConsentEnabled}
 								currentEmail={user.email}
 								emailVerified={user.emailVerified}
 								initialData={{
 									...contactFields,
 									email: user.email,
-									billingText: initialBillingText(contactInfo, billingConfig),
+									billingText: initialBillingText(
+										contactInfo,
+										contactBillingConfig,
+									),
 								}}
 								onSave={handleContactInfoSave}
 								pendingEmail={pendingEmail}

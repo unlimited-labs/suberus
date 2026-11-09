@@ -65,7 +65,7 @@ export const updateContactInfoFn = createServerFn({ method: "POST" })
 	.middleware([authMiddleware])
 	.validator(contactInfoFormSchema.omit({ email: true }))
 	.handler(async ({ data, context }) => {
-		await updateContactInfo(context.user.id, data);
+		await updateContactInfo(context.user.id, context.user.role, data);
 		return { success: true };
 	});
 

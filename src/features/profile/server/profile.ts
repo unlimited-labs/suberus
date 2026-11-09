@@ -7,6 +7,7 @@ import { activityDetail } from "@/features/activity-log/types";
 import type { ContactInfoFormData } from "@/features/profile/validations";
 import {
 	billingColumnsToDb,
+	billingConfigFor,
 	billingColumnsToForm,
 	participantBillingWrite,
 } from "@/features/settings/billing-details-rules";
@@ -95,9 +96,10 @@ export async function getContactInfo(userId: string) {
 
 export async function updateContactInfo(
 	userId: string,
+	role: string | null | undefined,
 	data: Omit<ContactInfoFormData, "email">,
 ) {
-	const config = await getSetting("BILLING_DETAILS");
+	const config = billingConfigFor(await getSetting("BILLING_DETAILS"), role);
 	const billing = participantBillingWrite(data, config);
 	if ("error" in billing) throw new Response(billing.error, { status: 400 });
 

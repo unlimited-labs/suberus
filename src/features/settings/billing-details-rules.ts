@@ -97,6 +97,30 @@ export function participantBillingWrite(
 	return { needInvoice, vatId: vat.value };
 }
 
+type BillingFieldConfig = BillingDetailsSettings["fields"]["vatId"];
+
+const notRequired = (field: BillingFieldConfig): BillingFieldConfig =>
+	field.state === "REQUIRED" ? { ...field, state: "OPTIONAL" } : field;
+
+export function billingConfigFor(
+	config: BillingDetailsSettings,
+	role: string | null | undefined,
+): BillingDetailsSettings {
+	if (role !== "ADMIN") return config;
+	const { fields } = config;
+	return {
+		...config,
+		invoiceRequired: false,
+		fields: {
+			organizationName: notRequired(fields.organizationName),
+			streetAddress: notRequired(fields.streetAddress),
+			postalCode: notRequired(fields.postalCode),
+			city: notRequired(fields.city),
+			vatId: notRequired(fields.vatId),
+		},
+	};
+}
+
 export const invoiceStateSchema = z.enum(["NONE", "REQUESTED", "INCOMPLETE"]);
 
 export type InvoiceState = z.infer<typeof invoiceStateSchema>;
