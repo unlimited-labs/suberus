@@ -6,6 +6,7 @@ import {
 	type BillingColumnValues,
 	billingFieldError,
 	billingTextError,
+	EMPTY_BILLING_FIELDS,
 	FILLABLE_BILLING_COLUMNS,
 	invoiceNeeded,
 	registryFill,
@@ -35,18 +36,6 @@ type BillingFields = {
 	billingCity: string;
 	vatId: string;
 	country: string;
-};
-
-// Keys are used for field mapping; values are not used at runtime.
-const defaultValues: BillingFields = {
-	needInvoice: false,
-	billingText: "",
-	billingOrganization: "",
-	billingStreet: "",
-	billingPostalCode: "",
-	billingCity: "",
-	vatId: "",
-	country: "",
 };
 
 // Props are optional (defaults applied in render); withFieldGroup does not
@@ -167,7 +156,7 @@ function PreviousDetails({
 }
 
 export const BillingFieldsGroup = withFieldGroup({
-	defaultValues,
+	defaultValues: EMPTY_BILLING_FIELDS,
 	props,
 	render: function Render({
 		group,

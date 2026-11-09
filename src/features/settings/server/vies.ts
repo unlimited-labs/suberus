@@ -1,4 +1,5 @@
 import { logger } from "@/logger.ts";
+import { guarded } from "./national-registries";
 import {
 	mapViesResponse,
 	REGISTRY_TIMEOUT_MS,
@@ -53,7 +54,7 @@ export async function queryVies(
 	requesterVatId: string,
 	transport: Transport = fetch,
 ): Promise<RegistryResult> {
-	try {
+	return guarded("VIES", async () => {
 		const first = await postVies(vatId, requesterVatId, transport);
 		if (requesterVatId && first.errors.includes("INVALID_REQUESTER_INFO")) {
 			logger.warn(
@@ -68,8 +69,5 @@ export async function queryVies(
 			);
 		}
 		return first.result;
-	} catch (error) {
-		logger.warn(`[vat-id] VIES lookup failed for ${vatId.slice(0, 2)}:`, error);
-		return UNAVAILABLE_RESULT;
-	}
+	});
 }

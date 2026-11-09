@@ -14,10 +14,13 @@ import { queryVies } from "./vies";
 export const VAT_ID_RETRY_QUEUE = "vat-id-retry";
 const FRESH_MS = 24 * 60 * 60 * 1000;
 
-function isFresh(check: VatIdCheck, now: number) {
-	return (
-		check.status !== "UNAVAILABLE" && now - check.checkedAt.getTime() < FRESH_MS
-	);
+type CheckMode = "cached" | "recheck" | "retry";
+
+/** A retry only runs after an UNAVAILABLE result, so any other stored status is newer. */
+function reusable(check: VatIdCheck, mode: CheckMode, now: number) {
+	if (check.status === "UNAVAILABLE") return false;
+	if (mode === "retry") return true;
+	return mode === "cached" && now - check.checkedAt.getTime() < FRESH_MS;
 }
 
 async function lookupRegistry(vatId: string) {
@@ -55,11 +58,11 @@ async function scheduleRetry(vatId: string) {
 	);
 }
 
-/** `vatId` must be normalized. "cached" reuses a fresh result; "recheck" and "retry" always
- * ask the registry, and only "retry" (the job itself) never schedules another retry. */
+/** `vatId` must be normalized. "cached" reuses a fresh result, "retry" (the job itself) any
+ * resolved one and never schedules another retry; "recheck" always asks the registry. */
 export async function checkVatId(
 	vatId: string,
-	mode: "cached" | "recheck" | "retry" = "cached",
+	mode: CheckMode = "cached",
 ): Promise<VatIdCheck> {
 	if (!isRegistryCheckable(vatId)) {
 		return {
@@ -73,7 +76,7 @@ export async function checkVatId(
 		};
 	}
 	const cached = await prisma.vatIdCheck.findUnique({ where: { vatId } });
-	if (mode === "cached" && cached && isFresh(cached, Date.now())) return cached;
+	if (cached && reusable(cached, mode, Date.now())) return cached;
 	const result = { ...(await lookupRegistry(vatId)), checkedAt: new Date() };
 	const row = await prisma.vatIdCheck.upsert({
 		where: { vatId },

@@ -6,6 +6,7 @@ import {
 import { toast } from "sonner";
 import { checkEmailAvailableFn } from "@/features/auth/api/auth";
 import { billingDetailsConfigQueryOptions } from "@/features/settings/api/settings";
+import { EMPTY_BILLING_FIELDS } from "@/features/settings/billing-details-rules";
 import {
 	BILLING_FIELDS_MAP,
 	BillingFieldsGroup,
@@ -62,14 +63,7 @@ export function UserCreateDialog({
 		title: "",
 		affiliation: "",
 		email: "",
-		needInvoice: false,
-		billingText: "",
-		billingOrganization: "",
-		billingStreet: "",
-		billingPostalCode: "",
-		billingCity: "",
-		vatId: "",
-		country: "",
+		...EMPTY_BILLING_FIELDS,
 		surveyAnswers: Object.fromEntries(
 			questions.map((q) => [q.id, q.type === "CHECKBOX" ? "false" : ""]),
 		),

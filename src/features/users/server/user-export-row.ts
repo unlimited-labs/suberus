@@ -1,4 +1,7 @@
-import { billingColumnsToForm } from "@/features/settings/billing-details-rules";
+import {
+	BILLING_AUDIT_LABELS as LABELS,
+	billingColumnsToForm,
+} from "@/features/settings/billing-details-rules";
 import { formatSurveyAnswerValue } from "@/features/survey/labels";
 import {
 	formatSubmissionRoles,
@@ -64,12 +67,12 @@ function billingColumns(user: ExportUser) {
 	return {
 		"Need Invoice": user.needInvoice ? "True" : "False",
 		"Billing details (text)": billing.billingText,
-		Organization: billing.billingOrganization,
-		"Street address": billing.billingStreet,
-		"Postal code": billing.billingPostalCode,
-		City: billing.billingCity,
-		Country: user.country ?? "",
-		"VAT ID": billing.vatId,
+		[LABELS.billingOrganization]: billing.billingOrganization,
+		[LABELS.billingStreet]: billing.billingStreet,
+		[LABELS.billingPostalCode]: billing.billingPostalCode,
+		[LABELS.billingCity]: billing.billingCity,
+		[LABELS.country]: user.country ?? "",
+		[LABELS.vatId]: billing.vatId,
 	};
 }
 

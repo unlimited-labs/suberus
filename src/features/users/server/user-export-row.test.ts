@@ -93,7 +93,7 @@ describe("buildUserExportRow", () => {
 		expect(keys.slice(start, start + 11)).toEqual([
 			"Need Invoice",
 			"Billing details (text)",
-			"Organization",
+			"Organization name",
 			"Street address",
 			"Postal code",
 			"City",
@@ -129,7 +129,7 @@ describe("buildUserExportRow", () => {
 			"VAT ID status": "Verified",
 			"VAT ID checked at": "FORMATTED",
 			"Registry name": "UNIWERSYTET JAGIELLOŃSKI",
-			Organization: "ACME Institute",
+			"Organization name": "ACME Institute",
 			"Street address": "1 Main St",
 			"Postal code": "30-059",
 			City: "Krakow",

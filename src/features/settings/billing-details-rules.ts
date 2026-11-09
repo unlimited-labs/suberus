@@ -21,6 +21,17 @@ export interface BillingColumnValues {
 	vatId?: string | null;
 }
 
+export const EMPTY_BILLING_FIELDS = {
+	needInvoice: false,
+	billingText: "",
+	billingOrganization: "",
+	billingStreet: "",
+	billingPostalCode: "",
+	billingCity: "",
+	vatId: "",
+	country: "",
+};
+
 interface BillingValues extends BillingColumnValues {
 	needInvoice: boolean;
 }

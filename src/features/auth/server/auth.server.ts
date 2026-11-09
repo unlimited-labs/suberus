@@ -8,6 +8,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError } from "better-auth/api";
 import { jwt, lastLoginMethod } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
+import type { z } from "zod";
 import { env } from "@/env";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
@@ -26,7 +27,10 @@ import { getSetting } from "@/features/settings/server/settings";
 import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import { UserRole } from "@/generated/prisma/client";
 import { logger } from "@/logger.ts";
-import { contactInfoSchema } from "@/shared/lib/validations/user";
+import {
+	BILLING_COLUMNS_IN_FORM,
+	contactInfoSchema,
+} from "@/shared/lib/validations/user";
 import { normalizeVatId } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
@@ -40,29 +44,23 @@ export const MCP_RESOURCE_NAME = "Suberus MCP";
 
 /** better-auth types hook payloads as the base user; the additionalFields declared
  * below are present at runtime but absent from that type. */
-type AuthUserExtras = {
+const billingColumnsSchema = contactInfoSchema
+	.pick({ billingText: true, ...BILLING_COLUMNS_IN_FORM })
+	.partial();
+
+type AuthUserExtras = z.infer<typeof billingColumnsSchema> & {
 	firstName?: string;
 	affiliationId?: string;
 	needInvoice?: boolean;
-	billingText?: string;
-	billingOrganization?: string;
-	billingStreet?: string;
-	billingPostalCode?: string;
-	billingCity?: string;
-	vatId?: string;
 	country?: string;
 };
 
-const billingColumnsSchema = contactInfoSchema
-	.pick({
-		billingText: true,
-		billingOrganization: true,
-		billingStreet: true,
-		billingPostalCode: true,
-		billingCity: true,
-		vatId: true,
-	})
-	.partial();
+const privateInputString = {
+	type: "string",
+	required: false,
+	input: true,
+	returned: false,
+} as const;
 
 function authUserExtras<T extends { email: string }>(
 	user: T,
@@ -254,48 +252,13 @@ export const auth = betterAuth({
 				required: false,
 				input: true,
 			},
-			billingText: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			billingOrganization: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			billingStreet: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			billingPostalCode: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			billingCity: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			vatId: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
-			country: {
-				type: "string",
-				required: false,
-				input: true,
-				returned: false,
-			},
+			billingText: privateInputString,
+			billingOrganization: privateInputString,
+			billingStreet: privateInputString,
+			billingPostalCode: privateInputString,
+			billingCity: privateInputString,
+			vatId: privateInputString,
+			country: privateInputString,
 			needInvoice: {
 				type: "boolean",
 				required: false,

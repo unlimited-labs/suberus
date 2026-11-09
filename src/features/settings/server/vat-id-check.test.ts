@@ -102,6 +102,31 @@ describe("checkVatId", () => {
 		expect(boss.send).not.toHaveBeenCalled();
 	});
 
+	it("ends a retry without calling a registry once another check resolved the number", async () => {
+		const resolved = {
+			vatId: "DE136695976",
+			status: "NOT_FOUND",
+			checkedAt: new Date("2026-01-01"),
+		};
+		prismaMock.vatIdCheck.findUnique.mockResolvedValue(resolved);
+
+		await expect(checkVatId("DE136695976", "retry")).resolves.toBe(resolved);
+		expect(registries.queryVies).not.toHaveBeenCalled();
+	});
+
+	it("retries the registry while the stored result is still unavailable", async () => {
+		prismaMock.vatIdCheck.findUnique.mockResolvedValue({
+			vatId: "DE136695976",
+			status: "UNAVAILABLE",
+			checkedAt: new Date(),
+		});
+		registries.queryVies.mockResolvedValue(result("VERIFIED"));
+
+		await checkVatId("DE136695976", "retry");
+
+		expect(registries.queryVies).toHaveBeenCalledOnce();
+	});
+
 	it("returns a fresh cached result without calling a registry", async () => {
 		prismaMock.vatIdCheck.findUnique.mockResolvedValue({
 			vatId: "DE136695976",

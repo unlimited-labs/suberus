@@ -7,6 +7,7 @@ import { registerSchema } from "@/features/auth/validations";
 import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
 	applyBillingConfig,
+	EMPTY_BILLING_FIELDS,
 	invoiceNeeded,
 	submittedBillingValues,
 } from "@/features/settings/billing-details-rules";
@@ -202,13 +203,8 @@ export function useRegisterForm({
 			lastName: "",
 			affiliationId: "",
 			affiliationName: "",
+			...EMPTY_BILLING_FIELDS,
 			needInvoice: billingConfig.invoiceRequired,
-			billingText: "",
-			billingOrganization: "",
-			billingStreet: "",
-			billingPostalCode: "",
-			billingCity: "",
-			vatId: "",
 			country: detectedCountry,
 			surveyAnswers: defaultSurveyAnswers,
 			contactConsent: false,

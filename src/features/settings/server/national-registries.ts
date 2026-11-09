@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { logger } from "@/logger.ts";
+import { todayInZone } from "@/shared/lib/zoned";
 import {
 	REGISTRY_TIMEOUT_MS,
 	type RegistryResult,
@@ -23,7 +24,7 @@ const verified = (
 	requestIdentifier,
 });
 
-async function guarded(
+export async function guarded(
 	registry: string,
 	call: () => Promise<RegistryResult>,
 ): Promise<RegistryResult> {
@@ -53,7 +54,7 @@ export function queryMfWhiteList(
 	transport: Transport = fetch,
 ): Promise<RegistryResult> {
 	return guarded("MF white list", async () => {
-		const date = new Date().toISOString().slice(0, 10);
+		const date = todayInZone("Europe/Warsaw");
 		const response = await transport(
 			`https://wl-api.mf.gov.pl/api2/status/nip/${vatId.slice(2)}?date=${date}`,
 			{ signal: AbortSignal.timeout(REGISTRY_TIMEOUT_MS) },
