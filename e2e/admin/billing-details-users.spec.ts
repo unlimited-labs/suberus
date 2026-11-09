@@ -105,12 +105,22 @@ test.describe.serial("Users - Billing details", () => {
 
 		await expect(rowByEmail(incomplete.email)).toBeVisible()
 		await expect(rowByEmail(requested.email)).toHaveCount(0)
+		await expect(page).toHaveURL(/invoice=.*INCOMPLETE/)
 
 		await page.goto("/admin/users?invoice=INCOMPLETE")
 		await adminUsersPage.waitForLoad()
 		await adminUsersPage.search(stamp)
 		await expect(rowByEmail(incomplete.email)).toBeVisible()
 		await expect(rowByEmail(requested.email)).toHaveCount(0)
+
+		await page
+			.getByRole("columnheader")
+			.filter({ hasText: "Invoice" })
+			.getByRole("button", { name: "Filter" })
+			.click()
+		await page.locator("[data-slot='popover-content']").getByRole("checkbox", { name: "Incomplete" }).click()
+		await expect(rowByEmail(requested.email)).toBeVisible()
+		await expect(page).not.toHaveURL(/invoice=/)
 	})
 
 	test("user detail shows the Billing details with the VAT ID registry result", async ({ page }) => {

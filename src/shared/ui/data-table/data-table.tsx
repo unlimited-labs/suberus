@@ -1,5 +1,6 @@
 import {
 	type ColumnFiltersState,
+	type OnChangeFn,
 	type RowData,
 	flexRender,
 	type RowSelectionState,
@@ -43,11 +44,11 @@ interface DataTableProps<TData extends RowData> {
 	 */
 	rowDataTestId?: string;
 	initialColumnVisibility?: ColumnVisibilityState;
-	initialColumnFilters?: ColumnFiltersState;
+	/** Controlled filters, e.g. synced with the URL; omit both to keep them internal. */
+	columnFilters?: ColumnFiltersState;
+	onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
 	storageKey?: string;
 }
-
-const NO_FILTERS: ColumnFiltersState = [];
 
 function useColumnVisibility(
 	storageKey: string | undefined,
@@ -64,6 +65,14 @@ function useColumnVisibility(
 	);
 }
 
+function useColumnFilters(
+	controlled: ColumnFiltersState | undefined,
+	onChange: OnChangeFn<ColumnFiltersState> | undefined,
+) {
+	const [local, setLocal] = useState<ColumnFiltersState>([]);
+	return { columnFilters: controlled ?? local, onChange: onChange ?? setLocal };
+}
+
 export function DataTable<TData extends RowData>({
 	columns,
 	data,
@@ -72,7 +81,8 @@ export function DataTable<TData extends RowData>({
 	getRowId,
 	rowDataTestId,
 	initialColumnVisibility,
-	initialColumnFilters = NO_FILTERS,
+	columnFilters,
+	onColumnFiltersChange,
 	storageKey,
 }: DataTableProps<TData>) {
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -80,7 +90,7 @@ export function DataTable<TData extends RowData>({
 		storageKey,
 		initialColumnVisibility,
 	);
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(initialColumnFilters);
+	const filters = useColumnFilters(columnFilters, onColumnFiltersChange);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useTablePagination(storageKey);
 
@@ -92,14 +102,14 @@ export function DataTable<TData extends RowData>({
 			sorting,
 			columnVisibility,
 			rowSelection,
-			columnFilters,
+			columnFilters: filters.columnFilters,
 			pagination,
 		},
 		getRowId,
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
 		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
+		onColumnFiltersChange: filters.onChange,
 		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		autoResetPageIndex: true,
