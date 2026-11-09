@@ -8,6 +8,7 @@ import {
 	feeCurrencyQueryOptions,
 	feeTypesQueryOptions,
 } from "@/features/settings/api/settings";
+import { invoiceStateSchema } from "@/features/settings/billing-details-rules";
 import { adminSurveyQuestionsQueryOptions } from "@/features/survey/api/survey";
 import { adminUsersQueryOptions } from "@/features/users/api/users";
 import {
@@ -22,7 +23,7 @@ import { Button } from "@/shared/ui/button";
 import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 const searchSchema = z.object({
-	invoice: z.enum(["NONE", "REQUESTED", "INCOMPLETE"]).optional(),
+	invoice: invoiceStateSchema.optional(),
 });
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({

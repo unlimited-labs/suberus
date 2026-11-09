@@ -8,12 +8,10 @@ import type { ContactInfoFormData } from "@/features/profile/validations";
 import {
 	billingColumnsToDb,
 	billingColumnsToForm,
-	billingDetailsIssues,
-	invoiceNeeded,
+	participantBillingWrite,
 } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
 import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
-import { normalizeVatIdOrThrow } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
 
 export async function getPersonalInfo(userId: string) {
@@ -100,18 +98,14 @@ export async function updateContactInfo(
 	data: Omit<Partial<ContactInfoFormData>, "email">,
 ) {
 	const config = await getSetting("BILLING_DETAILS");
-	const needInvoice = invoiceNeeded(data.needInvoice === true, config);
-	const [issue] = billingDetailsIssues({ ...data, needInvoice }, config);
-	if (issue) throw new Response(issue.message, { status: 400 });
+	const billing = participantBillingWrite(data, config);
+	if ("error" in billing) throw new Response(billing.error, { status: 400 });
 
 	const { before, after } = await updateUserAuditingBilling(
 		userId,
 		{
-			needInvoice,
-			...billingColumnsToDb({
-				...data,
-				vatId: normalizeVatIdOrThrow(data.vatId, data.country),
-			}),
+			needInvoice: billing.needInvoice,
+			...billingColumnsToDb({ ...data, vatId: billing.vatId }),
 			country: data.country || null,
 			contactConsent: data.contactConsent,
 		},

@@ -47,7 +47,6 @@ export async function auditBillingChange(
 	}
 }
 
-/** Updates the user and logs the billing diff in one transaction. */
 export async function updateUserAuditingBilling(
 	userId: string,
 	data: Prisma.UserUpdateInput,

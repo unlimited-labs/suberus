@@ -4,8 +4,8 @@ import { useState } from "react";
 import { vatIdCheckQueryOptions } from "@/features/settings/api/vat-id-check";
 import {
 	type BillingColumnValues,
+	BILLING_TEXT_REQUIRED,
 	billingFieldError,
-	billingTextError,
 	EMPTY_BILLING_FIELDS,
 	FILLABLE_BILLING_COLUMNS,
 	invoiceNeeded,
@@ -26,17 +26,6 @@ import { PreviousBillingCard } from "./previous-billing-card";
 import { PreviousFormValues } from "./previous-form-values";
 import { RegistryFillButton } from "./registry-fill-button";
 import { VatIdStatus } from "./vat-id-status";
-
-type BillingFields = {
-	needInvoice: boolean;
-	billingText: string;
-	billingOrganization: string;
-	billingStreet: string;
-	billingPostalCode: string;
-	billingCity: string;
-	vatId: string;
-	country: string;
-};
 
 // Props are optional (defaults applied in render); withFieldGroup does not
 // apply the `props` defaults at runtime.
@@ -132,29 +121,6 @@ function vatIdError(value: string, required: boolean, country: string) {
 	);
 }
 
-function PreviousDetails({
-	admin,
-	config,
-	values,
-	onFill,
-}: {
-	admin: boolean;
-	config: BillingDetailsSettings;
-	values: BillingFields;
-	onFill: (fill: BillingColumnValues) => void;
-}) {
-	return admin ? (
-		<PreviousFormValues config={config} values={values} />
-	) : (
-		<PreviousBillingCard
-			config={config}
-			country={values.country}
-			onFill={onFill}
-			values={values}
-		/>
-	);
-}
-
 function useVatIdCheck(
 	vatId: string,
 	country: string,
@@ -208,22 +174,30 @@ export const BillingFieldsGroup = withFieldGroup({
 					</group.AppField>
 				)}
 
-				{view.showPrevious && (
-					<PreviousDetails
-						admin={isAdmin}
-						config={config}
-						// Remount after each successful save so the card reflects what was saved.
-						key={savedRevision}
-						onFill={applyFill}
-						values={values}
-					/>
-				)}
+				{/* Remount after each successful save so the card reflects what was saved. */}
+				{view.showPrevious &&
+					(isAdmin ? (
+						<PreviousFormValues
+							config={config}
+							key={savedRevision}
+							values={values}
+						/>
+					) : (
+						<PreviousBillingCard
+							config={config}
+							country={values.country}
+							key={savedRevision}
+							onFill={applyFill}
+							values={values}
+						/>
+					))}
 
 				{view.showText && (
 					<group.AppField
 						name="billingText"
 						validators={{
-							onChange: ({ value }) => billingTextError(value, view.required),
+							onChange: ({ value }) =>
+								billingFieldError(value, view.required, BILLING_TEXT_REQUIRED),
 						}}
 					>
 						{(field) => (

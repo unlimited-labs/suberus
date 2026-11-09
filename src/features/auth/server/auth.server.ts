@@ -19,10 +19,7 @@ import {
 	mcpClientUpdatedDetail,
 } from "@/features/auth/server/cimd-audit-rules";
 import { MCP_SCOPES } from "@/features/mcp/scopes";
-import {
-	billingDetailsIssues,
-	invoiceNeeded,
-} from "@/features/settings/billing-details-rules";
+import { participantBillingWrite } from "@/features/settings/billing-details-rules";
 import { getSetting } from "@/features/settings/server/settings";
 import { checkVatIdInBackground } from "@/features/settings/server/vat-id-check";
 import { UserRole } from "@/generated/prisma/client";
@@ -31,7 +28,6 @@ import {
 	BILLING_COLUMNS_IN_FORM,
 	contactInfoSchema,
 } from "@/shared/lib/validations/user";
-import { normalizeVatId } from "@/shared/lib/vat-id";
 import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { linkCoAuthorsByEmail } from "@/shared/server/link-coauthors";
@@ -319,25 +315,11 @@ export const auth = betterAuth({
 							message: lengths.error.issues[0].message,
 						});
 					}
-					const vat = normalizeVatId(extUser.vatId ?? "", extUser.country);
-					if ("error" in vat) {
-						throw new APIError("BAD_REQUEST", { message: vat.error });
+					const billing = participantBillingWrite(extUser, config);
+					if ("error" in billing) {
+						throw new APIError("BAD_REQUEST", { message: billing.error });
 					}
-					const needed = invoiceNeeded(extUser.needInvoice === true, config);
-					const [issue] = billingDetailsIssues(
-						{ ...extUser, needInvoice: needed },
-						config,
-					);
-					if (issue) {
-						throw new APIError("BAD_REQUEST", { message: issue.message });
-					}
-					return {
-						data: {
-							...user,
-							needInvoice: needed,
-							vatId: vat.value || undefined,
-						},
-					};
+					return { data: { ...user, ...billing } };
 				},
 				after: async (user) => {
 					await logActivity({

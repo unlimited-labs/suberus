@@ -1,6 +1,7 @@
-import type { z } from "zod";
+import { z } from "zod";
 import type { VatIdCheck } from "@/generated/prisma/client";
 import type { BillingAuditField } from "@/shared/lib/billing-changes";
+import { normalizeVatId } from "@/shared/lib/vat-id";
 import {
 	activeBillingFields,
 	BILLING_FIELD_KEYS,
@@ -48,21 +49,15 @@ export function invoiceNeeded(
 	return config.invoiceRequired || needInvoice;
 }
 
-export function billingTextError(
-	billingText: string | null | undefined,
-	needed: boolean,
-): string | undefined {
-	return needed && !billingText?.trim()
-		? "Billing details are required"
-		: undefined;
-}
-
 export function billingFieldError(
 	value: string | null | undefined,
 	required: boolean,
+	message = "This field is required",
 ): string | undefined {
-	return required && !value?.trim() ? "This field is required" : undefined;
+	return required && !value?.trim() ? message : undefined;
 }
+
+export const BILLING_TEXT_REQUIRED = "Billing details are required";
 
 export function billingDetailsIssues(
 	values: BillingValues,
@@ -71,7 +66,7 @@ export function billingDetailsIssues(
 	const needed = invoiceNeeded(values.needInvoice, config);
 	const textMessage =
 		config.mode === "FREE_TEXT"
-			? billingTextError(values.billingText, needed)
+			? billingFieldError(values.billingText, needed, BILLING_TEXT_REQUIRED)
 			: undefined;
 	const issues: BillingIssue[] = textMessage
 		? [{ path: "billingText", message: textMessage }]
@@ -86,7 +81,24 @@ export function billingDetailsIssues(
 	return issues;
 }
 
-export type InvoiceState = "NONE" | "REQUESTED" | "INCOMPLETE";
+export function participantBillingWrite(
+	values: Omit<BillingValues, "needInvoice"> & {
+		needInvoice?: boolean;
+		country?: string | null;
+	},
+	config: BillingDetailsSettings,
+): { error: string } | { needInvoice: boolean; vatId: string | undefined } {
+	const vat = normalizeVatId(values.vatId ?? "", values.country);
+	if ("error" in vat) return vat;
+	const needInvoice = invoiceNeeded(values.needInvoice === true, config);
+	const [issue] = billingDetailsIssues({ ...values, needInvoice }, config);
+	if (issue) return { error: issue.message };
+	return { needInvoice, vatId: vat.value || undefined };
+}
+
+export const invoiceStateSchema = z.enum(["NONE", "REQUESTED", "INCOMPLETE"]);
+
+export type InvoiceState = z.infer<typeof invoiceStateSchema>;
 
 export function invoiceState(
 	values: BillingValues,
@@ -275,18 +287,8 @@ export function previousFormValues(
 	});
 }
 
-function composeBillingText({
-	billingOrganization,
-	billingStreet,
-	billingPostalCode,
-	billingCity,
-}: BillingColumnValues): string {
-	return buyerLines({
-		billingOrganization,
-		billingStreet,
-		billingPostalCode,
-		billingCity,
-	}).join("\n");
+function composeBillingText(values: BillingColumnValues): string {
+	return buyerLines({ ...values, billingText: null, vatId: null }).join("\n");
 }
 
 /** Simple mode with no text yet starts from the separate fields, so nothing typed earlier is lost. */

@@ -93,6 +93,7 @@ function SettingsPage() {
 	};
 	const { data: personalInfo } = useSuspenseQuery(personalInfoQueryOptions());
 	const { data: contactInfo } = useSuspenseQuery(contactInfoQueryOptions());
+	const { feePaid, organizerEmail, ...contactFields } = contactInfo;
 	const { data: billingConfig } = useSuspenseQuery(
 		billingDetailsConfigQueryOptions(),
 	);
@@ -202,25 +203,16 @@ function SettingsPage() {
 							icon={IconMail}
 							title="Contact & Invoice Information"
 						>
-							{contactInfo.feePaid && (
-								<PaidBillingNote organizerEmail={contactInfo.organizerEmail} />
-							)}
+							{feePaid && <PaidBillingNote organizerEmail={organizerEmail} />}
 							<ContactInfoSection
 								billingConfig={billingConfig}
 								contactConsentEnabled={contactConsentEnabled}
 								currentEmail={user.email}
 								emailVerified={user.emailVerified}
 								initialData={{
+									...contactFields,
 									email: user.email,
-									needInvoice: contactInfo.needInvoice,
 									billingText: initialBillingText(contactInfo, billingConfig),
-									billingOrganization: contactInfo.billingOrganization,
-									billingStreet: contactInfo.billingStreet,
-									billingPostalCode: contactInfo.billingPostalCode,
-									billingCity: contactInfo.billingCity,
-									vatId: contactInfo.vatId,
-									country: contactInfo.country,
-									contactConsent: contactInfo.contactConsent,
 								}}
 								onSave={handleContactInfoSave}
 								pendingEmail={pendingEmail}

@@ -1,4 +1,5 @@
 import {
+	createFee,
 	createTestUser,
 	deleteTestUser,
 	getPrisma,
@@ -57,7 +58,7 @@ test.describe.serial("Users - Billing details", () => {
 			where: { id: changed.id },
 			data: { needInvoice: true, billingText: "New Institute", billingChangedAfterPaymentAt: changedAt },
 		})
-		await db.fee.create({ data: { userId: changed.id, paid: true, paidAt: changedAt } })
+		await createFee({ userId: changed.id, paidAt: changedAt })
 		await db.activityLog.create({
 			data: {
 				type: "USER_BILLING_DETAILS_UPDATED",
@@ -76,7 +77,6 @@ test.describe.serial("Users - Billing details", () => {
 		await deleteTestUser(incomplete.id)
 		await deleteTestUser(requested.id)
 		await getPrisma().activityLog.deleteMany({ where: { userId: changed.id } })
-		await getPrisma().fee.deleteMany({ where: { userId: changed.id } })
 		await deleteTestUser(changed.id)
 		await getPrisma().vatIdCheck.deleteMany({ where: { vatId } })
 		await restore()

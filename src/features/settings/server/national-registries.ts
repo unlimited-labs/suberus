@@ -2,16 +2,12 @@ import { z } from "zod";
 import { logger } from "@/logger.ts";
 import { todayInZone } from "@/shared/lib/zoned";
 import {
+	NOT_FOUND_RESULT,
 	REGISTRY_TIMEOUT_MS,
 	type RegistryResult,
 	type Transport,
 	UNAVAILABLE_RESULT,
 } from "./vies-rules";
-
-const NOT_FOUND_RESULT: RegistryResult = {
-	...UNAVAILABLE_RESULT,
-	status: "NOT_FOUND",
-};
 
 const verified = (
 	registryName: string | null = null,

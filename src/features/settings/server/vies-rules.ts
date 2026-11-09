@@ -40,6 +40,11 @@ export const UNAVAILABLE_RESULT: RegistryResult = {
 	requestIdentifier: null,
 };
 
+export const NOT_FOUND_RESULT: RegistryResult = {
+	...UNAVAILABLE_RESULT,
+	status: "NOT_FOUND",
+};
+
 const meaningful = (value: string | undefined) =>
 	value && value.trim() !== "---" ? value.trim() : null;
 
@@ -57,7 +62,7 @@ export function mapViesResponse(response: ViesResponse): RegistryResult {
 		return UNAVAILABLE_RESULT;
 	}
 	if (response.errorWrappers?.length) {
-		return { ...UNAVAILABLE_RESULT, status: "NOT_FOUND" };
+		return NOT_FOUND_RESULT;
 	}
 	const valid = response.valid ?? response.isValid;
 	if (valid === undefined) return UNAVAILABLE_RESULT;

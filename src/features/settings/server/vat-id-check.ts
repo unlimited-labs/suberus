@@ -89,8 +89,12 @@ export async function checkVatId(
 	vatId: string,
 	mode: CheckMode = "cached",
 ): Promise<VatIdCheck> {
-	const config = await getSetting("BILLING_DETAILS");
-	if (!config.registryCheck || !isRegistryCheckable(vatId)) {
+	const checkable = isRegistryCheckable(vatId);
+	const [config, cached] = await Promise.all([
+		getSetting("BILLING_DETAILS"),
+		checkable ? prisma.vatIdCheck.findUnique({ where: { vatId } }) : null,
+	]);
+	if (!config.registryCheck || !checkable) {
 		return {
 			vatId,
 			status: "NOT_CHECKABLE",
@@ -101,7 +105,6 @@ export async function checkVatId(
 			checkedAt: new Date(),
 		};
 	}
-	const cached = await prisma.vatIdCheck.findUnique({ where: { vatId } });
 	if (cached && reusable(cached, mode, Date.now())) return cached;
 	const result = {
 		...(await lookupRegistry(vatId, config.organizerVatId)),
