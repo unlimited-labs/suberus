@@ -150,7 +150,7 @@ function TextBoxRow({ form }: { form: BillingDetailsSettingsForm }) {
 					text: invoiceRequired ? "Required" : "Required with invoice",
 				}}
 			/>
-			<AccordionContent className="space-y-3 pb-3">
+			<AccordionContent className="space-y-3 px-1 pb-3">
 				<p className="text-muted-foreground text-xs">
 					Required whenever the participant needs an invoice.
 				</p>
@@ -191,7 +191,7 @@ function FieldRow({
 				name={f.name}
 				state={{ ...STATE_VIEW[config.state], off: config.state === "OFF" }}
 			/>
-			<AccordionContent className="space-y-3 pb-3">
+			<AccordionContent className="space-y-3 px-1 pb-3">
 				<form.Field name={`fields.${f.key}.state` as const}>
 					{(field) => (
 						<div className="space-y-1">
