@@ -8,6 +8,7 @@ import { getRegistrationStatusFn } from "@/features/settings/api/settings";
 import {
 	applyBillingConfig,
 	EMPTY_BILLING_FIELDS,
+	fillEmptyActiveFields,
 	invoiceNeeded,
 	submittedBillingValues,
 } from "@/features/settings/billing-details-rules";
@@ -253,14 +254,13 @@ export function useRegisterForm({
 	const prefillOrganizationOnce = () => {
 		if (organizationPrefilled.current) return;
 		organizationPrefilled.current = true;
-		if (
-			billingConfig.mode === "STRUCTURED" &&
-			billingConfig.fields.organizationName.state !== "OFF"
-		) {
-			form.setFieldValue(
-				"billingOrganization",
-				form.getFieldValue("affiliationName"),
-			);
+		const { billingOrganization } = fillEmptyActiveFields(
+			{ billingOrganization: form.getFieldValue("billingOrganization") },
+			billingConfig,
+			{ billingOrganization: form.getFieldValue("affiliationName") },
+		);
+		if (billingOrganization) {
+			form.setFieldValue("billingOrganization", billingOrganization);
 		}
 	};
 	const validateStep = async (step: number): Promise<boolean> => {

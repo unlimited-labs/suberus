@@ -6,6 +6,7 @@ import {
 	acknowledgeAdminUserBillingChange,
 	adminUsersQueryOptions,
 } from "@/features/users/api/users";
+import { CHANGED_AFTER_PAYMENT_LABEL } from "@/features/users/labels";
 import type { AdminUserDetail } from "@/features/users/server/users";
 import { useDateFormat } from "@/shared/hooks/use-date-format";
 import type { BillingChanges } from "@/shared/lib/billing-changes";
@@ -66,7 +67,7 @@ export function BillingChangedAfterPayment({
 	return (
 		<Alert data-testid="billing-changed-after-payment-alert">
 			<IconAlertTriangle />
-			<AlertTitle>Changed after payment</AlertTitle>
+			<AlertTitle>{CHANGED_AFTER_PAYMENT_LABEL}</AlertTitle>
 			<AlertDescription>
 				<p>
 					The participant changed billing details after the fee was paid (first

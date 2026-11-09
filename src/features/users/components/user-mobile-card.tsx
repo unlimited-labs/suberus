@@ -38,10 +38,7 @@ export function UserMobileCard({ user }: { user: AdminUser }) {
 
 				<div className="flex flex-wrap items-center gap-1.5">
 					<UserFeeBadgeCell mobile user={user} />
-					{(user.invoiceState !== "NONE" ||
-						user.billingChangedAfterPaymentAt) && (
-						<UserInvoiceCell user={user} />
-					)}
+					<UserInvoiceCell mobile user={user} />
 					{user.submissionRoles.map((r) => (
 						<Badge
 							className={cn(

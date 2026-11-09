@@ -26,7 +26,12 @@ export function PreviousBillingCard({
 	country: string;
 	onFill: (fill: BillingColumnValues) => void;
 }) {
-	const { data: canSplit } = useQuery(billingTextSplitAvailableQueryOptions());
+	const [saved] = useState(values);
+	const shown = showsPreviousText(saved, config);
+	const { data: canSplit } = useQuery({
+		...billingTextSplitAvailableQueryOptions(),
+		enabled: shown,
+	});
 	const split = useMutation({
 		mutationFn: (text: string) =>
 			splitBillingTextFn({ data: { text, country: country || undefined } }),
@@ -34,8 +39,7 @@ export function PreviousBillingCard({
 		onError: (error) =>
 			toast.error(getErrorMessage(error, "Could not split the text")),
 	});
-	const [saved] = useState(values);
-	if (!showsPreviousText(saved, config)) return null;
+	if (!shown) return null;
 	const text = saved.billingText ?? "";
 
 	return (

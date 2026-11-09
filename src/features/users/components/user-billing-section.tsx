@@ -5,6 +5,7 @@ import {
 	activeBillingFields,
 	BILLING_TEXT_NAME,
 	type BillingDetailsSettings,
+	VAT_ID_FIELD,
 } from "@/features/settings/billing-details-schema";
 import { PreviousFormValues } from "@/features/settings/components/billing-details/previous-form-values";
 import { invoiceStateLabels, vatIdStatusLabels } from "@/features/users/labels";
@@ -140,7 +141,7 @@ export function UserBillingSection({ user }: { user: AdminUserDetail }) {
 				))}
 				{config.fields.vatId.state !== "OFF" && (
 					<VatIdRow
-						label={config.fields.vatId.label || "VAT ID"}
+						label={config.fields.vatId.label || VAT_ID_FIELD.name}
 						showRegistry={registryOnVatRow}
 						user={user}
 					/>

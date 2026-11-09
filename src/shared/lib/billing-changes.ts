@@ -1,6 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 
-export const BILLING_AUDIT_FIELDS = [
+const BILLING_AUDIT_FIELDS = [
 	"needInvoice",
 	"billingText",
 	"billingOrganization",

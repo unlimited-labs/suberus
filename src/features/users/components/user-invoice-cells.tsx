@@ -1,5 +1,9 @@
 import { VAT_ID_STATUS_VIEW } from "@/features/settings/components/billing-details/vat-id-status";
-import { invoiceStateLabels, vatIdStatusLabels } from "@/features/users/labels";
+import {
+	CHANGED_AFTER_PAYMENT_LABEL,
+	invoiceStateLabels,
+	vatIdStatusLabels,
+} from "@/features/users/labels";
 import type { AdminUser } from "@/features/users/server/users";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -16,15 +20,22 @@ export function VatIdStatusIcon({ check }: { check: AdminUser["vatIdCheck"] }) {
 	);
 }
 
-export function UserInvoiceCell({ user }: { user: AdminUser }) {
+export function UserInvoiceCell({
+	user,
+	mobile,
+}: {
+	user: AdminUser;
+	mobile?: boolean;
+}) {
 	return (
 		<span
 			className="flex items-center gap-1.5"
 			data-testid="user-invoice-state"
 		>
-			{user.invoiceState === "NONE" ? (
+			{user.invoiceState === "NONE" && !mobile && (
 				<span className="text-muted-foreground">—</span>
-			) : (
+			)}
+			{user.invoiceState !== "NONE" && (
 				<Badge
 					variant={
 						user.invoiceState === "INCOMPLETE" ? "destructive" : "secondary"
@@ -36,7 +47,7 @@ export function UserInvoiceCell({ user }: { user: AdminUser }) {
 			<VatIdStatusIcon check={user.vatIdCheck} />
 			{user.billingChangedAfterPaymentAt && (
 				<Badge data-testid="billing-changed-after-payment" variant="outline">
-					Changed after payment
+					{CHANGED_AFTER_PAYMENT_LABEL}
 				</Badge>
 			)}
 		</span>

@@ -24,12 +24,15 @@ export const invoiceStateLabels = {
 	INCOMPLETE: "Incomplete",
 } satisfies Record<InvoiceState, string>;
 
+export const CHANGED_AFTER_PAYMENT_LABEL = "Changed after payment";
+
 export const invoiceFilterOptions = [
-	{ label: "Not needed", value: "NONE" },
-	{ label: "Requested", value: "REQUESTED" },
-	{ label: "Incomplete", value: "INCOMPLETE" },
-	{ label: "Changed after payment", value: CHANGED_AFTER_PAYMENT },
-] as const;
+	...Object.entries(invoiceStateLabels).map(([value, label]) => ({
+		label,
+		value,
+	})),
+	{ label: CHANGED_AFTER_PAYMENT_LABEL, value: CHANGED_AFTER_PAYMENT },
+];
 
 export const vatIdStatusLabels = {
 	VERIFIED: "Verified",
@@ -39,11 +42,11 @@ export const vatIdStatusLabels = {
 } satisfies Record<VatIdCheckStatus, string>;
 
 export const vatIdStatusFilterOptions = [
-	{ label: "Verified", value: "VERIFIED" },
-	{ label: "Not found", value: "NOT_FOUND" },
-	{ label: "Registry unavailable", value: "UNAVAILABLE" },
+	...Object.entries(vatIdStatusLabels)
+		.filter(([value]) => value !== "NOT_CHECKABLE")
+		.map(([value, label]) => ({ label, value })),
 	{ label: "No VAT ID / not checked", value: "NONE" },
-] as const;
+];
 
 export const feeFilterOptions = [
 	{ label: "Paid", value: "paid" },

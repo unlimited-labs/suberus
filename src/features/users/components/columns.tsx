@@ -147,7 +147,7 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				filterOptions={[...invoiceFilterOptions]}
+				filterOptions={invoiceFilterOptions}
 				title="Invoice"
 			/>
 		),
@@ -166,7 +166,7 @@ const baseUserColumns: AppColumnDef<AdminUser>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader
 				column={column}
-				filterOptions={[...vatIdStatusFilterOptions]}
+				filterOptions={vatIdStatusFilterOptions}
 				title="VAT ID"
 			/>
 		),
