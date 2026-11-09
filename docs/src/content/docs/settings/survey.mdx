@@ -75,16 +75,16 @@ anything. Every participant's data stays where it is.
 ### Incomplete Billing details
 
 A participant's Billing details are **Incomplete** when they need an invoice (they asked for
-one, or Invoice required is on) but a field the current form requires is empty.
+one, or Invoice required is on) but a field the current form requires is empty. Admins and
+deactivated accounts never count.
 
 - **Participants** see a banner — *Your billing details are incomplete. Complete them* — on
   their dashboard and profile until the details are complete. It cannot be dismissed. The
   fee page shows the same message, but payment is never blocked.
 - **When you make the form stricter** — switch Invoice required on, or set a field to
   **Required** — the section shows *N participants will have Incomplete Billing details once
-  you save*, with a **See who** link to the users list filtered by Incomplete. The count
-  already uses your unsaved changes; the list reflects them only after you save. Saving is
-  never blocked.
+  you save*. The count already uses your unsaved changes. After saving, filter the users list
+  by Incomplete to see who they are. Saving is never blocked.
 - **Suberus sends no reminder e-mails on its own.** To remind people, open **Users**, filter
   the **Invoice** column by **Incomplete**, select all, and choose **Send email** or **Send
   announcement** from the bulk actions.
@@ -158,7 +158,7 @@ in **Users** are exempt.
 | *(field)* **› State** | **Off** hides the field, **Optional** shows it, **Required** makes it mandatory once an invoice is needed. | All fields start **Off**, so turn on at least the ones your accounting needs. |
 | *(field)* **› Help text** | A hint shown under the field. | Up to 300 characters. Leave empty to show nothing. |
 | **Validate VAT IDs with VIES and national registries** | Looks participants' VAT IDs up in VIES and the Polish, Swiss and Norwegian registers. | On by default. Off: only the format and check digit are verified. |
-| **Organizer's EU VAT ID** | *(Shown while the switch above is on.)* Your own VAT ID, sent to VIES as the requester of every check. VIES then returns a consultation number. Suberus keeps every such number, one per check, as proof that you checked (not shown in the app yet). | Optional, empty by default. Must be an EU or Northern Ireland (`XI`) VAT ID with a correct check digit. VIES checks only its format, not whether it is registered. |
+| **Organizer's EU VAT ID** | *(Shown while the switch above is on.)* Your own VAT ID, sent to VIES as the requester when a saved VAT ID is checked (after registration, a profile save, your edit or **Re-check**). VIES then returns a consultation number. Suberus keeps every such number, one per check, as proof that you checked (not shown in the app yet). The quick check while someone types a VAT ID during registration is sent without it, so it leaves no consultation number. | Optional, empty by default. Must be an EU or Northern Ireland (`XI`) VAT ID with a correct check digit. VIES checks only its format, not whether it is registered. |
 
 ## Survey
 
