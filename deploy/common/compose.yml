@@ -1,0 +1,73 @@
+# Shared services for every Instance on one host. Instances join the external
+# network `suberus-common` and reach them by container name.
+name: suberus-common
+
+x-service: &service
+  restart: unless-stopped
+  networks: [suberus-common]
+
+services:
+  pdf-api:
+    <<: *service
+    image: ${REGISTRY:?}/suberus/pdf-api:${SHARED_TAG:?}
+    container_name: suberus-pdf-api
+    cpus: 4
+    mem_limit: 3g
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8100/')",
+        ]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+  docx-api:
+    <<: *service
+    image: ${REGISTRY:?}/suberus/docx-api:${SHARED_TAG:?}
+    container_name: suberus-docx-api
+    cpus: 4
+    mem_limit: 2g
+    environment:
+      DOCX_API_TOKEN: ${DOCX_API_TOKEN:?}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8101/')",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  planner:
+    <<: *service
+    image: ${REGISTRY:?}/suberus/planner:${SHARED_TAG:?}
+    container_name: suberus-planner
+    cpus: 4
+    # Without it the clustering spawns one thread per host core and the CPU cap throttles them all.
+    environment:
+      OMP_NUM_THREADS: "4"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8110/')",
+        ]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+networks:
+  suberus-common:
+    external: true
