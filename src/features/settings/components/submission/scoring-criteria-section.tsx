@@ -47,6 +47,7 @@ export function ScoringCriteriaSection({ form }: ScoringCriteriaSectionProps) {
 										</form.Field>
 									</div>
 									<Button
+										aria-label="Remove criterion"
 										className="text-destructive hover:bg-destructive/10 shrink-0"
 										onClick={() => arrayField.removeValue(index)}
 										size="icon"

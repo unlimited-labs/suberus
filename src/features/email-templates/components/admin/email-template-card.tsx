@@ -39,7 +39,12 @@ export function EmailTemplateCard({
 					<p className="text-muted-foreground text-sm">{template.subject}</p>
 				</div>
 			</div>
-			<Button onClick={onEdit} size="icon" variant="ghost">
+			<Button
+				aria-label={`Edit ${template.name}`}
+				onClick={onEdit}
+				size="icon"
+				variant="ghost"
+			>
 				<IconEdit className="size-4" />
 			</Button>
 		</div>

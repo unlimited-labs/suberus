@@ -35,7 +35,8 @@ export function UserFeeBadgeCell({
 	const { data: feeTypes } = useSuspenseQuery(feeTypesQueryOptions());
 	const { data: currency } = useSuspenseQuery(feeCurrencyQueryOptions());
 	const [selectedFeeTypeId, setSelectedFeeTypeId] = useState(
-		feeTypes.find((ft) => ft.name === user.fee?.type)?.id ??
+		() =>
+			feeTypes.find((ft) => ft.name === user.fee?.type)?.id ??
 			feeTypes[0]?.id ??
 			"",
 	);

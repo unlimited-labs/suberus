@@ -118,6 +118,7 @@ export function ChairsSection() {
 						>
 							<span className="text-sm">{chairName(c)}</span>
 							<Button
+								aria-label={`Remove ${chairName(c)}`}
 								onClick={() => mutations.removeChair(c.userId)}
 								size="icon-sm"
 								variant="ghost"

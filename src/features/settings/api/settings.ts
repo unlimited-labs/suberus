@@ -460,10 +460,12 @@ export const updateBrandingSettingsFn = createServerFn({ method: "POST" })
 	.middleware([adminOnlyMiddleware])
 	.validator(brandingPatch)
 	.handler(async ({ data }) => {
-		for (const [field, key] of Object.entries(BRANDING_KEYS)) {
-			const value = lookup(data, field);
-			if (value !== undefined) await setSetting(key, value);
-		}
+		await Promise.all(
+			Object.entries(BRANDING_KEYS).flatMap(([field, key]) => {
+				const value = lookup(data, field);
+				return value === undefined ? [] : [setSetting(key, value)];
+			}),
+		);
 		return { success: true };
 	});
 
