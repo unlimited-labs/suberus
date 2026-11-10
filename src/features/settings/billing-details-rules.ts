@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { VatIdCheck } from "@/generated/prisma/client";
 import type { UserRole } from "@/generated/prisma/enums";
 import type { BillingAuditField } from "@/shared/lib/billing-changes";
-import { normalizeVatId } from "@/shared/lib/vat-id";
+import { normalizeVatId, vatIdApplies } from "@/shared/lib/vat-id";
 import {
 	activeBillingFields,
 	BILLING_FIELD_KEYS,
@@ -36,6 +36,7 @@ export const EMPTY_BILLING_FIELDS = {
 
 interface BillingValues extends BillingColumnValues {
 	needInvoice: boolean;
+	country?: string | null;
 }
 
 interface BillingIssue {
@@ -75,7 +76,9 @@ export function billingDetailsIssues(
 	for (const { key, column } of activeBillingFields(config)) {
 		const message = billingFieldError(
 			values[column],
-			needed && config.fields[key].state === "REQUIRED",
+			needed &&
+				config.fields[key].state === "REQUIRED" &&
+				(key !== "vatId" || vatIdApplies(values.country)),
 		);
 		if (message) issues.push({ path: column, message });
 	}

@@ -356,6 +356,20 @@ describe("invoiceState", () => {
 		).toBe("REQUESTED");
 	});
 
+	it("excuses a REQUIRED VAT ID only for a known country without VAT IDs", () => {
+		const simple = withFields({ vatId: "REQUIRED" });
+		const filled = { ...participant, needInvoice: true, billingText: "ACME" };
+		expect(invoiceState({ ...filled, country: "United States" }, simple)).toBe(
+			"REQUESTED",
+		);
+		expect(invoiceState({ ...filled, country: "Poland" }, simple)).toBe(
+			"INCOMPLETE",
+		);
+		expect(invoiceState({ ...filled, country: null }, simple)).toBe(
+			"INCOMPLETE",
+		);
+	});
+
 	it("is NONE for admins and deactivated accounts, even under Invoice required", () => {
 		const required = { ...structured, invoiceRequired: true };
 		expect(

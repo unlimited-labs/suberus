@@ -20,7 +20,7 @@ import {
 	VAT_ID_FIELD,
 } from "@/features/settings/billing-details-schema";
 import { withFieldGroup } from "@/shared/hooks/use-app-form";
-import { normalizeVatId } from "@/shared/lib/vat-id";
+import { normalizeVatId, vatIdApplies } from "@/shared/lib/vat-id";
 import { BuyerSummaryCard } from "./buyer-summary-card";
 import { PreviousBillingCard } from "./previous-billing-card";
 import { PreviousFormValues } from "./previous-form-values";
@@ -151,7 +151,13 @@ export const BillingFieldsGroup = withFieldGroup({
 		const isAdmin = admin === true;
 		const view = billingView(config, isAdmin, values.needInvoice);
 		const countryIsRequired = countryRequired === true;
-		const vatRow = catalogueRow(config, VAT_ID_FIELD, view.required);
+		const vatRowFor = (country: string) =>
+			catalogueRow(
+				config,
+				VAT_ID_FIELD,
+				view.required && vatIdApplies(country),
+			);
+		const vatRow = vatRowFor(values.country);
 		const shownCheck = values.vatId === checkedVatId ? vatCheck : undefined;
 		const applyFill = (fill: BillingColumnValues) => {
 			for (const column of FILLABLE_BILLING_COLUMNS) {
@@ -254,12 +260,14 @@ export const BillingFieldsGroup = withFieldGroup({
 							name="vatId"
 							validators={{
 								onChangeListenTo: ["country"],
-								onChange: ({ value }) =>
-									vatIdError(
+								onChange: ({ value }) => {
+									const country = group.getFieldValue("country");
+									return vatIdError(
 										value,
-										vatRow.required,
-										group.getFieldValue("country"),
-									),
+										vatRowFor(country).required,
+										country,
+									);
+								},
 							}}
 						>
 							{(field) => (

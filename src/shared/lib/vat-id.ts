@@ -109,6 +109,12 @@ function canonical(prefix: string, body: string) {
 	return { value: prefix + body, checked: body };
 }
 
+/** Unknown country stays strict: a missing VAT ID is excused only where VAT IDs don't exist. */
+export function vatIdApplies(countryName: string | null | undefined): boolean {
+	const iso = countryName ? countryNameToCode.get(countryName) : undefined;
+	return !iso || lookup(CHECKSUM_VALIDATORS, withAlias(iso)) !== undefined;
+}
+
 export function normalizeVatId(
 	raw: string,
 	countryName?: string | null,
