@@ -47,8 +47,11 @@
         "rules": ["react-doctor/prefer-dynamic-import"],
       },
       {
+        // Upstream mapcn primitive: maplibre objects are built once, later prop changes
+        // are applied by dedicated sync effects (setStyle/setData/setPaintProperty).
         "files": ["src/shared/ui/map.tsx"],
         "rules": [
+          "react-doctor/exhaustive-deps",
           "react-doctor/react-compiler-no-manual-memoization",
           "react-doctor/effect-needs-cleanup",
           "react-doctor/no-unguarded-browser-global-in-render-or-hook-init",
@@ -68,7 +71,12 @@
         "rules": ["react-doctor/no-derived-useState"],
       },
       {
+        // Identity-less lists: text runs and pages are positional, criteria rows are
+        // controlled TanStack Form array fields with no id.
         "files": [
+          "src/features/planner/components/print-export/document-blocks.tsx",
+          "src/features/planner/components/print-export/print-preview.tsx",
+          "src/features/settings/components/submission/scoring-criteria-section.tsx",
           "src/shared/components/diff/text-diff-view.tsx",
           "src/features/submissions/components/diff/side-by-side-diff-view.tsx",
           "src/features/submissions/components/editor-decision-card.tsx",
@@ -111,10 +119,12 @@
         "rules": ["react-doctor/no-loading-flag-reset-outside-finally"],
       },
       {
-        // One sets local jobId, the other sends an e-mail — no cached data to invalidate.
+        // Local jobId, an e-mail send, and a read-only LLM split fed into the form —
+        // no cached data to invalidate.
         "files": [
           "src/features/planner/components/hooks/use-auto-plan-state.ts",
           "src/features/users/components/use-user-detail-mutations.ts",
+          "src/features/settings/components/billing-details/previous-billing-card.tsx",
         ],
         "rules": ["react-doctor/query-mutation-missing-invalidation"],
       },
@@ -164,8 +174,16 @@
       {
         // Sequential by design: one shared upload mutation, ordered bootstrap steps,
         // worker/queue registration order, intra-transaction upserts racing on unique
-        // constraints, SMTP pacing, and bulk state-machine transitions.
+        // constraints, SMTP pacing, and bulk state-machine transitions; pg-boss
+        // handlers that fail the batch on the first error; one decompressed ZIP entry
+        // in memory at a time; CPU-bound QR rendering; uncapped S3 copy fan-out.
         "files": [
+          "src/features/announcements/server/workers/publish.ts",
+          "src/features/settings/server/workers/vat-id.ts",
+          "src/features/documents/server/bulk-upload.ts",
+          "src/features/planner/server/qr-codes.ts",
+          "src/features/bulk-email/server/attachments.ts",
+          "src/features/planner/server/invited.ts",
           "src/features/bulk-email/components/use-campaign-attachments.ts",
           "src/features/documents/server/workers/generate.ts",
           "src/features/extraction/server/workers/extraction.ts",
@@ -208,6 +226,42 @@
         // state updaters — React never re-runs them, so setState inside is fine.
         "files": ["src/shared/components/sheet-wizard/use-sheet-wizard.ts"],
         "rules": ["react-doctor/no-impure-state-updater"],
+      },
+      {
+        // Interactive transaction: every query runs on one connection, so nothing overlaps.
+        "files": ["src/features/submissions/server/submissions.ts"],
+        "rules": ["react-doctor/server-sequential-independent-await"],
+      },
+      {
+        // Guarded by "window" in globalThis, and nothing renders while the session is
+        // pending (true on SSR and first client render) — no hydration divergence.
+        "files": ["src/routes/consent.tsx"],
+        "rules": [
+          "react-doctor/no-unguarded-browser-global-in-render-or-hook-init",
+        ],
+      },
+      {
+        // The new Date() fallback is unreachable: activeDay is always a valid index
+        // when days is non-empty.
+        "files": [
+          "src/features/planner/components/public-program/program-shell.tsx",
+        ],
+        "rules": ["react-doctor/rendering-hydration-mismatch-time"],
+      },
+      {
+        // The participants fetch runs only after the auth/visibility redirect gate.
+        "files": ["src/routes/program/participants.tsx"],
+        "rules": ["react-doctor/tanstack-start-loader-parallel-fetch"],
+      },
+      {
+        // filterValue is the handful of selected filter options, not a data-sized list.
+        "files": ["src/features/users/components/columns.tsx"],
+        "rules": ["react-doctor/js-set-map-lookups"],
+      },
+      {
+        // Cookie and matchMedia have no SSR equivalent; read once after mount on purpose.
+        "files": ["src/routes/_auth/login.tsx"],
+        "rules": ["react-hooks-js/set-state-in-effect"],
       },
     ],
   },
