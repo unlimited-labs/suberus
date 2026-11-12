@@ -14,7 +14,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 IMAGE=suberus-docx-api-test
-docker build --target test -t "$IMAGE" .
+docker build --target test --build-context admission=../common/admission -t "$IMAGE" .
 
 if [ "${1:-}" = "gen" ]; then
   exec docker run --rm -v "$PWD:/app" -w /app "$IMAGE" \

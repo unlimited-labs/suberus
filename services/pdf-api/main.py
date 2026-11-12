@@ -31,6 +31,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from admission import Admission, AdmissionMiddleware
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import EasyOcrOptions, PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
@@ -92,7 +93,9 @@ def get_image_converter() -> DocumentConverter:
     return _image_converter
 
 
+admission = Admission(default_slots=1)
 app = FastAPI()
+app.add_middleware(AdmissionMiddleware, admission=admission)
 v1 = APIRouter(prefix="/v1")
 
 
@@ -107,13 +110,10 @@ async def _to_temp(file: UploadFile) -> str:
 
 
 # Conversion is CPU-bound and blocking: run it off the event loop so the health probe
-# still answers, serialised because DocumentConverter isn't documented as thread-safe.
-_convert_lock = asyncio.Lock()
-
-
+# still answers. Serialised by the admission slot (ADMISSION_SLOTS=1): DocumentConverter
+# isn't documented as thread-safe.
 async def _convert(conv: DocumentConverter, path: str):
-    async with _convert_lock:
-        return (await asyncio.to_thread(conv.convert, path)).document
+    return (await asyncio.to_thread(conv.convert, path)).document
 
 
 async def convert_upload(file: UploadFile):
@@ -128,7 +128,7 @@ async def convert_upload(file: UploadFile):
 def health():
     # The fingerprint fields feed the Node artifact cache pre-check; they MUST be
     # byte-identical to the bundle meta (see bundle_meta.fingerprint/build_meta).
-    return {"status": "healthy", **bundle_meta.fingerprint()}
+    return {"status": "healthy", **bundle_meta.fingerprint(), "queue": admission.stats()}
 
 
 @v1.post("/markdown")

@@ -1,0 +1,24 @@
+[project]
+name = "suberus-admission"
+version = "0.1.0"
+description = "Admission queue (ASGI middleware) shared by pdf-api, docx-api and planner-api"
+requires-python = ">=3.12"
+dependencies = ["starlette"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "admission"
+module-root = ""
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["F", "I", "C901"]

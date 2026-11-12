@@ -10,7 +10,11 @@ dependencies = [
     "httptools",
     "numpy>=2.0",
     "k-means-constrained>=0.7.5",
+    "suberus-admission",
 ]
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+suberus-admission = { path = "../common/admission" }

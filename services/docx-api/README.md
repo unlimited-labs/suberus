@@ -19,7 +19,8 @@ not sanitize** — sanitization must run in the Node worker (Phase 0 finding).
 ## Build & run
 
 ```bash
-docker build -t suberus-docx-api services/docx-api          # ~pandoc + libreoffice, large image
+docker build --build-context admission=services/common/admission \
+  -t suberus-docx-api services/docx-api                     # ~pandoc + libreoffice, large image
 docker run --rm -p 8101:8101 suberus-docx-api
 # or via compose:
 docker compose up -d docx-api

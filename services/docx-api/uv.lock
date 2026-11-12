@@ -1215,6 +1215,20 @@ wheels = [
 ]
 
 [[package]]
+name = "suberus-admission"
+version = "0.1.0"
+source = { directory = "../common/admission" }
+dependencies = [
+    { name = "starlette" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "starlette" }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest" }]
+
+[[package]]
 name = "suberus-docx-api"
 version = "0.1.0"
 source = { virtual = "." }
@@ -1227,6 +1241,7 @@ dependencies = [
     { name = "pyhanko", extra = ["image-support"] },
     { name = "python-multipart" },
     { name = "qrcode" },
+    { name = "suberus-admission" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "xmldiff" },
 ]
@@ -1255,6 +1270,7 @@ requires-dist = [
     { name = "qrcode", specifier = "==8.*" },
     { name = "radon", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
+    { name = "suberus-admission", directory = "../common/admission" },
     { name = "uvicorn", extras = ["standard"], specifier = "==0.54.*" },
     { name = "xmldiff", specifier = "==3.0.*" },
 ]

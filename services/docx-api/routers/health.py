@@ -18,4 +18,5 @@ def health():
         "xmldiffVersion": xmldiff_version(),
         "schemaVersion": config.SCHEMA_VERSION,
         "normalizerConfigHash": config.NORMALIZER_CONFIG_HASH,
+        "queue": config.ADMISSION.stats(),
     }

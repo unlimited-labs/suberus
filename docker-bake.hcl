@@ -79,6 +79,7 @@ target "migrate" {
 target "pdf-api" {
   inherits   = ["_labels"]
   context    = "./services/pdf-api"
+  contexts   = { admission = "./services/common/admission" }
   dockerfile = "Dockerfile"
   tags = concat([
     "${REGISTRY}/suberus/pdf-api:${TAG}",
@@ -91,6 +92,7 @@ target "pdf-api" {
 target "docx-api" {
   inherits   = ["_labels"]
   context    = "./services/docx-api"
+  contexts   = { admission = "./services/common/admission" }
   dockerfile = "Dockerfile"
   target     = "runtime"
   tags = concat([
@@ -104,6 +106,7 @@ target "docx-api" {
 target "planner" {
   inherits   = ["_labels"]
   context    = "./services/planner-api"
+  contexts   = { admission = "./services/common/admission" }
   dockerfile = "Dockerfile"
   tags = concat([
     "${REGISTRY}/suberus/planner:${TAG}",

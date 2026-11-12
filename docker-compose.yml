@@ -63,7 +63,10 @@ services:
     networks:
       - suberus-network
   pdf-api:
-    build: ./services/pdf-api
+    build:
+      context: ./services/pdf-api
+      additional_contexts:
+        admission: ./services/common/admission
     container_name: suberus-pdf-api
     restart: unless-stopped
     ports:
@@ -85,6 +88,8 @@ services:
   docx-api:
     build:
       context: ./services/docx-api
+      additional_contexts:
+        admission: ./services/common/admission
       target: runtime
     container_name: suberus-docx-api
     restart: unless-stopped
@@ -108,7 +113,10 @@ services:
     networks:
       - suberus-network
   planner:
-    build: ./services/planner-api
+    build:
+      context: ./services/planner-api
+      additional_contexts:
+        admission: ./services/common/admission
     container_name: suberus-planner
     restart: unless-stopped
     ports:

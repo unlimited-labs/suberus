@@ -9,6 +9,8 @@ import hashlib
 import json
 import os
 
+from admission import Admission
+
 from core.versions import libreoffice_version
 
 # Hard ceiling on an accepted upload (anti-DoS: zip-bomb / pathological DOCX). Not
@@ -24,6 +26,9 @@ SOFFICE_TIMEOUT_S = int(os.getenv("DOCX_API_SOFFICE_TIMEOUT_S", "90"))
 # When unset (local dev / E2E) auth is disabled; set it in any shared/prod env and
 # the Node clients send a matching bearer token.
 DOCX_API_TOKEN = os.getenv("DOCX_API_TOKEN")
+
+# Caps concurrent pandoc/LibreOffice work below AnyIO's 40 threadpool threads.
+ADMISSION = Admission(default_slots=4)
 
 # A DOCX is a zip; a small upload can inflate to gigabytes inside pandoc/LibreOffice
 # (decompression bomb). The input-byte cap above does not bound the *uncompressed*

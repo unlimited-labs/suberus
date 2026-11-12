@@ -17,11 +17,14 @@ import os
 from typing import Annotated
 
 import numpy as np
+from admission import Admission, AdmissionMiddleware
 from fastapi import APIRouter, FastAPI, HTTPException
 from k_means_constrained import KMeansConstrained
 from pydantic import BaseModel, Field
 
+admission = Admission(default_slots=1)
 app = FastAPI(title="Suberus Planner API")
+app.add_middleware(AdmissionMiddleware, admission=admission)
 v1 = APIRouter(prefix="/v1")
 
 
@@ -49,8 +52,8 @@ class ClusterResponse(BaseModel):
 
 
 @app.get("/")
-def health() -> dict[str, str]:
-    return {"status": "healthy"}
+def health() -> dict:
+    return {"status": "healthy", "queue": admission.stats()}
 
 
 @v1.post("/cluster", response_model=ClusterResponse)

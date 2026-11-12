@@ -2151,6 +2151,20 @@ wheels = [
 ]
 
 [[package]]
+name = "suberus-admission"
+version = "0.1.0"
+source = { directory = "../common/admission" }
+dependencies = [
+    { name = "starlette" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "starlette" }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest" }]
+
+[[package]]
 name = "suberus-pdf-api"
 version = "0.1.0"
 source = { virtual = "." }
@@ -2159,6 +2173,7 @@ dependencies = [
     { name = "easyocr" },
     { name = "fastapi" },
     { name = "python-multipart" },
+    { name = "suberus-admission" },
     { name = "torch", version = "2.15.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.15.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
     { name = "torchvision", version = "0.29.2", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
@@ -2172,6 +2187,7 @@ requires-dist = [
     { name = "easyocr" },
     { name = "fastapi" },
     { name = "python-multipart" },
+    { name = "suberus-admission", directory = "../common/admission" },
     { name = "torch", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torchvision", index = "https://download.pytorch.org/whl/cpu" },
     { name = "uvicorn", extras = ["standard"] },

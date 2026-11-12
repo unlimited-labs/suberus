@@ -20,11 +20,14 @@ change can ship /v2 while older app deploys keep calling /v1.
 
 import os
 
+from admission import AdmissionMiddleware
 from fastapi import FastAPI
 
+import config
 from routers import diff, editor, health, idml, render, signing
 
 app = FastAPI()
+app.add_middleware(AdmissionMiddleware, admission=config.ADMISSION)
 app.include_router(health.router)
 app.include_router(editor.router)
 app.include_router(diff.router)
