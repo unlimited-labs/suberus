@@ -15,6 +15,7 @@ import {
 	type PrintProgram,
 } from "@/features/planner/print/print-program-rules";
 import { buildXlsxSheets } from "@/features/planner/print/print-xlsx-rules";
+import { SharedServiceBusyError } from "@/shared/server/sidecar-http";
 import { isIdmlAvailable, renderIdml } from "./print-idml-client";
 import { loadPrintLogo, loadPrintSource } from "./print-program";
 import { renderOffThread } from "./print-render";
@@ -34,7 +35,7 @@ interface PrintFile {
 export class PrintExportError extends Error {
 	constructor(
 		message: string,
-		readonly status: 422 | 501,
+		readonly status: 422 | 501 | 503,
 	) {
 		super(message);
 	}
@@ -54,7 +55,13 @@ const RENDERERS = {
 		}),
 	idml: async (program, options, logo) => {
 		if (!isIdmlAvailable()) throw new PrintExportError(IDML_UNAVAILABLE, 501);
-		return renderIdml(buildPrintDocument(program, options, logo));
+		try {
+			return await renderIdml(buildPrintDocument(program, options, logo));
+		} catch (e) {
+			if (e instanceof SharedServiceBusyError)
+				throw new PrintExportError(e.message, 503);
+			throw e;
+		}
 	},
 } satisfies Record<
 	PrintFormat,

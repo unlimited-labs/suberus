@@ -22,6 +22,7 @@ export async function renderDocxToPdf(
 		{ method: "POST", body: form, headers: docxApiAuthHeaders() },
 		"docx-api render-pdf",
 		RENDER_PDF_TIMEOUT_MS,
+		"batch",
 	);
 	return Buffer.from(await res.arrayBuffer());
 }

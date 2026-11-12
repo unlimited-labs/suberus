@@ -15,6 +15,7 @@ export async function sidecarHealth<T>(base: string, name: string): Promise<T> {
 		{},
 		`${name} health`,
 		SIDECAR_TIMEOUT_MS.health,
+		"interactive",
 	);
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as T;
@@ -35,6 +36,7 @@ export async function sidecarNormalize(
 		{ method: "POST", body: form, headers },
 		errorPrefix,
 		SIDECAR_TIMEOUT_MS.normalize,
+		"batch",
 	);
 	return Buffer.from(await res.arrayBuffer());
 }

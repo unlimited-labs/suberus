@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockEnv } = vi.hoisted(() => ({
-	mockEnv: { PDF_API_URL: undefined as string | undefined },
+	mockEnv: {
+		PDF_API_URL: undefined as string | undefined,
+		APP_BASE_URL: "https://kpt.suberus.test",
+	},
 }));
 vi.mock("@/env", () => ({ env: mockEnv }));
 
@@ -104,7 +107,13 @@ describe("getPdfApiMarkdown", () => {
 
 		const call = fetchMock.mock.calls.find(([url]) => isMarkdown(url));
 		expect(call?.[0]).toBe("http://pdf-api.test/v1/markdown");
-		expect(call?.[1]).toMatchObject({ method: "POST" });
+		expect(call?.[1]).toMatchObject({
+			method: "POST",
+			headers: {
+				"X-Suberus-Instance": "kpt.suberus.test",
+				"X-Suberus-Priority": "interactive",
+			},
+		});
 		expect(call?.[1].body).toBeInstanceOf(FormData);
 	});
 

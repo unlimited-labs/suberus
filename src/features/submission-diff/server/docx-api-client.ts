@@ -101,6 +101,7 @@ export async function diffHtmlPair(
 		},
 		"docx-api diff",
 		SIDECAR_TIMEOUT_MS.diff,
+		"interactive",
 	);
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	const data = (await res.json()) as { redline: string };

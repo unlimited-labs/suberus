@@ -65,3 +65,11 @@ _Avoid_: Tenant, engine, silnik, site
 **Shared service**:
 A stateless helper (document conversion, PDF extraction, session clustering) that runs once and serves every Instance. It keeps no conference data between requests.
 _Avoid_: Sidecar (they no longer sit beside one Instance), common service
+
+**Interactive work**:
+Work on a Shared service whose result a person is waiting for on screen (a redline, an export, an extraction filling a form, an auto-plan). It goes ahead of Background work.
+_Avoid_: Sync, realtime, priority job
+
+**Background work**:
+Work on a Shared service that nobody is watching (generating and signing documents, preparing version diffs). It may be turned away when the service is busy and retried later.
+_Avoid_: Batch job (as a domain word), async

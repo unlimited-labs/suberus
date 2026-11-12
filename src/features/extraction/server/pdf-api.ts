@@ -10,6 +10,7 @@
  */
 import { env } from "@/env";
 import { createHealthCache } from "@/shared/server/health-cache";
+import { sharedServiceHeaders } from "@/shared/server/sidecar-http";
 
 export interface PdfApiHealthResult {
 	status: "healthy" | "unavailable";
@@ -85,6 +86,7 @@ export async function getPdfApiMarkdown(
 		const response = await fetch(`${baseUrl()}/v1/markdown`, {
 			method: "POST",
 			body: form,
+			headers: sharedServiceHeaders("interactive"),
 			signal: AbortSignal.timeout(120_000),
 		});
 

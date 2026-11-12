@@ -3,7 +3,11 @@
 // never request-derived — not an SSRF surface.
 import { env } from "@/env";
 import { docxApiAuthHeaders } from "@/shared/server/docx-api-auth";
-import { requestOrThrow, sidecarBase } from "@/shared/server/sidecar-http";
+import {
+	requestOrThrow,
+	type SharedServicePriority,
+	sidecarBase,
+} from "@/shared/server/sidecar-http";
 
 const GEN_TIMEOUT_MS = 30_000;
 const SIGN_TIMEOUT_MS = 60_000;
@@ -12,12 +16,14 @@ function post(
 	path: string,
 	body: BodyInit,
 	timeoutMs: number,
+	priority: SharedServicePriority,
 ): Promise<Response> {
 	return requestOrThrow(
 		`${sidecarBase(env.DOCX_API_URL, "DOCX_API_URL")}${path}`,
 		{ method: "POST", body, headers: docxApiAuthHeaders() },
 		`docx-api ${path}`,
 		timeoutMs,
+		priority,
 	);
 }
 
@@ -45,6 +51,7 @@ export async function generateCertificate(opts: {
 		"/v1/gen-cert",
 		new Blob([JSON.stringify(opts)], { type: "application/json" }),
 		GEN_TIMEOUT_MS,
+		"interactive",
 	);
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	const data = (await res.json()) as {
@@ -68,7 +75,12 @@ export async function inspectCertificate(
 	const form = new FormData();
 	form.append("p12", new Blob([new Uint8Array(p12)]), "cert.p12");
 	form.append("password", password);
-	const res = await post("/v1/inspect-cert", form, GEN_TIMEOUT_MS);
+	const res = await post(
+		"/v1/inspect-cert",
+		form,
+		GEN_TIMEOUT_MS,
+		"interactive",
+	);
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as { metadata: CertMetadata; certPem: string };
 }
@@ -97,7 +109,7 @@ export async function signPdf(pdf: Buffer, opts: SignOptions): Promise<Buffer> {
 	form.append("timestampUrl", opts.timestampUrl ?? "");
 	form.append("certify", opts.certify ? "true" : "false");
 	form.append("visible", String(opts.visible));
-	const res = await post("/v1/sign-pdf", form, SIGN_TIMEOUT_MS);
+	const res = await post("/v1/sign-pdf", form, SIGN_TIMEOUT_MS, "batch");
 	return Buffer.from(await res.arrayBuffer());
 }
 
@@ -117,7 +129,12 @@ export interface VerifyResult {
 export async function verifyPdf(pdf: Buffer): Promise<VerifyResult> {
 	const form = new FormData();
 	form.append("file", new Blob([new Uint8Array(pdf)]), "document.pdf");
-	const res = await post("/v1/verify-pdf", form, SIGN_TIMEOUT_MS);
+	const res = await post(
+		"/v1/verify-pdf",
+		form,
+		SIGN_TIMEOUT_MS,
+		"interactive",
+	);
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as VerifyResult;
 }

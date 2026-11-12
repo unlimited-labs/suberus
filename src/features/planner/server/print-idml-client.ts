@@ -21,6 +21,7 @@ export async function renderIdml(doc: PrintDocument): Promise<Buffer> {
 		},
 		"docx-api idml",
 		IDML_TIMEOUT_MS,
+		"interactive",
 	);
 	return Buffer.from(await res.arrayBuffer());
 }

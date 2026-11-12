@@ -53,10 +53,19 @@ export function getBoss(): Promise<PgBoss> {
 export interface QueueSendOptions {
 	retryLimit?: number;
 	retryDelay?: number;
+	retryBackoff?: boolean;
+	retryDelayMax?: number;
 	expireInSeconds?: number;
 	/** Compared against the DB clock, not ours. */
 	startAfter?: Date;
 }
+
+// A Shared service answers 503 when busy; background jobs back off and retry instead of failing.
+export const SHARED_SERVICE_BATCH_RETRY = {
+	retryLimit: 10,
+	retryBackoff: true,
+	retryDelayMax: 600,
+} as const;
 
 export async function ensureQueueAndSend<Data extends object>(
 	name: string,

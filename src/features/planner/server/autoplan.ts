@@ -5,6 +5,7 @@ import { logger } from "@/logger.ts";
 import { prisma } from "@/shared/server/db.server";
 import { setJobCurrent, setJobStage } from "@/shared/server/job-progress";
 import { generateWithLlm } from "@/shared/server/llm";
+import { sharedServiceHeaders } from "@/shared/server/sidecar-http";
 import { assignClustersToSessions } from "./autoplan-assign";
 import {
 	type AutoPlanProposal,
@@ -75,7 +76,10 @@ async function callClusterApi(
 	if (!env.PLANNER_API_URL) throw new Error("PLANNER_API_URL not configured");
 	const res = await fetch(`${env.PLANNER_API_URL}/v1/cluster`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: {
+			"Content-Type": "application/json",
+			...sharedServiceHeaders("interactive"),
+		},
 		body: JSON.stringify({
 			items,
 			session_count: sessionCount,

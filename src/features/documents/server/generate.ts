@@ -10,7 +10,10 @@ import { prisma } from "@/shared/server/db.server";
 import { sendEmail } from "@/shared/server/email";
 import { sanitizeFileName } from "@/shared/server/file-names";
 import { signPdf } from "@/shared/server/pdf-signing-client";
-import { ensureQueueAndSend } from "@/shared/server/queue";
+import {
+	ensureQueueAndSend,
+	SHARED_SERVICE_BATCH_RETRY,
+} from "@/shared/server/queue";
 import { fileExists, getFileBuffer, uploadFile } from "@/shared/server/storage";
 
 export const DOCUMENT_GENERATE_QUEUE = "document-generate";
@@ -20,7 +23,7 @@ export function uploadedDocumentKey(documentId: string): string {
 }
 
 export const ENQUEUE_OPTS = {
-	retryLimit: 2,
+	...SHARED_SERVICE_BATCH_RETRY,
 	retryDelay: 30,
 	expireInSeconds: 600,
 };

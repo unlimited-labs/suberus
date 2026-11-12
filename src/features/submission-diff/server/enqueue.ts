@@ -1,4 +1,7 @@
-import { ensureQueueAndSend } from "@/shared/server/queue";
+import {
+	ensureQueueAndSend,
+	SHARED_SERVICE_BATCH_RETRY,
+} from "@/shared/server/queue";
 import type { NormalizeInput } from "./normalize-version";
 
 // Kept in its own module (NOT the worker module): the worker is imported by the
@@ -12,7 +15,7 @@ export async function enqueueVersionNormalize(
 	// expireInSeconds lets pg-boss reclaim a handler that hung past the sidecar
 	// timeout (defence-in-depth with the AbortSignal in http.ts) and retry it.
 	return ensureQueueAndSend(SUBMISSION_DIFF_QUEUE, input, {
-		retryLimit: 2,
+		...SHARED_SERVICE_BATCH_RETRY,
 		expireInSeconds: 300,
 	});
 }
