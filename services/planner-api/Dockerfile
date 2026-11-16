@@ -1,4 +1,4 @@
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
