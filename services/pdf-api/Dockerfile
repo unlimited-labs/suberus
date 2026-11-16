@@ -5,7 +5,7 @@ FROM scratch AS pandoc
 ARG PANDOC_VERSION=3.5
 ADD https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-1-amd64.deb /pandoc.deb
 
-FROM python:3.14-slim AS base
+FROM python:3.15-slim AS base
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
