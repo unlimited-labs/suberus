@@ -115,7 +115,11 @@ export async function extractFromPdf(
 
 	await onStage?.("pdf-api", 2);
 	const pdfApiMd = await getPdfApiMarkdown(buffer, fileName);
-	if (!pdfApiMd) return {};
+	if (!pdfApiMd) {
+		throw new Error(
+			"PDF conversion failed or the service is busy. Please try again in a moment.",
+		);
+	}
 
 	await onStage?.("ai", 2);
 	const llmInput = cutAtAbstract(pdfApiMd);
