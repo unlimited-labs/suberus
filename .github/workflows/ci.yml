@@ -47,3 +47,34 @@ jobs:
           AUTH_SECRET: ci-build-secret-not-used-at-runtime-0000
 
       - run: pnpm test
+
+  # Shared services serve every Instance from one version: /v1 must stay additive-only.
+  services:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.14"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: services/**/uv.lock
+
+      - run: sudo apt-get update -q && sudo apt-get install -yq --no-install-recommends pandoc
+
+      - working-directory: services/common/admission
+        run: uv run --frozen pytest -q
+
+      - working-directory: services/pdf-api
+        run: uv run --frozen --with pytest pytest -q
+
+      - name: OpenAPI snapshots match the code
+        run: |
+          services/openapi-snapshot.sh
+          git diff --exit-code -- 'services/*/openapi.json'
+
+      - name: No breaking /v1 change
+        run: services/openapi-breaking.sh "${{ github.event.pull_request.base.sha || github.event.before }}"

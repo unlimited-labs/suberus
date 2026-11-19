@@ -14,7 +14,7 @@ Stateless. Expects embeddings as input (TS side owns pgvector cache).
 
 import math
 import os
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 from admission import Admission, AdmissionMiddleware
@@ -44,6 +44,11 @@ class Cluster(BaseModel):
     member_ids: list[str]
 
 
+class Health(BaseModel):
+    status: str
+    queue: dict[str, Any]
+
+
 class ClusterResponse(BaseModel):
     clusters: list[Cluster]
     target_per_session: int
@@ -52,8 +57,8 @@ class ClusterResponse(BaseModel):
 
 
 @app.get("/")
-def health() -> dict:
-    return {"status": "healthy", "queue": admission.stats()}
+def health() -> Health:
+    return Health(status="healthy", queue=admission.stats())
 
 
 @v1.post("/cluster", response_model=ClusterResponse)

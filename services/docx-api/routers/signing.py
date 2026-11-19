@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 import signing
 from config import MAX_NORMALIZE_BYTES
+from core.openapi import binary
 from core.security import require_token
 
 router = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
@@ -24,7 +25,38 @@ class GenCertRequest(BaseModel):
     validDays: int = 1825  # ~5 years
 
 
-@router.post("/gen-cert")
+class CertMetadata(BaseModel):
+    subject: str
+    commonName: str
+    org: str
+    fingerprintSha256: str
+    validFrom: str
+    validUntil: str
+    serial: str
+
+
+class InspectCertResponse(BaseModel):
+    metadata: CertMetadata
+    certPem: str
+
+
+class GenCertResponse(InspectCertResponse):
+    p12Base64: str
+    password: str
+
+
+class VerifyResponse(BaseModel):
+    signed: bool
+    valid: bool
+    intact: bool
+    reason: str
+    signerSubject: str | None = None
+    signerFingerprintSha256: str | None = None
+    signedAt: str | None = None
+    timestamped: bool | None = None
+
+
+@router.post("/gen-cert", response_model=GenCertResponse)
 def gen_cert(req: GenCertRequest):
     """Generate a self-signed signing certificate as a password-protected P12."""
     if not req.commonName.strip():
@@ -40,7 +72,7 @@ def gen_cert(req: GenCertRequest):
     }
 
 
-@router.post("/inspect-cert")
+@router.post("/inspect-cert", response_model=InspectCertResponse)
 async def inspect_cert(p12: UploadFile, password: str = Form("")):
     """Validate an uploaded P12 and return its certificate metadata + public PEM."""
     data = await p12.read()
@@ -53,7 +85,7 @@ async def inspect_cert(p12: UploadFile, password: str = Form("")):
     return {"metadata": metadata, "certPem": cert_pem}
 
 
-@router.post("/sign-pdf")
+@router.post("/sign-pdf", response_class=Response, responses=binary("application/pdf"))
 async def sign_pdf(
     file: UploadFile,
     p12: UploadFile = File(...),
@@ -102,7 +134,7 @@ async def sign_pdf(
     )
 
 
-@router.post("/verify-pdf")
+@router.post("/verify-pdf", response_model=VerifyResponse, response_model_exclude_unset=True)
 async def verify_pdf(file: UploadFile):
     """Verify a PDF's signature (trust anchor = the embedded signer cert)."""
     pdf_bytes = await file.read()

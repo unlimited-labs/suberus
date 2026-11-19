@@ -30,6 +30,7 @@ import re
 import tempfile
 import zipfile
 from pathlib import Path
+from typing import Any
 
 from admission import Admission, AdmissionMiddleware
 from docling.datamodel.base_models import InputFormat
@@ -37,6 +38,7 @@ from docling.datamodel.pipeline_options import EasyOcrOptions, PdfPipelineOption
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling_core.types.doc import ImageRefMode
 from fastapi import APIRouter, FastAPI, HTTPException, Response, UploadFile
+from pydantic import BaseModel
 
 import bundle_meta
 
@@ -99,6 +101,19 @@ app.add_middleware(AdmissionMiddleware, admission=admission)
 v1 = APIRouter(prefix="/v1")
 
 
+class Health(BaseModel):
+    status: str
+    pandocVersion: str | None
+    doclingVersion: str | None
+    normalizerConfigHash: str
+    schemaVersion: int
+    queue: dict[str, Any]
+
+
+class MarkdownResponse(BaseModel):
+    markdown: str
+
+
 async def _to_temp(file: UploadFile) -> str:
     suffix = Path(file.filename or "doc.bin").suffix
     contents = await file.read()
@@ -124,14 +139,14 @@ async def convert_upload(file: UploadFile):
         Path(tmp_path).unlink(missing_ok=True)
 
 
-@app.get("/")
+@app.get("/", response_model=Health)
 def health():
     # The fingerprint fields feed the Node artifact cache pre-check; they MUST be
     # byte-identical to the bundle meta (see bundle_meta.fingerprint/build_meta).
     return {"status": "healthy", **bundle_meta.fingerprint(), "queue": admission.stats()}
 
 
-@v1.post("/markdown")
+@v1.post("/markdown", response_model=MarkdownResponse)
 async def to_markdown(file: UploadFile):
     doc = await convert_upload(file)
     return {"markdown": doc.export_to_markdown()}
@@ -152,7 +167,11 @@ async def to_doctags(file: UploadFile):
 _DATA_URI_RE = re.compile(r"data:image/[^;]+;base64,([A-Za-z0-9+/=]+)")
 
 
-@v1.post("/bundle")
+@v1.post(
+    "/bundle",
+    response_class=Response,
+    responses={200: {"content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}}}},
+)
 async def to_bundle(file: UploadFile):
     """Convert WITH figure rendering and return a zip bundle for the diff pipeline."""
     tmp_path = await _to_temp(file)

@@ -1,0 +1,1551 @@
+{
+  "components": {
+    "schemas": {
+      "Body_ast_v1_ast_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_ast_v1_ast_post",
+        "type": "object"
+      },
+      "Body_inspect_cert_v1_inspect_cert_post": {
+        "properties": {
+          "p12": {
+            "contentMediaType": "application/octet-stream",
+            "title": "P12",
+            "type": "string"
+          },
+          "password": {
+            "default": "",
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "p12"
+        ],
+        "title": "Body_inspect_cert_v1_inspect_cert_post",
+        "type": "object"
+      },
+      "Body_normalize_endpoint_v1_normalize_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_normalize_endpoint_v1_normalize_post",
+        "type": "object"
+      },
+      "Body_render_pdf_v1_render_pdf_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_render_pdf_v1_render_pdf_post",
+        "type": "object"
+      },
+      "Body_sign_pdf_v1_sign_pdf_post": {
+        "properties": {
+          "certify": {
+            "default": "false",
+            "title": "Certify",
+            "type": "string"
+          },
+          "corner": {
+            "default": "bottom-right",
+            "title": "Corner",
+            "type": "string"
+          },
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          },
+          "p12": {
+            "contentMediaType": "application/octet-stream",
+            "title": "P12",
+            "type": "string"
+          },
+          "password": {
+            "default": "",
+            "title": "Password",
+            "type": "string"
+          },
+          "qrUrl": {
+            "default": "",
+            "title": "Qrurl",
+            "type": "string"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "timestampUrl": {
+            "default": "",
+            "title": "Timestampurl",
+            "type": "string"
+          },
+          "visible": {
+            "default": "true",
+            "title": "Visible",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "p12"
+        ],
+        "title": "Body_sign_pdf_v1_sign_pdf_post",
+        "type": "object"
+      },
+      "Body_verify_pdf_v1_verify_pdf_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_verify_pdf_v1_verify_pdf_post",
+        "type": "object"
+      },
+      "CertMetadata": {
+        "properties": {
+          "commonName": {
+            "title": "Commonname",
+            "type": "string"
+          },
+          "fingerprintSha256": {
+            "title": "Fingerprintsha256",
+            "type": "string"
+          },
+          "org": {
+            "title": "Org",
+            "type": "string"
+          },
+          "serial": {
+            "title": "Serial",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "validFrom": {
+            "title": "Validfrom",
+            "type": "string"
+          },
+          "validUntil": {
+            "title": "Validuntil",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "commonName",
+          "org",
+          "fingerprintSha256",
+          "validFrom",
+          "validUntil",
+          "serial"
+        ],
+        "title": "CertMetadata",
+        "type": "object"
+      },
+      "DiffRequest": {
+        "properties": {
+          "htmlA": {
+            "title": "Htmla",
+            "type": "string"
+          },
+          "htmlB": {
+            "title": "Htmlb",
+            "type": "string"
+          }
+        },
+        "required": [
+          "htmlA",
+          "htmlB"
+        ],
+        "title": "DiffRequest",
+        "type": "object"
+      },
+      "DiffResponse": {
+        "properties": {
+          "redline": {
+            "title": "Redline",
+            "type": "string"
+          }
+        },
+        "required": [
+          "redline"
+        ],
+        "title": "DiffResponse",
+        "type": "object"
+      },
+      "Fill": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Color",
+            "type": "string"
+          },
+          "tint": {
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Tint",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "color",
+          "tint"
+        ],
+        "title": "Fill",
+        "type": "object"
+      },
+      "GenCertRequest": {
+        "properties": {
+          "commonName": {
+            "title": "Commonname",
+            "type": "string"
+          },
+          "org": {
+            "default": "",
+            "title": "Org",
+            "type": "string"
+          },
+          "validDays": {
+            "default": 1825,
+            "title": "Validdays",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "commonName"
+        ],
+        "title": "GenCertRequest",
+        "type": "object"
+      },
+      "GenCertResponse": {
+        "properties": {
+          "certPem": {
+            "title": "Certpem",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/CertMetadata"
+          },
+          "p12Base64": {
+            "title": "P12Base64",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metadata",
+          "certPem",
+          "p12Base64",
+          "password"
+        ],
+        "title": "GenCertResponse",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Health": {
+        "properties": {
+          "libreofficeVersion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Libreofficeversion"
+          },
+          "normalizerConfigHash": {
+            "title": "Normalizerconfighash",
+            "type": "string"
+          },
+          "pandocVersion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pandocversion"
+          },
+          "queue": {
+            "additionalProperties": true,
+            "title": "Queue",
+            "type": "object"
+          },
+          "schemaVersion": {
+            "title": "Schemaversion",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "xmldiffVersion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Xmldiffversion"
+          }
+        },
+        "required": [
+          "status",
+          "pandocVersion",
+          "libreofficeVersion",
+          "xmldiffVersion",
+          "schemaVersion",
+          "normalizerConfigHash",
+          "queue"
+        ],
+        "title": "Health",
+        "type": "object"
+      },
+      "Image": {
+        "additionalProperties": false,
+        "properties": {
+          "aspectRatio": {
+            "exclusiveMinimum": 0.0,
+            "title": "Aspectratio",
+            "type": "number"
+          },
+          "dataBase64": {
+            "title": "Database64",
+            "type": "string"
+          },
+          "mime": {
+            "enum": [
+              "image/png",
+              "image/jpeg"
+            ],
+            "title": "Mime",
+            "type": "string"
+          },
+          "type": {
+            "const": "image",
+            "title": "Type",
+            "type": "string"
+          },
+          "widthFraction": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1.0,
+            "title": "Widthfraction",
+            "type": "number"
+          }
+        },
+        "required": [
+          "type",
+          "mime",
+          "dataBase64",
+          "widthFraction",
+          "aspectRatio"
+        ],
+        "title": "Image",
+        "type": "object"
+      },
+      "InspectCertResponse": {
+        "properties": {
+          "certPem": {
+            "title": "Certpem",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/CertMetadata"
+          }
+        },
+        "required": [
+          "metadata",
+          "certPem"
+        ],
+        "title": "InspectCertResponse",
+        "type": "object"
+      },
+      "OmmlRequest": {
+        "properties": {
+          "html": {
+            "title": "Html",
+            "type": "string"
+          }
+        },
+        "required": [
+          "html"
+        ],
+        "title": "OmmlRequest",
+        "type": "object"
+      },
+      "Page": {
+        "additionalProperties": false,
+        "properties": {
+          "orientation": {
+            "enum": [
+              "portrait",
+              "landscape"
+            ],
+            "title": "Orientation",
+            "type": "string"
+          },
+          "size": {
+            "enum": [
+              "A4",
+              "B5",
+              "A5"
+            ],
+            "title": "Size",
+            "type": "string"
+          }
+        },
+        "required": [
+          "size",
+          "orientation"
+        ],
+        "title": "Page",
+        "type": "object"
+      },
+      "Paragraph": {
+        "additionalProperties": false,
+        "properties": {
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/Run"
+            },
+            "title": "Runs",
+            "type": "array"
+          },
+          "style": {
+            "enum": [
+              "Title",
+              "Subtitle",
+              "PartHeading",
+              "DayHeading",
+              "SessionHeading",
+              "SessionMeta",
+              "ChairLine",
+              "SlotTitle",
+              "SlotAuthors",
+              "BreakLine",
+              "EventTitle",
+              "EventText",
+              "GridHeader",
+              "GridTime",
+              "GridCell",
+              "GridBand",
+              "BlockHeading",
+              "GridRoom",
+              "GridSession",
+              "GridChairs",
+              "TalkTime",
+              "TalkBadge",
+              "TalkTitle",
+              "TalkPresenter",
+              "TalkAffiliation",
+              "Legend",
+              "IndexLetter",
+              "IndexEntry",
+              "TocEntry1",
+              "TocEntry2"
+            ],
+            "title": "Style",
+            "type": "string"
+          },
+          "type": {
+            "const": "paragraph",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "style",
+          "runs"
+        ],
+        "title": "Paragraph",
+        "type": "object"
+      },
+      "PrintDocument": {
+        "additionalProperties": false,
+        "properties": {
+          "draft": {
+            "title": "Draft",
+            "type": "boolean"
+          },
+          "footer": {
+            "title": "Footer",
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "en",
+              "pl"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "schemaVersion": {
+            "const": 1,
+            "title": "Schemaversion",
+            "type": "integer"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            },
+            "minItems": 1,
+            "title": "Sections",
+            "type": "array"
+          },
+          "swatches": {
+            "items": {
+              "$ref": "#/components/schemas/Swatch"
+            },
+            "title": "Swatches",
+            "type": "array"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "draft",
+          "language",
+          "footer",
+          "swatches",
+          "sections"
+        ],
+        "title": "PrintDocument",
+        "type": "object"
+      },
+      "Run": {
+        "additionalProperties": false,
+        "properties": {
+          "charStyle": {
+            "anyOf": [
+              {
+                "enum": [
+                  "Code",
+                  "Time",
+                  "Presenter",
+                  "Presenting",
+                  "Cancelled",
+                  "Badge",
+                  "Invited",
+                  "Label"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charstyle"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "Run",
+        "type": "object"
+      },
+      "Section": {
+        "additionalProperties": false,
+        "properties": {
+          "blocks": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "image": "#/components/schemas/Image",
+                  "paragraph": "#/components/schemas/Paragraph",
+                  "table": "#/components/schemas/Table",
+                  "toc": "#/components/schemas/Toc"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Paragraph"
+                },
+                {
+                  "$ref": "#/components/schemas/Table"
+                },
+                {
+                  "$ref": "#/components/schemas/Toc"
+                },
+                {
+                  "$ref": "#/components/schemas/Image"
+                }
+              ]
+            },
+            "title": "Blocks",
+            "type": "array"
+          },
+          "columns": {
+            "enum": [
+              1,
+              2
+            ],
+            "title": "Columns",
+            "type": "integer"
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          },
+          "start": {
+            "enum": [
+              "nextPage",
+              "evenPage"
+            ],
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page",
+          "columns",
+          "start",
+          "blocks"
+        ],
+        "title": "Section",
+        "type": "object"
+      },
+      "Swatch": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Color",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "title": "Swatch",
+        "type": "object"
+      },
+      "Table": {
+        "additionalProperties": false,
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/TableCell"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/TableColumn"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "headerRows": {
+            "minimum": 0.0,
+            "title": "Headerrows",
+            "type": "integer"
+          },
+          "rowCount": {
+            "minimum": 0.0,
+            "title": "Rowcount",
+            "type": "integer"
+          },
+          "type": {
+            "const": "table",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "columns",
+          "headerRows",
+          "rowCount",
+          "cells"
+        ],
+        "title": "Table",
+        "type": "object"
+      },
+      "TableCell": {
+        "additionalProperties": false,
+        "properties": {
+          "accent": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/Paragraph"
+            },
+            "title": "Blocks",
+            "type": "array"
+          },
+          "col": {
+            "minimum": 0.0,
+            "title": "Col",
+            "type": "integer"
+          },
+          "colSpan": {
+            "minimum": 1.0,
+            "title": "Colspan",
+            "type": "integer"
+          },
+          "fill": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fill"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "row": {
+            "minimum": 0.0,
+            "title": "Row",
+            "type": "integer"
+          },
+          "rowSpan": {
+            "minimum": 1.0,
+            "title": "Rowspan",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "row",
+          "col",
+          "rowSpan",
+          "colSpan",
+          "accent",
+          "fill",
+          "blocks"
+        ],
+        "title": "TableCell",
+        "type": "object"
+      },
+      "TableColumn": {
+        "additionalProperties": false,
+        "properties": {
+          "widthWeight": {
+            "exclusiveMinimum": 0.0,
+            "title": "Widthweight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "widthWeight"
+        ],
+        "title": "TableColumn",
+        "type": "object"
+      },
+      "Toc": {
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "const": "toc",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title"
+        ],
+        "title": "Toc",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VerifyResponse": {
+        "properties": {
+          "intact": {
+            "title": "Intact",
+            "type": "boolean"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "signed": {
+            "title": "Signed",
+            "type": "boolean"
+          },
+          "signedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signedat"
+          },
+          "signerFingerprintSha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signerfingerprintsha256"
+          },
+          "signerSubject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signersubject"
+          },
+          "timestamped": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamped"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "signed",
+          "valid",
+          "intact",
+          "reason"
+        ],
+        "title": "VerifyResponse",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "health__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/v1/ast": {
+      "post": {
+        "description": "Convert a DOCX to the Pandoc JSON AST (`docx+styles`) for structured mapping \u2014\neditor slots / Typst emission walk this tree. Word paragraph styles survive as\nDiv `custom-style` attributes (the semantic role: title/abstract/figure-caption).\nMedia is NOT extracted; the AST carries figure paths \u2014 pair with /normalize for\nbytes. Native OMML equations become `Math` nodes; MathType OLE is not pre-converted\nhere (that path is HTML-sentinel specific).",
+        "operationId": "ast_v1_ast_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ast_v1_ast_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ast"
+      }
+    },
+    "/v1/diff": {
+      "post": {
+        "description": "Structural redline between two already-normalized HTML fragments. Output is\nUNTRUSTED \u2014 the Node worker DOMPurify-sanitizes it before persisting.",
+        "operationId": "diff_v1_diff_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiffRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiffResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Diff"
+      }
+    },
+    "/v1/gen-cert": {
+      "post": {
+        "description": "Generate a self-signed signing certificate as a password-protected P12.",
+        "operationId": "gen_cert_v1_gen_cert_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenCertRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenCertResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gen Cert"
+      }
+    },
+    "/v1/idml": {
+      "post": {
+        "operationId": "idml_v1_idml_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrintDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.adobe.indesign-idml-package": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Idml"
+      }
+    },
+    "/v1/inspect-cert": {
+      "post": {
+        "description": "Validate an uploaded P12 and return its certificate metadata + public PEM.",
+        "operationId": "inspect_cert_v1_inspect_cert_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_inspect_cert_v1_inspect_cert_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectCertResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Inspect Cert"
+      }
+    },
+    "/v1/normalize": {
+      "post": {
+        "operationId": "normalize_endpoint_v1_normalize_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_normalize_endpoint_v1_normalize_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Normalize Endpoint"
+      }
+    },
+    "/v1/omml": {
+      "post": {
+        "description": "Convert Word-clipboard OMML (`<m:oMath>` blocks in pasted HTML) to LaTeX math,\none string per equation in document order \u2014 reusing the same pandoc/texmath path as\n/normalize. Empty list if the paste carries no OMML. The editor pastes the clipboard\nHTML here, swaps each equation for the returned LaTeX (\u2192 a MathLive node), and keeps\nthe surrounding text.",
+        "operationId": "omml_to_math_v1_omml_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OmmlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Omml To Math"
+      }
+    },
+    "/v1/render-pdf": {
+      "post": {
+        "operationId": "render_pdf_v1_render_pdf_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_render_pdf_v1_render_pdf_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Render Pdf"
+      }
+    },
+    "/v1/sign-pdf": {
+      "post": {
+        "description": "Apply a PAdES signature (visible seal unless visible=false) to an uploaded PDF.",
+        "operationId": "sign_pdf_v1_sign_pdf_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_sign_pdf_v1_sign_pdf_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sign Pdf"
+      }
+    },
+    "/v1/verify-pdf": {
+      "post": {
+        "description": "Verify a PDF's signature (trust anchor = the embedded signer cert).",
+        "operationId": "verify_pdf_v1_verify_pdf_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_verify_pdf_v1_verify_pdf_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Pdf"
+      }
+    }
+  }
+}

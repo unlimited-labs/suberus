@@ -8,12 +8,13 @@ from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 
 from config import MAX_NORMALIZE_BYTES
 from core.libreoffice import soffice_to_pdf
+from core.openapi import binary
 from core.security import reject_zip_bomb, require_token
 
 router = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
-@router.post("/render-pdf")
+@router.post("/render-pdf", response_class=Response, responses=binary("application/pdf"))
 def render_pdf(file: UploadFile):
     contents = file.file.read()
     if not contents:

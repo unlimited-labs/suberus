@@ -13,13 +13,14 @@ from pydantic import BaseModel
 import config
 import diffhtml
 from core.normalize import normalize
+from core.openapi import binary
 from core.security import reject_zip_bomb, require_token
 from core.versions import libreoffice_version, pandoc_version
 
 router = APIRouter(prefix="/v1", dependencies=[Depends(require_token)])
 
 
-@router.post("/normalize")
+@router.post("/normalize", response_class=Response, responses=binary("application/zip"))
 def normalize_endpoint(file: UploadFile):
     contents = file.file.read()
     if not contents:
@@ -67,7 +68,11 @@ class DiffRequest(BaseModel):
     htmlB: str
 
 
-@router.post("/diff")
+class DiffResponse(BaseModel):
+    redline: str
+
+
+@router.post("/diff", response_model=DiffResponse)
 def diff(req: DiffRequest):
     """Structural redline between two already-normalized HTML fragments. Output is
     UNTRUSTED — the Node worker DOMPurify-sanitizes it before persisting."""
