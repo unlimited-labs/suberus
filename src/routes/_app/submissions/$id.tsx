@@ -19,9 +19,10 @@ import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			submissionDetailQueryOptions(params.id),
-		);
+		await context.queryClient.query({
+			...submissionDetailQueryOptions(params.id),
+			staleTime: "static",
+		});
 	},
 	component: SubmissionDetailPage,
 });

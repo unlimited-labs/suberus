@@ -137,9 +137,21 @@ export function ensureSubmissionCreateData(
 	queryClient: QueryClient,
 ): Promise<unknown[]> {
 	return Promise.all([
-		queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
-		queryClient.ensureQueryData(submissionValidationQueryOptions()),
-		queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
-		queryClient.ensureQueryData(extractionSettingsQueryOptions()),
+		queryClient.query({
+			...activeSubmissionTypesQueryOptions(),
+			staleTime: "static",
+		}),
+		queryClient.query({
+			...submissionValidationQueryOptions(),
+			staleTime: "static",
+		}),
+		queryClient.query({
+			...submissionGuidelinesQueryOptions(),
+			staleTime: "static",
+		}),
+		queryClient.query({
+			...extractionSettingsQueryOptions(),
+			staleTime: "static",
+		}),
 	]);
 }

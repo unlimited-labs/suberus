@@ -14,8 +14,14 @@ import { useProgramSchedule } from "@/features/planner/components/public-program
 export const Route = createFileRoute("/program/")({
 	loader: async ({ context }) => {
 		const [, settings] = await Promise.all([
-			context.queryClient.ensureQueryData(publicProgramQueryOptions()),
-			context.queryClient.ensureQueryData(publicConferenceInfoQueryOptions()),
+			context.queryClient.query({
+				...publicProgramQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...publicConferenceInfoQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 		return { conferenceName: settings.name };
 	},

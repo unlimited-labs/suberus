@@ -25,9 +25,18 @@ export const Route = createFileRoute("/_app/submissions/")({
 	},
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(mySubmissionsQueryOptions()),
-			context.queryClient.ensureQueryData(submissionDeadlineQueryOptions()),
-			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
+			context.queryClient.query({
+				...mySubmissionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionDeadlineQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...activeSubmissionTypesQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: SubmissionsPage,

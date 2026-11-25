@@ -7,7 +7,10 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/")({
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(listExhibitorsQueryOptions());
+		await context.queryClient.query({
+			...listExhibitorsQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: AdminExhibitorsPage,
 });

@@ -12,7 +12,10 @@ import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/reviews/")({
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(myAssignmentsQueryOptions());
+		await context.queryClient.query({
+			...myAssignmentsQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: ReviewsPage,
 });

@@ -30,8 +30,14 @@ export const Route = createFileRoute("/_app/admin/_layout/documents/")({
 	validateSearch: searchSchema,
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(documentTemplatesQueryOptions()),
-			context.queryClient.ensureQueryData(documentSigningQueryOptions()),
+			context.queryClient.query({
+				...documentTemplatesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...documentSigningQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: AdminDocumentsPage,

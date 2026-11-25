@@ -4,9 +4,10 @@ import { ComposePage } from "@/features/bulk-email/components/compose-page";
 
 export const Route = createFileRoute("/_app/admin/_layout/bulk-email/$id")({
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			bulkEmailCampaignQueryOptions(params.id),
-		);
+		await context.queryClient.query({
+			...bulkEmailCampaignQueryOptions(params.id),
+			staleTime: "static",
+		});
 	},
 	component: BulkEmailComposeRoute,
 });

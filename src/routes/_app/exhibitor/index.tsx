@@ -21,9 +21,18 @@ export const Route = createFileRoute("/_app/exhibitor/")({
 	},
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(myExhibitorQueryOptions()),
-			context.queryClient.ensureQueryData(exhibitorPanelConfigQueryOptions()),
-			context.queryClient.ensureQueryData(myAnnouncementsQueryOptions()),
+			context.queryClient.query({
+				...myExhibitorQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...exhibitorPanelConfigQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...myAnnouncementsQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: ExhibitorPage,

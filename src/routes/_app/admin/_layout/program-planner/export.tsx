@@ -32,8 +32,14 @@ export const Route = createFileRoute(
 	ssr: "data-only",
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(printExportDataQueryOptions()),
-			context.queryClient.ensureQueryData(scheduleIssuesQueryOptions()),
+			context.queryClient.query({
+				...printExportDataQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...scheduleIssuesQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: PrintExportPage,

@@ -21,7 +21,10 @@ export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
 		middleware: [adminOnlyRouteMiddleware],
 	},
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(adminInvitationsQueryOptions());
+		await context.queryClient.query({
+			...adminInvitationsQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: InvitationsPage,
 });

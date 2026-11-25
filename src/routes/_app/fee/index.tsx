@@ -16,8 +16,14 @@ import { Markdown } from "@/shared/ui/markdown";
 export const Route = createFileRoute("/_app/fee/")({
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(userFeeQueryOptions()),
-			context.queryClient.ensureQueryData(paymentInstructionsQueryOptions()),
+			context.queryClient.query({
+				...userFeeQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...paymentInstructionsQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: FeePage,

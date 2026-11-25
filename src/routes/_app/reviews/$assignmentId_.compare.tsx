@@ -16,9 +16,10 @@ import { Button } from "@/shared/ui/button";
 export const Route = createFileRoute("/_app/reviews/$assignmentId_/compare")({
 	validateSearch: compareSearchSchema,
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			assignmentForReviewQueryOptions(params.assignmentId),
-		);
+		await context.queryClient.query({
+			...assignmentForReviewQueryOptions(params.assignmentId),
+			staleTime: "static",
+		});
 	},
 	component: ReviewerComparePage,
 });

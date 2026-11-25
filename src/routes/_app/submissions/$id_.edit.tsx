@@ -31,13 +31,26 @@ import { Button } from "@/shared/ui/button";
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
 	loader: async ({ params, context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(
-				submissionDetailQueryOptions(params.id),
-			),
-			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
-			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
-			context.queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
-			context.queryClient.ensureQueryData(extractionSettingsQueryOptions()),
+			context.queryClient.query({
+				...submissionDetailQueryOptions(params.id),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...activeSubmissionTypesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionValidationQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionGuidelinesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...extractionSettingsQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: EditSubmissionPage,

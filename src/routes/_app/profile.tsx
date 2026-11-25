@@ -50,12 +50,27 @@ import { createAffiliation } from "@/shared/server/affiliations-fn";
 export const Route = createFileRoute("/_app/profile")({
 	loader: async ({ context }) => {
 		const [, , , , registrationStatus] = await Promise.all([
-			context.queryClient.ensureQueryData(personalInfoQueryOptions()),
-			context.queryClient.ensureQueryData(contactInfoQueryOptions()),
-			context.queryClient.ensureQueryData(activeSurveyQuestionsQueryOptions()),
-			context.queryClient.ensureQueryData(userSurveyAnswersQueryOptions()),
+			context.queryClient.query({
+				...personalInfoQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...contactInfoQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...activeSurveyQuestionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...userSurveyAnswersQueryOptions(),
+				staleTime: "static",
+			}),
 			getRegistrationStatusFn(),
-			context.queryClient.ensureQueryData(billingDetailsConfigQueryOptions()),
+			context.queryClient.query({
+				...billingDetailsConfigQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 		return { contactConsentEnabled: registrationStatus.contactConsentEnabled };
 	},

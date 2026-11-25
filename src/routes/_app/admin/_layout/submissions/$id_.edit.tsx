@@ -34,13 +34,26 @@ export const Route = createFileRoute(
 )({
 	loader: async ({ params, context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(
-				editorSubmissionQueryOptions(params.id),
-			),
-			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
-			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
-			context.queryClient.ensureQueryData(submissionGuidelinesQueryOptions()),
-			context.queryClient.ensureQueryData(extractionSettingsQueryOptions()),
+			context.queryClient.query({
+				...editorSubmissionQueryOptions(params.id),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...activeSubmissionTypesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionValidationQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionGuidelinesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...extractionSettingsQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: AdminEditSubmissionPage,

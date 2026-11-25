@@ -16,9 +16,10 @@ import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/$id")({
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			exhibitorDetailQueryOptions(params.id),
-		);
+		await context.queryClient.query({
+			...exhibitorDetailQueryOptions(params.id),
+			staleTime: "static",
+		});
 	},
 	component: ExhibitorDetailPage,
 });
