@@ -21,7 +21,7 @@ import {
 	TabStopType,
 	TextDirection,
 	TextRun,
-	VerticalAlign,
+	VerticalAlignTable,
 	WidthType,
 } from "docx";
 import { estimatePageNumbers } from "docx/layout";
@@ -204,7 +204,7 @@ function tableCell(cell: PrintTable["cells"][number] | null): TableCell {
 		textDirection: vertical
 			? TextDirection.BOTTOM_TO_TOP_LEFT_TO_RIGHT
 			: undefined,
-		verticalAlign: vertical ? VerticalAlign.CENTER : undefined,
+		verticalAlign: vertical ? VerticalAlignTable.CENTER : undefined,
 		borders: cell.accent
 			? {
 					left: {
