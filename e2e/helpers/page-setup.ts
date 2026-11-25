@@ -7,14 +7,14 @@ import type { Page } from "@playwright/test";
  *
  * Handles two overlay types:
  * - vite-error-overlay (Vite's built-in) — pre-register custom element + CSS + observer
- * - vite-plugin-checker-error-overlay (checker plugin) — CSS + observer only
+ * - vite-plugin-checker-overlay (checker plugin) — CSS + observer only
  *   (NOT pre-registered because the checker plugin doesn't guard against duplicate definitions)
  */
 export async function dismissViteOverlay(page: Page) {
 	await page.addInitScript(`
 (function() {
 	var CSS_ID = '__vite_overlay_kill';
-	var SELECTOR = 'vite-error-overlay,vite-plugin-checker-error-overlay';
+	var SELECTOR = 'vite-error-overlay,vite-plugin-checker-overlay';
 	var CSS = SELECTOR + '{display:none!important;pointer-events:none!important;opacity:0!important;width:0!important;height:0!important;position:fixed!important;left:-9999px!important;top:-9999px!important;z-index:-1!important;overflow:hidden!important}';
 
 	function ensureCSS() {
@@ -44,7 +44,7 @@ export async function dismissViteOverlay(page: Page) {
 	}
 
 	/* Pre-register vite-error-overlay only (Vite guards against duplicate defs).
-	   Do NOT pre-register vite-plugin-checker-error-overlay — the checker plugin
+	   Do NOT pre-register vite-plugin-checker-overlay — the checker plugin
 	   does not guard and throws DOMException if the element is already defined. */
 	try {
 		if (!customElements.get('vite-error-overlay')) {

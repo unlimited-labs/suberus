@@ -1,4 +1,4 @@
-import webpush from "web-push";
+import * as webpush from "web-push";
 
 const { publicKey, privateKey } = webpush.generateVAPIDKeys();
 
