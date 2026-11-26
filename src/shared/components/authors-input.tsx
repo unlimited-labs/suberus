@@ -103,9 +103,7 @@ function AuthorCardHeader({
 					) : (
 						<IconStar className="size-3" />
 					)}
-					<span className="hidden sm:inline">
-						{presenterLabel(isPresenter)}
-					</span>
+					<span className="max-sm:sr-only">{presenterLabel(isPresenter)}</span>
 				</button>
 			</div>
 			<Button

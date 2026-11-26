@@ -46,11 +46,11 @@ export function ContentTabs({
 				<TabsList className="mb-6" variant="line">
 					<TabsTrigger className="gap-2" value="overview">
 						<IconWriting className="size-4" />
-						<span className="hidden sm:inline">Overview</span>
+						<span className="max-sm:sr-only">Overview</span>
 					</TabsTrigger>
 					<TabsTrigger className="gap-2" value="history">
 						<IconHistory className="size-4" />
-						<span className="hidden sm:inline">History</span>
+						<span className="max-sm:sr-only">History</span>
 					</TabsTrigger>
 				</TabsList>
 

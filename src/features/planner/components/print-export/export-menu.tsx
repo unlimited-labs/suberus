@@ -26,7 +26,7 @@ export function ExportMenu() {
 					variant="outline"
 				>
 					<IconFileExport />
-					<span className="hidden sm:inline">Export</span>
+					<span className="max-sm:sr-only">Export</span>
 					<IconChevronDown />
 				</Button>
 			</DropdownMenuTrigger>

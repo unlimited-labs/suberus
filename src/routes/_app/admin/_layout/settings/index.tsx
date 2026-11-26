@@ -72,6 +72,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_app/admin/_layout/settings/")({
+	staticData: { title: "Settings" },
 	server: {
 		middleware: [adminOnlyRouteMiddleware],
 	},
@@ -309,13 +310,13 @@ function AdminSettingsPage() {
 						<TabsList className="border-border bg-muted mb-6 h-auto flex-wrap gap-1 rounded-lg border p-1">
 							{tabs.map((tab) => (
 								<TabsTrigger
-									className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground gap-1.5 px-3 py-2 data-[state=active]:shadow-sm"
+									className="text-muted-foreground data-active:bg-background data-active:text-foreground gap-1.5 px-3 py-2 data-active:shadow-sm"
 									data-testid={`settings-tab-${tab.id}`}
 									key={tab.id}
 									value={tab.id}
 								>
 									<tab.icon className="size-4" />
-									<span className="hidden sm:inline">{tab.label}</span>
+									<span className="max-sm:sr-only">{tab.label}</span>
 								</TabsTrigger>
 							))}
 						</TabsList>

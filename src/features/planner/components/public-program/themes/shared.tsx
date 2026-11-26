@@ -265,7 +265,7 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 					data-testid="program-offline-badge"
 				>
 					<IconCloudOff className="size-4" />
-					<span className="hidden sm:inline">Offline</span>
+					<span className="max-sm:sr-only">Offline</span>
 				</span>
 			)}
 			{canInstall && (
@@ -276,7 +276,7 @@ export function ProgramPwaStatus({ className }: { className?: string }) {
 					type="button"
 				>
 					<IconDownload className="size-4" />
-					<span className="hidden sm:inline">Install</span>
+					<span className="max-sm:sr-only">Install</span>
 				</button>
 			)}
 		</div>
