@@ -148,7 +148,7 @@ export function AssignReviewerDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+			<DialogContent className="sm:max-w-2xl">
 				<DialogHeader className="min-w-0">
 					<DialogTitle>Assign Reviewers</DialogTitle>
 					<DialogDescription className="truncate">

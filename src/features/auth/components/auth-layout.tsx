@@ -18,7 +18,7 @@ export function AuthLayout({
 	logoDarkInvert = true,
 }: AuthLayoutProps) {
 	return (
-		<div className="bg-background relative flex min-h-svh w-full items-center justify-center overflow-hidden">
+		<div className="bg-background relative flex h-svh w-full items-center-safe justify-center overflow-y-auto">
 			{backgroundImageUrl ? (
 				<>
 					<div

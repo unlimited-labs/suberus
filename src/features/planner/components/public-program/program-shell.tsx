@@ -1,6 +1,6 @@
 import { IconEye, IconSearch, IconX } from "@tabler/icons-react";
 import parse from "html-react-parser";
-import type { CSSProperties, ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef } from "react";
 import { formatZoneLabel } from "@/features/planner/tz-datetime";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -229,6 +229,19 @@ function ProgramStickyBar({
 	zone: string;
 	zoneLabel: string | null;
 }) {
+	const barRef = useRef<HTMLElement>(null);
+	// Browsers ignore sticky bars in `scroll-padding: auto`, so Shift+Tab would park focus under the bar.
+	useEffect(() => {
+		const bar = barRef.current;
+		const scroller = bar?.parentElement;
+		if (!bar || !scroller) return;
+		const observer = new ResizeObserver(() => {
+			scroller.style.scrollPaddingTop = `${bar.offsetHeight}px`;
+		});
+		observer.observe(bar);
+		return () => observer.disconnect();
+	}, []);
+
 	return (
 		<section
 			aria-label="Programme filters"
@@ -236,6 +249,7 @@ function ProgramStickyBar({
 				"sticky top-0 z-20 block border-b border-border bg-background/90 backdrop-blur",
 				framed && "bg-background/95",
 			)}
+			ref={barRef}
 		>
 			<div
 				className={cn(

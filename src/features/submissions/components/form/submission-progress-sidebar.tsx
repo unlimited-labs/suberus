@@ -54,7 +54,7 @@ export function SubmissionProgressSidebar({
 }: SubmissionProgressSidebarProps) {
 	return (
 		<div className="hidden lg:block">
-			<div className="sticky space-y-4">
+			<div className="sticky top-0 space-y-4">
 				<SectionCard title="Progress" variant="outlined">
 					<div className="space-y-3">
 						<ProgressRow done={progress.hasType} label="Submission Type" />

@@ -44,7 +44,7 @@ export function InvitedTalkDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className="max-h-[90vh] grid-cols-[minmax(0,1fr)] overflow-y-auto sm:max-w-3xl"
+				className="grid-cols-[minmax(0,1fr)] sm:max-w-3xl"
 				data-testid="invited-talk-dialog"
 			>
 				<DialogHeader>

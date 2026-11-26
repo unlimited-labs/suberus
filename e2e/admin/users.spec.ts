@@ -776,6 +776,21 @@ test.describe("Admin Users Management", () => {
 			await expect(dialog.getByLabel("Email *")).toHaveValue(TEST_USER.email)
 		})
 
+		test("Edit Profile dialog scrolls to Save on a landscape phone", async ({ page, userDetailPage }) => {
+			const { getTestUserIds } = await import("../helpers/test-db")
+			const { testUserId } = await getTestUserIds()
+			await page.setViewportSize({ width: 667, height: 320 })
+			await userDetailPage.goto(testUserId)
+			await userDetailPage.openActions()
+			await userDetailPage.editProfileButton.click()
+
+			const dialog = page.getByRole("dialog")
+			await dialog.waitFor({ state: "visible" })
+			const save = dialog.getByRole("button", { name: /save/i })
+			await save.scrollIntoViewIfNeeded()
+			await expect(save).toBeInViewport()
+		})
+
 		test("can edit user profile", async ({ page, userDetailPage }) => {
 			test.slow()
 			const { createTestUser, deleteTestUser } = await import("../helpers/test-db")
