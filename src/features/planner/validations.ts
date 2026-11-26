@@ -359,9 +359,11 @@ export const breakUpdateInput = breakCreateInput
 
 export const jobIdInput = z.object({ jobId: z.uuid() });
 
+export const programDay = z.iso.date();
+
 export const programRangeInput = z
 	.object({
-		day: z.iso.date().optional(),
+		day: programDay.optional(),
 		from: zDateString.optional(),
 		to: zDateString.optional(),
 	})

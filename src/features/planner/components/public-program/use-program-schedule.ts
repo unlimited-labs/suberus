@@ -45,8 +45,60 @@ export function presentationMatches(
 	);
 }
 
-function isSearchHit(item: ProgramItem): boolean {
+export function isSearchHit(item: ProgramItem): boolean {
 	return item.kind === "session" || item.data.kind === "EVENT";
+}
+
+function sessionMatches(s: PublicProgramSession, q: string): boolean {
+	return (
+		!q ||
+		sessionSelfMatches(s, q) ||
+		s.presentations.some((p) => presentationMatches(p, q))
+	);
+}
+
+function breakMatches(b: PublicProgram["breaks"][number], q: string): boolean {
+	if (!q) return true;
+	if (b.kind !== "EVENT") return true;
+	return (
+		b.title.toLowerCase().includes(q) ||
+		(b.description?.toLowerCase().includes(q) ?? false) ||
+		(b.location?.toLowerCase().includes(q) ?? false)
+	);
+}
+
+export function programItemsForDay(
+	program: PublicProgram,
+	day: Date,
+	tz: string,
+	q: string,
+): ProgramItem[] {
+	const sessions = program.sessions.filter(
+		(s) => sameDayInZone(new Date(s.startAt), day, tz) && sessionMatches(s, q),
+	);
+	const breaks = program.breaks.filter(
+		(b) => sameDayInZone(new Date(b.startAt), day, tz) && breakMatches(b, q),
+	);
+	const all: ProgramItem[] = [
+		...sessions.map((s) => ({ kind: "session" as const, data: s })),
+		...breaks.map((b) => ({ kind: "break" as const, data: b })),
+	];
+	return all.sort((a, b) =>
+		compareAsc(new Date(a.data.startAt), new Date(b.data.startAt)),
+	);
+}
+
+export function conferenceDays(
+	settings: Pick<PublicConferenceInfo, "startDate" | "endDate">,
+	tz: string,
+): Date[] {
+	return settings.startDate && settings.endDate
+		? eachDayInZone(
+				startOfDayInZone(settings.startDate, tz),
+				startOfDayInZone(settings.endDate, tz),
+				tz,
+			)
+		: [];
 }
 
 export function useProgramSchedule({
@@ -56,49 +108,12 @@ export function useProgramSchedule({
 	activeDay,
 }: UseProgramScheduleArgs) {
 	const tzName = settings.timezone || "UTC";
-	const days =
-		settings.startDate && settings.endDate
-			? eachDayInZone(
-					startOfDayInZone(settings.startDate, tzName),
-					startOfDayInZone(settings.endDate, tzName),
-					tzName,
-				)
-			: [];
+	const days = conferenceDays(settings, tzName);
 
 	const q = search.toLowerCase().trim();
 
-	const sessionMatches = (s: PublicProgramSession): boolean =>
-		!q ||
-		sessionSelfMatches(s, q) ||
-		s.presentations.some((p) => presentationMatches(p, q));
-
-	const breakMatches = (b: PublicProgram["breaks"][number]): boolean => {
-		if (!q) return true;
-		if (b.kind !== "EVENT") return true;
-		return (
-			b.title.toLowerCase().includes(q) ||
-			(b.description?.toLowerCase().includes(q) ?? false) ||
-			(b.location?.toLowerCase().includes(q) ?? false)
-		);
-	};
-
-	const itemsForDay = (day: Date): ProgramItem[] => {
-		if (!program) return [];
-		const sessions = program.sessions.filter(
-			(s) =>
-				sameDayInZone(new Date(s.startAt), day, tzName) && sessionMatches(s),
-		);
-		const breaks = program.breaks.filter(
-			(b) => sameDayInZone(new Date(b.startAt), day, tzName) && breakMatches(b),
-		);
-		const all: ProgramItem[] = [
-			...sessions.map((s) => ({ kind: "session" as const, data: s })),
-			...breaks.map((b) => ({ kind: "break" as const, data: b })),
-		];
-		return all.sort((a, b) =>
-			compareAsc(new Date(a.data.startAt), new Date(b.data.startAt)),
-		);
-	};
+	const itemsForDay = (day: Date): ProgramItem[] =>
+		program ? programItemsForDay(program, day, tzName, q) : [];
 
 	const activeItems =
 		days.length > 0 ? itemsForDay(days[activeDay]) : itemsForDay(new Date());
