@@ -1,5 +1,7 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { useWebMCP } from "use-webmcp-tool";
+import { z } from "zod";
 import type { ReviewerUser } from "@/features/reviews/server/reviewers";
 import {
 	createTrackFn,
@@ -24,6 +26,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/ui/dialog";
+
+const prepareTrackInput = z.object({
+	name: trackFormSchema.shape.name.describe("Name of the new track."),
+	supervisorEmail: z
+		.email()
+		.optional()
+		.describe("Email of the reviewer who supervises the track."),
+});
+
+const PREPARE_TRACK_SCHEMA = z.toJSONSchema(prepareTrackInput);
 
 interface TrackDialogProps {
 	open: boolean;
@@ -90,6 +102,34 @@ export function TrackDialog({
 			label: `${reviewer.name} (${reviewer.email})`,
 		})),
 	];
+
+	useWebMCP({
+		name: "prepare-track",
+		description:
+			"Opens the create-track form filled in, for the user to review and save. Use when the user wants a new conference track.",
+		inputSchema: PREPARE_TRACK_SCHEMA,
+		enabled: !isEdit,
+		execute: (args) => {
+			const parsed = prepareTrackInput.safeParse(args);
+			if (!parsed.success) return { error: z.prettifyError(parsed.error) };
+			const { name, supervisorEmail } = parsed.data;
+			const supervisor = supervisorEmail
+				? reviewers.find(
+						(r) => r.email.toLowerCase() === supervisorEmail.toLowerCase(),
+					)
+				: undefined;
+			if (supervisorEmail && !supervisor) {
+				return {
+					error: `No reviewer with email ${supervisorEmail}.`,
+					reviewerEmails: reviewers.map((r) => r.email),
+				};
+			}
+			form.setFieldValue("name", name);
+			form.setFieldValue("supervisorId", supervisor?.id ?? "none");
+			onOpenChange(true);
+			return "The track form is open and filled in. Nothing is saved until the user clicks Create.";
+		},
+	});
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>

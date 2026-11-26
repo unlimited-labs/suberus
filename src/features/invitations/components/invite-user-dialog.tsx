@@ -1,5 +1,6 @@
 import { IconLoader2 } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { useWebMCP } from "use-webmcp-tool";
 import { z } from "zod";
 import { createInvitationFn } from "@/features/invitations/api/admin-invitations";
 import { Form } from "@/shared/components/composable/form";
@@ -16,9 +17,15 @@ import {
 } from "@/shared/ui/dialog";
 
 const inviteSchema = z.object({
-	email: z.email("Enter a valid email address"),
-	role: z.enum(["REVIEWER", "EDITOR", "ADMIN"]),
+	email: z
+		.email("Enter a valid email address")
+		.describe("Address the invitation is sent to."),
+	role: z
+		.enum(["REVIEWER", "EDITOR", "ADMIN"])
+		.describe("Role the person gets after registering."),
 });
+
+const INVITE_TOOL_SCHEMA = z.toJSONSchema(inviteSchema);
 
 type InviteValues = z.infer<typeof inviteSchema>;
 
@@ -62,6 +69,21 @@ export function InviteUserDialog({
 			formApi.reset();
 			onOpenChange(false);
 			onSuccess();
+		},
+	});
+
+	useWebMCP({
+		name: "prepare-invitation",
+		description:
+			"Opens the invite-user form filled in, for the user to review and send. Use when the user wants to invite someone to the conference system.",
+		inputSchema: INVITE_TOOL_SCHEMA,
+		execute: (args) => {
+			const parsed = inviteSchema.safeParse(args);
+			if (!parsed.success) return { error: z.prettifyError(parsed.error) };
+			form.setFieldValue("email", parsed.data.email);
+			form.setFieldValue("role", parsed.data.role);
+			onOpenChange(true);
+			return "The invitation form is open and filled in. Nothing is sent until the user clicks Send Invitation.";
 		},
 	});
 
