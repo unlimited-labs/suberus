@@ -27,6 +27,7 @@ test.describe.serial("Admin - Conference Tracks", () => {
 		await expect(
 			page.getByRole("cell", {
 				name: `${testRun.testRunId}_AI & Machine Learning`,
+				exact: true,
 			}),
 		).toBeVisible();
 
@@ -53,6 +54,7 @@ test.describe.serial("Admin - Conference Tracks", () => {
 		await expect(
 			page.getByRole("cell", {
 				name: `${testRun.testRunId}_Quantum Computing`,
+				exact: true,
 			}),
 		).toBeVisible({ timeout: 15000 });
 
@@ -89,6 +91,7 @@ test.describe.serial("Admin - Conference Tracks", () => {
 		await expect(
 			page.getByRole("cell", {
 				name: `${testRun.testRunId}_Advanced Robotics`,
+				exact: true,
 			}),
 		).toBeVisible({ timeout: 15000 });
 

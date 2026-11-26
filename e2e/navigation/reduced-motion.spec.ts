@@ -1,12 +1,12 @@
 import { expect, test } from "./fixtures"
 
-test("reduced motion shortens entrance animations", async ({ page }) => {
+test("reduced motion turns entrance animations off", async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: "reduce" })
 	await page.goto("/login")
 
-	const duration = await page
+	const name = await page
 		.locator(".animate-in")
 		.first()
-		.evaluate((el) => getComputedStyle(el).animationDuration)
-	expect(Number.parseFloat(duration)).toBeLessThan(0.001)
+		.evaluate((el) => getComputedStyle(el).animationName)
+	expect(name).toBe("none")
 })

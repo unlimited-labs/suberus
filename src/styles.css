@@ -19,7 +19,7 @@
 
 @custom-variant dark (&:is(.dark *));
 :root {
-	/* Primary/destructive are darkened from #3b82f6/#ef4444 so white button text reaches 4.5:1. */
+	/* Primary and light destructive are darkened from #3b82f6/#ef4444 so white text reaches 4.5:1; *-ink is text on a destructive tint. */
 	color-scheme: light;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.3211 0 0);
@@ -45,6 +45,7 @@
 	--accent: color-mix(in oklab, var(--primary) 8%, var(--background));
 	--accent-foreground: var(--primary-ink);
 	--destructive: #d83d3d;
+	--destructive-ink: #b53333;
 	--destructive-foreground: oklch(1 0 0);
 	--border: oklch(0.9276 0.0058 264.5313);
 	--input: oklch(0.9276 0.0058 264.5313);
@@ -135,7 +136,8 @@
 		var(--primary) 70%,
 		var(--foreground)
 	);
-	--destructive: #d83d3d;
+	--destructive: oklch(0.6368 0.2078 25.3313);
+	--destructive-ink: #f58a8a;
 	--destructive-foreground: oklch(1 0 0);
 	--border: oklch(0.3715 0 0);
 	--input: oklch(0.3715 0 0);
@@ -364,6 +366,7 @@
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
 	--color-destructive-foreground: var(--destructive-foreground);
+	--color-destructive-ink: var(--destructive-ink);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -556,9 +559,8 @@ input[type="number"]::-webkit-outer-spin-button:hover {
 	*:not(.animate-spin),
 	*::before,
 	*::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
+		animation: none !important;
+		transition-duration: 0s !important;
 		scroll-behavior: auto !important;
 	}
 }
