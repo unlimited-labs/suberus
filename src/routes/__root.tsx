@@ -190,6 +190,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						{`document.documentElement.classList.toggle("dark",matchMedia("(prefers-color-scheme: dark)").matches)`}
 					</ScriptOnce>
 				)}
+				{/* CSP has no 'unsafe-eval'. Module bundling can't order zod's config before the
+				    route tree builds schemas, so seed the global config zod adopts on load. */}
+				<ScriptOnce>
+					{"globalThis.__zod_globalConfig={jitless:true}"}
+				</ScriptOnce>
 				<HeadContent />
 			</head>
 			<body>
