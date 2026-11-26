@@ -103,6 +103,18 @@ test.describe("Register Page - Step 1: Author Info", () => {
 		await expect(submitButtons).toHaveCount(1)
 	})
 
+	test("Enter while typing a new affiliation does not submit the step", async ({ registerPage }) => {
+		const { page } = registerPage
+		await registerPage.goto()
+
+		await registerPage.affiliationInput.fill("Brand New Institute Of Enter")
+		await registerPage.affiliationInput.press("Enter")
+
+		await expect(page.getByText("Affiliation is required")).toBeHidden()
+		await expect(page.getByText("Invalid email address")).toBeHidden()
+		await expect(page.getByText("Country *")).toBeHidden()
+	})
+
 	test("proceeds to step 2 with valid data", async ({ registerPage }) => {
 		await registerPage.goto()
 

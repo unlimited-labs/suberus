@@ -374,6 +374,10 @@ export function AffiliationSelect({
 			affiliationsLength: affiliations.length,
 			showCreate,
 		});
+		const uncommitted =
+			inputValue.trim() !== "" && inputValue.trim() !== displayValue.trim();
+		// Typed text becomes an affiliation only on blur/select, so Enter must not submit the surrounding form yet.
+		if (e.key === "Enter" && (open || uncommitted)) e.preventDefault();
 		applyKeyAction[action.type](action, e);
 	};
 
