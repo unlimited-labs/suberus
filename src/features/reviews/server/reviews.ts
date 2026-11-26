@@ -240,6 +240,7 @@ export async function getAssignmentForReview(
 	);
 	const enrichedVersions = assignment.submission.versions.map((v) => ({
 		...v,
+		file: blindFile(v.file, v.version, isBlind),
 		keywords: keywordsOf(v.keywordsSnapshot),
 	}));
 
@@ -284,7 +285,7 @@ export async function getAssignmentForReview(
 				content: v.content,
 				comment: null,
 				createdAt: v.createdAt,
-				file: blindFile(v.file, v.version, isBlind),
+				file: v.file,
 			})),
 		},
 		config: {
