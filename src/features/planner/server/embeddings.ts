@@ -61,9 +61,8 @@ async function callEmbeddingApi(text: string): Promise<number[]> {
 
 	if (!res.ok) {
 		const body = await res.text();
-		throw new Error(
-			`Embedding API returned ${res.status}: ${body.slice(0, 200)}`,
-		);
+		logger.error(`Embedding API returned ${res.status}`, body.slice(0, 2000));
+		throw new Error(`Embedding API failed (${res.status})`);
 	}
 
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
