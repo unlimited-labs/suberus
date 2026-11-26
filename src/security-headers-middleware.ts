@@ -7,7 +7,6 @@ const PERMISSIONS_POLICY = [
 	"accelerometer=()",
 	"autoplay=()",
 	"bluetooth=()",
-	"browsing-topics=()",
 	"camera=()",
 	"display-capture=()",
 	"encrypted-media=()",

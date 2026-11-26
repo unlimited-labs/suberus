@@ -91,7 +91,7 @@ export function ChangeSubmitterDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+			<DialogContent className="sm:max-w-2xl">
 				<DialogHeader className="min-w-0">
 					<DialogTitle>Change Submitter</DialogTitle>
 					<DialogDescription className="truncate">

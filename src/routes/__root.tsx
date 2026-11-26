@@ -128,7 +128,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function NotFoundPage() {
 	return (
-		<div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4 text-center">
+		<div className="flex h-svh flex-col items-center justify-center-safe gap-4 overflow-y-auto p-4 text-center">
 			<IconError404 className="text-muted-foreground size-24" />
 			<h1 className="text-3xl font-bold">Page not found</h1>
 			<p className="text-muted-foreground max-w-md">

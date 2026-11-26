@@ -65,6 +65,67 @@ test.describe.serial("Public /program", () => {
 		).toBeHidden();
 	});
 
+	test("Shift+Tab never leaves a focused talk under the sticky filter bar", async ({
+		page,
+		publicProgramPage,
+		testRun,
+	}) => {
+		await setConferenceDates(isoDay(0, 0).toISOString(), isoDay(1, 23).toISOString());
+		const roomId = await createRoom(testRun.testRunId, "Focus Room");
+		for (let hour = 8; hour < 18; hour++) {
+			const sessionId = await createProgramSession({
+				testRunId: testRun.testRunId,
+				title: `Focus Session ${hour}`,
+				startAt: isoDay(0, hour),
+				endAt: isoDay(0, hour + 1),
+				roomId,
+			});
+			for (let talk = 0; talk < 3; talk++) {
+				const sub = await createSubmission({
+					testRunId: testRun.testRunId,
+					title: `Focus Talk ${hour}.${talk}`,
+					status: SubmissionStatus.ACCEPTED,
+				});
+				await addPresentationToSession(sessionId, sub.id, { durationMin: 20 });
+			}
+		}
+		await setSchedulePublished(true);
+		await page.setViewportSize({ width: 375, height: 568 });
+		await publicProgramPage.goto();
+		await expect(
+			publicProgramPage.sessionByTitle(`${testRun.testRunId}_Focus Session 17`).first(),
+		).toBeVisible();
+
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() =>
+						document.querySelector<HTMLElement>(
+							'[aria-label="Programme filters"]',
+						)?.parentElement?.style.scrollPaddingTop,
+				),
+			)
+			.toMatch(/px$/);
+		await page.locator("main").locator("a, button").last().focus();
+		const hidden: string[] = [];
+		for (let i = 0; i < 40; i++) {
+			await page.keyboard.press("Shift+Tab");
+			const probe = await page.evaluate(() => {
+				const el = document.activeElement;
+				const bar = document.querySelector('[aria-label="Programme filters"]');
+				if (!el || !bar || !el.closest("main")) return null;
+				return {
+					label: el.textContent?.trim().slice(0, 40) ?? "",
+					top: el.getBoundingClientRect().top,
+					barBottom: bar.getBoundingClientRect().bottom,
+				};
+			});
+			if (!probe) break;
+			if (probe.top < probe.barBottom - 1) hidden.push(probe.label);
+		}
+		expect(hidden).toEqual([]);
+	});
+
 	test.describe("themes", () => {
 		test.afterEach(async () => {
 			await setAppSetting("PROGRAM_THEME", "default");

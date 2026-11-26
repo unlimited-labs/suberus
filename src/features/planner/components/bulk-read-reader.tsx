@@ -49,7 +49,7 @@ export function BulkReadReader({
 		>
 			<DialogContent
 				aria-label="Read submissions"
-				className="bg-background fixed inset-0 flex max-w-none translate-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
+				className="bg-background fixed inset-0 flex max-h-none max-w-none translate-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
 				data-testid="bulk-reader"
 				initialFocus={closeRef}
 				showCloseButton={false}
@@ -89,7 +89,10 @@ export function BulkReadReader({
 						<IconArrowLeft size={20} />
 					</button>
 
-					<article className="mx-auto flex max-w-3xl flex-1 flex-col gap-4 overflow-y-auto px-6 py-8">
+					<article
+						className="mx-auto flex max-w-3xl flex-1 flex-col gap-4 overflow-y-auto px-6 py-8"
+						key={s.id}
+					>
 						<div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
 							<span className="bg-muted rounded px-1.5 py-0.5 font-medium tracking-wide uppercase">
 								{s.type}

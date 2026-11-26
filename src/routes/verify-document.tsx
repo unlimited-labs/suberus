@@ -50,41 +50,45 @@ function VerifyDocumentPage() {
 	};
 
 	return (
-		<div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-4 py-10">
-			<div className="text-center">
-				<h1 className="text-2xl font-bold tracking-tight">Verify a document</h1>
-				<p className="text-muted-foreground mt-2 text-sm">
-					Upload a PDF issued by us to confirm it is authentic and has not been
-					altered. The file is checked in memory and never stored.
-				</p>
-			</div>
+		<div className="h-svh overflow-y-auto">
+			<div className="mx-auto flex min-h-full max-w-xl flex-col justify-center-safe gap-6 px-4 py-10">
+				<div className="text-center">
+					<h1 className="text-2xl font-bold tracking-tight">
+						Verify a document
+					</h1>
+					<p className="text-muted-foreground mt-2 text-sm">
+						Upload a PDF issued by us to confirm it is authentic and has not
+						been altered. The file is checked in memory and never stored.
+					</p>
+				</div>
 
-			<div className="border-border/60 bg-card space-y-4 rounded-2xl border p-6">
-				<input
-					accept="application/pdf,.pdf"
-					aria-label="PDF document to verify"
-					className="file:border-border file:bg-muted block w-full text-sm file:mr-3 file:rounded-md file:border file:px-3 file:py-1.5 file:text-sm"
-					data-testid="verify-file-input"
-					ref={fileRef}
-					type="file"
-				/>
-				<Button
-					className="w-full"
-					data-testid="verify-submit"
-					disabled={busy}
-					onClick={verify}
-				>
-					{busy ? (
-						<IconLoader2 className="mr-2 size-4 animate-spin" />
-					) : (
-						<IconUpload className="mr-2 size-4" />
-					)}
-					Verify
-				</Button>
+				<div className="border-border/60 bg-card space-y-4 rounded-2xl border p-6">
+					<input
+						accept="application/pdf,.pdf"
+						aria-label="PDF document to verify"
+						className="file:border-border file:bg-muted block w-full text-sm file:mr-3 file:rounded-md file:border file:px-3 file:py-1.5 file:text-sm"
+						data-testid="verify-file-input"
+						ref={fileRef}
+						type="file"
+					/>
+					<Button
+						className="w-full"
+						data-testid="verify-submit"
+						disabled={busy}
+						onClick={verify}
+					>
+						{busy ? (
+							<IconLoader2 className="mr-2 size-4 animate-spin" />
+						) : (
+							<IconUpload className="mr-2 size-4" />
+						)}
+						Verify
+					</Button>
 
-				{error && <p className="text-destructive text-sm">{error}</p>}
+					{error && <p className="text-destructive text-sm">{error}</p>}
 
-				{result && <VerifyResultPanel result={result} />}
+					{result && <VerifyResultPanel result={result} />}
+				</div>
 			</div>
 		</div>
 	);

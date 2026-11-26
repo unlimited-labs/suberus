@@ -18,7 +18,7 @@ export function AuthLayout({
 	logoDarkInvert = true,
 }: AuthLayoutProps) {
 	return (
-		<div className="bg-background relative flex min-h-svh w-full items-center justify-center overflow-hidden">
+		<div className="bg-background relative flex h-svh w-full items-center-safe justify-center overflow-y-auto">
 			{backgroundImageUrl ? (
 				<>
 					<div
@@ -66,7 +66,7 @@ export function AuthLayout({
 				</>
 			)}
 
-			<header className="fixed inset-x-0 top-0 z-20 flex justify-center p-6 sm:inset-x-auto sm:left-0 sm:justify-start lg:p-8">
+			<header className="absolute inset-x-0 top-0 z-20 flex justify-center p-6 sm:inset-x-auto sm:left-0 sm:justify-start lg:p-8">
 				<Link className="group block" to="/">
 					<div className="flex items-center gap-3">
 						<BrandLogo
