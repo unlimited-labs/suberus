@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authRequestMiddleware } from "@/features/auth/server/middleware";
+import { reviewerDownloadName } from "@/features/reviews/server/blind-file";
 import type { UserRole } from "@/generated/prisma/enums";
 import { isUuid } from "@/shared/lib/uuid";
 import { contentDispositionAttachment } from "@/shared/server/file-names";
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/api/files/$fileId")({
 					return new Response("Invalid file ID", { status: 400 });
 				}
 
-				const { authorized, file } = await checkFileAccess(
+				const { authorized, file, reviewerView } = await checkFileAccess(
 					fileId,
 					context.user.id,
 					// SAFETY: session role mirrors the DB enum column.
@@ -28,14 +29,19 @@ export const Route = createFileRoute("/api/files/$fileId")({
 					return new Response("Forbidden", { status: 403 });
 				}
 
+				const downloadName = reviewerView
+					? await reviewerDownloadName(
+							file.originalName,
+							reviewerView.submissionType,
+							reviewerView.version,
+						)
+					: file.originalName;
 				const result = await getFileContent(file.storageKey);
 
 				return new Response(result.body, {
 					headers: {
 						"Content-Type": file.mimeType,
-						"Content-Disposition": contentDispositionAttachment(
-							file.originalName,
-						),
+						"Content-Disposition": contentDispositionAttachment(downloadName),
 						...(result.contentLength && {
 							"Content-Length": String(result.contentLength),
 						}),

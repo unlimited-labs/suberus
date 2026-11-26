@@ -4,12 +4,21 @@ export interface FileAuthzSubmission {
 	reviewAssignments: { reviewerId: string }[];
 }
 
+export function isSubmissionAuthor(
+	submission: FileAuthzSubmission,
+	userId: string,
+): boolean {
+	return (
+		submission.userId === userId ||
+		submission.authors.some((a) => a.userId === userId)
+	);
+}
+
 export function isSubmissionFileAuthorized(
 	submission: FileAuthzSubmission,
 	userId: string,
 ): boolean {
-	if (submission.userId === userId) return true;
-	if (submission.authors.some((a) => a.userId === userId)) return true;
+	if (isSubmissionAuthor(submission, userId)) return true;
 	return submission.reviewAssignments.some((a) => a.reviewerId === userId);
 }
 
