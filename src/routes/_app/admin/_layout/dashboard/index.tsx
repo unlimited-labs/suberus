@@ -14,6 +14,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 
 export const Route = createFileRoute("/_app/admin/_layout/dashboard/")({
+	staticData: { title: "Admin dashboard" },
 	loader: async ({ context }) => {
 		await context.queryClient.query({
 			...adminDashboardQueryOptions(),

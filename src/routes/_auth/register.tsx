@@ -34,6 +34,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_auth/register")({
+	staticData: { title: "Registration" },
 	validateSearch: searchSchema,
 	loaderDeps: ({ search }) => ({ token: search.token }),
 	loader: async ({ deps }) => {

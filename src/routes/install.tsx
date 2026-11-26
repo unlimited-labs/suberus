@@ -17,6 +17,7 @@ import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 
 export const Route = createFileRoute("/install")({
+	staticData: { title: "Install" },
 	beforeLoad: async () => {
 		const { installed } = await checkInstallStatusFn();
 		if (installed) {

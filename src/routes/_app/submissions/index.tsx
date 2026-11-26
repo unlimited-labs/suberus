@@ -20,6 +20,7 @@ import { useSession } from "@/shared/hooks/use-session";
 import { dateForPattern } from "@/shared/lib/format-date";
 
 export const Route = createFileRoute("/_app/submissions/")({
+	staticData: { title: "My submissions" },
 	server: {
 		middleware: [redirectExhibitorRouteMiddleware],
 	},

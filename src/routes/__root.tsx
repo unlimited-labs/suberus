@@ -16,7 +16,8 @@ import {
 	getPrimaryColorFn,
 } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
-import { ensureContrast } from "@/shared/lib/color-contrast";
+import { contrastRatio, ensureContrast } from "@/shared/lib/color-contrast";
+import { pageTitle } from "@/shared/lib/page-title";
 import { getThemeFn } from "@/shared/lib/theme";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { SpinnerSvg } from "../shared/components/spinner-svg";
@@ -57,7 +58,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			};
 		}
 	},
-	head: ({ loaderData }) => ({
+	head: ({ loaderData, matches }) => ({
 		meta: [
 			{
 				charSet: "utf-8",
@@ -67,7 +68,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "Suberus - Conference Management System",
+				title: pageTitle(matches, "Suberus - Conference Management System"),
 			},
 			{
 				name: "color-scheme",
@@ -152,6 +153,12 @@ function RootComponent() {
 
 const LIGHT_SURFACE = "#ffffff";
 const DARK_SURFACE = "#262626";
+const DARK_TEXT = "#0a0a0a";
+
+const readableOn = (fill: string) =>
+	contrastRatio(LIGHT_SURFACE, fill) >= contrastRatio(DARK_TEXT, fill)
+		? LIGHT_SURFACE
+		: DARK_TEXT;
 
 function buildBrandVars(primaryColor: string): CSSProperties | undefined {
 	if (
@@ -166,6 +173,8 @@ function buildBrandVars(primaryColor: string): CSSProperties | undefined {
 		"--ring": primaryColor,
 		"--sidebar-primary": primaryColor,
 		"--sidebar-ring": primaryColor,
+		"--primary-foreground": readableOn(primaryColor),
+		"--sidebar-primary-foreground": readableOn(primaryColor),
 		"--chart-1": primaryColor,
 		"--brand-ink-light": ensureContrast(primaryColor, LIGHT_SURFACE),
 		"--brand-ink-dark": ensureContrast(primaryColor, DARK_SURFACE),

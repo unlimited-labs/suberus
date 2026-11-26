@@ -42,6 +42,7 @@ import { adminUsersQueryOptions } from "@/features/users/api/users";
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
+	staticData: { title: "Program planner" },
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.query({

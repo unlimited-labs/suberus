@@ -54,7 +54,7 @@ export function PreviewIframe({ body, isHtml, isLoading }: PreviewIframeProps) {
 									type="button"
 								>
 									<v.icon className="size-3.5" />
-									<span className="hidden sm:inline">{v.label}</span>
+									<span className="max-sm:sr-only">{v.label}</span>
 								</button>
 							))}
 						</div>

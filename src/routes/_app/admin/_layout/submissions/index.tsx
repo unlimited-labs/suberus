@@ -16,6 +16,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
+	staticData: { title: "Submissions" },
 	loader: async ({ context }) => {
 		await context.queryClient.query({
 			...adminSubmissionsQueryOptions(),

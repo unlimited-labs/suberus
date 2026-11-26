@@ -320,11 +320,11 @@ export function UsersByCountryCard({ data }: UsersByCountryCardProps) {
 					<TabsList>
 						<TabsTrigger value="map">
 							<IconMap />
-							<span className="hidden sm:inline">Map</span>
+							<span className="max-sm:sr-only">Map</span>
 						</TabsTrigger>
 						<TabsTrigger value="list">
 							<IconList />
-							<span className="hidden sm:inline">List</span>
+							<span className="max-sm:sr-only">List</span>
 						</TabsTrigger>
 					</TabsList>
 				}

@@ -16,6 +16,7 @@ import { useSession } from "@/shared/hooks/use-session";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
 export const Route = createFileRoute("/_app/exhibitor/")({
+	staticData: { title: "Exhibitor panel" },
 	server: {
 		middleware: [exhibitorRouteMiddleware],
 	},

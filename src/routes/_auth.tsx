@@ -14,6 +14,7 @@ import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { SpinnerSvg } from "@/shared/components/spinner-svg";
 import { useSession } from "@/shared/hooks/use-session";
 import { formatDate, dateForPattern } from "@/shared/lib/format-date";
+import { pageTitle } from "@/shared/lib/page-title";
 
 const defaults: AuthPageBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
@@ -64,6 +65,18 @@ export const Route = createFileRoute("/_auth")({
 			return { ...defaults, conferenceDate: "" };
 		}
 	},
+	head: ({ match, matches }) => ({
+		meta: [
+			{
+				title: pageTitle(
+					matches,
+					match.context.conferenceName
+						? `${match.context.conferenceName} | Suberus`
+						: "Suberus",
+				),
+			},
+		],
+	}),
 	component: AuthLayoutRoute,
 });
 

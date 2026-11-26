@@ -3,6 +3,7 @@ import { announcementQueryOptions } from "@/features/announcements/api/announcem
 import { AnnouncementComposePage } from "@/features/announcements/components/compose-page";
 
 export const Route = createFileRoute("/_app/admin/_layout/announcements/$id")({
+	staticData: { title: "Announcement" },
 	loader: async ({ params, context }) => {
 		await context.queryClient.query({
 			...announcementQueryOptions(params.id),

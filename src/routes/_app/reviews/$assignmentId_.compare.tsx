@@ -14,6 +14,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId_/compare")({
+	staticData: { title: "Compare versions" },
 	validateSearch: compareSearchSchema,
 	loader: async ({ params, context }) => {
 		await context.queryClient.query({

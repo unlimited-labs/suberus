@@ -18,6 +18,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/submissions/$id")({
+	staticData: { title: "Submission" },
 	loader: async ({ params, context }) => {
 		await context.queryClient.query({
 			...submissionDetailQueryOptions(params.id),

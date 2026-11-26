@@ -17,6 +17,7 @@ import { Button } from "@/shared/ui/button";
 import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/invitations/")({
+	staticData: { title: "Invitations" },
 	server: {
 		middleware: [adminOnlyRouteMiddleware],
 	},

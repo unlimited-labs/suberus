@@ -72,7 +72,7 @@ export function StepIndicator({
 						<span
 							className={cn(
 								"truncate text-xs font-medium",
-								horizontal && "hidden sm:inline",
+								horizontal && "max-sm:sr-only",
 								tone === "default" &&
 									state !== "current" &&
 									"text-muted-foreground",

@@ -9,6 +9,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/error")({
+	staticData: { title: "Error" },
 	validateSearch: searchSchema,
 	component: AuthErrorPage,
 });

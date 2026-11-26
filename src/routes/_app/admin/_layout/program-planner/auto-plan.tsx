@@ -28,6 +28,7 @@ import { Separator } from "@/shared/ui/separator";
 export const Route = createFileRoute(
 	"/_app/admin/_layout/program-planner/auto-plan",
 )({
+	staticData: { title: "Auto-plan" },
 	component: AutoPlanPage,
 });
 

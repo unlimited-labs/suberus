@@ -29,6 +29,7 @@ import { Button } from "@/shared/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
+	staticData: { title: "Submission" },
 	loader: async ({ params, context }) => {
 		await context.queryClient.query({
 			...editorSubmissionQueryOptions(params.id),

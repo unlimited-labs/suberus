@@ -26,6 +26,7 @@ const searchSchema = z.object({ format: z.enum(PRINT_FORMATS).catch("docx") });
 export const Route = createFileRoute(
 	"/_app/admin/_layout/program-planner/export",
 )({
+	staticData: { title: "Printed program" },
 	server: { middleware: [adminRouteMiddleware] },
 	validateSearch: searchSchema,
 	// The preview measures a hidden copy of the whole booklet; rendering it on the server is wasted.
@@ -75,7 +76,7 @@ function PrintExportPage() {
 				<Button asChild size="sm" variant="ghost">
 					<Link aria-label="Back to planner" to="/admin/program-planner">
 						<IconArrowLeft />
-						<span className="hidden sm:inline">Back to planner</span>
+						<span className="max-sm:sr-only">Back to planner</span>
 					</Link>
 				</Button>
 				<Button

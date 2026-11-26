@@ -313,12 +313,12 @@ function MinimalHeader({
 					{settings.showAuthorInfo && settings.viewerIsParticipant && (
 						<ProgramParticipantsLink
 							className="text-muted-foreground hover:text-primary-ink text-sm font-medium transition-colors"
-							labelClassName="hidden sm:inline"
+							labelClassName="max-sm:sr-only"
 						/>
 					)}
 					<ProgramAuthLink
 						className="text-muted-foreground hover:text-primary-ink text-sm font-medium transition-colors"
-						labelClassName="hidden sm:inline"
+						labelClassName="max-sm:sr-only"
 					/>
 				</div>
 				{settings.startDate && (
@@ -361,12 +361,12 @@ function FramedHeader({
 					{settings.showAuthorInfo && settings.viewerIsParticipant && (
 						<ProgramParticipantsLink
 							className="hover:text-foreground text-sm transition-colors"
-							labelClassName="hidden sm:inline"
+							labelClassName="max-sm:sr-only"
 						/>
 					)}
 					<ProgramAuthLink
 						className="hover:text-foreground text-sm transition-colors"
-						labelClassName="hidden sm:inline"
+						labelClassName="max-sm:sr-only"
 					/>
 				</div>
 				<h1 className="text-foreground mt-4 font-(family-name:--prog-font-display) text-3xl leading-[1.02] font-extrabold tracking-tight wrap-break-word sm:mt-5 sm:text-5xl md:text-6xl">

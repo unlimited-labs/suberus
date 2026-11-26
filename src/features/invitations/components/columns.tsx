@@ -96,6 +96,7 @@ export function createInvitationColumns(
 				return (
 					<div className="flex gap-1">
 						<Button
+							aria-label={`Resend invitation for ${invitation.email}`}
 							onClick={() => options.onResend(invitation.id)}
 							size="icon-sm"
 							title="Resend"
@@ -104,6 +105,7 @@ export function createInvitationColumns(
 							<IconMailForward className="size-4" />
 						</Button>
 						<Button
+							aria-label={`Cancel invitation for ${invitation.email}`}
 							onClick={() => options.onCancel(invitation.id)}
 							size="icon-sm"
 							title="Cancel"

@@ -19,6 +19,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_auth/reset-password")({
+	staticData: { title: "Reset password" },
 	validateSearch: searchSchema,
 	component: ResetPasswordPage,
 });

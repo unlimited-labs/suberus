@@ -10,6 +10,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_auth/verify-email")({
+	staticData: { title: "Verify email" },
 	validateSearch: searchSchema,
 	component: VerifyEmailPage,
 });

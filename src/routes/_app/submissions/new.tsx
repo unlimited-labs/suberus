@@ -9,6 +9,7 @@ import {
 import { activeTracksQueryOptions } from "@/features/tracks/api/tracks";
 
 export const Route = createFileRoute("/_app/submissions/new")({
+	staticData: { title: "New submission" },
 	loader: async ({ context }) => {
 		await ensureSubmissionCreateData(context.queryClient);
 	},

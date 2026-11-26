@@ -106,6 +106,7 @@ export function TracksList({ tracks, onEdit, onUpdate }: TracksListProps) {
 							</TableCell>
 							<TableCell className="text-center">
 								<Switch
+									aria-label={`Active: ${track.name}`}
 									checked={track.isActive}
 									disabled={togglingId === track.id}
 									onCheckedChange={() =>

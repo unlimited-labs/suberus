@@ -41,6 +41,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_app/admin/_layout/users/")({
+	staticData: { title: "Users" },
 	validateSearch: searchSchema,
 	loader: async ({ context }) => {
 		await Promise.all([

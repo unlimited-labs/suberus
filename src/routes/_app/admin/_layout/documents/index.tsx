@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 const searchSchema = z.object({ tab: z.string().optional() });
 
 export const Route = createFileRoute("/_app/admin/_layout/documents/")({
+	staticData: { title: "Documents" },
 	server: {
 		middleware: [adminRouteMiddleware],
 	},

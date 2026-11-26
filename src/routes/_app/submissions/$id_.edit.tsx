@@ -29,6 +29,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/submissions/$id_/edit")({
+	staticData: { title: "Edit submission" },
 	loader: async ({ params, context }) => {
 		await Promise.all([
 			context.queryClient.query({
