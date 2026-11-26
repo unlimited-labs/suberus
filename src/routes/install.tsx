@@ -103,6 +103,7 @@ function InstallPage() {
 							<form.AppField name="email">
 								{(field) => (
 									<field.IconInputField
+										autoComplete="email"
 										icon={<IconMail className="size-4" />}
 										label="E-mail"
 										type="email"
@@ -111,16 +112,27 @@ function InstallPage() {
 							</form.AppField>
 
 							<form.AppField name="password">
-								{(field) => <field.PasswordField label="Password" />}
+								{(field) => (
+									<field.PasswordField
+										autoComplete="new-password"
+										label="Password"
+									/>
+								)}
 							</form.AppField>
 
 							<form.AppField name="confirmPassword">
-								{(field) => <field.PasswordField label="Confirm Password" />}
+								{(field) => (
+									<field.PasswordField
+										autoComplete="new-password"
+										label="Confirm Password"
+									/>
+								)}
 							</form.AppField>
 
 							<form.AppField name="firstName">
 								{(field) => (
 									<field.IconInputField
+										autoComplete="given-name"
 										icon={<IconUser className="size-4" />}
 										label="First Name"
 									/>
@@ -130,6 +142,7 @@ function InstallPage() {
 							<form.AppField name="lastName">
 								{(field) => (
 									<field.IconInputField
+										autoComplete="family-name"
 										icon={<IconUser className="size-4" />}
 										label="Last Name"
 									/>
@@ -139,6 +152,7 @@ function InstallPage() {
 							<form.AppField name="affiliation">
 								{(field) => (
 									<field.IconInputField
+										autoComplete="organization"
 										icon={<IconBuilding className="size-4" />}
 										label="Affiliation"
 									/>

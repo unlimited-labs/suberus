@@ -11,6 +11,7 @@ interface FormIconInputFieldProps {
 	disabled?: boolean;
 	description?: string;
 	autoComplete?: string;
+	required?: boolean;
 }
 
 export function FormIconInputField({
@@ -21,6 +22,7 @@ export function FormIconInputField({
 	disabled,
 	description,
 	autoComplete,
+	required,
 }: FormIconInputFieldProps) {
 	const { field, errors, hasError } = useFieldError();
 
@@ -38,9 +40,11 @@ export function FormIconInputField({
 				disabled={disabled}
 				icon={icon}
 				id={field.name}
+				name={field.name}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
+				required={required}
 				type={type}
 				value={field.state.value}
 			/>

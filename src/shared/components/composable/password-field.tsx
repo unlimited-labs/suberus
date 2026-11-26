@@ -7,6 +7,8 @@ interface FormPasswordFieldProps {
 	placeholder?: string;
 	disabled?: boolean;
 	description?: string;
+	autoComplete?: string;
+	required?: boolean;
 }
 
 export function FormPasswordField({
@@ -14,6 +16,8 @@ export function FormPasswordField({
 	placeholder,
 	disabled,
 	description,
+	autoComplete,
+	required,
 }: FormPasswordFieldProps) {
 	const { field, errors, hasError } = useFieldError();
 
@@ -27,11 +31,14 @@ export function FormPasswordField({
 		>
 			<PasswordInput
 				{...fieldAria(field.name, hasError, !!description)}
+				autoComplete={autoComplete}
 				disabled={disabled}
 				id={field.name}
+				name={field.name}
 				onBlur={field.handleBlur}
 				onChange={field.handleChange}
 				placeholder={placeholder}
+				required={required}
 				value={field.state.value}
 			/>
 		</FormField>

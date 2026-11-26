@@ -39,6 +39,7 @@ export function PasswordChangeSection({
 			<form.AppField name="currentPassword">
 				{(field) => (
 					<field.PasswordField
+						autoComplete="current-password"
 						disabled={isLoading}
 						label="Current password *"
 					/>

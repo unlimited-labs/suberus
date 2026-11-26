@@ -95,6 +95,7 @@ function ForgotPasswordPage() {
 					<form.AppField name="email">
 						{(field) => (
 							<field.IconInputField
+								autoComplete="email"
 								icon={<IconMail className="size-4" />}
 								label="E-mail"
 								type="email"

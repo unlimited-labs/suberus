@@ -1,28 +1,21 @@
 import { IconLock } from "@tabler/icons-react";
+import type * as React from "react";
 import { usePasswordVisibility } from "@/shared/hooks/use-password-visibility";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 
-interface PasswordInputProps {
-	id?: string;
+type PasswordInputProps = Omit<
+	React.ComponentProps<"input">,
+	"type" | "value" | "onChange"
+> & {
 	value: string;
 	onChange: (value: string) => void;
-	onBlur?: () => void;
-	placeholder?: string;
-	className?: string;
-	disabled?: boolean;
-	"aria-invalid"?: boolean;
-}
+};
 
 export function PasswordInput({
-	id,
-	value,
-	onChange,
-	onBlur,
-	placeholder,
 	className,
-	disabled,
-	"aria-invalid": ariaInvalid,
+	onChange,
+	...props
 }: PasswordInputProps) {
 	const { visible, type, toggle, Icon } = usePasswordVisibility();
 
@@ -30,15 +23,10 @@ export function PasswordInput({
 		<div className="relative">
 			<IconLock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 			<Input
-				id={id}
+				{...props}
 				type={type}
-				placeholder={placeholder}
 				className={cn("h-9 pl-9 pr-10", className)}
-				aria-invalid={ariaInvalid}
-				value={value}
-				onBlur={onBlur}
 				onChange={(e) => onChange(e.target.value)}
-				disabled={disabled}
 			/>
 			<button
 				type="button"
