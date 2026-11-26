@@ -15,13 +15,15 @@ import { getSetting } from "@/features/settings/server/settings";
 export const listFinancesFn = createServerFn({ method: "GET" })
 	.middleware([adminOnlyMiddleware])
 	.handler(async () => {
-		const [entries, feeSummary, vatRates, contractors] = await Promise.all([
-			listFinanceEntries(),
-			getFeeSummary(),
-			getSetting("FINANCES_VAT_RATES"),
-			getContractorSuggestions(),
-		]);
-		return { entries, feeSummary, vatRates, contractors };
+		const [entries, feeSummary, vatRates, contractors, timezone] =
+			await Promise.all([
+				listFinanceEntries(),
+				getFeeSummary(),
+				getSetting("FINANCES_VAT_RATES"),
+				getContractorSuggestions(),
+				getSetting("CONFERENCE_TIMEZONE"),
+			]);
+		return { entries, feeSummary, vatRates, contractors, timezone };
 	});
 
 export const saveFinancesFn = createServerFn({ method: "POST" })
