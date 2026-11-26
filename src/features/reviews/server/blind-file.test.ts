@@ -5,7 +5,7 @@ vi.mock("@/features/settings/server/settings", () => ({
 }));
 
 const { getSetting } = await import("@/features/settings/server/settings");
-const { reviewerDownloadName } = await import("./blind-file");
+const { blindDownloadName } = await import("./blind-file");
 
 const reviewMode = (mode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND") =>
 	vi.mocked(getSetting).mockResolvedValue({
@@ -19,12 +19,16 @@ const reviewMode = (mode: "OPEN" | "SINGLE_BLIND" | "DOUBLE_BLIND") =>
 
 beforeEach(() => vi.clearAllMocks());
 
-describe("reviewerDownloadName", () => {
+const asReviewer = (version: number) =>
+	({ hide: "author", submissionType: "FULL_PAPER", version }) as const;
+const asAuthor = { hide: "reviewer", submissionType: "ABSTRACT" } as const;
+
+describe("blindDownloadName for a reviewer", () => {
 	it("replaces the author-derived name in double-blind review", async () => {
 		reviewMode("DOUBLE_BLIND");
 
 		await expect(
-			reviewerDownloadName("Jan_Kowalski_et_al.docx", "FULL_PAPER", 2),
+			blindDownloadName("Jan_Kowalski_et_al.docx", asReviewer(2)),
 		).resolves.toBe("v2.docx");
 	});
 
@@ -32,7 +36,25 @@ describe("reviewerDownloadName", () => {
 		reviewMode("SINGLE_BLIND");
 
 		await expect(
-			reviewerDownloadName("Jan_Kowalski.pdf", "ABSTRACT", 1),
+			blindDownloadName("Jan_Kowalski.pdf", asReviewer(1)),
 		).resolves.toBe("Jan_Kowalski.pdf");
+	});
+});
+
+describe("blindDownloadName for an author reading a review attachment", () => {
+	it("hides the reviewer's file name in single-blind review", async () => {
+		reviewMode("SINGLE_BLIND");
+
+		await expect(
+			blindDownloadName("review_Smith.docx", asAuthor),
+		).resolves.toBe("review.docx");
+	});
+
+	it("keeps the reviewer's file name in open review", async () => {
+		reviewMode("OPEN");
+
+		await expect(
+			blindDownloadName("review_Smith.docx", asAuthor),
+		).resolves.toBe("review_Smith.docx");
 	});
 });

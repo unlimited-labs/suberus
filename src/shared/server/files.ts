@@ -1,10 +1,17 @@
 import type { SubmissionType, UserRole } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/server/db.server";
 import {
+	type FileAuthzSubmission,
 	isReviewFileAuthorized,
 	isSubmissionAuthor,
 	isSubmissionFileAuthorized,
 } from "@/shared/server/file-access-rules";
+
+/** Whose identity the download name must hide; the review mode decides whether it applies. */
+export type BlindAs =
+	| { hide: "author"; submissionType: SubmissionType; version: number }
+	| { hide: "reviewer"; submissionType: SubmissionType }
+	| null;
 
 export async function checkFileAccess(
 	fileId: string,
@@ -20,8 +27,7 @@ export async function checkFileAccess(
 		mimeType: string;
 		size: number;
 	} | null;
-	/** Set when only a review assignment grants access, so double-blind can hide the author. */
-	reviewerView: { submissionType: SubmissionType; version: number } | null;
+	blindAs: BlindAs;
 }> {
 	if (userRole === "EDITOR" || userRole === "ADMIN") {
 		const file = await prisma.file.findUnique({
@@ -35,7 +41,7 @@ export async function checkFileAccess(
 				size: true,
 			},
 		});
-		return { authorized: !!file, file, reviewerView: null };
+		return { authorized: !!file, file, blindAs: null };
 	}
 
 	const file = await prisma.file.findUnique({
@@ -68,54 +74,77 @@ export async function checkFileAccess(
 		},
 	});
 
-	if (!file) return { authorized: false, file: null, reviewerView: null };
+	if (!file) return { authorized: false, file: null, blindAs: null };
 
-	const granting = file.submissionVersions.filter((v) =>
+	const access =
+		submissionVersionAccess(file.submissionVersions, userId) ??
+		(file.submissionVersions.length === 0
+			? await reviewAttachmentAccess(fileId, userId)
+			: undefined);
+	return access
+		? { authorized: true, file, blindAs: access.blindAs }
+		: { authorized: false, file, blindAs: null };
+}
+
+function submissionVersionAccess(
+	versions: {
+		version: number;
+		submission: FileAuthzSubmission & { type: SubmissionType };
+	}[],
+	userId: string,
+): { blindAs: BlindAs } | undefined {
+	const granting = versions.filter((v) =>
 		isSubmissionFileAuthorized(v.submission, userId),
 	);
 	const [first] = granting;
-	if (first) {
-		const asAuthor = granting.some((v) =>
-			isSubmissionAuthor(v.submission, userId),
-		);
-		return {
-			authorized: true,
-			file,
-			reviewerView: asAuthor
-				? null
-				: { submissionType: first.submission.type, version: first.version },
-		};
-	}
+	if (!first) return undefined;
+	const asAuthor = granting.some((v) =>
+		isSubmissionAuthor(v.submission, userId),
+	);
+	return {
+		blindAs: asAuthor
+			? null
+			: {
+					hide: "author",
+					submissionType: first.submission.type,
+					version: first.version,
+				},
+	};
+}
 
-	if (file.submissionVersions.length === 0) {
-		const fileWithEntity = await prisma.file.findUnique({
-			where: { id: fileId },
-			select: { entityType: true, entityId: true },
-		});
+async function reviewAttachmentAccess(
+	fileId: string,
+	userId: string,
+): Promise<{ blindAs: BlindAs } | undefined> {
+	const fileWithEntity = await prisma.file.findUnique({
+		where: { id: fileId },
+		select: { entityType: true, entityId: true },
+	});
+	if (fileWithEntity?.entityType !== "REVIEW") return undefined;
 
-		if (fileWithEntity?.entityType === "REVIEW") {
-			const review = await prisma.review.findUnique({
-				where: { id: fileWithEntity.entityId },
+	const review = await prisma.review.findUnique({
+		where: { id: fileWithEntity.entityId },
+		select: {
+			reviewerId: true,
+			submission: {
 				select: {
-					reviewerId: true,
-					submission: {
-						select: {
-							userId: true,
-							authors: { select: { userId: true } },
-							reviewAssignments: {
-								where: { status: { not: "CANCELLED" } },
-								select: { reviewerId: true },
-							},
-						},
+					type: true,
+					userId: true,
+					authors: { select: { userId: true } },
+					reviewAssignments: {
+						where: { status: { not: "CANCELLED" } },
+						select: { reviewerId: true },
 					},
 				},
-			});
+			},
+		},
+	});
+	if (!review || !isReviewFileAuthorized(review, userId)) return undefined;
 
-			if (review && isReviewFileAuthorized(review, userId)) {
-				return { authorized: true, file, reviewerView: null };
-			}
-		}
-	}
-
-	return { authorized: false, file, reviewerView: null };
+	return {
+		blindAs:
+			review.reviewerId === userId
+				? null
+				: { hide: "reviewer", submissionType: review.submission.type },
+	};
 }

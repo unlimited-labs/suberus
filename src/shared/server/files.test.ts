@@ -44,7 +44,8 @@ describe("checkFileAccess", () => {
 		const result = await checkFileAccess("f1", "reviewer", "REVIEWER");
 
 		expect(result.authorized).toBe(true);
-		expect(result.reviewerView).toEqual({
+		expect(result.blindAs).toEqual({
+			hide: "author",
 			submissionType: "FULL_PAPER",
 			version: 1,
 		});
@@ -54,7 +55,7 @@ describe("checkFileAccess", () => {
 		const result = await checkFileAccess("f1", "coauthor", "AUTHOR");
 
 		expect(result.authorized).toBe(true);
-		expect(result.reviewerView).toBeNull();
+		expect(result.blindAs).toBeNull();
 	});
 
 	it("does not mark access for a reviewer who also co-authored it", async () => {
@@ -64,6 +65,43 @@ describe("checkFileAccess", () => {
 
 		const result = await checkFileAccess("f1", "reviewer", "REVIEWER");
 
-		expect(result.reviewerView).toBeNull();
+		expect(result.blindAs).toBeNull();
+	});
+
+	describe("on a review attachment", () => {
+		beforeEach(() => {
+			prismaMock.file.findUnique
+				.mockResolvedValueOnce({
+					...fileOf({ userId: "owner", authors: [] }),
+					submissionVersions: [],
+				})
+				.mockResolvedValueOnce({ entityType: "REVIEW", entityId: "rev1" });
+			prismaMock.review.findUnique.mockResolvedValue({
+				reviewerId: "reviewer",
+				submission: {
+					type: "ABSTRACT",
+					userId: "owner",
+					authors: [],
+					reviewAssignments: [{ reviewerId: "reviewer" }],
+				},
+			});
+		});
+
+		it("marks the author's access so the reviewer can be hidden", async () => {
+			const result = await checkFileAccess("f1", "owner", "AUTHOR");
+
+			expect(result.authorized).toBe(true);
+			expect(result.blindAs).toEqual({
+				hide: "reviewer",
+				submissionType: "ABSTRACT",
+			});
+		});
+
+		it("does not mark the uploading reviewer's own access", async () => {
+			const result = await checkFileAccess("f1", "reviewer", "REVIEWER");
+
+			expect(result.authorized).toBe(true);
+			expect(result.blindAs).toBeNull();
+		});
 	});
 });
