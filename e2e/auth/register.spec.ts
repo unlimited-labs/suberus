@@ -83,6 +83,26 @@ test.describe("Register Page - Step 1: Author Info", () => {
 		await expect(registerPage.page.getByText("Email is already registered")).toBeVisible()
 	})
 
+	test("Enter in a field advances the wizard through its single submit button", async ({ registerPage }) => {
+		const { page } = registerPage
+		const submitButtons = page.locator("form button[type=submit], form button:not([type])")
+		await registerPage.goto()
+		await expect(submitButtons).toHaveCount(1)
+
+		await registerPage.fillStep1({
+			email: "enter-advances@example.com",
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "Test",
+			lastName: "User",
+			affiliation: "Test University",
+		})
+		await page.getByLabel("Last name *").press("Enter")
+
+		await expect(page.getByText("Country *")).toBeVisible()
+		await expect(submitButtons).toHaveCount(1)
+	})
+
 	test("proceeds to step 2 with valid data", async ({ registerPage }) => {
 		await registerPage.goto()
 

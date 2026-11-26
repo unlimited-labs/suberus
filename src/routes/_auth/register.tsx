@@ -178,7 +178,12 @@ function RegisterForm() {
 				))}
 			</div>
 
-			<Form className="flex flex-1 flex-col" onSubmit={() => {}}>
+			<Form
+				className="flex flex-1 flex-col"
+				onSubmit={() => {
+					void (isLast ? handleSubmit() : next());
+				}}
+			>
 				<div className="flex-1 space-y-3">
 					{currentStep === 1 && (
 						<RegisterStep1
@@ -219,7 +224,7 @@ function RegisterForm() {
 					)}
 
 					{!isLast ? (
-						<Button className="h-9 flex-1" onClick={next} type="button">
+						<Button className="h-9 flex-1" type="submit">
 							Continue
 							<IconArrowRight className="ml-2 size-4" />
 						</Button>
@@ -229,8 +234,7 @@ function RegisterForm() {
 								<Button
 									className="h-9 flex-1"
 									disabled={isSubmitting}
-									onClick={handleSubmit}
-									type="button"
+									type="submit"
 								>
 									{isSubmitting ? "Creating account..." : "Create account"}
 								</Button>
