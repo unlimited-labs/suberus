@@ -58,3 +58,12 @@ describe("blindDownloadName for an author reading a review attachment", () => {
 		).resolves.toBe("review_Smith.docx");
 	});
 });
+
+describe("reviewAttachmentName", () => {
+	it("drops an extension that is not a supported file type", async () => {
+		const { reviewAttachmentName } = await import("./blind-file");
+
+		expect(reviewAttachmentName("Uwagi_dr.Nowak")).toBe("review");
+		expect(reviewAttachmentName("Review_Smith.PDF")).toBe("review.pdf");
+	});
+});

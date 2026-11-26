@@ -1,3 +1,4 @@
+import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting } from "@/features/settings/server/settings";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import type { BlindAs } from "@/shared/server/files";
@@ -14,7 +15,10 @@ export function blindFileName(originalName: string, version: number): string {
 
 /** A reviewer's attachment keeps its upload name, which may carry the reviewer's own name. */
 export function reviewAttachmentName(originalName: string): string {
-	return `review${extensionOf(originalName)}`;
+	const ext = extensionOf(originalName).slice(1).toLowerCase();
+	return SUPPORTED_FILE_EXTENSIONS.some((e) => e === ext)
+		? `review.${ext}`
+		: "review";
 }
 
 export async function blindDownloadName(
