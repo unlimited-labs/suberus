@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { PromisePool } from "@supercharge/promise-pool";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { clientSafeMessage } from "@/shared/errors/sanitize";
 import { prisma } from "@/shared/server/db.server";
 
 const EMBEDDING_DIM = 2560;
@@ -143,8 +144,9 @@ export async function embedSubmissions(
 		});
 
 	if (errors.length > 0) {
+		for (const e of errors) logger.error("[embeddings] item failed:", e.raw);
 		throw new Error(
-			`Embedding failed for ${errors.length} item(s): ${errors.map((e) => e.message).join("; ")}`,
+			`Embedding failed for ${errors.length} item(s): ${errors.map((e) => clientSafeMessage(e.raw)).join("; ")}`,
 		);
 	}
 
