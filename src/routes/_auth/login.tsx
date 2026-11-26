@@ -14,6 +14,7 @@ import { authClient, signIn } from "@/shared/lib/auth-client";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_auth/login")({
+	staticData: { title: "Sign in" },
 	component: LoginPage,
 });
 

@@ -15,6 +15,7 @@ import { Button } from "@/shared/ui/button";
 export const Route = createFileRoute(
 	"/_app/admin/_layout/submissions/$id_/compare",
 )({
+	staticData: { title: "Compare versions" },
 	validateSearch: compareSearchSchema,
 	loader: async ({ params, context }) => {
 		await context.queryClient.query({

@@ -9,6 +9,7 @@ import { useAppForm } from "@/shared/hooks/use-app-form";
 import { forgetPassword } from "@/shared/lib/auth-client";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
+	staticData: { title: "Forgot password" },
 	component: ForgotPasswordPage,
 });
 

@@ -22,6 +22,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_app/")({
+	staticData: { title: "Dashboard" },
 	validateSearch: searchSchema,
 	server: {
 		middleware: [redirectExhibitorRouteMiddleware],

@@ -6,6 +6,7 @@ import { ExhibitorsTable } from "@/features/exhibitors/components/admin/exhibito
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/exhibitors/")({
+	staticData: { title: "Exhibitors" },
 	loader: async ({ context }) => {
 		await context.queryClient.query({
 			...listExhibitorsQueryOptions(),

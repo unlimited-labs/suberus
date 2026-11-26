@@ -19,6 +19,7 @@ import { SpinnerSvg } from "@/shared/components/spinner-svg";
 import { VersionSkewBanner } from "@/shared/components/version-skew-banner";
 import { DateFormatProvider } from "@/shared/hooks/use-date-format";
 import { useSession } from "@/shared/hooks/use-session";
+import { pageTitle } from "@/shared/lib/page-title";
 
 const defaults: AppBranding = {
 	conferenceName: APP_SETTINGS_DEFAULTS.CONFERENCE_NAME,
@@ -47,12 +48,15 @@ export const Route = createFileRoute("/_app")({
 			return defaults;
 		}
 	},
-	head: ({ loaderData }) => ({
+	head: ({ loaderData, matches }) => ({
 		meta: [
 			{
-				title: loaderData?.conferenceName
-					? `${loaderData.conferenceName} | Suberus`
-					: "Suberus",
+				title: pageTitle(
+					matches,
+					loaderData?.conferenceName
+						? `${loaderData.conferenceName} | Suberus`
+						: "Suberus",
+				),
 			},
 		],
 		links: loaderData?.faviconUrl

@@ -16,6 +16,7 @@ import { SectionCard } from "@/shared/ui/section-card";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 export const Route = createFileRoute("/_app/documents/")({
+	staticData: { title: "Documents" },
 	server: {
 		middleware: [authRouteMiddleware],
 	},

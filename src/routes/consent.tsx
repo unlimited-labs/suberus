@@ -18,6 +18,7 @@ import {
 } from "@/shared/ui/card";
 
 export const Route = createFileRoute("/consent")({
+	staticData: { title: "Authorize access" },
 	beforeLoad: async () => {
 		try {
 			return await getAuthPageBrandingFn();

@@ -14,6 +14,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Markdown } from "@/shared/ui/markdown";
 
 export const Route = createFileRoute("/_app/fee/")({
+	staticData: { title: "Fee" },
 	loader: async ({ context }) => {
 		await Promise.all([
 			context.queryClient.query({

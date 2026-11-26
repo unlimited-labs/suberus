@@ -48,6 +48,7 @@ import { useSession } from "@/shared/hooks/use-session";
 import { createAffiliation } from "@/shared/server/affiliations-fn";
 
 export const Route = createFileRoute("/_app/profile")({
+	staticData: { title: "Profile" },
 	loader: async ({ context }) => {
 		const [, , , , registrationStatus] = await Promise.all([
 			context.queryClient.query({

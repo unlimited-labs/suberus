@@ -17,6 +17,7 @@ import {
 } from "@/features/settings/api/settings";
 import { APP_SETTINGS_DEFAULTS } from "@/features/settings/defaults";
 import { ensureContrast } from "@/shared/lib/color-contrast";
+import { pageTitle } from "@/shared/lib/page-title";
 import { getThemeFn } from "@/shared/lib/theme";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { SpinnerSvg } from "../shared/components/spinner-svg";
@@ -57,7 +58,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			};
 		}
 	},
-	head: ({ loaderData }) => ({
+	head: ({ loaderData, matches }) => ({
 		meta: [
 			{
 				charSet: "utf-8",
@@ -67,7 +68,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "Suberus - Conference Management System",
+				title: pageTitle(matches, "Suberus - Conference Management System"),
 			},
 			{
 				name: "color-scheme",

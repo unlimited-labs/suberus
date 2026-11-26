@@ -3,6 +3,7 @@ import { bulkEmailCampaignsQueryOptions } from "@/features/bulk-email/api/bulk-e
 import { CampaignList } from "@/features/bulk-email/components/campaign-list";
 
 export const Route = createFileRoute("/_app/admin/_layout/bulk-email/")({
+	staticData: { title: "Email campaigns" },
 	loader: async ({ context }) => {
 		await context.queryClient.query({
 			...bulkEmailCampaignsQueryOptions(),

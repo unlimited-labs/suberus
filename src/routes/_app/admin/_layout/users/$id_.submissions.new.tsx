@@ -17,6 +17,7 @@ import { Button } from "@/shared/ui/button";
 export const Route = createFileRoute(
 	"/_app/admin/_layout/users/$id_/submissions/new",
 )({
+	staticData: { title: "New submission" },
 	loader: async ({ params, context }) => {
 		await Promise.all([
 			ensureSubmissionCreateData(context.queryClient),

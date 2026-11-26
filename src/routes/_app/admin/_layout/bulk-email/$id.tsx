@@ -3,6 +3,7 @@ import { bulkEmailCampaignQueryOptions } from "@/features/bulk-email/api/bulk-em
 import { ComposePage } from "@/features/bulk-email/components/compose-page";
 
 export const Route = createFileRoute("/_app/admin/_layout/bulk-email/$id")({
+	staticData: { title: "Email campaign" },
 	loader: async ({ params, context }) => {
 		await context.queryClient.query({
 			...bulkEmailCampaignQueryOptions(params.id),

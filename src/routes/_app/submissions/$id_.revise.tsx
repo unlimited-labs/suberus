@@ -36,6 +36,7 @@ import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
+	staticData: { title: "Revise submission" },
 	loader: async ({ params, context }) => {
 		await Promise.all([
 			context.queryClient.query({

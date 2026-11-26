@@ -17,6 +17,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
+	staticData: { title: "Review" },
 	loader: async ({ params, context }) => {
 		await Promise.all([
 			context.queryClient.query({

@@ -13,6 +13,7 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 import { Button } from "@/shared/ui/button";
 
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
+	staticData: { title: "User" },
 	loader: async ({ params, context }) => {
 		await Promise.all([
 			context.queryClient.query({

@@ -6,6 +6,7 @@ import { FinancesBoard } from "@/features/finances/components/admin/finances-boa
 import { PageHeader } from "@/shared/components/layout/page-header";
 
 export const Route = createFileRoute("/_app/admin/_layout/finances/")({
+	staticData: { title: "Finances" },
 	server: {
 		middleware: [adminOnlyRouteMiddleware],
 	},
