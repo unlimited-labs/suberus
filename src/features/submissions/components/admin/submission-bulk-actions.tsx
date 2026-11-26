@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useWebMCP } from "use-webmcp-tool";
+import { z } from "zod";
 import { reviewerUsersQueryOptions } from "@/features/reviews/api/reviewers";
 import {
 	bulkAssignReviewerFn,
@@ -10,6 +12,7 @@ import {
 import { statusChangeOptions } from "@/features/submissions/labels";
 import type { AdminSubmission } from "@/features/submissions/server/admin-submissions";
 import type { AvailableTrack } from "@/features/submissions/types";
+import { submissionStatusFilterSchema } from "@/features/submissions/validations";
 import type { SubmissionStatus } from "@/generated/prisma/enums";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { Button } from "@/shared/ui/button";
@@ -22,6 +25,30 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
+
+const bulkActionInput = z.discriminatedUnion("action", [
+	z.object({
+		action: z.literal("change_status"),
+		status: submissionStatusFilterSchema.describe(
+			"Status to move the selected submissions to.",
+		),
+	}),
+	z.object({
+		action: z.literal("assign_reviewer"),
+		reviewerEmail: z.email().describe("Email of the reviewer to assign."),
+	}),
+	z.object({
+		action: z.literal("assign_track"),
+		trackName: z
+			.string()
+			.nullable()
+			.describe("Conference track name; null removes the track."),
+	}),
+]);
+
+const BULK_ACTION_SCHEMA = z.toJSONSchema(bulkActionInput);
+// Submission titles in the result are user-submitted.
+const UNTRUSTED_OUTPUT = { untrustedContentHint: true };
 
 interface SubmissionBulkActionsProps {
 	table: AppTable<AdminSubmission>;
@@ -48,6 +75,62 @@ export function SubmissionBulkActions({
 	const { data: reviewers = [] } = useQuery(reviewerUsersQueryOptions());
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState<string[]>([]);
+
+	const prepare = (args: z.infer<typeof bulkActionInput>) => {
+		if (args.action === "change_status") {
+			if (!statusChangeOptions.some((o) => o.value === args.status)) {
+				return {
+					error: `Bulk change to ${args.status} is not allowed.`,
+					allowedStatuses: statusChangeOptions.map((o) => o.value),
+				};
+			}
+			setSelectedStatus(args.status);
+			setStatusDialogOpen(true);
+		} else if (args.action === "assign_reviewer") {
+			const email = args.reviewerEmail.toLowerCase();
+			const reviewer = reviewers.find((r) => r.email.toLowerCase() === email);
+			if (!reviewer) {
+				return {
+					error: `No reviewer with email ${args.reviewerEmail}.`,
+					reviewerEmails: reviewers.map((r) => r.email),
+				};
+			}
+			setSelectedReviewer(reviewer.id);
+			setReviewerDialogOpen(true);
+		} else {
+			const name = args.trackName?.toLowerCase();
+			const track = availableTracks.find((t) => t.name.toLowerCase() === name);
+			if (name !== undefined && !track) {
+				return {
+					error: `No track named ${args.trackName}.`,
+					trackNames: availableTracks.map((t) => t.name),
+				};
+			}
+			setSelectedTrack(track?.id ?? "none");
+			setTrackDialogOpen(true);
+		}
+		setSelectedAction(args.action);
+		setErrors([]);
+		return {
+			message:
+				"The confirmation dialog is open. Nothing changes until the user confirms it.",
+			selectedSubmissions: selectedRows.map((row) => row.original.title),
+		};
+	};
+
+	useWebMCP({
+		name: "prepare-bulk-submission-action",
+		description:
+			"Prepares a bulk change for the submissions the user selected in the table and opens its confirmation dialog. Use when the user wants to act on several submissions at once.",
+		inputSchema: BULK_ACTION_SCHEMA,
+		annotations: UNTRUSTED_OUTPUT,
+		enabled: selectedCount > 0,
+		execute: (args) => {
+			const parsed = bulkActionInput.safeParse(args);
+			if (!parsed.success) return { error: z.prettifyError(parsed.error) };
+			return prepare(parsed.data);
+		},
+	});
 
 	if (selectedCount === 0) return null;
 

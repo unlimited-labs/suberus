@@ -22,7 +22,9 @@ export type SubmissionDialogKind =
 
 interface DetailDialogsProps {
 	activeDialog: SubmissionDialogKind | null;
+	onOpen: (kind: SubmissionDialogKind) => void;
 	onClose: () => void;
+	canMakeDecision: boolean;
 	submission: Pick<EditorSubmission, "id" | "title" | "currentVersionNumber">;
 	submitter: { id: string; firstName: string | null; lastName: string | null };
 	requiredReviewers: number;
@@ -39,7 +41,9 @@ interface DetailDialogsProps {
 
 export function DetailDialogs({
 	activeDialog,
+	onOpen,
 	onClose,
+	canMakeDecision,
 	submission,
 	submitter,
 	requiredReviewers,
@@ -68,8 +72,9 @@ export function DetailDialogs({
 			/>
 
 			<EditorDecisionDialog
+				canDecide={canMakeDecision}
 				onDecisionMade={onInvalidate}
-				onOpenChange={onOpenChange}
+				onOpenChange={(open) => (open ? onOpen("decision") : onClose())}
 				open={activeDialog === "decision"}
 				reviews={currentRoundReviews}
 				submissionId={submission.id}

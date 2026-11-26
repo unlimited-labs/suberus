@@ -45,6 +45,10 @@ Select submissions, choose an action, and **Apply**:
 | **Assign reviewer** | Assigns one reviewer to all selected submissions. | **Exhibitor** presentations are skipped — they are never peer-reviewed. |
 | **Assign to track** | Assigns the selected submissions to a conference track. | **Only Oral Presentation (abstract) submissions** can be assigned to tracks. |
 
+An AI assistant built into your browser (WebMCP, experimental) can prepare any of these
+for the rows you selected, for example "assign reviewer@example.com as reviewer". It only opens the
+filled-in confirmation dialog: nothing changes until you confirm it yourself.
+
 ## The submission detail
 
 Opening a submission shows its content, version history, authors, reviews, and the
@@ -60,7 +64,7 @@ depend on the current status.
 | **Assign reviewer** | `SUBMITTED`, `RESUBMITTED`, or to add/replace reviewers during review (not for **Exhibitor** presentations — they are never peer-reviewed) | Creates a review assignment (with an optional custom deadline) and moves the submission to `UNDER_REVIEW`. The reviewer is emailed. |
 | **Desk accept** | `SUBMITTED` or `RESUBMITTED` (not for **Exhibitor** presentations — approve via the **[Exhibitors](/managing/exhibitors/)** flow instead) | Accepts without review (e.g. invited speakers). Requires a reason; the author is notified. |
 | **Desk reject** | `SUBMITTED` or `RESUBMITTED` (not for **Exhibitor** presentations — reject via the **[Exhibitors](/managing/exhibitors/)** flow instead) | Rejects without review (e.g. out of scope). Requires a reason; the author is notified. |
-| **Editor decision** | After reviews (`REVIEWS_COMPLETE` / `AWAITING_DECISION`) | Records your decision — **Accept**, **Conditionally accept**, **Revise & resubmit**, or **Reject** — with reasoning and a letter to the author. |
+| **Editor decision** | After reviews (`REVIEWS_COMPLETE` / `AWAITING_DECISION`) | Records your decision — **Accept**, **Conditionally accept**, **Revise & resubmit**, or **Reject** — with reasoning and a letter to the author. An AI assistant built into your browser (WebMCP, experimental) can fill this dialog for you; it is only submitted when you click **Submit Decision**. |
 | **Confirm conditions met** | `CONDITIONALLY_ACCEPTED` | Promotes a conditional acceptance to **Accepted** once the author meets the conditions. Requires reasoning (audit trail). The confirmation dialog tells you whether the author has **uploaded a revised version** since the decision; if not, it warns you so you don't confirm prematurely. Review any uploaded version with the **version selector** on the Content tab. |
 | **Override / reopen** | `ACCEPTED`, `CONDITIONALLY_ACCEPTED`, `REJECTED` (not for **Exhibitor** presentations — exhibitor decisions are final) | Reopens a finalised decision back to `AWAITING_DECISION`. Requires reasoning. |
 | **Edit submission** | Any — **Administrators only** (not **Exhibitor** presentations — edit those via the **[Exhibitors](/managing/exhibitors/)** flow) | Opens the submission form to fix title, abstract/content, authors, keywords, track, or the uploaded file. Saves **in place on the current version — no new version is created** and the status is unchanged. For a `DRAFT` the form offers two buttons: **Save Draft** (keeps it a draft) and **Submit** (saves, then sends it into review exactly as **Submit draft** does). Logged in the activity history as *Edited by admin*. Editors do not see this action. A connected [AI assistant](/managing/ai-assistant/) can make the same edit, and can fetch the uploaded file to check what it says. |

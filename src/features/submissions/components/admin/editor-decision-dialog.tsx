@@ -7,8 +7,11 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useWebMCP } from "use-webmcp-tool";
+import { z } from "zod";
 import { reviewDecisionColors } from "@/features/submissions/labels";
 import { submitEditorDecisionFn } from "@/features/workflow/api/workflow";
+import { editorDecisionInput } from "@/features/workflow/validations";
 import { lookup } from "@/shared/lib/lookup";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -35,7 +38,10 @@ interface EditorDecisionDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onDecisionMade?: () => void;
+	canDecide: boolean;
 }
+
+const DECISION_TOOL_SCHEMA = z.toJSONSchema(editorDecisionInput);
 
 const decisionOptions = [
 	{
@@ -75,6 +81,7 @@ export function EditorDecisionDialog({
 	open,
 	onOpenChange,
 	onDecisionMade,
+	canDecide,
 }: EditorDecisionDialogProps) {
 	const [selectedDecision, setSelectedDecision] = useState<
 		(typeof decisionOptions)[number]["value"] | null
@@ -82,6 +89,23 @@ export function EditorDecisionDialog({
 	const [reasoning, setReasoning] = useState("");
 	const [letterToAuthor, setLetterToAuthor] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	useWebMCP({
+		name: "prepare-editor-decision",
+		description:
+			"Opens the editor-decision form for this submission filled in, for the user to review and submit. Use when the user has decided the outcome of the submission.",
+		inputSchema: DECISION_TOOL_SCHEMA,
+		enabled: canDecide,
+		execute: (args) => {
+			const parsed = editorDecisionInput.safeParse(args);
+			if (!parsed.success) return { error: z.prettifyError(parsed.error) };
+			setSelectedDecision(parsed.data.decision);
+			setReasoning(parsed.data.reasoning ?? "");
+			setLetterToAuthor(parsed.data.letterToAuthor ?? "");
+			onOpenChange(true);
+			return "The decision form is open and filled in. Nothing is submitted until the user clicks Submit Decision.";
+		},
+	});
 
 	const handleSubmit = async () => {
 		if (!selectedDecision) {

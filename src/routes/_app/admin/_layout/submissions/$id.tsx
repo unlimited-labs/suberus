@@ -177,12 +177,14 @@ function SubmissionDetailPage() {
 
 			<DetailDialogs
 				activeDialog={activeDialog}
+				canMakeDecision={availability.canMakeDecision}
 				currentRoundReviews={currentRoundReviews}
 				isTransitioning={isTransitioning}
 				onClose={() => setActiveDialog(null)}
 				onConfirmConditionsMet={handleConfirmConditionsMet}
 				onEditorOverride={handleEditorOverride}
 				onInvalidate={invalidateSubmission}
+				onOpen={setActiveDialog}
 				requiredReviewers={config.requiredReviewers}
 				reviewDeadlineDays={config.reviewDeadlineDays}
 				revisionUploaded={revisionUploaded}
