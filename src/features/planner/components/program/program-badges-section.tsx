@@ -1,6 +1,6 @@
 import { IconAward, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { saveProgramBadgesFn } from "@/features/planner/api/badges";
 import { adminSettingQueryOptions } from "@/features/settings/api/settings";
@@ -25,13 +25,15 @@ const STYLES = [
 ] as const;
 
 export function ProgramBadgesSection() {
-	const queryClient = useQueryClient();
 	const { data: saved } = useQuery(adminSettingQueryOptions("PROGRAM_BADGES"));
-	const [badges, setBadges] = useState<ProgramBadge[]>([]);
+	return (
+		<BadgesEditor key={saved ? "loaded" : "loading"} saved={saved ?? []} />
+	);
+}
 
-	useEffect(() => {
-		if (saved) setBadges(saved);
-	}, [saved]);
+function BadgesEditor({ saved }: { saved: ProgramBadge[] }) {
+	const queryClient = useQueryClient();
+	const [badges, setBadges] = useState(saved);
 
 	const mutation = useMutation({
 		mutationFn: (value: ProgramBadge[]) => saveProgramBadgesFn({ data: value }),

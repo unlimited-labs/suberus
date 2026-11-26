@@ -9,14 +9,18 @@ import { resolveProgramTheme } from "@/features/planner/components/public-progra
 
 export const Route = createFileRoute("/program/participants")({
 	loader: async ({ context }) => {
-		const settings = await context.queryClient.ensureQueryData(
-			publicConferenceInfoQueryOptions(),
-		);
+		const settings = await context.queryClient.query({
+			...publicConferenceInfoQueryOptions(),
+			staleTime: "static",
+		});
 		if (!settings.viewerIsAuthenticated) throw redirect({ to: "/login" });
 		if (!settings.showAuthorInfo || !settings.viewerIsParticipant) {
 			throw redirect({ to: "/program" });
 		}
-		await context.queryClient.ensureQueryData(publicParticipantsQueryOptions());
+		await context.queryClient.query({
+			...publicParticipantsQueryOptions(),
+			staleTime: "static",
+		});
 		return { conferenceName: settings.name };
 	},
 	head: ({ loaderData }) => ({

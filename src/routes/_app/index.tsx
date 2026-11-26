@@ -28,8 +28,14 @@ export const Route = createFileRoute("/_app/")({
 	},
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(userDashboardQueryOptions()),
-			context.queryClient.ensureQueryData(myAnnouncementsQueryOptions()),
+			context.queryClient.query({
+				...userDashboardQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...myAnnouncementsQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: DashboardPage,

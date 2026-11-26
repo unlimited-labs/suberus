@@ -290,9 +290,6 @@ export const auth = betterAuth({
 	account: {
 		modelName: "account",
 	},
-	verification: {
-		modelName: "verification",
-	},
 	databaseHooks: {
 		session: {
 			create: {

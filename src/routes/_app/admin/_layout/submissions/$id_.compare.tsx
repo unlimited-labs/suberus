@@ -17,9 +17,10 @@ export const Route = createFileRoute(
 )({
 	validateSearch: compareSearchSchema,
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			editorSubmissionQueryOptions(params.id),
-		);
+		await context.queryClient.query({
+			...editorSubmissionQueryOptions(params.id),
+			staleTime: "static",
+		});
 	},
 	component: CompareVersionsPage,
 });

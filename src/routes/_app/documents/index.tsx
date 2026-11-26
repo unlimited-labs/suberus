@@ -20,7 +20,10 @@ export const Route = createFileRoute("/_app/documents/")({
 		middleware: [authRouteMiddleware],
 	},
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(myDocumentsQueryOptions());
+		await context.queryClient.query({
+			...myDocumentsQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: MyDocumentsPage,
 });

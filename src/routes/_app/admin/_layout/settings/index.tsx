@@ -78,55 +78,122 @@ export const Route = createFileRoute("/_app/admin/_layout/settings/")({
 	validateSearch: searchSchema,
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(conferenceSettingsQueryOptions()),
-			context.queryClient.ensureQueryData(submissionTypesConfigQueryOptions()),
-			context.queryClient.ensureQueryData(
-				submissionValidationSettingsQueryOptions(),
-			),
-			context.queryClient.ensureQueryData(paymentInstructionsQueryOptions()),
-			context.queryClient.ensureQueryData(brandingSettingsQueryOptions()),
-			context.queryClient.ensureQueryData(allTracksQueryOptions()),
-			context.queryClient.ensureQueryData(reviewerUsersQueryOptions()),
-			context.queryClient.ensureQueryData(reminderSettingsQueryOptions()),
-			context.queryClient.ensureQueryData(emailTemplatesQueryOptions()),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("SUBMISSION_GUIDELINES"),
-			),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("REVIEW_GUIDELINES"),
-			),
-			context.queryClient.ensureQueryData(emailFooterQueryOptions()),
-			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("TOS_CONTENT"),
-			),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("PROGRAM_BADGES"),
-			),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("PROGRAM_FOOTER_HTML"),
-			),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
-			),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("BILLING_DETAILS"),
-			),
-			context.queryClient.ensureQueryData(
-				adminSettingQueryOptions("FEE_ENABLED"),
-			),
-			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
-			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
-			context.queryClient.ensureQueryData(financesEnabledQueryOptions()),
-			context.queryClient.ensureQueryData(financesVatRatesQueryOptions()),
-			context.queryClient.ensureQueryData(
-				extractionAdminSettingsQueryOptions(),
-			),
-			context.queryClient.ensureQueryData(llmHealthQueryOptions()),
-			context.queryClient.ensureQueryData(pdfApiHealthQueryOptions()),
-			context.queryClient.ensureQueryData(allRoomsQueryOptions()),
-			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
-			context.queryClient.ensureQueryData(documentSigningQueryOptions()),
+			context.queryClient.query({
+				...conferenceSettingsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionTypesConfigQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionValidationSettingsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...paymentInstructionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...brandingSettingsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...allTracksQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...reviewerUsersQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...reminderSettingsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...emailTemplatesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("SUBMISSION_GUIDELINES"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("REVIEW_GUIDELINES"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...emailFooterQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSurveyQuestionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("TOS_CONTENT"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("PROGRAM_BADGES"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("PROGRAM_FOOTER_HTML"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("INVITATION_VALIDITY_HOURS"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("BILLING_DETAILS"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSettingQueryOptions("FEE_ENABLED"),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...feeTypesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...feeCurrencyQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...financesEnabledQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...financesVatRatesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...extractionAdminSettingsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...llmHealthQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...pdfApiHealthQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...allRoomsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...allProgramTracksQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...documentSigningQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: AdminSettingsPage,

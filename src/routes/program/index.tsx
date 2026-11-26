@@ -10,12 +10,19 @@ import { ProgramShell } from "@/features/planner/components/public-program/progr
 import { resolveProgramTheme } from "@/features/planner/components/public-program/themes/registry";
 import { ProgramEmptyState } from "@/features/planner/components/public-program/themes/shared";
 import { useProgramSchedule } from "@/features/planner/components/public-program/use-program-schedule";
+import { useProgramWebMcp } from "@/features/planner/components/public-program/use-program-webmcp";
 
 export const Route = createFileRoute("/program/")({
 	loader: async ({ context }) => {
 		const [, settings] = await Promise.all([
-			context.queryClient.ensureQueryData(publicProgramQueryOptions()),
-			context.queryClient.ensureQueryData(publicConferenceInfoQueryOptions()),
+			context.queryClient.query({
+				...publicProgramQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...publicConferenceInfoQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 		return { conferenceName: settings.name };
 	},
@@ -41,6 +48,7 @@ function ProgramPage() {
 	const [search, setSearch] = useState("");
 	const [activeDay, setActiveDay] = useState(0);
 	const schedule = useProgramSchedule({ program, settings, search, activeDay });
+	useProgramWebMcp(program, settings);
 
 	if (!program) return <ProgramEmptyState />;
 

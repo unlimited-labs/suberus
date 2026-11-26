@@ -52,7 +52,9 @@ export function TracksTab({
 
 			<TrackDialog
 				key={editingTrack?.id ?? "new"}
-				onOpenChange={handleCloseDialog}
+				onOpenChange={(next) =>
+					next ? setDialogOpen(true) : handleCloseDialog()
+				}
 				onSuccess={onUpdate}
 				open={dialogOpen}
 				reviewers={reviewers}

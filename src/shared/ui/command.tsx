@@ -43,7 +43,7 @@ function CommandDialog({
   description?: string
   className?: string
   showCloseButton?: boolean
-  children?: React.ReactNode
+  children: React.ReactNode
 }) {
   return (
     <Dialog {...props}>
@@ -52,7 +52,7 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogContent
-        className={cn("rounded-xl! overflow-hidden p-0", className)}
+        className={cn("top-1/3 translate-y-0 rounded-xl! overflow-hidden p-0", className)}
         showCloseButton={showCloseButton}
       >
         {children}

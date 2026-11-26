@@ -4,7 +4,10 @@ import { AnnouncementList } from "@/features/announcements/components/announceme
 
 export const Route = createFileRoute("/_app/admin/_layout/announcements/")({
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(announcementsQueryOptions());
+		await context.queryClient.query({
+			...announcementsQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: AnnouncementList,
 });

@@ -1,5 +1,6 @@
 import { type Page } from "@playwright/test";
 import { test, expect } from "../helpers/base-fixtures";
+import { RegisterPage } from "../auth/fixtures";
 import {
 	createSubmission,
 	createSubmissionWithReview,
@@ -353,59 +354,21 @@ test.describe("Admin Notification Emails", () => {
 		await clearMailpitForAddress(CONTACT_EMAIL);
 		const uniqueEmail = `admin-notify-${testRun.testRunId}@e2e.local`;
 
-		await page.goto("/register");
-		await page.getByLabel("E-mail *").fill(uniqueEmail);
-		await page.getByLabel("Password *", { exact: true }).fill("ValidPassword123!");
-		await page.getByLabel("Confirm Password *").fill("ValidPassword123!");
-		await page.getByLabel("First name *").fill("NewReg");
-		await page.getByLabel("Last name *").fill("TestUser");
-
-		const affiliationInput = page.getByLabel("Affiliation");
-		const option = page.getByRole("option").filter({ hasText: "Test University" }).first();
-		await expect(async () => {
-			await affiliationInput.fill("Test University");
-			await expect(option).toBeVisible();
-			await option.click();
-			await expect(affiliationInput).toHaveValue("Test University");
-		}).toPass({ timeout: 15000 });
-
-		await page.getByRole("button", { name: "Continue" }).click();
-
-		await page.getByText("Country *").waitFor({ state: "visible", timeout: 10000 });
-		const countryField = page.locator('[data-slot="field"]').filter({ has: page.getByText("Country *", { exact: true }) });
-		const combobox = countryField.getByRole("combobox");
-		await combobox.click();
-		const searchInput = page.getByPlaceholder("Search country...");
-		try {
-			await searchInput.waitFor({ state: "visible", timeout: 5000 });
-		} catch {
-			await combobox.click();
-			await searchInput.waitFor({ state: "visible", timeout: 10000 });
-		}
-		await searchInput.fill("Poland");
-		await page.getByRole("option", { name: "Poland" }).click();
-		await page.getByLabel("Billing details (organization)").fill("Test Org");
-		await page.getByRole("button", { name: "Continue" }).click();
-
-		const termsCheckbox = page.getByRole("checkbox", { name: /I agree to the/ });
-		try {
-			await termsCheckbox.waitFor({ state: "visible", timeout: 5000 });
-		} catch {
-			await page.getByRole("button", { name: "Continue" }).click();
-			await termsCheckbox.waitFor({ state: "visible", timeout: 10000 });
-		}
-		await termsCheckbox.check();
-
-		// Answer the seeded required "Preferred session format" question (isRequired
-		// is enforced on step 3, otherwise account creation is blocked).
-		const formatTrigger = page
-			.locator("div")
-			.filter({ hasText: /^Preferred session format/ })
-			.getByRole("combobox");
-		await formatTrigger.click();
-		await page.getByRole("option", { name: "Oral" }).click();
-
-		await page.getByRole("button", { name: "Create account" }).click();
+		const registerPage = new RegisterPage(page);
+		await registerPage.goto();
+		await registerPage.fillStep1({
+			email: uniqueEmail,
+			password: "ValidPassword123!",
+			confirmPassword: "ValidPassword123!",
+			firstName: "NewReg",
+			lastName: "TestUser",
+			affiliation: "Test University",
+		});
+		await registerPage.clickContinue();
+		await registerPage.fillStep2({ country: "Poland", address: "Test Org" });
+		await registerPage.clickContinue();
+		await registerPage.fillStep3({ acceptTerms: true });
+		await registerPage.clickCreateAccount();
 		await expect(page).toHaveURL("/", { timeout: 15000 });
 
 		const email = await waitForEmail(CONTACT_EMAIL, "New Registration", 30000);

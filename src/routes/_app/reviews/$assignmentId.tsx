@@ -19,10 +19,14 @@ import { Button } from "@/shared/ui/button";
 export const Route = createFileRoute("/_app/reviews/$assignmentId")({
 	loader: async ({ params, context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(
-				assignmentForReviewQueryOptions(params.assignmentId),
-			),
-			context.queryClient.ensureQueryData(reviewGuidelinesQueryOptions()),
+			context.queryClient.query({
+				...assignmentForReviewQueryOptions(params.assignmentId),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...reviewGuidelinesQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: ReviewFormPage,

@@ -44,14 +44,38 @@ import { PageHeader } from "@/shared/components/layout/page-header";
 export const Route = createFileRoute("/_app/admin/_layout/program-planner/")({
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(allRoomsQueryOptions()),
-			context.queryClient.ensureQueryData(allSessionsQueryOptions()),
-			context.queryClient.ensureQueryData(allBreaksQueryOptions()),
-			context.queryClient.ensureQueryData(conferenceSettingsQueryOptions()),
-			context.queryClient.ensureQueryData(allProgramTracksQueryOptions()),
-			context.queryClient.ensureQueryData(unscheduledSubmissionsQueryOptions()),
-			context.queryClient.ensureQueryData(scheduleStateQueryOptions()),
-			context.queryClient.ensureQueryData(scheduleCapacityQueryOptions()),
+			context.queryClient.query({
+				...allRoomsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...allSessionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...allBreaksQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...conferenceSettingsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...allProgramTracksQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...unscheduledSubmissionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...scheduleStateQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...scheduleCapacityQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: ProgramPlannerPage,

@@ -20,9 +20,10 @@ export const Route = createFileRoute(
 	loader: async ({ params, context }) => {
 		await Promise.all([
 			ensureSubmissionCreateData(context.queryClient),
-			context.queryClient.ensureQueryData(
-				adminUserDetailQueryOptions(params.id),
-			),
+			context.queryClient.query({
+				...adminUserDetailQueryOptions(params.id),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: AdminCreateSubmissionPage,

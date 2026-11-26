@@ -4,9 +4,10 @@ import { AnnouncementComposePage } from "@/features/announcements/components/com
 
 export const Route = createFileRoute("/_app/admin/_layout/announcements/$id")({
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			announcementQueryOptions(params.id),
-		);
+		await context.queryClient.query({
+			...announcementQueryOptions(params.id),
+			staleTime: "static",
+		});
 	},
 	component: AnnouncementComposeRoute,
 });

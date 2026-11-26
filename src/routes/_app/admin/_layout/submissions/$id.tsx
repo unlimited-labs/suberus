@@ -30,9 +30,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/$id")({
 	loader: async ({ params, context }) => {
-		await context.queryClient.ensureQueryData(
-			editorSubmissionQueryOptions(params.id),
-		);
+		await context.queryClient.query({
+			...editorSubmissionQueryOptions(params.id),
+			staleTime: "static",
+		});
 	},
 	component: SubmissionDetailPage,
 });
@@ -176,12 +177,14 @@ function SubmissionDetailPage() {
 
 			<DetailDialogs
 				activeDialog={activeDialog}
+				canMakeDecision={availability.canMakeDecision}
 				currentRoundReviews={currentRoundReviews}
 				isTransitioning={isTransitioning}
 				onClose={() => setActiveDialog(null)}
 				onConfirmConditionsMet={handleConfirmConditionsMet}
 				onEditorOverride={handleEditorOverride}
 				onInvalidate={invalidateSubmission}
+				onOpen={setActiveDialog}
 				requiredReviewers={config.requiredReviewers}
 				reviewDeadlineDays={config.reviewDeadlineDays}
 				revisionUploaded={revisionUploaded}

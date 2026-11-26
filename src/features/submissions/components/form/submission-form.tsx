@@ -4,11 +4,9 @@ import {
 	IconPresentation,
 	IconSend,
 	IconTags,
-	IconUsers,
 } from "@tabler/icons-react";
 import { ExtractionOverlay } from "@/features/extraction/components/extraction-overlay";
 import type { AvailableTrack } from "@/features/submissions/types";
-import { AuthorsInput } from "@/shared/components/authors-input";
 import { Form } from "@/shared/components/composable/form";
 import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import { Button } from "@/shared/ui/button";
@@ -21,6 +19,7 @@ import {
 	SelectValue,
 } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
+import { AuthorsSection } from "./authors-section";
 import { FileUploadSection } from "./file-upload-section";
 import { useSubmissionForm } from "./hooks/use-submission-form";
 import { KeywordsInput } from "./keywords-input";
@@ -144,35 +143,16 @@ export function SubmissionForm(props: SubmissionFormProps) {
 
 							<div className="border-t" />
 
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<IconUsers className="text-muted-foreground size-5" />
-									<h2 className="text-foreground text-lg font-semibold">
-										Authors
-									</h2>
-								</div>
-								<form.Field name="authors">
-									{(field) => {
-										const hasError = isFieldErrorVisible(
-											field.state.meta,
-											submissionAttempts,
-										);
-										return (
-											<Field data-invalid={hasError}>
-												<AuthorsInput
-													onChange={field.handleChange}
-													value={field.state.value}
-												/>
-												<FieldError
-													errors={
-														hasError ? field.state.meta.errors : undefined
-													}
-												/>
-											</Field>
-										);
-									}}
-								</form.Field>
-							</div>
+							<form.Field name="authors">
+								{(field) => (
+									<AuthorsSection
+										meta={field.state.meta}
+										onChange={field.handleChange}
+										submissionAttempts={submissionAttempts}
+										value={field.state.value}
+									/>
+								)}
+							</form.Field>
 
 							{validationSettings.enableKeywords && (
 								<>

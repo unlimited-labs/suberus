@@ -17,7 +17,10 @@ import { DataTable, DataTableToolbar } from "@/shared/ui/data-table";
 
 export const Route = createFileRoute("/_app/admin/_layout/submissions/")({
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(adminSubmissionsQueryOptions());
+		await context.queryClient.query({
+			...adminSubmissionsQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: AdminSubmissionsPage,
 });

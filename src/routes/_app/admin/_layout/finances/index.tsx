@@ -10,7 +10,10 @@ export const Route = createFileRoute("/_app/admin/_layout/finances/")({
 		middleware: [adminOnlyRouteMiddleware],
 	},
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(financesQueryOptions());
+		await context.queryClient.query({
+			...financesQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: AdminFinancesPage,
 });

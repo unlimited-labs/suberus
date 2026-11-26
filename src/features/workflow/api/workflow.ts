@@ -15,7 +15,10 @@ import {
 	submitEditorDecision,
 	withdrawSubmission,
 } from "@/features/workflow/server/workflow";
-import { deskDecisionInput } from "@/features/workflow/validations";
+import {
+	deskDecisionInput,
+	editorDecisionInput,
+} from "@/features/workflow/validations";
 import { prisma } from "@/shared/server/db.server";
 
 export const withdrawSubmissionFn = createServerFn({ method: "POST" })
@@ -71,19 +74,7 @@ export const deskRejectFn = createServerFn({ method: "POST" })
 
 export const submitEditorDecisionFn = createServerFn({ method: "POST" })
 	.middleware([adminMiddleware])
-	.validator(
-		z.object({
-			submissionId: z.uuid(),
-			decision: z.enum([
-				"ACCEPT",
-				"CONDITIONALLY_ACCEPT",
-				"REVISE_AND_RESUBMIT",
-				"REJECT",
-			]),
-			reasoning: z.string().optional(),
-			letterToAuthor: z.string().optional(),
-		}),
-	)
+	.validator(editorDecisionInput.extend({ submissionId: z.uuid() }))
 	.handler(async ({ data, context }): Promise<TransitionResult> => {
 		return submitEditorDecision(
 			data.submissionId,

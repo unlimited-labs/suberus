@@ -15,7 +15,10 @@ import { useAdminAuth } from "@/shared/hooks/use-admin-auth";
 
 export const Route = createFileRoute("/_app/admin/_layout/dashboard/")({
 	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(adminDashboardQueryOptions());
+		await context.queryClient.query({
+			...adminDashboardQueryOptions(),
+			staleTime: "static",
+		});
 	},
 	component: AdminDashboard,
 });

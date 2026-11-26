@@ -44,11 +44,26 @@ export const Route = createFileRoute("/_app/admin/_layout/users/")({
 	validateSearch: searchSchema,
 	loader: async ({ context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(adminUsersQueryOptions()),
-			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
-			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
-			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
-			context.queryClient.ensureQueryData(billingDetailsConfigQueryOptions()),
+			context.queryClient.query({
+				...adminUsersQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...feeTypesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...feeCurrencyQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSurveyQuestionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...billingDetailsConfigQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: UsersPage,

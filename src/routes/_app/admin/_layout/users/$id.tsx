@@ -15,13 +15,26 @@ import { Button } from "@/shared/ui/button";
 export const Route = createFileRoute("/_app/admin/_layout/users/$id")({
 	loader: async ({ params, context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(
-				adminUserDetailQueryOptions(params.id),
-			),
-			context.queryClient.ensureQueryData(feeTypesQueryOptions()),
-			context.queryClient.ensureQueryData(feeCurrencyQueryOptions()),
-			context.queryClient.ensureQueryData(adminSurveyQuestionsQueryOptions()),
-			context.queryClient.ensureQueryData(billingDetailsConfigQueryOptions()),
+			context.queryClient.query({
+				...adminUserDetailQueryOptions(params.id),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...feeTypesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...feeCurrencyQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...adminSurveyQuestionsQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...billingDetailsConfigQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: UserDetailPage,

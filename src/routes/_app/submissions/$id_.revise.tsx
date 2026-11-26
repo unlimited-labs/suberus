@@ -5,7 +5,6 @@ import {
 	IconFileText,
 	IconSend,
 	IconTags,
-	IconUsers,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -19,6 +18,7 @@ import {
 	submissionValidationQueryOptions,
 } from "@/features/settings/api/settings";
 import { submissionDetailQueryOptions } from "@/features/submissions/api/submissions";
+import { AuthorsSection } from "@/features/submissions/components/form/authors-section";
 import { KeywordsInput } from "@/features/submissions/components/form/keywords-input";
 import {
 	isRevisableSubmission,
@@ -27,26 +27,33 @@ import {
 	revisionReady,
 } from "@/features/submissions/components/revise/revise-helpers";
 import { useReviseSubmission } from "@/features/submissions/components/revise/use-revise-submission";
-import { AuthorsInput } from "@/shared/components/authors-input";
 import { Form } from "@/shared/components/composable/form";
 import { FileDropzone } from "@/shared/components/file-dropzone";
 import { PageHeader } from "@/shared/components/layout/page-header";
 import { useAppForm } from "@/shared/hooks/use-app-form";
-import { isFieldErrorVisible } from "@/shared/hooks/use-field-error";
 import type { Author } from "@/shared/types/author";
 import { Button } from "@/shared/ui/button";
-import { Field, FieldError } from "@/shared/ui/field";
 import { Label } from "@/shared/ui/label";
 
 export const Route = createFileRoute("/_app/submissions/$id_/revise")({
 	loader: async ({ params, context }) => {
 		await Promise.all([
-			context.queryClient.ensureQueryData(
-				submissionDetailQueryOptions(params.id),
-			),
-			context.queryClient.ensureQueryData(activeSubmissionTypesQueryOptions()),
-			context.queryClient.ensureQueryData(submissionValidationQueryOptions()),
-			context.queryClient.ensureQueryData(extractionSettingsQueryOptions()),
+			context.queryClient.query({
+				...submissionDetailQueryOptions(params.id),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...activeSubmissionTypesQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...submissionValidationQueryOptions(),
+				staleTime: "static",
+			}),
+			context.queryClient.query({
+				...extractionSettingsQueryOptions(),
+				staleTime: "static",
+			}),
 		]);
 	},
 	component: ReviseSubmissionPage,
@@ -288,33 +295,16 @@ function RevisionForm({
 							</form.AppField>
 						)}
 
-						<div className="space-y-4">
-							<div className="flex items-center gap-3">
-								<IconUsers className="text-muted-foreground size-5" />
-								<h2 className="text-foreground text-lg font-semibold">
-									Authors
-								</h2>
-							</div>
-							<form.Field name="authors">
-								{(field) => {
-									const hasError = isFieldErrorVisible(
-										field.state.meta,
-										submissionAttempts,
-									);
-									return (
-										<Field data-invalid={hasError}>
-											<AuthorsInput
-												onChange={field.handleChange}
-												value={field.state.value}
-											/>
-											<FieldError
-												errors={hasError ? field.state.meta.errors : undefined}
-											/>
-										</Field>
-									);
-								}}
-							</form.Field>
-						</div>
+						<form.Field name="authors">
+							{(field) => (
+								<AuthorsSection
+									meta={field.state.meta}
+									onChange={field.handleChange}
+									submissionAttempts={submissionAttempts}
+									value={field.state.value}
+								/>
+							)}
+						</form.Field>
 
 						{enableKeywords && (
 							<div className="space-y-4">
