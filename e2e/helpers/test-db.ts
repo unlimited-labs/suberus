@@ -1344,8 +1344,9 @@ export async function setConferenceDates(
 	startIso: string,
 	endIso: string,
 ): Promise<void> {
-	await setAppSetting("CONFERENCE_DATE_START", startIso);
-	await setAppSetting("CONFERENCE_DATE_END", endIso);
+	// The app stores these as bare YYYY-MM-DD (date input); a full ISO string breaks date-only parsers.
+	await setAppSetting("CONFERENCE_DATE_START", startIso.slice(0, 10));
+	await setAppSetting("CONFERENCE_DATE_END", endIso.slice(0, 10));
 }
 
 export async function setDailyBusinessHours(

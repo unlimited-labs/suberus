@@ -96,6 +96,16 @@ test.describe.serial("Public /program", () => {
 			publicProgramPage.sessionByTitle(`${testRun.testRunId}_Focus Session 17`).first(),
 		).toBeVisible();
 
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() =>
+						document.querySelector<HTMLElement>(
+							'[aria-label="Programme filters"]',
+						)?.parentElement?.style.scrollPaddingTop,
+				),
+			)
+			.toMatch(/px$/);
 		await page.locator("main").locator("a, button").last().focus();
 		const hidden: string[] = [];
 		for (let i = 0; i < 40; i++) {

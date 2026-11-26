@@ -49,7 +49,7 @@ export function BulkReadReader({
 		>
 			<DialogContent
 				aria-label="Read submissions"
-				className="bg-background fixed inset-0 flex max-w-none translate-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
+				className="bg-background fixed inset-0 flex max-h-none max-w-none translate-0 flex-col gap-0 rounded-none p-0 ring-0 sm:max-w-none"
 				data-testid="bulk-reader"
 				initialFocus={closeRef}
 				showCloseButton={false}
