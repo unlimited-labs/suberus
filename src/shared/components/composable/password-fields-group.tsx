@@ -41,6 +41,7 @@ export const PasswordFieldsGroup = withFieldGroup({
 				<group.AppField name="password">
 					{(field) => (
 						<field.PasswordField
+							autoComplete="new-password"
 							description={passwordDescription || undefined}
 							disabled={disabled}
 							label={passwordLabel}
@@ -60,7 +61,11 @@ export const PasswordFieldsGroup = withFieldGroup({
 					}}
 				>
 					{(field) => (
-						<field.PasswordField disabled={disabled} label={confirmLabel} />
+						<field.PasswordField
+							autoComplete="new-password"
+							disabled={disabled}
+							label={confirmLabel}
+						/>
 					)}
 				</group.AppField>
 			</>

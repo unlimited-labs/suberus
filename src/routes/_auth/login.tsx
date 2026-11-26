@@ -130,13 +130,20 @@ function LoginPage() {
 								autoComplete="username webauthn"
 								icon={<IconMail className="size-4" />}
 								label="E-mail"
+								required
 								type="email"
 							/>
 						)}
 					</form.AppField>
 
 					<form.AppField name="password">
-						{(field) => <field.PasswordField label="Password" />}
+						{(field) => (
+							<field.PasswordField
+								autoComplete="current-password"
+								label="Password"
+								required
+							/>
+						)}
 					</form.AppField>
 
 					<div className="flex items-center justify-between">

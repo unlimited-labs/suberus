@@ -10,6 +10,8 @@ interface FormInputFieldProps {
 	description?: string;
 	testId?: string;
 	autoFocus?: boolean;
+	autoComplete?: string;
+	required?: boolean;
 }
 
 export function FormInputField({
@@ -20,6 +22,8 @@ export function FormInputField({
 	description,
 	testId,
 	autoFocus,
+	autoComplete,
+	required,
 }: FormInputFieldProps) {
 	const { field, errors, hasError } = useFieldError();
 
@@ -33,14 +37,17 @@ export function FormInputField({
 		>
 			<Input
 				{...fieldAria(field.name, hasError, !!description)}
+				autoComplete={autoComplete}
 				autoFocus={autoFocus}
 				className="h-9"
 				data-testid={testId}
 				disabled={disabled}
 				id={field.name}
+				name={field.name}
 				onBlur={field.handleBlur}
 				onChange={(e) => field.handleChange(e.target.value)}
 				placeholder={placeholder}
+				required={required}
 				type={type}
 				value={field.state.value}
 			/>

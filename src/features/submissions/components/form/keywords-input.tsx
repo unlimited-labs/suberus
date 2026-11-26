@@ -1,5 +1,5 @@
 import { IconX } from "@tabler/icons-react";
-import { type ChangeEvent, type KeyboardEvent, useState } from "react";
+import { type ChangeEvent, type KeyboardEvent, useId, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
 interface KeywordsInputProps {
@@ -20,6 +20,7 @@ export function KeywordsInput({
 	const [inputValue, setInputValue] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [isFocused, setIsFocused] = useState(false);
+	const inputId = useId();
 
 	const addKeyword = (keyword: string) => {
 		const trimmed = keyword.trim().toLowerCase();
@@ -49,7 +50,7 @@ export function KeywordsInput({
 	};
 
 	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === "Enter") {
+		if (e.key === "Enter" && !e.nativeEvent.isComposing) {
 			e.preventDefault();
 			addKeyword(inputValue);
 		} else if (e.key === "Backspace" && !inputValue && value.length > 0) {
@@ -89,6 +90,8 @@ export function KeywordsInput({
 						: "border-input hover:border-ring/50",
 					value.length >= maxKeywords && "opacity-60",
 				)}
+				data-testid="keywords-box"
+				htmlFor={inputId}
 			>
 				{value.map((keyword) => (
 					<span
@@ -110,8 +113,10 @@ export function KeywordsInput({
 					</span>
 				))}
 				<input
+					aria-label="Keywords"
 					className="text-foreground placeholder:text-muted-foreground min-w-[120px] flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed"
 					disabled={value.length >= maxKeywords}
+					id={inputId}
 					onBlur={handleBlur}
 					onChange={handleInputChange}
 					onFocus={() => setIsFocused(true)}

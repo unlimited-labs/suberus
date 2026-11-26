@@ -133,8 +133,10 @@ export function RegisterStep1({
 				>
 					{(field) => (
 						<field.IconInputField
+							autoComplete="email"
 							icon={<IconMail className="size-4" />}
 							label="E-mail *"
+							required
 							type="email"
 						/>
 					)}
@@ -148,9 +150,11 @@ export function RegisterStep1({
 				>
 					{(field) => (
 						<field.PasswordField
+							autoComplete="new-password"
 							description="Min. 10 characters"
 							label="Password *"
 							placeholder="Min. 10 characters"
+							required
 						/>
 					)}
 				</form.AppField>
@@ -165,7 +169,13 @@ export function RegisterStep1({
 								: undefined,
 					}}
 				>
-					{(field) => <field.PasswordField label="Confirm Password *" />}
+					{(field) => (
+						<field.PasswordField
+							autoComplete="new-password"
+							label="Confirm Password *"
+							required
+						/>
+					)}
 				</form.AppField>
 			</div>
 
@@ -174,14 +184,28 @@ export function RegisterStep1({
 					name="firstName"
 					validators={{ onChange: registerBase.shape.firstName }}
 				>
-					{(field) => <field.InputField label="First name *" type="text" />}
+					{(field) => (
+						<field.InputField
+							autoComplete="given-name"
+							label="First name *"
+							required
+							type="text"
+						/>
+					)}
 				</form.AppField>
 
 				<form.AppField
 					name="lastName"
 					validators={{ onChange: registerBase.shape.lastName }}
 				>
-					{(field) => <field.InputField label="Last name *" type="text" />}
+					{(field) => (
+						<field.InputField
+							autoComplete="family-name"
+							label="Last name *"
+							required
+							type="text"
+						/>
+					)}
 				</form.AppField>
 			</div>
 

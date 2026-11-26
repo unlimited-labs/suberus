@@ -52,7 +52,7 @@ export function EmailChangeConfirmDialog({
 					data-testid="email-change-confirm-password"
 					onChange={(e) => setPassword(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key === "Enter") confirm();
+						if (e.key === "Enter" && !e.nativeEvent.isComposing) confirm();
 					}}
 					placeholder="Password"
 					type="password"

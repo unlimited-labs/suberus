@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface UseMultiStepOptions {
 	totalSteps: number;
@@ -11,17 +11,20 @@ export function useMultiStep({
 }: UseMultiStepOptions) {
 	const [currentStep, setCurrentStep] = useState(1);
 
-	const next = async () => {
-		if (validateStep) {
-			const isValid = await validateStep(currentStep);
-			if (!isValid) return false;
-		}
+	const advancing = useRef(false);
 
-		if (currentStep < totalSteps) {
-			setCurrentStep((s) => s + 1);
-			return true;
-		}
-		return false;
+	// Enter auto-repeat fires several submits while the async validation is pending.
+	const next = async () => {
+		if (advancing.current) return false;
+		advancing.current = true;
+		const valid = await Promise.resolve(
+			validateStep ? validateStep(currentStep) : true,
+		).finally(() => {
+			advancing.current = false;
+		});
+		if (!valid || currentStep >= totalSteps) return false;
+		setCurrentStep((s) => Math.min(s + 1, totalSteps));
+		return true;
 	};
 
 	const prev = () => {
