@@ -84,4 +84,31 @@ describe("getAssignmentForReview in double-blind review", () => {
 			originalName: "v1.pdf",
 		});
 	});
+
+	it("hides the author name in every version on the compare page", async () => {
+		const result = await getAssignmentForReview("a1", "r1");
+
+		expect(
+			result?.submission.versions.map((v) => v.file?.originalName),
+		).toEqual(["v2.pdf", "v1.pdf"]);
+	});
+});
+
+describe("getAssignmentForReview outside double-blind review", () => {
+	it("keeps the original previous version file name", async () => {
+		vi.mocked(getSetting).mockResolvedValue({
+			reviewMode: "SINGLE_BLIND",
+			contentFormat: "PLAIN",
+			enableScoring: false,
+			scoringCriteria: [],
+			enableConfidenceLevel: false,
+			enableReviewAttachment: true,
+		});
+
+		const result = await getAssignmentForReview("a1", "r1");
+
+		expect(result?.submission.previousVersion?.file?.originalName).toBe(
+			"Jan_Kowalski.pdf",
+		);
+	});
 });
