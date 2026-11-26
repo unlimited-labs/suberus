@@ -170,9 +170,11 @@ function EditSubmissionPage() {
 
 				if (!uploadResult.success) {
 					toast.error(`Saved but file upload failed: ${uploadResult.error}`);
+					return false;
 				}
 			} catch {
 				toast.error("File upload failed");
+				return false;
 			}
 		}
 

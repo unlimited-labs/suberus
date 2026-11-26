@@ -6,6 +6,7 @@ import {
 import {
 	createSubmission,
 	createSubmissionWithFile,
+	getPrisma,
 } from "../helpers/test-db";
 import { expect, test, VALID_SUBMISSION } from "./fixtures";
 
@@ -108,6 +109,35 @@ test.describe.serial("File requirement", () => {
 
 		await expect(page.getByText("Submission submitted")).toBeHidden();
 		await expect(page).toHaveURL(/\/edit/);
+	});
+
+	test("a rejected replacement file stops the edit instead of reporting success", async ({
+		page,
+		testRun,
+		cleanup,
+	}) => {
+		test.slow();
+		const { id } = await createSubmissionWithFile({
+			testRunId: testRun.testRunId,
+			title: "FILE Draft Bad Replacement",
+			status: SubmissionStatus.DRAFT,
+			keywords: ["alpha", "beta", "gamma"],
+		});
+		cleanup.track(id);
+
+		await page.goto(`/submissions/${id}/edit`);
+		await expect(page.getByLabel("Title")).toBeVisible({ timeout: 10000 });
+
+		// spoofed.docx passes the client filter, the server rejects its content.
+		await page.locator('input[type="file"]').setInputFiles(path.join(FIXTURES_DIR, "spoofed.docx"));
+		await page.getByRole("button", { name: "Submit" }).click();
+
+		await expect(page.getByText(/file upload failed/i)).toBeVisible({ timeout: 15000 });
+		// Settled: the submit handler has returned, so a draft submit would already have happened.
+		await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+		await expect(page).toHaveURL(/\/edit/);
+		const stored = await getPrisma().submission.findUnique({ where: { id }, select: { status: true } });
+		expect(stored?.status).toBe(SubmissionStatus.DRAFT);
 	});
 
 	test("editing a FILE draft and submitting keeps the existing file (no re-upload)", async ({
