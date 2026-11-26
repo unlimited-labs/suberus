@@ -12,6 +12,15 @@ describe("renderMarkdown", () => {
 	});
 
 	it.each([
+		"a <script><script/x>alert(1)</script/x>",
+		"a <kbd><img/src/onerror=alert(1)>",
+		'a <code><form action="https://evil"x><input type=password>',
+		"a <pre><svg/onload=alert(1)>",
+	])("keeps text after a stripped raw-text tag escaped: %s", (source) => {
+		expect(renderMarkdown(source)).not.toMatch(/<(script|img|form|svg|input)/i);
+	});
+
+	it.each([
 		"[x](javascript:alert(1))",
 		"[x](java&#115;cript:alert(1))",
 		"[x](&#106;avascript:alert(1))",
@@ -31,7 +40,7 @@ describe("renderMarkdown", () => {
 
 	it("keeps ordinary formatting, safe links and images", () => {
 		const html = renderMarkdown(
-			"**bold** [web](https://x.org/?a=1&b=2) [mail](mailto:a@b.c) [top](#s) [rel](/fee) <a@b.c> ![logo](https://x.org/l.png)",
+			"**bold** [web](https://x.org/?a=1&b=2) [mail](mailto:a@b.c) [top](#s) [rel](/fee) [bare](www.example.com) <a@b.c> ![logo](https://x.org/l.png)",
 		);
 
 		expect(html).toContain("<strong>bold</strong>");
@@ -39,6 +48,7 @@ describe("renderMarkdown", () => {
 		expect(html).toContain('<a href="mailto:a@b.c">mail</a>');
 		expect(html).toContain('<a href="#s">top</a>');
 		expect(html).toContain('<a href="/fee">rel</a>');
+		expect(html).toContain('<a href="www.example.com">bare</a>');
 		expect(html).toContain('<a href="mailto:a@b.c">a@b.c</a>');
 		expect(html).toContain('<img src="https://x.org/l.png" alt="logo">');
 	});

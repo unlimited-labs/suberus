@@ -1,11 +1,15 @@
 import { Marked } from "marked";
 
-// A leading `&` is rejected too: `&#106;avascript:` decodes to a scheme in the attribute.
-const SAFE_URL = /^(?:https?:|mailto:|tel:|[#/?.])/i;
+// Any `&` or `:` outside a known scheme is refused: `&#106;avascript&#58;` decodes to a scheme in the attribute.
+const SAFE_URL = /^(?:https?:|mailto:|tel:|[#/?.]|[^:&]*$)/i;
 
 const marked = new Marked({
 	async: false,
 	breaks: true,
+	// The lexer marks text after an opened <script>/<pre>/<code>/<kbd> as pre-escaped; with that tag stripped it would print raw.
+	walkTokens(token) {
+		if (token.type === "text") token.escaped = false;
+	},
 	renderer: {
 		html: () => "",
 		link(token) {
