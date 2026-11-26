@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { logger } from "@/logger";
 import { createHealthCache } from "@/shared/server/health-cache";
 
 export interface LlmHealthResult {
@@ -151,19 +152,23 @@ export async function generateWithLlm({
 			signal: AbortSignal.timeout(timeoutMs),
 		});
 	} catch (e) {
-		throw new Error(
+		logger.error(
 			`LLM request failed (${url}, model=${model}): ${describeFetchError(e, timeoutMs)}`,
-			{ cause: e },
+		);
+		throw new Error(
+			e instanceof Error && isTimeout(e)
+				? `LLM request timed out after ${timeoutMs}ms`
+				: "LLM request failed",
 		);
 	}
 
 	if (!response.ok) {
 		const body = await response.text().catch(() => "");
-		throw new Error(
-			`LLM API ${response.status} ${response.statusText} at ${url}${
-				body ? `: ${body.slice(0, 300)}` : ""
-			}`,
+		logger.error(
+			`LLM API ${response.status} ${response.statusText} at ${url}`,
+			body.slice(0, 2000),
 		);
+		throw new Error(`LLM API failed (${response.status})`);
 	}
 
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
@@ -173,11 +178,12 @@ export async function generateWithLlm({
 	return data.choices[0]?.message.content || "";
 }
 
+const isTimeout = (e: Error) =>
+	e.name === "TimeoutError" || e.name === "AbortError";
+
 function describeFetchError(cause: unknown, timeoutMs: number): string {
 	if (cause instanceof Error) {
-		if (cause.name === "TimeoutError" || cause.name === "AbortError") {
-			return `timed out after ${timeoutMs}ms`;
-		}
+		if (isTimeout(cause)) return `timed out after ${timeoutMs}ms`;
 		// SAFETY: probing the optional ES2022 error cause.
 		const nested = (cause as { cause?: unknown }).cause;
 		const causeMsg =

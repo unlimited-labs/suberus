@@ -1,6 +1,7 @@
 import { env } from "@/env.ts";
 import { logActivity } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
+import { blindFileName } from "@/features/reviews/server/blind-file";
 import { SUPPORTED_FILE_EXTENSIONS } from "@/features/settings/file-types";
 import { getSetting } from "@/features/settings/server/settings";
 import type { ContentFormat } from "@/features/settings/types";
@@ -67,20 +68,13 @@ type ReviewFile = {
 	size: number;
 } | null;
 
-/**
- * Replace the author-derived file name (uploads are stored as `Firstname_Lastname.ext`)
- * with a neutral `v{n}.{ext}` so a double-blind reviewer can't read the author's
- * identity off the file label. No-op outside blind review.
- */
 function blindFile(
 	file: ReviewFile,
 	version: number,
 	blind: boolean,
 ): ReviewFile {
 	if (!file || !blind) return file;
-	const dot = file.originalName.lastIndexOf(".");
-	const ext = dot > 0 ? file.originalName.slice(dot) : "";
-	const name = `v${version}${ext}`;
+	const name = blindFileName(file.originalName, version);
 	return { ...file, fileName: name, originalName: name };
 }
 
@@ -240,6 +234,7 @@ export async function getAssignmentForReview(
 	);
 	const enrichedVersions = assignment.submission.versions.map((v) => ({
 		...v,
+		file: blindFile(v.file, v.version, isBlind),
 		keywords: keywordsOf(v.keywordsSnapshot),
 	}));
 
@@ -284,7 +279,7 @@ export async function getAssignmentForReview(
 				content: v.content,
 				comment: null,
 				createdAt: v.createdAt,
-				file: blindFile(v.file, v.version, isBlind),
+				file: v.file,
 			})),
 		},
 		config: {

@@ -7,6 +7,7 @@ import { setResponseHeader } from "@tanstack/react-start/server";
 import { env } from "@/env";
 import { errorSanitizeMiddleware } from "@/error-middleware";
 import { loggingMiddleware } from "@/logging-middleware";
+import { securityHeadersMiddleware } from "@/security-headers-middleware";
 import { VERSION_HEADER } from "@/shared/lib/version-skew";
 
 // Protect server functions from CSRF. Defaults (Sec-Fetch-Site: same-origin,
@@ -26,6 +27,7 @@ const versionHeaderMiddleware = createMiddleware().server(async ({ next }) => {
 export const startInstance = createStart(() => ({
 	requestMiddleware: [
 		csrfMiddleware,
+		securityHeadersMiddleware,
 		versionHeaderMiddleware,
 		loggingMiddleware,
 	],

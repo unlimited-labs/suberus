@@ -1,7 +1,8 @@
-import { PromisePool } from "@supercharge/promise-pool";
+import { PromisePool, type PromisePoolError } from "@supercharge/promise-pool";
 import { differenceInMinutes } from "date-fns";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { clientSafeMessage } from "@/shared/errors/sanitize";
 import { prisma } from "@/shared/server/db.server";
 import { setJobCurrent, setJobStage } from "@/shared/server/job-progress";
 import { generateWithLlm } from "@/shared/server/llm";
@@ -58,10 +59,10 @@ function cleanLlmTitle(raw: string): string {
 		.trim();
 }
 
-function summarizeErrors(errors: unknown[]): string {
+function summarizeErrors(errors: PromisePoolError<unknown>[]): string {
 	const counts = new Map<string, number>();
 	for (const e of errors) {
-		const msg = e instanceof Error ? e.message : String(e);
+		const msg = clientSafeMessage(e.raw);
 		counts.set(msg, (counts.get(msg) ?? 0) + 1);
 	}
 	return Array.from(counts.entries())
@@ -89,7 +90,8 @@ async function callClusterApi(
 	});
 	if (!res.ok) {
 		const body = await res.text();
-		throw new Error(`Planner API ${res.status}: ${body.slice(0, 200)}`);
+		logger.error(`Planner API ${res.status}`, body.slice(0, 2000));
+		throw new Error(`Planner API failed (${res.status})`);
 	}
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
 	return (await res.json()) as ClusterApiResponse;

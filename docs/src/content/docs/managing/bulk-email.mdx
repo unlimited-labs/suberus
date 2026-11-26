@@ -148,7 +148,7 @@ same set of files.
 | **Recipients** | The users you selected in the Users list, or the rows imported from a spreadsheet. Names and submission titles are captured when the draft is created, so later profile edits don't change what gets sent. |
 | **Subject** | The email subject line. Supports placeholders (plain text — never HTML). |
 | **Reply-To** | Optional. A single email address. If set, replies go here instead of the platform's sending mailbox. Leave blank to fall back to the **Contact Email** from *Settings › Conference*. |
-| **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML), or **MJML** (responsive email markup, compiled to HTML). |
+| **Format** | **Plain text** (sent as-is), **Markdown** (rendered to HTML; raw HTML tags and links other than `http(s)`, `mailto:`, `tel:` or relative ones are removed, so use MJML for custom markup), or **MJML** (responsive email markup, compiled to HTML). |
 | **Body** | The message source, in the chosen format. Syntax-highlighted for Markdown and MJML. Supports placeholders. |
 | **Attachments** | Files sent with every email (draft only). Max 10 MB/file, 25 MB total; PDF, Office docs, images, or ZIP. Validated by content. |
 | **Save in user profile** | Also leaves the message on each recipient's dashboard as an [announcement](/managing/announcements/), written as their email is accepted. Markdown campaigns keep their formatting; **MJML campaigns are saved as plain text**, because an email layout cannot render inside the app. Recipients imported from a spreadsheet who have no Suberus account get the email only — the panel tells you how many that is. |

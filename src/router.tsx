@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { getGlobalStartContext } from "@tanstack/react-start";
 import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
 import { routeTree } from "./routeTree.gen";
 import { RouteError } from "./shared/components/route-error";
@@ -20,6 +21,7 @@ export const getRouter = () => {
 		defaultErrorComponent: RouteError,
 		defaultPendingMs: 200,
 		defaultPendingMinMs: 300,
+		ssr: { nonce: getGlobalStartContext()?.nonce },
 	});
 
 	setupRouterSsrQueryIntegration({

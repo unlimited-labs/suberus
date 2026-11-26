@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { PromisePool } from "@supercharge/promise-pool";
 import { env } from "@/env";
 import { logger } from "@/logger.ts";
+import { clientSafeMessage } from "@/shared/errors/sanitize";
 import { prisma } from "@/shared/server/db.server";
 
 const EMBEDDING_DIM = 2560;
@@ -61,9 +62,8 @@ async function callEmbeddingApi(text: string): Promise<number[]> {
 
 	if (!res.ok) {
 		const body = await res.text();
-		throw new Error(
-			`Embedding API returned ${res.status}: ${body.slice(0, 200)}`,
-		);
+		logger.error(`Embedding API returned ${res.status}`, body.slice(0, 2000));
+		throw new Error(`Embedding API failed (${res.status})`);
 	}
 
 	// SAFETY: shape is the service's documented response contract; a mismatch surfaces on first field read.
@@ -144,8 +144,9 @@ export async function embedSubmissions(
 		});
 
 	if (errors.length > 0) {
+		for (const e of errors) logger.error("[embeddings] item failed:", e.raw);
 		throw new Error(
-			`Embedding failed for ${errors.length} item(s): ${errors.map((e) => e.message).join("; ")}`,
+			`Embedding failed for ${errors.length} item(s): ${errors.map((e) => clientSafeMessage(e.raw)).join("; ")}`,
 		);
 	}
 

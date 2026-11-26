@@ -7,6 +7,7 @@ import {
 } from "@/features/activity-log/server/activity-log";
 import { activityDetail } from "@/features/activity-log/types";
 import { assignReviewer } from "@/features/reviews/server/assignments";
+import { reviewAttachmentName } from "@/features/reviews/server/blind-file";
 import { getSetting } from "@/features/settings/server/settings";
 import { SUBMISSION_TYPE_TO_KEY } from "@/features/settings/types";
 import type { CreateSubmissionInput } from "@/features/submissions/validations";
@@ -612,8 +613,12 @@ export async function getSubmissionById(
 			attachment: att
 				? {
 						id: att.id,
-						fileName: att.fileName,
-						originalName: att.originalName,
+						fileName: isOpenReview
+							? att.fileName
+							: reviewAttachmentName(att.fileName),
+						originalName: isOpenReview
+							? att.originalName
+							: reviewAttachmentName(att.originalName),
 						size: att.size,
 					}
 				: null,
