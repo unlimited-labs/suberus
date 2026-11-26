@@ -36,7 +36,11 @@ export function SessionEditorHeader() {
 							data-testid="session-editor-title"
 							onBlur={field.handleBlur}
 							onChange={(e) => field.handleChange(e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && form.handleSubmit()}
+							onKeyDown={(e) =>
+								e.key === "Enter" &&
+								!e.nativeEvent.isComposing &&
+								form.handleSubmit()
+							}
 							placeholder="Session title"
 							value={field.state.value}
 						/>

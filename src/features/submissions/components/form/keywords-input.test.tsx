@@ -31,4 +31,19 @@ describe("KeywordsInput", () => {
 
 		expect(onChange).toHaveBeenCalledWith(["graphene"]);
 	});
+
+	it("ignores Enter while an IME composition is still open", () => {
+		const onChange = vi.fn();
+		const { getByRole } = render(
+			<KeywordsInput onChange={onChange} value={[]} />,
+		);
+		const input = getByRole("textbox", { name: "Keywords" });
+		fireEvent.change(input, { target: { value: "にほん" } });
+
+		fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+		expect(onChange).not.toHaveBeenCalled();
+
+		fireEvent.keyDown(input, { key: "Enter" });
+		expect(onChange).toHaveBeenCalledWith(["にほん"]);
+	});
 });

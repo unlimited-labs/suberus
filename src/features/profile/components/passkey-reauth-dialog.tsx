@@ -69,7 +69,7 @@ export function PasskeyReauthDialog({
 					data-testid="passkey-reauth-password"
 					onChange={(e) => setPassword(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key === "Enter" && password) {
+						if (e.key === "Enter" && !e.nativeEvent.isComposing && password) {
 							reauthMutation.mutate();
 						}
 					}}
