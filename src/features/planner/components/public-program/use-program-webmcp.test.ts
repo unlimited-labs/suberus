@@ -88,6 +88,11 @@ describe("searchProgram", () => {
 		});
 	});
 
+	it("matches an author's full name", () => {
+		const hits = searchProgram(program, settings, { query: "Ada Lovelace" });
+		expect(hits.results).toMatchObject([{ talks: [{ title: "Annealing" }] }]);
+	});
+
 	it("lists breaks for a day but drops them from query hits", () => {
 		const byDay = searchProgram(program, settings, { day: "2026-09-14" });
 		expect(byDay.results?.map((r) => r.type)).toEqual(["session", "break"]);

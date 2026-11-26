@@ -37,10 +37,8 @@ export function presentationMatches(
 	if (!q) return true;
 	return (
 		p.submissionTitle.toLowerCase().includes(q) ||
-		p.authors.some(
-			(a) =>
-				a.firstName.toLowerCase().includes(q) ||
-				a.lastName.toLowerCase().includes(q),
+		p.authors.some((a) =>
+			`${a.firstName} ${a.lastName}`.toLowerCase().includes(q),
 		)
 	);
 }
