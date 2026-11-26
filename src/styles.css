@@ -19,6 +19,7 @@
 
 @custom-variant dark (&:is(.dark *));
 :root {
+	/* Primary/destructive are darkened from #3b82f6/#ef4444 so white button text reaches 4.5:1. */
 	color-scheme: light;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.3211 0 0);
@@ -26,7 +27,7 @@
 	--card-foreground: oklch(0.3211 0 0);
 	--popover: oklch(1 0 0);
 	--popover-foreground: oklch(0.3211 0 0);
-	--primary: oklch(0.6231 0.188 259.8145);
+	--primary: #3473db;
 	--primary-foreground: oklch(1 0 0);
 	--primary-ink: var(--brand-ink-light, oklch(0.5461 0.2152 262.8809));
 	--secondary: color-mix(
@@ -43,7 +44,7 @@
 	--muted-foreground: oklch(0.551 0.0234 264.3637);
 	--accent: color-mix(in oklab, var(--primary) 8%, var(--background));
 	--accent-foreground: var(--primary-ink);
-	--destructive: oklch(0.6368 0.2078 25.3313);
+	--destructive: #d83d3d;
 	--destructive-foreground: oklch(1 0 0);
 	--border: oklch(0.9276 0.0058 264.5313);
 	--input: oklch(0.9276 0.0058 264.5313);
@@ -55,7 +56,7 @@
 	--chart-5: oklch(0.3791 0.1378 265.5222);
 	--sidebar: oklch(0.9846 0.0017 247.8389);
 	--sidebar-foreground: oklch(0.3211 0 0);
-	--sidebar-primary: oklch(0.6231 0.188 259.8145);
+	--sidebar-primary: #3473db;
 	--sidebar-primary-foreground: oklch(1 0 0);
 	--sidebar-accent: color-mix(in oklab, var(--primary) 8%, var(--sidebar));
 	--sidebar-accent-foreground: var(--primary-ink);
@@ -121,7 +122,7 @@
 	--card-foreground: oklch(0.9219 0 0);
 	--popover: oklch(0.2686 0 0);
 	--popover-foreground: oklch(0.9219 0 0);
-	--primary: oklch(0.6231 0.188 259.8145);
+	--primary: #3473db;
 	--primary-foreground: oklch(1 0 0);
 	--primary-ink: var(--brand-ink-dark, oklch(0.7137 0.1434 254.624));
 	--secondary: color-mix(in oklab, var(--primary) 12%, oklch(0.2686 0 0));
@@ -134,7 +135,7 @@
 		var(--primary) 70%,
 		var(--foreground)
 	);
-	--destructive: oklch(0.6368 0.2078 25.3313);
+	--destructive: #d83d3d;
 	--destructive-foreground: oklch(1 0 0);
 	--border: oklch(0.3715 0 0);
 	--input: oklch(0.3715 0 0);
@@ -146,7 +147,7 @@
 	--chart-5: oklch(0.4244 0.1809 265.6377);
 	--sidebar: oklch(0.145 0 0);
 	--sidebar-foreground: oklch(0.9219 0 0);
-	--sidebar-primary: oklch(0.6231 0.188 259.8145);
+	--sidebar-primary: #3473db;
 	--sidebar-primary-foreground: oklch(1 0 0);
 	--sidebar-accent: color-mix(in oklab, var(--primary) 22%, var(--sidebar));
 	--sidebar-accent-foreground: color-mix(
