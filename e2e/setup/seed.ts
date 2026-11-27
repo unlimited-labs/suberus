@@ -94,7 +94,10 @@ async function seed() {
 				emailVerified: opts.emailVerified ?? true,
 				affiliationId: affiliation.id,
 				...(opts.role ? { role: opts.role } : {}),
-				...(opts.needInvoice ? { needInvoice: true } : {}),
+				// Since #161 a user who needs an invoice cannot save their contact form without billing details.
+				...(opts.needInvoice
+					? { needInvoice: true, billingText: "E2E Test Institute, 1 Test Street" }
+					: {}),
 			},
 		});
 		console.log(`✅ User created: ${u.email}`);

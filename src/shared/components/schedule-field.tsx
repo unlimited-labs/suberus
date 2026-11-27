@@ -19,9 +19,6 @@ export function ScheduleField({ control, label, testId }: ScheduleFieldProps) {
 		<div className="space-y-3">
 			<Field orientation="horizontal">
 				<Switch
-					// Base UI puts `id` on the hidden input, so htmlFor alone leaves the
-					// visible role=switch unnamed.
-					aria-label={label}
 					checked={control.enabled}
 					data-testid={`${testId}-switch`}
 					id={switchId}

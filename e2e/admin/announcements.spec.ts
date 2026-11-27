@@ -321,6 +321,9 @@ test.describe("Admin - Announcements", () => {
 			await page.goto(`/admin/announcements/${announcement.id}`)
 			await expect(page.getByTestId("announcement-status")).toHaveText("DRAFT")
 
+			await expect(
+				page.getByRole("switch", { name: "Schedule for later" }),
+			).toBeVisible()
 			await page.getByTestId("announcement-schedule-switch").click()
 			await page.getByTestId("announcement-schedule-input").fill(publishAt)
 			await confirmPublish(page)

@@ -6,6 +6,7 @@ import {
 	endOfDayInZone,
 	formatClockTime,
 	isoWeekday,
+	zonedDateString,
 	startOfDayInZone,
 	utcToWallClock,
 	wallClockToUtc,
@@ -137,5 +138,17 @@ describe("calendar arithmetic", () => {
 		const lateSundayUtc = new Date("2026-09-13T23:30:00Z");
 		expect(isoWeekday(lateSundayUtc, "Asia/Tokyo")).toBe(1);
 		expect(isoWeekday(lateSundayUtc, "America/New_York")).toBe(7);
+	});
+});
+
+describe("zonedDateString", () => {
+	it("dates an instant in the conference zone, not UTC", () => {
+		const lateEveningUtc = new Date("2026-03-01T23:30:00Z");
+
+		expect(zonedDateString(lateEveningUtc, "Europe/Warsaw")).toBe("2026-03-02");
+		expect(zonedDateString(lateEveningUtc, "America/New_York")).toBe(
+			"2026-03-01",
+		);
+		expect(zonedDateString(lateEveningUtc, "")).toBe("2026-03-01");
 	});
 });

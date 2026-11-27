@@ -44,6 +44,7 @@ import { useAppForm } from "@/shared/hooks/use-app-form";
 import { getErrorMessage } from "@/shared/lib/error-message";
 import { formatCurrency } from "@/shared/lib/format-currency";
 import { cn } from "@/shared/lib/utils";
+import { todayInZone } from "@/shared/lib/zoned";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
@@ -227,7 +228,7 @@ export function FinancesBoard() {
 	);
 
 	const projectedFee = projectFeeIncome(projection);
-	const todayISO = new Date().toISOString().slice(0, 10);
+	const todayISO = todayInZone(data.timezone);
 
 	const renderLedger = (
 		name: "expenses" | "income",

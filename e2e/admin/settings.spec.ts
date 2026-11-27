@@ -27,6 +27,31 @@ test.describe("Admin Settings - Submission Types", () => {
 		await expect(page.getByText("Review mode")).toBeVisible()
 	})
 
+	test("submission type accordion animates its height both ways", async ({ page }) => {
+		const trigger = page.getByRole("button", { name: /Oral Presentation/i }).first()
+		await expect(trigger).toBeVisible()
+
+		// Sample the panel height every frame after the click; an interpolating transition yields in-between values.
+		const sampleToggle = () =>
+			trigger.evaluate(async (button) => {
+				const item = button.closest('[data-slot="accordion-item"]')
+				if (button instanceof HTMLElement) button.click()
+				const heights: number[] = []
+				const start = performance.now()
+				while (performance.now() - start < 400) {
+					await new Promise(requestAnimationFrame)
+					const panel = item?.querySelector('[data-slot="accordion-content"]')
+					heights.push(panel ? panel.getBoundingClientRect().height : 0)
+				}
+				const max = Math.max(...heights)
+				return heights.some((h) => h > 1 && h < max - 1)
+			})
+
+		expect(await sampleToggle()).toBe(true)
+		await expect(page.getByText("Content Format")).toBeVisible()
+		expect(await sampleToggle()).toBe(true)
+	})
+
 	test("shows file extension radios for FILE format", async ({ adminSettingsPage, page }) => {
 		await adminSettingsPage.expandSubmissionType("Full Paper")
 
